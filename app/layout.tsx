@@ -1,5 +1,6 @@
 import "@/styles/globals.css"
 import { Metadata } from "next"
+import { Toaster } from "sonner"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
@@ -41,6 +42,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
           )}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <Toaster
+              visibleToasts={9}
+              closeButton={true}
+              toastOptions={{
+                style: { minWidth: "20rem", maxWidth: "40rem" },
+                className: "break-all",
+              }}
+            />
             <div className="relative flex min-h-screen flex-col">
               <SiteHeader />
               <div className="flex-1">{children}</div>
