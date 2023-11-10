@@ -4,6 +4,7 @@ import Link from "next/link"
 import { NavItem } from "@/types/nav"
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
+import Dropdown from "@/components/dropdown"
 import { Icons } from "@/components/icons"
 
 interface MainNavProps {
@@ -19,7 +20,7 @@ export function MainNav({ items }: MainNavProps) {
       </Link>
       {items?.length ? (
         <nav className="flex gap-6">
-          {items?.map(
+          {/* {items?.map(
             (item, index) =>
               item.href && (
                 <Link
@@ -33,7 +34,8 @@ export function MainNav({ items }: MainNavProps) {
                   {item.title}
                 </Link>
               )
-          )}
+          )} */}
+          <Dropdown />
         </nav>
       ) : null}
     </div>
