@@ -12,7 +12,7 @@ export const siteConfig = {
   ],
   links: {
     twitter: "https://twitter.com/cardanokid",
-    github: "https://github.com/shadcn/ui",
+    github: "https://github.com/ensured/punycode-unicode.converter",
     docs: "https://ui.shadcn.com",
   },
 }
