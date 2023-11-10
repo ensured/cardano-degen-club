@@ -6,7 +6,7 @@ import Prism from "prismjs"
 
 import Text from "@/components/Text"
 
-const page = () => {
+const Page = () => {
   const code = `const handleMutations = (mutationsList) => {
     for (const mutation of mutationsList) {
         if (mutation.type === "childList") {
@@ -62,4 +62,4 @@ observer.observe(document.body, observerConfig);
   )
 }
 
-export default page
+export default Page
