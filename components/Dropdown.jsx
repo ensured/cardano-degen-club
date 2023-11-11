@@ -28,11 +28,7 @@ const Dropdown = () => {
 
   return (
     <DropdownMenu className="relative hover:cursor-pointer">
-      <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} className="hover:cursor-pointer">
-          Projectsss
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>Projects</DropdownMenuTrigger>
       <DropdownMenuContent className="hover:cursor-pointer">
         <Link
           href="/tradingview-script"
