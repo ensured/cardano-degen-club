@@ -52,8 +52,8 @@ observer.observe(document.body, observerConfig);
 
   return (
     <>
+      <Text text="Paste the following code in the browser console." />
       <div className="container mx-auto px-2 py-4 text-sm">
-        <Text text="Paste the following code in the browser console." />
         <pre className="rounded-sm">
           <code className="language-javascript">{code}</code>
         </pre>
