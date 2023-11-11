@@ -30,7 +30,7 @@ const Dropdown = () => {
     <DropdownMenu className="relative hover:cursor-pointer">
       <DropdownMenuTrigger asChild>
         <Button variant={"outline"} className="hover:cursor-pointer">
-          Projects
+          Projectsss
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="hover:cursor-pointer">
