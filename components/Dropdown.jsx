@@ -34,6 +34,9 @@ const Dropdown = () => {
         <Link href="/">
           <DropdownMenuItem value="top"> Punycode Converter</DropdownMenuItem>
         </Link>
+        <Link href="/cardano-links">
+          <DropdownMenuItem value="top"> Cardano Links</DropdownMenuItem>
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   )

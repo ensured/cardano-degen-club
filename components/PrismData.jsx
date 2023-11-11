@@ -1,6 +1,5 @@
 "use client"
 
-import "app/prism.css"
 import { useEffect } from "react"
 import Prism from "prismjs"
 
