@@ -19,7 +19,7 @@ const Dropdown = () => {
   return (
     <DropdownMenu className="relative">
       <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"sm"}>
+        <Button variant={"ghost"} size={"sm"}>
           {" "}
           Projects
         </Button>
