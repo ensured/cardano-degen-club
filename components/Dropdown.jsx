@@ -22,25 +22,39 @@ const Dropdown = () => {
     setIsOpen(!isOpen)
   }
 
+  const closeMenu = () => {
+    setIsOpen(false)
+  }
+
   return (
     <DropdownMenu className="relative hover:cursor-pointer">
       <DropdownMenuTrigger asChild>
-        <Button
-          variant={"outline"}
-          onClick={ChangeIsOpen}
-          className="hover:cursor-pointer"
-        >
+        <Button variant={"outline"} className="hover:cursor-pointer">
           Projects
         </Button>
       </DropdownMenuTrigger>
-      <Link href="/tradingview-script" className="hover:cursor-pointer">
-        <DropdownMenuContent className="hover:cursor-pointer">
+      <DropdownMenuContent className="hover:cursor-pointer">
+        <Link
+          href="/tradingview-script"
+          className="hover:cursor-pointer"
+          onClick={closeMenu}
+        >
           <DropdownMenuItem value="top" className="hover:cursor-pointer">
             {" "}
             Tradingview Script: Auto-Close Ads
           </DropdownMenuItem>
-        </DropdownMenuContent>
-      </Link>
+        </Link>
+        <Link href="/" className="hover:cursor-pointer">
+          <DropdownMenuItem
+            value="top"
+            className="hover:cursor-pointer"
+            onClick={closeMenu}
+          >
+            {" "}
+            Punycode Converter
+          </DropdownMenuItem>
+        </Link>
+      </DropdownMenuContent>
     </DropdownMenu>
   )
 }
