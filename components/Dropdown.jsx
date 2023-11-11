@@ -16,39 +16,23 @@ import {
 import { Button } from "./ui/button"
 
 const Dropdown = () => {
-  const [isOpen, setIsOpen] = useState(true)
-
-  const ChangeIsOpen = () => {
-    setIsOpen(!isOpen)
-  }
-
-  const closeMenu = () => {
-    setIsOpen(false)
-  }
-
   return (
-    <DropdownMenu className="relative hover:cursor-pointer">
-      <DropdownMenuTrigger asChild>Projects</DropdownMenuTrigger>
-      <DropdownMenuContent className="hover:cursor-pointer">
-        <Link
-          href="/tradingview-script"
-          className="hover:cursor-pointer"
-          onClick={closeMenu}
-        >
-          <DropdownMenuItem value="top" className="hover:cursor-pointer">
+    <DropdownMenu className="relative">
+      <DropdownMenuTrigger asChild>
+        <Button variant={"outline"} size={"sm"}>
+          {" "}
+          Projects
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <Link href="/tradingview-script">
+          <DropdownMenuItem value="top">
             {" "}
             Tradingview Script: Auto-Close Ads
           </DropdownMenuItem>
         </Link>
-        <Link href="/" className="hover:cursor-pointer">
-          <DropdownMenuItem
-            value="top"
-            className="hover:cursor-pointer"
-            onClick={closeMenu}
-          >
-            {" "}
-            Punycode Converter
-          </DropdownMenuItem>
+        <Link href="/">
+          <DropdownMenuItem value="top"> Punycode Converter</DropdownMenuItem>
         </Link>
       </DropdownMenuContent>
     </DropdownMenu>
