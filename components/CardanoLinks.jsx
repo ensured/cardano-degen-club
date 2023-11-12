@@ -307,7 +307,7 @@ const CardanoLinks = () => {
           <TabsTrigger value="6">Charts/Analytics</TabsTrigger>
           <TabsTrigger value="5">Metaverse</TabsTrigger>
           <TabsTrigger value="7">Lending/Borrowing</TabsTrigger>
-          <TabsTrigger value="8">Lending/Borrowing</TabsTrigger>
+          <TabsTrigger value="8">Yield Aggregators</TabsTrigger>
           <TabsTrigger value="9">Stable Coins</TabsTrigger>
           <TabsTrigger value="10">Privacy</TabsTrigger>
           <TabsTrigger value="11">Synthetic Protocols</TabsTrigger>
