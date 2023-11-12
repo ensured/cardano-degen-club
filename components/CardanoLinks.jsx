@@ -319,7 +319,6 @@ const CardanoLinks = () => {
           <TabsTrigger value="12">oracles</TabsTrigger>
           <TabsTrigger value="13">meme coins</TabsTrigger>
           <TabsTrigger value="14">other</TabsTrigger>
-          <TabsTrigger value="14">adahandle links</TabsTrigger>
         </TabsList>
         <TabsContent value="1">
           <Table>
