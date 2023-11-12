@@ -57,14 +57,21 @@ const CardanoLinks = () => {
       name: "Cardano on CoinGecko",
       url: "https://www.coingecko.com/en/coins/cardano",
     },
-
-    {
-      name: "jpg.store",
-      url: "https://jpg.store/",
-    },
     {
       name: "Opencnft",
       url: "https://opencnft.io/",
+    },
+    {
+      name: "adahandle tools",
+      url: "handle.tools",
+    },
+    {
+      name: "adahandle statistics",
+      url: "https://fxy.re/handles",
+    },
+    {
+      name: "adahandle punycode converter",
+      url: "https://punycode-converter.vercel.app/",
     },
   ]
 
