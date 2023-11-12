@@ -155,7 +155,7 @@ const CardanoLinks = () => {
       url: "https://taptools.io",
     },
     {
-      name: "cnft.tools",
+      name: "CNFT Tools",
       url: "https://cnft.tools/",
     },
   ]
@@ -200,10 +200,7 @@ const CardanoLinks = () => {
       name: "@OptimFi",
       url: "https://optimfi.com/",
     },
-    {
-      name: "@stargazer_fi",
-      url: "https://stargazer.fi/",
-    },
+
     {
       name: "@GeniusyieldO",
       url: "https://app.geniusyield.co/",
@@ -300,20 +297,22 @@ const CardanoLinks = () => {
     <div className="container mx-auto px-2 py-4 break-all">
       <Tabs defaultValue="1">
         <TabsList>
-          <TabsTrigger value="1">Official Cardano Links</TabsTrigger>
-          <TabsTrigger value="2">Wallets</TabsTrigger>
-          <TabsTrigger value="3">Dexs</TabsTrigger>
-          <TabsTrigger value="4">Marketplaces</TabsTrigger>
-          <TabsTrigger value="6">Charts/Analytics</TabsTrigger>
-          <TabsTrigger value="5">Metaverse</TabsTrigger>
-          <TabsTrigger value="7">Lending/Borrowing</TabsTrigger>
-          <TabsTrigger value="8">Yield Aggregators</TabsTrigger>
-          <TabsTrigger value="9">Stable Coins</TabsTrigger>
-          <TabsTrigger value="10">Privacy</TabsTrigger>
-          <TabsTrigger value="11">Synthetic Protocols</TabsTrigger>
-          <TabsTrigger value="12">Oracles</TabsTrigger>
-          <TabsTrigger value="13">Meme Coins</TabsTrigger>
-          <TabsTrigger value="14">Other</TabsTrigger>
+          <TabsTrigger value="1">official cardano links</TabsTrigger>
+          <TabsTrigger value="2">wallets</TabsTrigger>
+          <TabsTrigger value="3">dexs</TabsTrigger>
+          <TabsTrigger value="4">marketplaces</TabsTrigger>
+          <TabsTrigger value="6">charts/analytics</TabsTrigger>
+          <TabsTrigger value="5">metaverse</TabsTrigger>
+          <TabsTrigger value="7">lending/borrowing</TabsTrigger>
+          <TabsTrigger value="8">yield aggregators</TabsTrigger>
+          <TabsTrigger value="9">stable coins</TabsTrigger>
+          <TabsTrigger value="10">privacy</TabsTrigger>
+          <TabsTrigger value="11">synthetic protocols</TabsTrigger>
+
+          <TabsTrigger value="12">oracles</TabsTrigger>
+          <TabsTrigger value="13">meme coins</TabsTrigger>
+          <TabsTrigger value="14">other</TabsTrigger>
+          <TabsTrigger value="14">adahandle links</TabsTrigger>
         </TabsList>
         <TabsContent value="1">
           <Table>
