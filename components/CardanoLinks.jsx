@@ -49,26 +49,12 @@ const CardanoLinks = () => {
       name: "Cardano Cube",
       url: "https://cardanocube.com/",
     },
-    {
-      name: "Cardano Messari - ADA Market data",
-      url: "https://messari.io/project/cardano/markets",
-    },
+
     {
       name: "Cardano on CoinGecko",
       url: "https://www.coingecko.com/en/coins/cardano",
     },
-    {
-      name: "Opencnft",
-      url: "https://opencnft.io/",
-    },
-    {
-      name: "adahandle tools",
-      url: "handle.tools",
-    },
-    {
-      name: "adahandle statistics",
-      url: "https://fxy.re/handles",
-    },
+
     {
       name: "adahandle punycode converter",
       url: "https://punycode-converter.vercel.app/",
@@ -164,6 +150,22 @@ const CardanoLinks = () => {
     {
       name: "CNFT Tools",
       url: "https://cnft.tools/",
+    },
+    {
+      name: "Cardano Messari - ADA Market data",
+      url: "https://messari.io/project/cardano/markets",
+    },
+    {
+      name: "Opencnft",
+      url: "https://opencnft.io/",
+    },
+    {
+      name: "adahandle tools",
+      url: "handle.tools",
+    },
+    {
+      name: "adahandle statistics",
+      url: "https://fxy.re/handles",
     },
   ]
 
