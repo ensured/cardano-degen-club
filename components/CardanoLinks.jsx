@@ -1,6 +1,5 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import {
   Table,
   TableBody,
@@ -299,11 +298,7 @@ const CardanoLinks = () => {
 
   return (
     <div className="container mx-auto px-2 py-4 break-all">
-      <Tabs
-        defaultValue="1"
-        className="break-all"
-        style={{ display: "flex", flexWrap: "wrap" }}
-      >
+      <Tabs defaultValue="1">
         <TabsList>
           <TabsTrigger value="1">Official Cardano Links</TabsTrigger>
           <TabsTrigger value="2">Wallets</TabsTrigger>
