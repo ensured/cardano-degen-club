@@ -40,37 +40,65 @@ function getCodePoints(input) {
   return codePoints
 }
 
-const inputSchema = z.object({
-  searchInput: z.string().max(40),
-})
-
 const CardForm = () => {
   const [searchInput, setSearchInput] = useState("")
   const [output, setOutput] = useState("")
-
-  // const handleFormSubmit = () => {
-  //   try {
-  //     inputSchema.parse({
-  //       searchInput,
-  //     })
-  //     const converted = punycodeConverter(searchInput)
-  //     setOutput(converted)
-  //   } catch (error) {
-  //     if (error.errors) {
-  //       toast(JSON.stringify())
-  //     }
-  //     toast("Invalid punycode/ASCII input.")
-  //   }
-  // }
 
   const handleInputChange = (e) => {
     const inputText = e.target.value
     setSearchInput(inputText)
     const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
 
-    if (hasNonASCII) {
-      const codePoints = getCodePoints(inputText)
-      const converted = punycodeConverter(inputText)
+    const handleASCIIInput = (text) => {
+      try {
+        const converted = punycodeConverter(text)
+        const codePoints = getCodePoints(converted)
+        if (codePoints.length === 1) {
+          setOutput(
+            <>
+              <Badge variant="outline" className=" mb-2">
+                Converted
+              </Badge>
+              <p className="text-lg font-semibold">{converted}</p>
+              <br />
+              <Badge variant="outline" className="mb-2">
+                {codePoints.length} Code Point{codePoints.length > 1 && "s"}
+              </Badge>
+              <Badge variant="outline">Pure</Badge>
+              <p className="text-lg font-semibold">
+                U+{codePoints[0].toUpperCase()}
+              </p>
+            </>
+          )
+        } else if (codePoints.length > 1 && codePoints.length < 40) {
+          setOutput(
+            <>
+              <Badge variant="outline" className="mt-4 mb-2">
+                Converted
+              </Badge>
+              <p className="text-lg font-semibold">{converted}</p>
+
+              <br />
+              <Badge variant="outline" className="mb-2">
+                {codePoints.length} Code Point{codePoints.length > 1 && "s"}
+              </Badge>
+
+              {codePoints.map((codePoint, index) => (
+                <p key={index} className="text-lg font-semibold inline">
+                  {`U+${codePoint.toUpperCase()} `}
+                </p>
+              ))}
+            </>
+          )
+        }
+      } catch (error) {
+        toast("Invalid unicode/punycode input", { type: "error" })
+      }
+    }
+
+    const handleNonASCIIInput = (text) => {
+      const codePoints = getCodePoints(text)
+      const converted = punycodeConverter(text)
       if (codePoints.length === 1) {
         setOutput(
           <>
@@ -109,50 +137,10 @@ const CardForm = () => {
       }
     }
 
-    if (!hasNonASCII) {
-      try {
-        const converted = punycodeConverter(inputText)
-        const codePoints = getCodePoints(converted)
-        if (codePoints.length === 1) {
-          setOutput(
-            <>
-              <Badge variant="outline" className=" mb-2">
-                Converted
-              </Badge>
-              <p className="text-lg font-semibold">{converted}</p>
-              <br />
-              <Badge variant="outline" className="mb-2">
-                {codePoints.length} Code Point{codePoints.length > 1 && "s"}
-              </Badge>
-              <p className="text-lg font-semibold">
-                U+{codePoints[0].toUpperCase()}
-              </p>
-            </>
-          )
-        } else if (codePoints.length > 1) {
-          setOutput(
-            <>
-              <Badge variant="outline" className="mt-4 mb-2">
-                Converted
-              </Badge>
-              <p className="text-lg font-semibold">{converted}</p>
-
-              <br />
-              <Badge variant="outline" className="mb-2">
-                {codePoints.length} Code Point{codePoints.length > 1 && "s"}
-              </Badge>
-
-              {codePoints.map((codePoint, index) => (
-                <p key={index} className="text-lg font-semibold inline">
-                  {`U+${codePoint.toUpperCase()} `}
-                </p>
-              ))}
-            </>
-          )
-        }
-      } catch (error) {
-        toast("Invalid punycode/ASCII input.")
-      }
+    if (hasNonASCII) {
+      handleNonASCIIInput(inputText)
+    } else {
+      handleASCIIInput(inputText)
     }
   }
 
@@ -169,6 +157,7 @@ const CardForm = () => {
                 type="text"
                 placeholder="Enter text here..."
                 onChange={handleInputChange}
+                value={searchInput}
               />
               {/* <Button
                 className={buttonVariants({ variant: "outline" })}
