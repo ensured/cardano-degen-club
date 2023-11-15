@@ -1,11 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { toast } from "sonner"
-import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
-import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -43,6 +41,7 @@ function getCodePoints(input) {
 const CardForm = () => {
   const [searchInput, setSearchInput] = useState("")
   const [output, setOutput] = useState("")
+  const inputRef = useRef(null)
 
   const handleInputChange = (e) => {
     const inputText = e.target.value
@@ -154,6 +153,7 @@ const CardForm = () => {
           <CardContent>
             <div className="flex flex-col space-y-4">
               <Input
+                autoFocus={true}
                 type="text"
                 placeholder="Enter text here..."
                 onChange={handleInputChange}
