@@ -1,9 +1,9 @@
-import CardForm from "@/components/CardForm"
+import HomePage from "../components/HomePage"
+
+export const metadata = {
+  title: "Punycode Converter",
+}
 
 export default function IndexPage() {
-  return (
-    <div className="mt-8">
-      <CardForm />
-    </div>
-  )
+  return <HomePage />
 }
