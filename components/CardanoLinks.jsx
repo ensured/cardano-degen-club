@@ -52,11 +52,11 @@ const CardanoLinks = () => {
   useEffect(() => {
     const category = searchParams.get("category")
     if (category) {
-      setActiveTab(category.toString())
+      setActiveTab(category)
     }
   }, [searchParams])
 
-  const renderLinkContent = (category) => {
+  const getLinkTableByCategory = (category) => {
     const links = allLinks[category + "Links"] || []
     return <LinkTable links={links} />
   }
@@ -80,7 +80,7 @@ const CardanoLinks = () => {
 
   const tabContents = tabTriggers.map((trigger, index) => (
     <TabsContent key={index} value={String(index + 1)}>
-      {renderLinkContent(trigger)}
+      {getLinkTableByCategory(trigger)}
     </TabsContent>
   ))
 
