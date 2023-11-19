@@ -1,13 +1,13 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -41,10 +41,21 @@ function getCodePoints(input) {
 const CardForm = () => {
   const [searchInput, setSearchInput] = useState("")
   const [output, setOutput] = useState("")
-  const inputRef = useRef(null)
+  const searchParams = useSearchParams()
+
+  const router = useRouter()
+
+  useEffect(() => {
+    const search = searchParams.get("q")
+    if (search) {
+      setSearchInput(search)
+      handleInputChange({ target: { value: search } })
+    }
+  }, [searchParams])
 
   const handleInputChange = (e) => {
     const inputText = e.target.value
+    router.push(`?q=${inputText}`)
     setSearchInput(inputText)
     const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
 
