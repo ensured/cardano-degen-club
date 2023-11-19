@@ -1,5 +1,9 @@
 import CardanoLinks from "@/components/CardanoLinks"
 
+export const metadata = {
+  title: "Cardano Links",
+}
+
 const page = () => {
   return (
     <>

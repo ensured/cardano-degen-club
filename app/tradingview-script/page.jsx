@@ -3,6 +3,10 @@ import Tabz from "@/components/Tabz"
 
 import "app/prism.css"
 
+export const metadata = {
+  title: "TradingView Script",
+}
+
 const Page = () => {
   const howTo = (
     <div className="container mx-auto px-2 py-4 text-sm">
