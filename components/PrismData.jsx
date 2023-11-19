@@ -47,13 +47,11 @@ const PrismData = () => {
     observer.observe(document.body, observerConfig);
     `
   return (
-    <>
-      <div className="container mx-auto px-2 py-4 text-sm">
-        <pre className="rounded-sm">
-          <code className="language-javascript">{code}</code>
-        </pre>
-      </div>
-    </>
+    <div className="ml-2">
+      <pre className="rounded-md">
+        <code className="language-javascript">{code}</code>
+      </pre>
+    </div>
   )
 }
 
