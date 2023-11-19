@@ -153,6 +153,7 @@ const CardForm = () => {
       handleInputChange({ target: { value: search } })
     }
   }, [searchParams])
+
   return (
     <div className="flex justify-center items-center">
       <div className="bg-white p-6 rounded shadow-lg">

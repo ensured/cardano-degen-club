@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 
 import {
   Table,
@@ -41,20 +43,32 @@ const LinkTable = ({ links }) => {
 }
 
 const CardanoLinks = () => {
-  const [activeTab, setActiveTab] = useState("1")
+  const searchParams = useSearchParams()
+  const category = searchParams.get("category")
 
-  const handleTabChange = (value) => {
-    setActiveTab(value)
-  }
+  const [activeTab, setActiveTab] = useState(category || "1")
+  const router = useRouter()
+
+  useEffect(() => {
+    const category = searchParams.get("category")
+    if (category) {
+      setActiveTab(category.toString())
+    }
+  }, [searchParams])
 
   const renderLinkContent = (category) => {
     const links = allLinks[category + "Links"] || []
     return <LinkTable links={links} />
   }
 
+  const handleOnChange = () => {
+    router.push(`/cardano-links?category=${activeTab}`)
+    setActiveTab(activeTab)
+  }
+
   return (
     <div className="container mx-auto px-2 py-4 break-all">
-      <Tabs onChange={handleTabChange}>
+      <Tabs onChange={handleOnChange} defaultValue={activeTab}>
         <TabsList>
           <TabsTrigger value="1">official cardano links</TabsTrigger>
           <TabsTrigger value="2">wallets</TabsTrigger>
