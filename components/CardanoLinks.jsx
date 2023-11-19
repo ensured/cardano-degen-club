@@ -61,11 +61,6 @@ const CardanoLinks = () => {
     return <LinkTable links={links} />
   }
 
-  const handleOnChange = () => {
-    router.push(`/cardano-links?category=${activeTab}`)
-    setActiveTab(activeTab)
-  }
-
   const tabTriggers = [
     "officialCardano",
     "wallets",
@@ -89,12 +84,25 @@ const CardanoLinks = () => {
     </TabsContent>
   ))
 
+  const handleClick = (e) => {
+    const index = tabTriggers.findIndex(
+      (trigger) => trigger === e.target.textContent
+    )
+    setActiveTab(String(index + 1))
+    router.push(`?category=${index + 1}`)
+  }
+
   return (
     <div className="container mx-auto px-2 py-4 break-all">
-      <Tabs defaultValue={activeTab} onChange={handleOnChange}>
+      <Tabs value={activeTab}>
         <TabsList>
           {tabTriggers.map((trigger, index) => (
-            <TabsTrigger key={index} value={String(index + 1)}>
+            <TabsTrigger
+              key={index}
+              value={String(index + 1)}
+              onClick={handleClick}
+              className="text-sm font-semibold"
+            >
               {trigger}
             </TabsTrigger>
           ))}
