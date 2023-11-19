@@ -42,77 +42,16 @@ const CardForm = () => {
   const [searchInput, setSearchInput] = useState("")
   const [output, setOutput] = useState("")
   const searchParams = useSearchParams()
-
   const router = useRouter()
 
-  useEffect(() => {
-    const search = searchParams.get("q")
-    if (search) {
-      setSearchInput(search)
-      handleInputChange({ target: { value: search } })
-    }
-  }, [searchParams])
-
-  const handleInputChange = (e) => {
-    const inputText = e.target.value
-    router.push(`?q=${inputText}`)
-    setSearchInput(inputText)
-    const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
-
-    const handleASCIIInput = (text) => {
-      try {
-        const converted = punycodeConverter(text)
-        const codePoints = getCodePoints(converted)
-        if (codePoints.length === 1) {
-          setOutput(
-            <>
-              <Badge variant="outline" className=" mb-2">
-                Converted
-              </Badge>
-              <p className="text-lg font-semibold">{converted}</p>
-              <br />
-              <Badge variant="outline" className="mb-2">
-                {codePoints.length} Code Point{codePoints.length > 1 && "s"}
-              </Badge>
-              <Badge variant="outline">Pure</Badge>
-              <p className="text-lg font-semibold">
-                U+{codePoints[0].toUpperCase()}
-              </p>
-            </>
-          )
-        } else if (codePoints.length > 1 && codePoints.length < 40) {
-          setOutput(
-            <>
-              <Badge variant="outline" className="mt-4 mb-2">
-                Converted
-              </Badge>
-              <p className="text-lg font-semibold">{converted}</p>
-
-              <br />
-              <Badge variant="outline" className="mb-2">
-                {codePoints.length} Code Point{codePoints.length > 1 && "s"}
-              </Badge>
-
-              {codePoints.map((codePoint, index) => (
-                <p key={index} className="text-lg font-semibold inline">
-                  {`U+${codePoint.toUpperCase()} `}
-                </p>
-              ))}
-            </>
-          )
-        }
-      } catch (error) {
-        toast("Invalid unicode/punycode input", { type: "error" })
-      }
-    }
-
-    const handleNonASCIIInput = (text) => {
-      const codePoints = getCodePoints(text)
+  const handleASCIIInput = (text) => {
+    try {
       const converted = punycodeConverter(text)
+      const codePoints = getCodePoints(converted)
       if (codePoints.length === 1) {
         setOutput(
           <>
-            <Badge variant="outline" className="mt-4 mb-2">
+            <Badge variant="outline" className=" mb-2">
               Converted
             </Badge>
             <p className="text-lg font-semibold">{converted}</p>
@@ -126,17 +65,19 @@ const CardForm = () => {
             </p>
           </>
         )
-      } else if (codePoints.length > 1) {
+      } else if (codePoints.length > 1 && codePoints.length < 40) {
         setOutput(
           <>
             <Badge variant="outline" className="mt-4 mb-2">
               Converted
             </Badge>
             <p className="text-lg font-semibold">{converted}</p>
+
             <br />
             <Badge variant="outline" className="mb-2">
               {codePoints.length} Code Point{codePoints.length > 1 && "s"}
             </Badge>
+
             {codePoints.map((codePoint, index) => (
               <p key={index} className="text-lg font-semibold inline">
                 {`U+${codePoint.toUpperCase()} `}
@@ -145,7 +86,58 @@ const CardForm = () => {
           </>
         )
       }
+    } catch (error) {
+      toast("Invalid unicode/punycode input", { type: "error" })
     }
+  }
+
+  const handleNonASCIIInput = (text) => {
+    const codePoints = getCodePoints(text)
+    const converted = punycodeConverter(text)
+
+    if (codePoints.length === 1) {
+      setOutput(
+        <>
+          <Badge variant="outline" className="mt-4 mb-2">
+            Converted
+          </Badge>
+          <p className="text-lg font-semibold">{converted}</p>
+          <br />
+          <Badge variant="outline" className="mb-2">
+            {codePoints.length} Code Point{codePoints.length > 1 && "s"}
+          </Badge>
+          <Badge variant="outline">Pure</Badge>
+          <p className="text-lg font-semibold">
+            U+{codePoints[0].toUpperCase()}
+          </p>
+        </>
+      )
+    } else if (codePoints.length > 1) {
+      setOutput(
+        <>
+          <Badge variant="outline" className="mt-4 mb-2">
+            Converted
+          </Badge>
+          <p className="text-lg font-semibold">{converted}</p>
+          <br />
+          <Badge variant="outline" className="mb-2">
+            {codePoints.length} Code Point{codePoints.length > 1 && "s"}
+          </Badge>
+          {codePoints.map((codePoint, index) => (
+            <p key={index} className="text-lg font-semibold inline">
+              {`U+${codePoint.toUpperCase()} `}
+            </p>
+          ))}
+        </>
+      )
+    }
+  }
+
+  const handleInputChange = (e) => {
+    const inputText = e.target.value
+    router.push(`?q=${inputText}`)
+    setSearchInput(inputText)
+    const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
 
     if (hasNonASCII) {
       handleNonASCIIInput(inputText)
@@ -154,6 +146,13 @@ const CardForm = () => {
     }
   }
 
+  useEffect(() => {
+    const search = searchParams.get("q")
+    if (search) {
+      setSearchInput(search)
+      handleInputChange({ target: { value: search } })
+    }
+  }, [searchParams])
   return (
     <div className="flex justify-center items-center">
       <div className="bg-white p-6 rounded shadow-lg">
@@ -170,12 +169,6 @@ const CardForm = () => {
                 onChange={handleInputChange}
                 value={searchInput}
               />
-              {/* <Button
-                className={buttonVariants({ variant: "outline" })}
-                onClick={handleFormSubmit}
-              >
-                Convert
-              </Button> */}
             </div>
           </CardContent>
           <CardFooter>
