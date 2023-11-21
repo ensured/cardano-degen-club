@@ -28,7 +28,7 @@ const RecentCommitToastComponent = () => {
       }
     }
 
-    const interval = setInterval(fetchRecentCommit, 15000)
+    const interval = setInterval(fetchRecentCommit, 10000)
 
     fetchRecentCommit() // Initial fetch of recent commit
 
