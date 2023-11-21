@@ -18,7 +18,13 @@ const RecentCommitToastComponent = () => {
         setLastCommit(commit)
         return
       }
+      if (lastCommit !== commit) {
+        toast.success("New commit detected.")
+        router.reload()
+      }
 
+      setLastCommit(commit)
+    }
 
     const interval = setInterval(fetchRecentCommit, 30000)
 
