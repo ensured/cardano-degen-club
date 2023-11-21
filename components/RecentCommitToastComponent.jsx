@@ -16,7 +16,6 @@ const RecentCommitToastComponent = () => {
       const commit = await getRecentCommit("punycode-unicode.converter")
       if (lastCommit === "") {
         setLastCommit(commit)
-
         return
       }
 
