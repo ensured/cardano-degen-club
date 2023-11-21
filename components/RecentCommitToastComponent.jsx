@@ -22,7 +22,7 @@ const RecentCommitToastComponent = () => {
             router.reload()
           }, 5000)
         }
-        toast("No updates available.")
+        toast("No updates available")
         setLastCommit(commit)
       } catch (error) {
         toast.error("Error fetching recent commit from GitHub API")
