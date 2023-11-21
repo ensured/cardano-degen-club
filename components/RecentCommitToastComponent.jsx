@@ -18,10 +18,9 @@ const RecentCommitToastComponent = () => {
         if (lastCommit !== "" && lastCommit !== commit) {
           toast.success("New update available! Reload to see changes.")
           setTimeout(() => {
-            toast.dismiss()
             toast.success("Reloading page...")
             router.reload()
-          }, 3000)
+          }, 5000)
         }
         setLastCommit(commit)
       } catch (error) {
@@ -29,7 +28,7 @@ const RecentCommitToastComponent = () => {
       }
     }
 
-    const interval = setInterval(fetchRecentCommit, 120000)
+    const interval = setInterval(fetchRecentCommit, 15000)
 
     fetchRecentCommit() // Initial fetch of recent commit
 
