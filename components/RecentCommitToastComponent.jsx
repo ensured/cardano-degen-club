@@ -13,25 +13,16 @@ const RecentCommitToastComponent = () => {
 
   useEffect(() => {
     const fetchRecentCommit = async () => {
-      try {
-        const commit = await getRecentCommit("punycode-unicode.converter")
-
-        if (!lastCommit) {
-          setLastCommit(commit)
-          return
-        }
-
-        if (lastCommit !== commit) {
-          toast.success(`New commit detected! ${commit}`)
-          setLastCommit(commit) // Update lastCommit before reloading
-          router.reload()
-        } else {
-          toast.info("No new commit detected")
-        }
-      } catch (error) {
-        console.error(error)
-        toast.error("Error fetching recent commit")
+      const commit = await getRecentCommit("punycode-unicode.converter")
+      if (!lastCommit) {
+        setLastCommit(commit)
       }
+      if (lastCommit !== commit) {
+        toast.success("New commit detected!")
+        router.reload()
+      }
+
+      setLastCommit(commit)
     }
 
     const interval = setInterval(fetchRecentCommit, 30000)
