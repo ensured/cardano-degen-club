@@ -15,6 +15,7 @@ const RecentCommitToastComponent = () => {
     const fetchRecentCommit = async () => {
       const commit = await getRecentCommit("punycode-unicode.converter")
       if (lastCommit === "") {
+        toast.message("Fetching latest commit...")
         setLastCommit(commit)
         return
       }
