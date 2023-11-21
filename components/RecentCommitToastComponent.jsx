@@ -18,7 +18,7 @@ const RecentCommitToastComponent = () => {
         console.log(commit, lastCommit)
         setLastCommit(commit)
       } catch (error) {
-        toast.error("Error fetching recent commit from GitHub API")
+        toast.error("Error fetching latest commit from GitHub API")
       }
     }
 
