@@ -7,9 +7,7 @@ import { toast } from "sonner"
 import getRecentCommit from "../components/getRecentCommit"
 
 const RecentCommitToastComponent = () => {
-  const [lastCommit, setLastCommit] = useState(
-    "b1b3124d14f666e73c054aa9d0a215e4de857c9c"
-  )
+  const [lastCommit, setLastCommit] = useState(null)
 
   const router = useRouter()
 
@@ -17,18 +15,25 @@ const RecentCommitToastComponent = () => {
     const fetchRecentCommit = async () => {
       try {
         const commit = await getRecentCommit("punycode-unicode.converter")
-        if (commit !== lastCommit) {
-          toast.success("New commit detected!")
+        if (!lastCommit) {
           setLastCommit(commit)
-        } else {
-          toast.message("No new commits detected")
         }
+
+        if (lastCommit !== commit) {
+          toast.success("New commit detected! Reloading...")
+          router.reload()
+        } else {
+          toast.message("No new commit detected")
+        }
+
+        setLastCommit(commit)
       } catch (error) {
-        toast.error("Error Fetching latest commit from GitHub API")
+        console.error(error)
+        toast.error("Error fetching recent commit")
       }
     }
 
-    const interval = setInterval(fetchRecentCommit, 10000)
+    const interval = setInterval(fetchRecentCommit, 30000)
 
     fetchRecentCommit() // Initial fetch of recent commit
 
