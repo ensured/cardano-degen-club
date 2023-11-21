@@ -19,7 +19,7 @@ const RecentCommitToastComponent = () => {
         setLastCommit(commit)
       } else if (lastCommit !== commit) {
         setLastCommit(commit)
-        toast.success("New commit detected, refreshing page...")
+        toast.success("New commit detected, refreshing page..")
         router.reload()
       } else {
         toast.message("No new commits detected")
