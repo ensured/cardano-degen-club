@@ -17,19 +17,14 @@ const RecentCommitToastComponent = () => {
         const commit = await getRecentCommit("punycode-unicode.converter")
         if (!lastCommit) {
           setLastCommit(commit)
-          return // Don't show toast on initial fetch
         }
 
         if (lastCommit !== commit) {
-          toast.success(
-            `New commit detected! ${commit}. Reloading in 5 seconds.`
-          )
+          toast.success(`New commit detected! ${commit}`)
           setLastCommit(commit)
-          setTimeout(() => {
-            router.reload()
-          }, 5000)
+          router.reload()
         } else {
-          toast.message("No new commit detected.")
+          toast.message("No new commit detected")
         }
       } catch (error) {
         console.error(error)
@@ -46,7 +41,7 @@ const RecentCommitToastComponent = () => {
     }
   }, [])
 
-  return <></>
+  return <>latest commit: {lastCommit}</>
 }
 
 export default RecentCommitToastComponent
