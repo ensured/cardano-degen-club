@@ -17,14 +17,18 @@ const RecentCommitToastComponent = () => {
     const fetchRecentCommit = async () => {
       try {
         const commit = await getRecentCommit("punycode-unicode.converter")
-        console.log(commit, lastCommit)
-        setLastCommit(commit)
+        if (commit !== lastCommit) {
+          toast.success("New commit detected!")
+          setLastCommit(commit)
+        } else {
+          toast.info("No new commits")
+        }
       } catch (error) {
-        toast.error("Error fetching latest commit from GitHub API")
+        toast.error("Error Fetching latest commit from GitHub API")
       }
     }
 
-    const interval = setInterval(fetchRecentCommit, 30000)
+    const interval = setInterval(fetchRecentCommit, 10000)
 
     fetchRecentCommit() // Initial fetch of recent commit
 
