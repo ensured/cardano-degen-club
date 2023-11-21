@@ -25,28 +25,6 @@ const officialCardanoLinks = [
   },
 ]
 
-const otherLinks = [
-  {
-    name: "Cardano Blockchain Insights",
-    url: "https://lookerstudio.google.com/u/0/reporting/3136c55b-635e-4f46-8e4b-b8ab54f2d460/page/p_wxcw6g0irc",
-  },
-
-  {
-    name: "Cardano Cube",
-    url: "https://cardanocube.com/",
-  },
-
-  {
-    name: "Cardano on CoinGecko",
-    url: "https://www.coingecko.com/en/coins/cardano",
-  },
-
-  {
-    name: "adahandle punycode converter",
-    url: "https://punycode-converter.vercel.app/",
-  },
-]
-
 const walletsLinks = [
   {
     name: "@vesprwallet",
@@ -288,9 +266,30 @@ const metaverseLinks = [
   },
 ]
 
+const otherLinks = [
+  {
+    name: "Cardano Blockchain Insights",
+    url: "https://lookerstudio.google.com/u/0/reporting/3136c55b-635e-4f46-8e4b-b8ab54f2d460/page/p_wxcw6g0irc",
+  },
+
+  {
+    name: "Cardano Cube",
+    url: "https://cardanocube.com/",
+  },
+
+  {
+    name: "Cardano on CoinGecko",
+    url: "https://www.coingecko.com/en/coins/cardano",
+  },
+
+  {
+    name: "adahandle punycode converter",
+    url: "https://punycode-converter.vercel.app/",
+  },
+]
+
 const allLinks = {
   officialCardanoLinks,
-  otherLinks,
   walletsLinks,
   dexsLinks,
   marketplacesLinks,
@@ -303,6 +302,7 @@ const allLinks = {
   oraclesLinks,
   memecoinsLinks,
   metaverseLinks,
+  otherLinks,
 }
 
 export default allLinks
