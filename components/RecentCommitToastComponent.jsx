@@ -21,7 +21,7 @@ const RecentCommitToastComponent = () => {
           toast.success("New commit detected!")
           setLastCommit(commit)
         } else {
-          toast.info("No new commits")
+          toast.message("No new commits detected")
         }
       } catch (error) {
         toast.error("Error Fetching latest commit from GitHub API")
