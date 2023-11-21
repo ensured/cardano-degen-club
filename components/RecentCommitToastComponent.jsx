@@ -23,10 +23,8 @@ const RecentCommitToastComponent = () => {
       }
 
       if (lastCommit !== commit) {
-        toast({
-          title: "New commit",
-          description: "A new commit was pushed to the repository.",
-          duration: 30000,
+        toast("New commit detected!", {
+          duration: 3000,
           status: "info",
           isClosable: true,
           position: "bottom-right",
