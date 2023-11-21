@@ -10,7 +10,7 @@ const page = () => {
     <>
       <div className="container mx-auto px-2 py-4">
         <CardanoLinks />
-        <RecentCommitToastComponent />
+        {/* <RecentCommitToastComponent /> */}
       </div>
     </>
   )

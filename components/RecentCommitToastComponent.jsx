@@ -14,16 +14,11 @@ const RecentCommitToastComponent = () => {
   useEffect(() => {
     const fetchRecentCommit = async () => {
       const commit = await getRecentCommit("punycode-unicode.converter")
-      if (!lastCommit) {
+      if (lastCommit === null) {
         setLastCommit(commit)
-      }
-      if (lastCommit !== commit) {
-        toast.success("New commit detected.")
-        router.reload()
+        return
       }
 
-      setLastCommit(commit)
-    }
 
     const interval = setInterval(fetchRecentCommit, 30000)
 
