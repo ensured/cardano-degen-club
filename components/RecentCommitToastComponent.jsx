@@ -23,7 +23,7 @@ const RecentCommitToastComponent = () => {
           }, 5000)
         }
         setLastCommit(commit)
-      } catch (error) {
+      } catch (err) {
         toast.error("Error fetching recent commit from GitHub API")
       }
     }
