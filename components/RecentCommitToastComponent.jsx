@@ -29,7 +29,7 @@ const RecentCommitToastComponent = () => {
             router.reload()
           }, 5000)
         } else {
-          toast.message("No new commit detected")
+          toast.message("No new commit detected.")
         }
       } catch (error) {
         console.error(error)
