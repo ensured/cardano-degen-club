@@ -15,7 +15,7 @@ const RecentCommitToastComponent = () => {
     const fetchRecentCommit = async () => {
       try {
         const commit = await getRecentCommit("punycode-unicode.converter")
-        if (lastCommit !== "" && lastCommit != commit) {
+        if (lastCommit != "" && lastCommit != commit) {
           toast("New update available! Reload to see changes.")
           setTimeout(() => {
             toast("Reloading...")
