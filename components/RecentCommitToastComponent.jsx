@@ -15,16 +15,18 @@ const RecentCommitToastComponent = () => {
     const fetchRecentCommit = async () => {
       try {
         const commit = await getRecentCommit("punycode-unicode.converter")
+
         if (!lastCommit) {
           setLastCommit(commit)
+          return
         }
 
         if (lastCommit !== commit) {
           toast.success(`New commit detected! ${commit}`)
-          setLastCommit(commit)
+          setLastCommit(commit) // Update lastCommit before reloading
           router.reload()
         } else {
-          toast.message("No new commit detected")
+          toast.info("No new commit detected")
         }
       } catch (error) {
         console.error(error)
