@@ -38,7 +38,7 @@ const RecentCommitToastComponent = () => {
     }
   }, []) // Empty dependency array for initial mount only
 
-  return <></>
+  return <>latest commit: {lastCommit}</>
 }
 
 export default RecentCommitToastComponent
