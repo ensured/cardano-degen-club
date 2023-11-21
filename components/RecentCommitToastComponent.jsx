@@ -27,8 +27,6 @@ const RecentCommitToastComponent = () => {
         toast("New commit detected!", {
           duration: 3000,
           status: "info",
-          isClosable: true,
-          position: "bottom-right",
         })
         setLastCommit(commit)
       }
