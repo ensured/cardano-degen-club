@@ -7,7 +7,9 @@ import { toast } from "sonner"
 import getRecentCommit from "../components/getRecentCommit"
 
 const RecentCommitToastComponent = () => {
-  const [lastCommit, setLastCommit] = useState("")
+  const [lastCommit, setLastCommit] = useState(
+    "b1b3124d14f666e73c054aa9d0a215e4de857c9c"
+  )
 
   const router = useRouter()
 
