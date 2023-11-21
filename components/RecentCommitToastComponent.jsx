@@ -16,9 +16,9 @@ const RecentCommitToastComponent = () => {
       try {
         const commit = await getRecentCommit("punycode-unicode.converter")
         if (lastCommit !== "" && lastCommit !== commit) {
-          toast.success("New update available! Reload to see changes.")
+          toast("New update available! Reload to see changes.")
           setTimeout(() => {
-            toast.success("Reloading page...")
+            toast("Reloading...")
             router.reload()
           }, 5000)
         }
