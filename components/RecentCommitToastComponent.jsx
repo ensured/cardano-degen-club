@@ -15,15 +15,15 @@ const RecentCommitToastComponent = () => {
     const fetchRecentCommit = async () => {
       const commit = await getRecentCommit("punycode-unicode.converter")
       if (lastCommit === null) {
+        toast.message("Saving initial commit to memory state")
         setLastCommit(commit)
-        return
-      }
-      if (lastCommit !== commit) {
-        toast.success("New commit detected.")
+      } else if (lastCommit !== commit) {
+        setLastCommit(commit)
+        toast.success("New commit detected, refreshing page...")
         router.reload()
+      } else {
+        toast.message("No new commits detected")
       }
-
-      setLastCommit(commit)
     }
 
     const interval = setInterval(fetchRecentCommit, 30000)
