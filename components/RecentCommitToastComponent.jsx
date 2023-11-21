@@ -7,15 +7,16 @@ import { toast } from "sonner"
 import getRecentCommit from "../components/getRecentCommit"
 
 const RecentCommitToastComponent = () => {
-  const [lastCommit, setLastCommit] = useState(null)
+  const [lastCommit, setLastCommit] = useState(
+    getRecentCommit("punycode-unicode.converter")
+  )
 
   const router = useRouter()
 
   useEffect(() => {
     const fetchRecentCommit = async () => {
       const commit = await getRecentCommit("punycode-unicode.converter")
-      if (lastCommit === null) {
-        toast.message("Saving initial commit to memory state")
+      if (!lastCommit) {
         setLastCommit(commit)
       } else if (lastCommit !== commit) {
         setLastCommit(commit)
