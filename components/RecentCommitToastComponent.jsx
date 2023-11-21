@@ -21,7 +21,7 @@ const RecentCommitToastComponent = () => {
       }
 
       if (lastCommit === commit) {
-        toast.message("No new commits.")
+        toast.message("No new commits")
         return
       }
 
