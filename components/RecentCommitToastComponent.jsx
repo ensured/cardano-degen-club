@@ -36,7 +36,7 @@ const RecentCommitToastComponent = () => {
     return () => {
       clearInterval(interval)
     }
-  }, []) // Empty dependency array for initial mount only
+  }, [])
 
   return <>latest commit: {lastCommit}</>
 }
