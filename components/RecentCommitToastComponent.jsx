@@ -21,6 +21,8 @@ const RecentCommitToastComponent = () => {
             toast("Reloading...")
             router.reload()
           }, 5000)
+        } else {
+          toast("No updates available.")
         }
         setLastCommit(commit)
       } catch (error) {
