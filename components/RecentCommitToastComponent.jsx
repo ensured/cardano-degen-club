@@ -7,23 +7,31 @@ import { toast } from "sonner"
 import getRecentCommit from "../components/getRecentCommit"
 
 const RecentCommitToastComponent = () => {
-  const [lastCommit, setLastCommit] = useState(
-    getRecentCommit("punycode-unicode.converter")
-  )
+  const [lastCommit, setLastCommit] = useState("")
 
   const router = useRouter()
 
   useEffect(() => {
     const fetchRecentCommit = async () => {
       const commit = await getRecentCommit("punycode-unicode.converter")
-      if (!lastCommit) {
+      if (lastCommit === "") {
         setLastCommit(commit)
-      } else if (lastCommit !== commit) {
+      }
+
+      if (lastCommit === commit) {
+        return
+      }
+
+      if (lastCommit !== commit) {
+        toast({
+          title: "New commit",
+          description: "A new commit was pushed to the repository.",
+          duration: 30000,
+          status: "info",
+          isClosable: true,
+          position: "bottom-right",
+        })
         setLastCommit(commit)
-        toast.success("New commit detected, refreshing page..")
-        router.reload()
-      } else {
-        toast.message("No new commits detected")
       }
     }
 
