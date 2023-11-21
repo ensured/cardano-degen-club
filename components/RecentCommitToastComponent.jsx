@@ -21,8 +21,13 @@ const RecentCommitToastComponent = () => {
         }
 
         if (lastCommit !== commit) {
-          toast.success(`New commit detected! ${commit}`)
+          toast.success(
+            `New commit detected! ${commit}. Reloading in 5 seconds.`
+          )
           setLastCommit(commit)
+          setTimeout(() => {
+            router.reload()
+          }, 5000)
         } else {
           toast.message("No new commit detected")
         }
@@ -41,7 +46,7 @@ const RecentCommitToastComponent = () => {
     }
   }, [])
 
-  return <>latest commit: {lastCommit}</>
+  return <></>
 }
 
 export default RecentCommitToastComponent
