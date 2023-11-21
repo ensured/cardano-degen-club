@@ -21,12 +21,10 @@ const RecentCommitToastComponent = () => {
 
         if (lastCommit !== commit) {
           toast.success(`New commit detected! ${commit}`)
-          router.reload()
+          setLastCommit(commit)
         } else {
           toast.message("No new commit detected")
         }
-
-        setLastCommit(commit)
       } catch (error) {
         console.error(error)
         toast.error("Error fetching recent commit")
