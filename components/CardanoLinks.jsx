@@ -45,7 +45,7 @@ const CardanoLinks = () => {
   const searchParams = useSearchParams()
   const category = searchParams.get("category")
 
-  const [activeTab, setActiveTab] = useState(category || "1")
+  const [activeTab, setActiveTab] = useState(category || "wallets")
   const router = useRouter()
 
   useEffect(() => {
@@ -78,31 +78,44 @@ const CardanoLinks = () => {
   ]
 
   const tabContents = tabTriggers.map((trigger, index) => (
-    <TabsContent key={index} value={String(index + 1)}>
+    <TabsContent key={index} value={trigger}>
       {getLinkTableByCategory(trigger)}
     </TabsContent>
   ))
 
+  function spacedToCamelCase(text) {
+    return text
+      .replace(/\s+/g, "")
+      .replace(/([^A-Z])([A-Z])/g, "$1 $2")
+      .replace(/^./, (match) => match.toLowerCase())
+      .replace(/\s/g, "")
+  }
+
+  function camelCaseToSpaced(str) {
+    return str
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/^./, (match) => match.toUpperCase())
+  }
+
   const handleClick = (e) => {
-    const index = tabTriggers.findIndex(
-      (trigger) => trigger === e.target.textContent
-    )
-    setActiveTab(String(index + 1))
-    router.push(`?category=${index + 1}`)
+    const text = spacedToCamelCase(e.target.textContent)
+    // const index = tabTriggers.findIndex((trigger) => trigger === text)
+    setActiveTab(text)
+    router.push(`?category=${text}`)
   }
 
   return (
-    <div className="container mx-auto px-2 py-4 break-all">
+    <div className="container py-4 ">
       <Tabs value={activeTab}>
         <TabsList>
           {tabTriggers.map((trigger, index) => (
             <TabsTrigger
               key={index}
-              value={String(index + 1)}
+              value={trigger}
               onClick={handleClick}
               className="text-sm font-semibold"
             >
-              {trigger}
+              {camelCaseToSpaced(trigger)}
             </TabsTrigger>
           ))}
         </TabsList>
