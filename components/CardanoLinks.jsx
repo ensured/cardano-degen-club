@@ -57,7 +57,7 @@ const LinkTable = ({ links }) => {
 
 const CardanoLinks = () => {
   const searchParams = useSearchParams()
-  const category = searchParams.get("category")
+  const category = searchParams.get("category") || "officialCardanoLinks"
 
   const [activeTab, setActiveTab] = useState(category || "wallets")
   const router = useRouter()
