@@ -17,12 +17,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import allLinks from "../config/cardanoLinks"
 
 const LinkTable = ({ links }) => {
+  const hasTwitter = links.some((link) => link.twitter) // Check if any link has Twitter
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>URL</TableHead>
+          {hasTwitter && <TableHead>Twitter</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -34,6 +37,17 @@ const LinkTable = ({ links }) => {
                 {link.url}
               </a>
             </TableCell>
+            {link.twitter && (
+              <TableCell>
+                <a
+                  href={link.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {link.twitter}
+                </a>
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>
@@ -56,28 +70,13 @@ const CardanoLinks = () => {
   }, [searchParams])
 
   const getLinkTableByCategory = (category) => {
-    const links = allLinks[category + "Links"] || []
+    const links = allLinks[category] || []
     return <LinkTable links={links} />
   }
 
-  const tabTriggers = [
-    "officialCardano",
-    "wallets",
-    "dexs",
-    "marketplaces",
-    "metaverse",
-    "chartsAnalytics",
-    "lendingBorrowing",
-    "yieldAggregators",
-    "stablecoins",
-    "privacy",
-    "syntheticProtocols",
-    "oracles",
-    "memecoins",
-    "other",
-  ]
+  const categoryNames = Object.keys(allLinks)
 
-  const tabContents = tabTriggers.map((trigger, index) => (
+  const tabContents = categoryNames.map((trigger, index) => (
     <TabsContent key={index} value={trigger}>
       {getLinkTableByCategory(trigger)}
     </TabsContent>
@@ -99,7 +98,6 @@ const CardanoLinks = () => {
 
   const handleClick = (e) => {
     const text = spacedToCamelCase(e.target.textContent)
-    // const index = tabTriggers.findIndex((trigger) => trigger === text)
     setActiveTab(text)
     router.push(`?category=${text}`)
   }
@@ -108,7 +106,7 @@ const CardanoLinks = () => {
     <div className="container py-4 ">
       <Tabs value={activeTab}>
         <TabsList>
-          {tabTriggers.map((trigger, index) => (
+          {categoryNames.map((trigger, index) => (
             <TabsTrigger
               key={index}
               value={trigger}

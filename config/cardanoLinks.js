@@ -288,9 +288,18 @@ const otherLinks = [
   },
 ]
 
+const cloudServices = [
+  {
+    name: "Iagon",
+    twitter: "https://twitter.com/iagonofficial",
+    url: "https://iagon.com",
+  },
+]
+
 const allLinks = {
   officialCardanoLinks,
   walletsLinks,
+  cloudServices,
   dexsLinks,
   marketplacesLinks,
   chartsAnalyticsLinks,
