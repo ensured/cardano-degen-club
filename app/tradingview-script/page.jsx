@@ -1,7 +1,7 @@
 import PrismData from "@/components/PrismData"
 import Tabz from "@/components/Tabz"
 
-import "app/prism.css"
+import "./prism.css"
 
 export const metadata = {
   title: "TradingView Script",
