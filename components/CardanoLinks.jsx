@@ -97,29 +97,27 @@ const CardanoLinks = () => {
   }
 
   const handleClick = (e) => {
-    const text = spacedToCamelCase(e.target.textContent)
-    setActiveTab(text)
-    router.push(`?category=${text}`)
+    const category = spacedToCamelCase(e.target.textContent)
+    setActiveTab(category)
+    router.push(`?category=${category}`)
   }
 
   return (
-    <div className="container py-4 ">
-      <Tabs value={activeTab}>
-        <TabsList>
-          {categoryNames.map((trigger, index) => (
-            <TabsTrigger
-              key={index}
-              value={trigger}
-              onClick={handleClick}
-              className="text-sm font-semibold"
-            >
-              {camelCaseToSpaced(trigger)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {tabContents}
-      </Tabs>
-    </div>
+    <Tabs value={activeTab} className="pr-2">
+      <TabsList>
+        {categoryNames.map((trigger, index) => (
+          <TabsTrigger
+            key={index}
+            value={trigger}
+            onClick={handleClick}
+            className="text-sm font-semibold"
+          >
+            {camelCaseToSpaced(trigger)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      <div className="ml-2">{tabContents}</div>
+    </Tabs>
   )
 }
 
