@@ -1,5 +1,6 @@
 import "@/styles/globals.css"
 import { Metadata } from "next"
+import Head from "next/head"
 import { Toaster } from "sonner"
 
 import { siteConfig } from "@/config/site"
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <>
       <html lang="en" suppressHydrationWarning>
-        <head />
+        {/* <Head>{null}</Head> */}
         <body
           className={cn(
             "min-h-screen bg-background font-sans antialiased",

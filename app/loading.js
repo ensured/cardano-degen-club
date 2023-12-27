@@ -1,4 +1,3 @@
-"use client"
 
 const Loading = () => {
   return (
@@ -7,7 +6,7 @@ const Loading = () => {
         <div>Loading... 🚀</div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Loading
+export default Loading;

@@ -2,8 +2,7 @@ export type SiteConfig = typeof siteConfig
 
 export const siteConfig = {
   name: "Home",
-  description:
-    "Beautifully designed components built with Radix UI and Tailwind CSS.",
+  description: "punycode converter",
   mainNav: [
     {
       title: "Projects",

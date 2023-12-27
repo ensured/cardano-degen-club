@@ -1,4 +1,4 @@
-const officialCardanoLinks = [
+const officialCardano = [
   {
     name: "Cardano Foundation",
     url: "https://cardanofoundation.org/",
@@ -25,7 +25,7 @@ const officialCardanoLinks = [
   },
 ]
 
-const walletsLinks = [
+const wallets = [
   {
     name: "@vesprwallet",
     url: "https://vespr.xyz/",
@@ -52,7 +52,7 @@ const walletsLinks = [
   },
 ]
 
-const dexsLinks = [
+const dexs = [
   {
     name: "@MinswapDEX",
     url: "https://minswap.org/",
@@ -79,7 +79,7 @@ const dexsLinks = [
   },
 ]
 
-const marketplacesLinks = [
+const marketplaces = [
   {
     name: "@jpgstoreNFT",
     url: "https://jpg.store",
@@ -106,7 +106,7 @@ const marketplacesLinks = [
   },
 ]
 
-const chartsAnalyticsLinks = [
+const chartsAnalytics = [
   {
     name: "@TapTools",
     url: "https://taptools.io",
@@ -133,7 +133,7 @@ const chartsAnalyticsLinks = [
   },
 ]
 
-const lendingBorrowingLinks = [
+const lendingBorrowing = [
   {
     name: "@LenfiOfficial",
     url: "https://lenfi.io/",
@@ -168,7 +168,7 @@ const lendingBorrowingLinks = [
   },
 ]
 
-const yieldAggregatorsLinks = [
+const yieldAggregators = [
   {
     name: "@OptimFi",
     url: "https://optimfi.com/",
@@ -184,7 +184,7 @@ const yieldAggregatorsLinks = [
   },
 ]
 
-const stablecoinsLinks = [
+const stablecoins = [
   {
     name: "@Indigo_protocol",
     url: "https://indigoprotocol.io/",
@@ -199,14 +199,14 @@ const stablecoinsLinks = [
   },
 ]
 
-const privacyLinks = [
+const privacy = [
   {
     name: "@ENCOINS1",
     url: "https://encoins.io/",
   },
 ]
 
-const syntheticProtocolsLinks = [
+const syntheticProtocols = [
   {
     name: "@Indigo_protocol",
     url: "https://indigoprotocol.io/",
@@ -217,7 +217,7 @@ const syntheticProtocolsLinks = [
   },
 ]
 
-const oraclesLinks = [
+const oracles = [
   {
     name: "@Oraclecharli3",
     url: "https://charli3.io/",
@@ -228,7 +228,7 @@ const oraclesLinks = [
   },
 ]
 
-const memecoinsLinks = [
+const memecoins = [
   {
     name: "@snekcoinada",
     url: "https://www.snek.com/",
@@ -247,7 +247,7 @@ const memecoinsLinks = [
   },
 ]
 
-const metaverseLinks = [
+const metaverse = [
   {
     name: "@Pavia_io",
     url: "https://www.pavia.io/",
@@ -266,7 +266,7 @@ const metaverseLinks = [
   },
 ]
 
-const otherLinks = [
+const other = [
   {
     name: "Cardano Blockchain Insights",
     url: "https://lookerstudio.google.com/u/0/reporting/3136c55b-635e-4f46-8e4b-b8ab54f2d460/page/p_wxcw6g0irc",
@@ -297,21 +297,21 @@ const cloudServices = [
 ]
 
 const allLinks = {
-  officialCardanoLinks,
-  walletsLinks,
+  officialCardano,
+  wallets,
   cloudServices,
-  dexsLinks,
-  marketplacesLinks,
-  chartsAnalyticsLinks,
-  lendingBorrowingLinks,
-  yieldAggregatorsLinks,
-  stablecoinsLinks,
-  privacyLinks,
-  syntheticProtocolsLinks,
-  oraclesLinks,
-  memecoinsLinks,
-  metaverseLinks,
-  otherLinks,
+  dexs,
+  marketplaces,
+  chartsAnalytics,
+  lendingBorrowing,
+  yieldAggregators,
+  stablecoins,
+  privacy,
+  syntheticProtocols,
+  oracles,
+  memecoins,
+  metaverse,
+  other,
 }
 
 export default allLinks

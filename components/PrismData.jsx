@@ -71,10 +71,10 @@ const PrismData = () => {
   return (
     <div className="ml-2">
       <pre className="rounded-md">
-        <div className={cn("relative flex justify-end")}>
+        <div className={cn("relative flex justify-end ")}>
           <Button
             variant={"green"}
-            className={cn("absolute")}
+            className={cn("absolute font-bold")}
             onClick={handleCopy}
           >
             Copy Script
