@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import Image from "next/image"
+import Link from "next/link"
 import Prism from "prismjs"
 import { toast } from "sonner"
 
@@ -20,8 +22,10 @@ const PrismData = () => {
     console.log(code)
     navigator.clipboard.writeText(code).then(
       () => {
-        toast("Script copied to clipboard!", {
+        toast.success("Copied to clipboard!", {
           position: "top-right",
+          duration: 2000,
+          style: "",
         })
       },
       (err) => {
@@ -74,16 +78,24 @@ const PrismData = () => {
         <div className={cn("relative flex justify-end ")}>
           <Button
             variant={"green"}
-            className={cn("absolute font-bold")}
+            className="absolute font-bold text-2xl"
             onClick={handleCopy}
           >
-            Copy Script
+            <Image src="/copy.png" width={28} height={28} alt="Copy icon" />
+            Copy
           </Button>
         </div>
         <code className="language-javascript" ref={codeRef}>
           {code}
         </code>
       </pre>
+      <Link
+        className="flex justify-center bg-red-500 p-4"
+        href="https://www.flaticon.com/free-icons/ui"
+        title="ui icons"
+      >
+        Ui icons created by Radhe Icon - Flaticon
+      </Link>
     </div>
   )
 }

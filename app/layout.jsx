@@ -1,6 +1,4 @@
 import "@/styles/globals.css"
-import { Metadata } from "next"
-import Head from "next/head"
 import { Toaster } from "sonner"
 
 import { siteConfig } from "@/config/site"
@@ -10,7 +8,7 @@ import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 
-export const metadata: Metadata = {
+export const metadata = {
   title: {
     default: siteConfig.name,
     template: `%s - ${siteConfig.name}`,
@@ -27,11 +25,7 @@ export const metadata: Metadata = {
   },
 }
 
-interface RootLayoutProps {
-  children: React.ReactNode
-}
-
-export default function RootLayout({ children }: RootLayoutProps) {
+export default function RootLayout({ children }) {
   return (
     <>
       <html lang="en" suppressHydrationWarning>
