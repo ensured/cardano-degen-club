@@ -73,7 +73,7 @@ const PrismData = () => {
     observer.observe(document.body, observerConfig);
     `
   return (
-    <div className="ml-2">
+    <div className="ml-2 ">
       <pre className="rounded-md">
         <div className={cn("relative flex justify-end ")}>
           <Button
