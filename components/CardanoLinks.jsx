@@ -26,7 +26,7 @@ const LinkTable = ({ links }) => {
   const hasTwitter = links.some((link) => link.twitter) // Check if any link has Twitter
 
   return (
-    <Table>
+    <Table className="z-10">
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
