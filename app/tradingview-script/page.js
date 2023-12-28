@@ -2,7 +2,6 @@ import PrismData from "@/components/PrismData"
 import Tabz from "@/components/Tabz"
 
 import "./prism.css"
-import { cn } from "@/lib/utils"
 
 export const metadata = {
   title: "TradingView Script",
@@ -29,9 +28,7 @@ const Page = () => {
   )
 
   return (
-    <div className="container mx-auto px-2 py-4 text-sm">
-      <Tabz source={<PrismData />} howTo={howTo} />
-    </div>
+    <Tabz source={<PrismData />} howTo={howTo} />
   )
 }
 
