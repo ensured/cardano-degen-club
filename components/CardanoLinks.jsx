@@ -110,7 +110,7 @@ const CardanoLinks = () => {
       <Select
         value={activeCategory}
         onValueChange={handleChange}
-        className="w-[180px]"
+        className="z-50 w-[180px]"
       >
         <SelectTrigger>
           <SelectValue>{camelCaseToSpaced(activeCategory)}</SelectValue>
