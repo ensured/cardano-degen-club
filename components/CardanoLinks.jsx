@@ -4,6 +4,13 @@ import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Table,
   TableBody,
   TableCaption,
@@ -12,7 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import allLinks from "../config/cardanoLinks"
 
@@ -59,15 +65,20 @@ const CardanoLinks = () => {
   const searchParams = useSearchParams()
   const category = searchParams.get("category") || "officialCardano"
 
-  const [activeTab, setActiveTab] = useState(category || "wallets")
+  const [activeCategory, setActiveCategory] = useState(category || "wallets")
   const router = useRouter()
 
   useEffect(() => {
     const category = searchParams.get("category")
     if (category) {
-      setActiveTab(category)
+      setActiveCategory(category)
     }
   }, [searchParams])
+
+  const handleChange = (selectedCategory) => {
+    setActiveCategory(selectedCategory)
+    router.push(`?category=${selectedCategory}`)
+  }
 
   const getLinkTableByCategory = (category) => {
     const links = allLinks[category] || []
@@ -75,12 +86,6 @@ const CardanoLinks = () => {
   }
 
   const categoryNames = Object.keys(allLinks)
-
-  const tabContents = categoryNames.map((trigger, index) => (
-    <TabsContent key={index} value={trigger}>
-      {getLinkTableByCategory(trigger)}
-    </TabsContent>
-  ))
 
   function spacedToCamelCase(text) {
     return text
@@ -96,28 +101,30 @@ const CardanoLinks = () => {
       .replace(/^./, (match) => match.toUpperCase())
   }
 
-  const handleClick = (e) => {
-    const category = spacedToCamelCase(e.target.textContent)
-    setActiveTab(category)
-    router.push(`?category=${category}`)
-  }
+  const spacedCategoryNames = categoryNames.map((category) =>
+    camelCaseToSpaced(category)
+  )
 
   return (
-    <Tabs value={activeTab} className="pr-2">
-      <TabsList>
-        {categoryNames.map((trigger, index) => (
-          <TabsTrigger
-            key={index}
-            value={trigger}
-            onClick={handleClick}
-            className="text-sm font-semibold"
-          >
-            {camelCaseToSpaced(trigger)}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      <div className="ml-2">{tabContents}</div>
-    </Tabs>
+    <div className="px-2">
+      <Select
+        value={activeCategory}
+        onValueChange={handleChange}
+        className="w-[180px]"
+      >
+        <SelectTrigger>
+          <SelectValue>{camelCaseToSpaced(activeCategory)}</SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {categoryNames.map((category, index) => (
+            <SelectItem key={index} value={category}>
+              {spacedCategoryNames[index]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+        <div className="mt-4">{getLinkTableByCategory(activeCategory)}</div>
+      </Select>
+    </div>
   )
 }
 
