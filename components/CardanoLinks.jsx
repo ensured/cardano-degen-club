@@ -117,7 +117,7 @@ const CardanoLinks = () => {
         //   }
         // }}
         >
-          <SelectGroup>
+          <SelectGroup className="max-h-[10rem] overflow-y-auto ">
             {categoryNames.map((category, index) => (
               <SelectItem key={index} value={category}>
                 {spacedCategoryNames[index]}
