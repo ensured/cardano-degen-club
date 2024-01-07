@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import Prism from "prismjs"
@@ -11,16 +11,44 @@ import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "./ui/button"
 
 const PrismData = () => {
-  useEffect(() => {
-    Prism.highlightAll()
-  }, [])
+  const [fontSize, setFontSize] = useState("14px") // Default font size
 
   const codeRef = useRef(null)
 
+  useEffect(() => {
+    Prism.highlightAll()
+    adjustFontSize() // Call the function initially
+    window.addEventListener("resize", adjustFontSize) // Adjust font size on window resize
+    return () => {
+      window.removeEventListener("resize", adjustFontSize) // Cleanup event listener
+    }
+  }, [])
+
+  const adjustFontSize = () => {
+    const screenWidth = window.innerWidth
+    let fontSize
+
+    if (screenWidth < 500) {
+      fontSize = "0.69rem" // Adjust font size for very small screens
+    } else if (screenWidth >= 512 && screenWidth < 640) {
+      fontSize = "0.75rem" // Adjust font size for small screens
+    } else if (screenWidth >= 640 && screenWidth < 768) {
+      fontSize = "0.95rem" // Adjust font size for medium screens (sm)
+    } else if (screenWidth >= 768) {
+      fontSize = "1rem" // Adjust font size for large screens (md) and above
+    }
+
+    // Apply the font size to code blocks
+    const codeBlocks = document.querySelectorAll("pre[class*='language-']")
+    codeBlocks.forEach((block) => {
+      block.style.fontSize = fontSize
+    })
+  }
+
   const handleCopy = () => {
-    const code = codeRef.current.textContent
-    console.log(code)
-    navigator.clipboard.writeText(code).then(
+    const text = codeRef.current.textContent
+    console.log(text)
+    navigator.clipboard.writeText(text).then(
       () => {
         toast.success("Copied to clipboard!", {
           position: "top-right",
@@ -72,25 +100,31 @@ const PrismData = () => {
 
     observer.observe(document.body, observerConfig);
     `
+
   return (
-    <div className="ml-2 pr-4">
+    <div>
       <pre className="rounded-md">
+        {/* button to copy text */}
         <div className={cn("relative flex justify-end")}>
           <Button
             variant={"green"}
-            className="absolute font-bold text-2xl"
+            className="absolute font-bold text-lg md:text-2xl"
             onClick={handleCopy}
           >
-            <Image src="/copy.png" width={28} height={28} alt="Copy icon" />
+            <Image src="/copy.png" width={24} height={24} alt="Copy icon" />
             Copy
           </Button>
         </div>
-        <code className="language-javascript" ref={codeRef}>
+        <code
+          className="language-javascript"
+          ref={codeRef}
+          style={{ fontSize: fontSize }}
+        >
           {code}
         </code>
       </pre>
       <Link
-        className="flex justify-center bg-red-500 p-4"
+        className="flex justify-center bg-red-500 p-4 text-sm md:text-base"
         href="https://www.flaticon.com/free-icons/ui"
         title="ui icons"
       >

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { cn } from "@/lib/utils"
@@ -66,7 +66,6 @@ const LinkTable = ({ links }) => {
 const CardanoLinks = () => {
   const searchParams = useSearchParams()
   const category = searchParams.get("category") || "officialCardano"
-  const ref = useRef(null)
   const [activeCategory, setActiveCategory] = useState(category || "wallets")
   const router = useRouter()
 
@@ -109,14 +108,7 @@ const CardanoLinks = () => {
         <SelectTrigger>
           <SelectValue>{camelCaseToSpaced(activeCategory)}</SelectValue>
         </SelectTrigger>
-        <SelectContent
-        // ref={(ref) => {
-        //   if (!ref) return
-        //   ref.ontouchstart = (e) => {
-        //     e.preventDefault()
-        //   }
-        // }}
-        >
+        <SelectContent>
           <SelectGroup className="max-h-[10rem] overflow-y-auto ">
             {categoryNames.map((category, index) => (
               <SelectItem key={index} value={category}>

@@ -9,7 +9,7 @@ export const metadata = {
 
 const Page = () => {
   const howTo = (
-    <div className="container mx-auto px-2 py-4 text-sm">
+    <div className="px-2">
       <p className="mb-2">
         <strong>How to use this script?</strong>
       </p>
@@ -27,9 +27,7 @@ const Page = () => {
     </div>
   )
 
-  return (
-    <Tabz source={<PrismData />} howTo={howTo} />
-  )
+  return <Tabz source={<PrismData />} howTo={howTo} />
 }
 
 export default Page
