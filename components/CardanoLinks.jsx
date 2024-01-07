@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
+import { cn } from "@/lib/utils"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -87,14 +89,6 @@ const CardanoLinks = () => {
 
   const categoryNames = Object.keys(allLinks)
 
-  function spacedToCamelCase(text) {
-    return text
-      .replace(/\s+/g, "")
-      .replace(/([^A-Z])([A-Z])/g, "$1 $2")
-      .replace(/^./, (match) => match.toLowerCase())
-      .replace(/\s/g, "")
-  }
-
   function camelCaseToSpaced(str) {
     return str
       .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -123,11 +117,13 @@ const CardanoLinks = () => {
             }
           }}
         >
-          {categoryNames.map((category, index) => (
-            <SelectItem key={index} value={category}>
-              {spacedCategoryNames[index]}
-            </SelectItem>
-          ))}
+          <SelectGroup>
+            {categoryNames.map((category, index) => (
+              <SelectItem key={index} value={category}>
+                {spacedCategoryNames[index]}
+              </SelectItem>
+            ))}
+          </SelectGroup>
         </SelectContent>
         <div className="mt-4">{getLinkTableByCategory(activeCategory)}</div>
       </Select>
