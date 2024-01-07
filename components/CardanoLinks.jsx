@@ -101,23 +101,12 @@ const CardanoLinks = () => {
 
   return (
     <div className="px-2">
-      <Select
-        value={activeCategory}
-        onValueChange={handleChange}
-        className="z-50 w-[180px]"
-      >
+      <Select value={activeCategory} onValueChange={handleChange}>
         <SelectTrigger>
           <SelectValue>{camelCaseToSpaced(activeCategory)}</SelectValue>
         </SelectTrigger>
-        <SelectContent
-          ref={(ref) => {
-            if (!ref) return
-            ref.ontouchstart = (e) => {
-              e.preventDefault()
-            }
-          }}
-        >
-          <SelectGroup className="max-h-[10rem] overflow-y-auto">
+        <SelectContent>
+          <SelectGroup>
             {categoryNames.map((category, index) => (
               <SelectItem key={index} value={category}>
                 {spacedCategoryNames[index]}
