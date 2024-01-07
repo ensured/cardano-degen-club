@@ -123,27 +123,6 @@ const CardanoLinks = () => {
                 {spacedCategoryNames[index]}
               </SelectItem>
             ))}
-            <SelectItem key={"t1"} value={"t1"}>
-              t1
-            </SelectItem>
-            <SelectItem key={"t2"} value={"t2"}>
-              t2
-            </SelectItem>
-            <SelectItem key={"t3"} value={"t3"}>
-              t3
-            </SelectItem>
-            <SelectItem key={"t4"} value={"t4"}>
-              t4
-            </SelectItem>
-            <SelectItem key={"t5"} value={"t5"}>
-              t5
-            </SelectItem>
-            <SelectItem key={"t6"} value={"t6"}>
-              t6
-            </SelectItem>
-            <SelectItem key={"t7"} value={"t7"}>
-              t7
-            </SelectItem>
           </SelectGroup>
         </SelectContent>
         <div className="mt-4">{getLinkTableByCategory(activeCategory)}</div>
