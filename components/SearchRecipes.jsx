@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { Badge, badgeVariants } from "@/components/ui/badge"
@@ -86,6 +87,7 @@ const SearchRecipes = () => {
           type="text"
           name="searchTerm"
           onChange={handleInputChange}
+          defaultValue={input}
         />
         <Button type="submit">Search</Button>
       </form>
@@ -100,8 +102,8 @@ const SearchRecipes = () => {
         )}
 
       {recipes.hits?.length > 0 ? (
-        <div className="flex flex-row justify-between">
-          <ul className="mt-2 rounded-sm">
+        <div className="flex flex-row justify-between pb-1 mt-2 rounded-md">
+          <ul className="mt-2 rounded-sm mb-2 p-1">
             {recipes.hits.map((recipe) => (
               <li key={recipe.recipe.shareAs}>
                 <Link
@@ -110,14 +112,16 @@ const SearchRecipes = () => {
                   className={badgeVariants({ variant: "outline" })}
                 >
                   {extractRecipeName(recipe.recipe.shareAs)}
+                  <span className="text-gray-500 text-xs">
+                    {Math.round(recipe.recipe.calories)} calories
+                  </span>
                 </Link>
-                {/* <p className="text-gray-500">{recipe.recipe.calories} calories</p> */}
               </li>
             ))}
           </ul>
-          <div className="flex flex-col-reverse justify-between">
-            <Button onClick={handleNextPageBtn}>Next Page</Button>
+          <div className="flex flex-col justify-between mb-2">
             <p className={cn("text-primary")}>found {recipes.count} recipes</p>
+            <Button onClick={handleNextPageBtn}>Next Page</Button>
           </div>
         </div>
       ) : (
