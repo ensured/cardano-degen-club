@@ -49,6 +49,15 @@ const SearchRecipes = () => {
     setInput(e.target.value)
   }
 
+  function extractRecipeName(url) {
+    // Get the fourth segment of the URL path
+    const recipePath = url.split("/")[4]
+    const lastDashIndex = recipePath.lastIndexOf("-")
+    const cleanedName =
+      lastDashIndex !== -1 ? recipePath.substring(0, lastDashIndex) : recipePath
+    return cleanedName
+  }
+
   return (
     <div>
       <form onSubmit={searchRecipes} className="flex gap-2 px-2">
@@ -67,7 +76,7 @@ const SearchRecipes = () => {
           {recipes.hits.map((recipe) => (
             <ul key={recipe.recipe.shareAs}>
               <Link href={recipe.recipe.shareAs} key={recipe.recipe}>
-                {recipe.recipe.shareAs}
+                {extractRecipeName(recipe.recipe.shareAs)}
               </Link>
             </ul>
           ))}
