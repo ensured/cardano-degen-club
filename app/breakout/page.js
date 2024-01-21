@@ -35,7 +35,7 @@ const page = () => {
 
   return (
     <div>
-      <BreakoutGame />
+      {/* <BreakoutGame /> */}
     </div>
   )
 }

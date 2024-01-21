@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -65,9 +66,9 @@ const SearchRecipes = () => {
 
           {recipes.hits.map((recipe) => (
             <ul key={recipe.recipe.shareAs}>
-              <a href={recipe.recipe.shareAs} key={recipe.recipe}>
+              <Link href={recipe.recipe.shareAs} key={recipe.recipe}>
                 {recipe.recipe.shareAs}
-              </a>
+              </Link>
             </ul>
           ))}
           <div className="bg-slate-900 p-4">
