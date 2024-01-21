@@ -49,9 +49,9 @@ const SearchRecipes = () => {
     setInput(e.target.value)
   }
 
-  function extractRecipeName(url) {
+  function extractRecipeName(url, keyword) {
     // Define a regular expression pattern to extract the recipe name
-    const pattern = /\/recipe\/([^/]+)\/lasagna/
+    const pattern = new RegExp(`\/recipe\/([^/]+)\/${keyword}`)
 
     // Use match to find the pattern in the URL
     const match = url.match(pattern)
@@ -87,7 +87,7 @@ const SearchRecipes = () => {
           {recipes.hits.map((recipe) => (
             <ul key={recipe.recipe.shareAs}>
               <Link href={recipe.recipe.shareAs} key={recipe.recipe}>
-                {extractRecipeName(recipe.recipe.shareAs)}
+                {extractRecipeName(recipe.recipe.shareAs, input)}
               </Link>
             </ul>
           ))}
