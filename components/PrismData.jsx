@@ -108,7 +108,7 @@ const PrismData = () => {
         <div className={cn("relative flex justify-end")}>
           <Button
             variant={"green"}
-            className="absolute font-bold text-lg md:text-2xl"
+            className="absolute text-lg font-bold md:text-2xl"
             onClick={handleCopy}
           >
             <Image src="/copy.png" width={24} height={24} alt="Copy icon" />

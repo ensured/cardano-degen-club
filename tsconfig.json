@@ -30,6 +30,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "lib/fonts.js"
-  ],
+, "components/**/*.js" , "components/**/*.ts"  ],
   "exclude": ["node_modules"]
 }

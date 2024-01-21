@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
@@ -44,7 +44,7 @@ const CardForm = () => {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const handleASCIIInput = (text) => {
+  const handleASCIIInput = useCallback((text) => {
     try {
       const converted = punycodeConverter(text)
       const codePoints = getCodePoints(converted)
@@ -68,7 +68,7 @@ const CardForm = () => {
       } else if (codePoints.length > 1 && codePoints.length < 40) {
         setOutput(
           <>
-            <Badge variant="outline" className="mt-4 mb-2">
+            <Badge variant="outline" className="mb-2 mt-4">
               Converted
             </Badge>
             <p className="text-lg font-semibold">{converted}</p>
@@ -79,7 +79,7 @@ const CardForm = () => {
             </Badge>
 
             {codePoints.map((codePoint, index) => (
-              <p key={index} className="text-lg font-semibold inline">
+              <p key={index} className="inline text-lg font-semibold">
                 {`U+${codePoint.toUpperCase()} `}
               </p>
             ))}
@@ -89,16 +89,16 @@ const CardForm = () => {
     } catch (error) {
       toast("Invalid unicode/punycode input", { type: "error" })
     }
-  }
+  }, [])
 
-  const handleNonASCIIInput = (text) => {
+  const handleNonASCIIInput = useCallback((text) => {
     const codePoints = getCodePoints(text)
     const converted = punycodeConverter(text)
 
     if (codePoints.length === 1) {
       setOutput(
         <>
-          <Badge variant="outline" className="mt-4 mb-2">
+          <Badge variant="outline" className="mb-2 mt-4">
             Converted
           </Badge>
           <p className="text-lg font-semibold">{converted}</p>
@@ -115,7 +115,7 @@ const CardForm = () => {
     } else if (codePoints.length > 1) {
       setOutput(
         <>
-          <Badge variant="outline" className="mt-4 mb-2">
+          <Badge variant="outline" className="mb-2 mt-4">
             Converted
           </Badge>
           <p className="text-lg font-semibold">{converted}</p>
@@ -124,27 +124,43 @@ const CardForm = () => {
             {codePoints.length} Code Point{codePoints.length > 1 && "s"}
           </Badge>
           {codePoints.map((codePoint, index) => (
-            <p key={index} className="text-lg font-semibold inline">
+            <p key={index} className="inline text-lg font-semibold">
               {`U+${codePoint.toUpperCase()} `}
             </p>
           ))}
         </>
       )
     }
-  }
+  }, [])
 
-  const handleInputChange = (e) => {
-    const inputText = e.target.value
-    router.push(`?q=${inputText}`)
-    setSearchInput(inputText)
-    const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
+  // const handleInputChange = (e) => {
+  //   const inputText = e.target.value
+  //   router.push(`?q=${inputText}`)
+  //   setSearchInput(inputText)
+  //   const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
 
-    if (hasNonASCII) {
-      handleNonASCIIInput(inputText)
-    } else {
-      handleASCIIInput(inputText)
-    }
-  }
+  //   if (hasNonASCII) {
+  //     handleNonASCIIInput(inputText)
+  //   } else {
+  //     handleASCIIInput(inputText)
+  //   }
+  // }
+
+  const handleInputChange = useCallback(
+    (e) => {
+      const inputText = e.target.value
+      router.push(`?q=${inputText}`)
+      setSearchInput(inputText)
+      const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
+
+      if (hasNonASCII) {
+        handleNonASCIIInput(inputText)
+      } else {
+        handleASCIIInput(inputText)
+      }
+    },
+    [handleNonASCIIInput, handleASCIIInput, router]
+  )
 
   useEffect(() => {
     const search = searchParams.get("q")
@@ -152,11 +168,11 @@ const CardForm = () => {
       setSearchInput(search)
       handleInputChange({ target: { value: search } })
     }
-  }, [searchParams])
+  }, [searchParams, handleInputChange]) // Include handleInputChange in the dependency array
 
   return (
-    <div className="flex justify-center items-center">
-      <div className="bg-white p-6 rounded shadow-lg">
+    <div className="flex items-center justify-center">
+      <div className="rounded bg-white p-6 shadow-lg">
         <Card>
           <CardHeader>
             <CardTitle>Punycode Converter</CardTitle>

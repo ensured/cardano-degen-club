@@ -40,7 +40,7 @@ const RecentCommitToastComponent = () => {
     return () => {
       clearInterval(interval)
     }
-  }, [])
+  }, [lastCommit])
 
   return <>latest commit: {lastCommit}</>
 }
