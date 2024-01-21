@@ -13,7 +13,7 @@ const SearchRecipes = () => {
   const [nextPage, setNextPage] = useState("")
   const [input, setInput] = useState("")
   const [fetchUrl, setFetchUrl] = useState(
-    `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
+    `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.APP_ID}&app_key=${process.env.APP_KEY}`
   )
 
   const searchRecipes = async (e) => {
