@@ -36,6 +36,9 @@ const Dropdown = () => {
         <Link href="/cardano-links">
           <DropdownMenuItem value="top">Cardano Links</DropdownMenuItem>
         </Link>
+        <Link href="/recipe-finder">
+          <DropdownMenuItem value="top">Recipe Finder</DropdownMenuItem>
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   )
