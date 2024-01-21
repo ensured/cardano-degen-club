@@ -49,28 +49,6 @@ const SearchRecipes = () => {
     setInput(e.target.value)
   }
 
-  function extractRecipeName(url) {
-    // Define a regular expression pattern to extract the recipe name
-    const pattern =
-      /http:\/\/www\.edamam\.com\/recipe\/([^\/]+)\/bacon\+cheeseburger/
-
-    // Use match to find the pattern in the URL
-    const match = url.match(pattern)
-
-    // Check if a match is found
-    if (match) {
-      // Extract the matched recipe name
-      let recipeName = match[1]
-
-      // Remove the random numbers at the end
-      recipeName = recipeName.replace(/-[a-f\d]+$/, "")
-
-      return recipeName
-    } else {
-      return null
-    }
-  }
-
   return (
     <div>
       <form onSubmit={searchRecipes} className="flex gap-2 px-2">
@@ -89,7 +67,7 @@ const SearchRecipes = () => {
           {recipes.hits.map((recipe) => (
             <ul key={recipe.recipe.shareAs}>
               <Link href={recipe.recipe.shareAs} key={recipe.recipe}>
-                {extractRecipeName(recipe.recipe.shareAs)}
+                {recipe.recipe.shareAs}
               </Link>
             </ul>
           ))}
