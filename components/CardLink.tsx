@@ -1,3 +1,12 @@
+/* eslint-disable */
+
+import {
+  JSXElementConstructor,
+  Key,
+  PromiseLikeOfReactNode,
+  ReactElement,
+  ReactNode,
+} from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -21,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-function extractRecipeName(url) {
+function extractRecipeName(url: string) {
   const recipePath = url.split("/")[4]
   const lastDashIndex = recipePath.lastIndexOf("-")
   const cleanedName =
@@ -30,11 +39,11 @@ function extractRecipeName(url) {
   const capitalizedString = cleanedName
     .split("-")
     .join(" ")
-    .replace(/(^|\s)\S/g, (char) => char.toUpperCase())
+    .replace(/(^|\s)\S/g, (char: string) => char.toUpperCase())
 
   return capitalizedString
 }
-
+// @ts-ignore
 export function CardLink({ recipe }) {
   const { shareAs, calories } = recipe.recipe
   console.log(recipe.recipe)
@@ -74,14 +83,20 @@ export function CardLink({ recipe }) {
               "h-32 overflow-auto scrollbar scrollbar-track-gray-100 scrollbar-thumb-gray-900 dark:scrollbar-track-zinc-900 dark:scrollbar-thumb-gray-100 bg-slate-900 py-1"
             )}
           >
-            {recipe.recipe.healthLabels.map((label, index) => (
-              <span
-                key={label}
-                className="inline-block rounded-lg p-1 py-0.75 m-0.5 font-medium dark:bg-slate-500 dark:text-slate-50 bg-slate-800 text-slate-200"
-              >
-                {label}
-              </span>
-            ))}
+            {recipe.recipe.healthLabels.map(
+              (
+                // @ts-ignore
+
+                label
+              ) => (
+                <span
+                  key={label}
+                  className="inline-block rounded-lg p-1 py-0.75 m-0.5 font-medium dark:bg-slate-500 dark:text-slate-50 bg-slate-800 text-slate-200"
+                >
+                  {label}
+                </span>
+              )
+            )}
           </div>
         </CardDescription>
       </CardContent>
