@@ -7,16 +7,9 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { Badge, badgeVariants } from "@/components/ui/badge"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
-import { MySkeleton } from "./MySkeleton"
+import Loading from "../components/Loading"
+import { CardLink } from "./CardLink"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
@@ -28,8 +21,6 @@ const SearchRecipes = () => {
   const [fetchUrl, setFetchUrl] = useState(
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
-
-  const [showFoundMessage, setShowFoundMessage] = useState(false)
 
   const searchRecipes = async (e) => {
     e.preventDefault()
@@ -80,53 +71,47 @@ const SearchRecipes = () => {
   }
 
   return (
-    <div className="mx-2">
-      <form onSubmit={searchRecipes} className="flex gap-2 px-2">
-        <Input
-          placeholder="search term"
-          type="text"
-          name="searchTerm"
-          onChange={handleInputChange}
-          defaultValue={input}
-        />
-        <Button type="submit">Search</Button>
-      </form>
+    <div className="flex flex-col justify-center ">
+      <div>
+        <form onSubmit={searchRecipes} className="flex gap-2 container">
+          <Input
+            placeholder="search term"
+            type="text"
+            name="searchTerm"
+            onChange={handleInputChange}
+            defaultValue={input}
+          />
+          <Button type="submit">Search</Button>
+        </form>
 
-      {loading &&
-        !recipes.hits && ( // Check if loading is true and no recipes
-          <div className="flex flex-col items-center justify-center">
-            <div className="animate-pulse text-center text-2xl font-bold text-white">
-              <div>Loading... 🚀</div>
+        {loading &&
+          !recipes.hits && ( // Check if loading is true and no recipes
+            <div>Loading...</div>
+          )}
+
+        {recipes.hits?.length > 0 ? (
+          <div className="flex flex-col justify-between">
+            <div className="mb-2 flex justify-between mt-2 container">
+              <Badge>found {recipes.count} recipes</Badge>
+              <Button onClick={handleNextPageBtn}>Next Page</Button>
             </div>
-          </div>
-        )}
-
-      {recipes.hits?.length > 0 ? (
-        <div className="flex flex-row justify-between pb-1 mt-2 rounded-md">
-          <ul className="mt-2 rounded-sm mb-2 p-1">
-            {recipes.hits.map((recipe) => (
-              <li key={recipe.recipe.shareAs}>
+            <ul className="flex justify-center lg:flex-row sm:flex-col flex-wrap gap-2 hover:bg-input">
+              {recipes.hits.map((recipe) => (
                 <Link
+                  target="_blank"
+                  key={recipe.recipe.shareAs}
                   href={recipe.recipe.shareAs}
-                  key={recipe.recipe}
-                  className={badgeVariants({ variant: "outline" })}
                 >
-                  {extractRecipeName(recipe.recipe.shareAs)}
-                  <span className="text-gray-500 text-xs">
-                    {Math.round(recipe.recipe.calories)} calories
-                  </span>
+                  <CardLink className="mb-4" recipe={recipe} />
                 </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col justify-between mb-2">
-            <p className={cn("text-primary")}>found {recipes.count} recipes</p>
-            <Button onClick={handleNextPageBtn}>Next Page</Button>
+              ))}
+            </ul>
+            <br />
           </div>
-        </div>
-      ) : (
-        ""
-      )}
+        ) : (
+          ""
+        )}
+      </div>
     </div>
   )
 }

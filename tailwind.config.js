@@ -13,6 +13,12 @@ module.exports = {
       },
     },
     extend: {
+      scrollbar: {
+        width: "4px", /* Adjust width as needed */
+        height: "8px", /* Adjust height as needed */
+        background: "rgba(255, 255, 255, 0.4)", /* Adjust color and opacity */
+        color: "rgba(0, 0, 0, 0.5)", /* Adjust thumb color */
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -62,12 +68,12 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: 0 },
+          from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -76,5 +82,6 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require('tailwind-scrollbar')],
+
 }
