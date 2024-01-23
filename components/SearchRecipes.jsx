@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -9,34 +9,51 @@ import { cn } from "@/lib/utils"
 import { Badge, badgeVariants } from "@/components/ui/badge"
 
 import { CardLink } from "./CardLink"
-import Loading, { SkeletonDemo } from "./SkeletonDemo"
+import { SkeletonDemo } from "./SkeletonDemo"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
 const SearchRecipes = () => {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [recipes, setRecipes] = useState({})
   const [nextPage, setNextPage] = useState("")
-  const [input, setInput] = useState("")
+  const searchParams = useSearchParams()
+  const [input, setInput] = useState(searchParams.get("q") || "")
   const [fetchUrl, setFetchUrl] = useState(
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
 
-  const searchRecipes = async (e) => {
-    e.preventDefault()
-    setRecipes({})
-    try {
-      setLoading(true)
-      const response = await fetch(fetchUrl)
-      const data = await response.json()
-      setRecipes(data)
-      setNextPage(data._links.next.href)
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setLoading(false)
+  const searchRecipes = useCallback(
+    async (e) => {
+      try {
+        e.preventDefault()
+      } catch (err) {
+        console.error(err)
+      }
+      setRecipes({})
+      try {
+        setLoading(true)
+        const response = await fetch(fetchUrl)
+        const data = await response.json()
+        setRecipes(data)
+        setNextPage(data._links.next.href)
+        router.replace(`?q=${input}`)
+      } catch (err) {
+        console.log(err)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [fetchUrl, input, router]
+  )
+
+  useEffect(() => {
+    const searchTerm = searchParams.get("q")
+    if (searchTerm) {
+      searchRecipes()
     }
-  }
+  }, [searchParams, searchRecipes]) // Include dependencies
 
   const handleNextPageBtn = async () => {
     if (nextPage) {
@@ -71,7 +88,7 @@ const SearchRecipes = () => {
   }
 
   return (
-    <div className="flex flex-col justify-center ">
+    <div className="flex flex-col">
       <div className="flex flex-col gap-2">
         <form onSubmit={searchRecipes} className="container flex gap-2">
           <Input
@@ -91,13 +108,13 @@ const SearchRecipes = () => {
 
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col justify-between gap-1">
-            <div className={cn("container flex justify-between my-1")}>
+            <div className={cn("container my-1 flex justify-between")}>
               <Badge variant={"outline"}>
                 Found {recipes.count} recipes 🎉
               </Badge>
               <Button onClick={handleNextPageBtn}>Next Page</Button>
             </div>
-            <ul className="flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row">
+            <div className="flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row">
               {recipes.hits.map((recipe) => (
                 <Link
                   target="_blank"
@@ -107,11 +124,7 @@ const SearchRecipes = () => {
                   <CardLink className="mb-4" recipe={recipe} />
                 </Link>
               ))}
-            </ul>
-            <Button className="mx-2 mt-2" onClick={handleNextPageBtn}>
-              Next Page <span className="px-2 text-lg">&#8627;</span>
-            </Button>
-
+            </div>
             <br />
           </div>
         ) : (
