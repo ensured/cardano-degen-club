@@ -8,8 +8,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Badge, badgeVariants } from "@/components/ui/badge"
 
-import Loading from "../components/Loading"
 import { CardLink } from "./CardLink"
+import Loading, { SkeletonDemo } from "./SkeletonDemo"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
@@ -42,7 +42,7 @@ const SearchRecipes = () => {
     if (nextPage) {
       try {
         setLoading(true)
-        const response = await fetch(nextPage)
+        const response = await fetch(nextPage, { cache: "force-cache" })
         const data = await response.json()
         setRecipes(data)
         setNextPage(data._links.next.href)
@@ -73,29 +73,29 @@ const SearchRecipes = () => {
   return (
     <div className="flex flex-col justify-center ">
       <div>
-        <form onSubmit={searchRecipes} className="flex gap-2 container">
+        <form onSubmit={searchRecipes} className="container flex gap-2">
           <Input
             placeholder="search term"
             type="text"
             name="searchTerm"
             onChange={handleInputChange}
-            defaultValue={input}
+            value={input}
           />
           <Button type="submit">Search</Button>
         </form>
 
         {loading &&
           !recipes.hits && ( // Check if loading is true and no recipes
-            <div>Loading...</div>
+            <SkeletonDemo />
           )}
 
         {recipes.hits?.length > 0 ? (
-          <div className="flex flex-col justify-between">
-            <div className="mb-2 flex justify-between mt-2 container">
+          <div className="flex flex-col justify-between gap-1">
+            <div className="container my-1 flex justify-between">
               <Badge>found {recipes.count} recipes</Badge>
               <Button onClick={handleNextPageBtn}>Next Page</Button>
             </div>
-            <ul className="flex justify-center lg:flex-row sm:flex-col flex-wrap gap-2 hover:bg-input">
+            <ul className="flex flex-wrap justify-center gap-2 hover:bg-input sm:flex-col lg:flex-row">
               {recipes.hits.map((recipe) => (
                 <Link
                   target="_blank"
