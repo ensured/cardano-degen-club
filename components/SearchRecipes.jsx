@@ -72,7 +72,7 @@ const SearchRecipes = () => {
 
   return (
     <div className="flex flex-col justify-center ">
-      <div>
+      <div className="flex flex-col gap-2">
         <form onSubmit={searchRecipes} className="container flex gap-2">
           <Input
             placeholder="search term"
@@ -91,11 +91,13 @@ const SearchRecipes = () => {
 
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col justify-between gap-1">
-            <div className="container my-1 flex justify-between">
-              <Badge>found {recipes.count} recipes</Badge>
+            {/* <div className={cn("container flex justify-between my-1")}>
+              <Badge variant={"outline"}>
+                Found {recipes.count} recipes 🎉
+              </Badge>
               <Button onClick={handleNextPageBtn}>Next Page</Button>
-            </div>
-            <ul className="flex flex-wrap justify-center gap-2 hover:bg-input sm:flex-col lg:flex-row">
+            </div> */}
+            <ul className="flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row">
               {recipes.hits.map((recipe) => (
                 <Link
                   target="_blank"
@@ -106,6 +108,10 @@ const SearchRecipes = () => {
                 </Link>
               ))}
             </ul>
+            <Button className="mx-2 mt-2" onClick={handleNextPageBtn}>
+              Next Page <span className="px-2 text-lg">&#8627;</span>
+            </Button>
+
             <br />
           </div>
         ) : (
