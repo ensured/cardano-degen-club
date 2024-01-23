@@ -80,7 +80,7 @@ export function CardLink({ recipe }) {
         <CardDescription>
           <div
             className={cn(
-              "rounded-sm dark:hover:scrollbar-thumb-gray-500 h-32 overflow-auto scrollbar scrollbar-track-gray-600 dark:scrollbar-track-gray-600 scrollbar-thumb-gray-200  dark:scrollbar-thumb-gray-100 bg-slate-800 p-0.5"
+              "rounded-sm dark:hover:scrollbar-thumb-gray-500 h-32 overflow-auto  p-0.5"
             )}
           >
             {recipe.recipe.healthLabels.length > 1 ? (

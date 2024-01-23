@@ -26,6 +26,18 @@
     --input: 20 5.9% 90%;
     --ring: 24.6 95% 53.1%;
     --radius: 0.5rem;
+    --code: rgb(0, 0, 0) (255, 0, 0);
+    --code-foreground: #f4f4f5;
+    --code--highlighted: rgb(240, 240, 240);
+    --copy-button-background: rgb(255, 255, 255);
+    --scrollbar-track: rgb(248, 248, 248);
+    --scrollbar-track-border: rgb(242, 242, 242);
+    --scrollbar-track-hover: rgb(240, 240, 240);
+    --scrollbar-track-active: rgb(244, 244, 244);
+    --scrollbar-thumb: rgba(170, 112, 79, 0.874);
+    --scrollbar-thumb-hover: rgba(170, 112, 79, 0.974);
+    --scrollbar-thumb-active: rgba(170, 112, 79, 0.974);
+    --rainbow-background: rgba(0, 0, 0, 0.16);
   }
 
   .dark {
@@ -49,6 +61,17 @@
     --input: 12 6.5% 15.1%;
     --ring: 20.5 90.2% 48.2%;
     --spring-green: 24.6 95% 53.1%;
+    --code: rgb(255, 255, 255);
+    --code-foreground: #18181b;
+    --code-highlighted: rgb(17, 17, 17);
+    --copy-button-background: rgb(17, 17, 17);
+    --scrollbar-track: #09090b;
+    --scrollbar-track-border: #1b1b1f;
+    --scrollbar-track-hover: #0b0b0c;
+    --scrollbar-track-active: #050507;
+    --scrollbar-thumb: rgb(62, 62, 62);
+    --scrollbar-thumb-hover: rgb(68, 68, 68);
+    --scrollbar-thumb-active: rgb(66, 66, 66);
   }
 }
 
@@ -60,10 +83,48 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  .bg-green-500 {
-    background-color: hsl(140, 70%, 40%); /* Adjust color as needed */
-  }
   .custom-scrollbar::-webkit-scrollbar {
     @apply scrollbar; /* Apply the scrollbar styles */
   }
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) !important;
+}
+
+/* Chrome, Edge and Safari */
+*::-webkit-scrollbar {
+  width: 10px;
+  width: 10px;
+}
+
+*::-webkit-scrollbar-corner {
+  background-color: var(--scrollbar-track) !important;
+  border: 1px solid var(--scrollbar-track) !important;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track) !important;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track-hover) !important;
+}
+
+*::-webkit-scrollbar-track:active {
+  background-color: var(--scrollbar-track-active) !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb) !important;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover) !important;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-active) !important;
 }
