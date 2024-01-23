@@ -49,7 +49,7 @@ export function CardLink({ recipe }) {
   console.log(recipe.recipe)
 
   return (
-    <Card className="w-[215px] xs:w-[225px] sm:w-[200px] md:w-[240px] lg:w-[310px] xl:w-[320px] bg-slate-900">
+    <Card className="w-[190px] xs:w-[225px] sm:w-[200px] md:w-[240px] lg:w-[310px] xl:w-[320px] bg-slate-900">
       <CardHeader>
         <div className="flex flex-col items-center gap-1">
           <Image
@@ -67,7 +67,7 @@ export function CardLink({ recipe }) {
 
       <CardContent>
         <CardDescription>
-          <div className="mx-2 flex flex-row justify-between gap-2 py-2">
+          <div className="flex flex-row justify-between gap-2 py-2">
             <div className=" bg-slate-700 p-2 rounded-sm text-slate-300">
               source: {recipe.recipe.source}
             </div>
@@ -80,7 +80,7 @@ export function CardLink({ recipe }) {
         <CardDescription>
           <div
             className={cn(
-              "dark:hover:scrollbar-thumb-gray-500 h-32 overflow-auto scrollbar scrollbar-track-gray-600 dark:scrollbar-track-gray-600 scrollbar-thumb-gray-200  dark:scrollbar-thumb-gray-100 bg-slate-800 p-0.5"
+              "rounded-sm dark:hover:scrollbar-thumb-gray-500 h-32 overflow-auto scrollbar scrollbar-track-gray-600 dark:scrollbar-track-gray-600 scrollbar-thumb-gray-200  dark:scrollbar-thumb-gray-100 bg-slate-800 p-0.5"
             )}
           >
             {recipe.recipe.healthLabels.length > 1 ? (
@@ -92,14 +92,14 @@ export function CardLink({ recipe }) {
                 ) => (
                   <span
                     key={label}
-                    className="flex flex-col flex-wrap text-center font-medium bg-slate-500 text-slate-50 mb-1 p-1"
+                    className="rounded-sm flex flex-col flex-wrap text-center font-medium bg-slate-500 text-slate-50 mb-1 p-1"
                   >
                     {label}
                   </span>
                 )
               )
             ) : (
-              <span className="flex flex-col flex-wrap text-center font-medium bg-red-900 opacity-70 text-slate-50 mb-1 p-1">
+              <span className="rounded-sm flex flex-col flex-wrap text-center font-medium bg-red-900 opacity-70 text-slate-50 mb-1 p-1">
                 No labels found
               </span>
             )}

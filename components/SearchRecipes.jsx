@@ -50,10 +50,8 @@ const SearchRecipes = () => {
 
   useEffect(() => {
     const searchTerm = searchParams.get("q")
-    if (searchTerm) {
-      searchRecipes()
-    }
-  }, [searchParams, searchRecipes]) // Include dependencies
+    setInput(searchTerm || "")
+  }, [searchParams]) // Include dependencies
 
   const handleNextPageBtn = async () => {
     if (nextPage) {
@@ -77,6 +75,7 @@ const SearchRecipes = () => {
       prevFetchUrl.replace(`q=${input}`, `q=${e.target.value}`)
     )
     setInput(e.target.value)
+    router.push(`?q=${e.target.value}`)
   }
 
   function extractRecipeName(url) {
