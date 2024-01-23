@@ -49,7 +49,7 @@ export function CardLink({ recipe }) {
   console.log(recipe.recipe)
 
   return (
-    <Card className="w-[180px] xs:w-[180px] sm:w-[200px] md:w-[240px] lg:w-[310px] xl:w-[320px] bg-slate-900">
+    <Card className="w-[170px] xs:w-[170px] sm:w-[200px] md:w-[240px] lg:w-[310px] xl:w-[320px] bg-slate-900">
       <CardHeader>
         <div className="flex flex-col items-center gap-1">
           <Image
@@ -67,9 +67,9 @@ export function CardLink({ recipe }) {
 
       <CardContent>
         <CardDescription>
-          <div className="flex flex-row justify-between gap-2 py-2">
+          <div className="flex flex-row justify-between gap-2 py-2 flex-wrap">
             <div className=" bg-slate-700 p-2 rounded-sm text-slate-300">
-              source: {recipe.recipe.source}
+              {recipe.recipe.source}
             </div>
             <div className=" bg-slate-700 p-2 rounded-sm text-slate-300">
               {Math.round(calories)} calories

@@ -107,7 +107,7 @@ const SearchRecipes = () => {
 
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col justify-between gap-1">
-            <div className={cn("container my-1 flex justify-between")}>
+            <div className={cn("container my-1 flex justify-between ")}>
               <Badge variant={"outline"}>
                 Found {recipes.count} recipes 🎉
               </Badge>
