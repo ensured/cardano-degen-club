@@ -80,31 +80,37 @@ export function CardLink({ recipe }) {
         <CardDescription>
           <div
             className={cn(
-              "h-32 overflow-auto scrollbar scrollbar-track-gray-100 scrollbar-thumb-gray-900 dark:scrollbar-track-zinc-900 dark:scrollbar-thumb-gray-100 bg-slate-900 py-1"
+              "dark:hover:scrollbar-thumb-gray-500 h-32 overflow-auto scrollbar scrollbar-track-gray-600 dark:scrollbar-track-gray-600 scrollbar-thumb-gray-200  dark:scrollbar-thumb-gray-100 bg-slate-800 p-0.5"
             )}
           >
-            {recipe.recipe.healthLabels.map(
-              (
-                // @ts-ignore
+            {recipe.recipe.healthLabels.length > 1 ? (
+              recipe.recipe.healthLabels.map(
+                (
+                  // @ts-ignore
 
-                label
-              ) => (
-                <span
-                  key={label}
-                  className="inline-block rounded-lg p-1 py-0.75 m-0.5 font-medium dark:bg-slate-500 dark:text-slate-50 bg-slate-800 text-slate-200"
-                >
-                  {label}
-                </span>
+                  label
+                ) => (
+                  <span
+                    key={label}
+                    className="flex flex-col flex-wrap text-center font-medium bg-slate-500 text-slate-50 mb-1 p-1"
+                  >
+                    {label}
+                  </span>
+                )
               )
+            ) : (
+              <span className="flex flex-col flex-wrap text-center font-medium bg-red-900 opacity-70 text-slate-50 mb-1 p-1">
+                No labels found
+              </span>
             )}
           </div>
         </CardDescription>
       </CardContent>
 
       {/* <CardFooter className="flex justify-between">
-          <Button variant="outline">Cancel</Button>
-          <Button>Deploy</Button>
-        </CardFooter> */}
+        <Button variant="outline">Cancel</Button>
+        <Button>Deploy</Button>
+      </CardFooter> */}
     </Card>
   )
 }
