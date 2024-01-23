@@ -49,7 +49,7 @@ export function CardLink({ recipe }) {
   console.log(recipe.recipe)
 
   return (
-    <Card className="w-[190px] xs:w-[225px] sm:w-[200px] md:w-[240px] lg:w-[310px] xl:w-[320px] bg-slate-900">
+    <Card className="w-[180px] xs:w-[180px] sm:w-[200px] md:w-[240px] lg:w-[310px] xl:w-[320px] bg-slate-900">
       <CardHeader>
         <div className="flex flex-col items-center gap-1">
           <Image
