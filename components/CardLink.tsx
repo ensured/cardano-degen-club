@@ -46,72 +46,27 @@ function extractRecipeName(url: string) {
 // @ts-ignore
 export function CardLink({ recipe }) {
   const { shareAs, calories } = recipe.recipe
-  console.log(recipe.recipe)
 
   return (
-    <Card className="w-[170px] xs:w-[170px] sm:w-[200px] md:w-[240px] lg:w-[310px] xl:w-[320px] bg-slate-900">
-      <CardHeader>
-        <div className="flex flex-col items-center gap-1">
-          <Image
-            src={recipe.recipe.images.REGULAR.url}
-            alt="recipe thumbnail"
-            width={recipe.recipe.images.REGULAR.width}
-            height={recipe.recipe.images.REGULAR.height}
-            className="rounded-full"
-          />
-          <CardTitle className="text-slate-100">
-            {extractRecipeName(shareAs)}
-          </CardTitle>
+    <div className="flex flex-wrap md:w-full">
+      <Card className="w-full sm:w-1/2 flex-grow overflow-hidden">
+        {/* Use responsive width classes for better adaptability */}
+        <div className="w-full md:w-64">
+          <CardHeader className="h-58 flex flex-row items-center gap-2">
+            <Image
+              src={recipe.recipe.images.REGULAR.url}
+              alt="recipe thumbnail"
+              width={recipe.recipe.images.REGULAR.width}
+              height={recipe.recipe.images.REGULAR.height}
+              className="w-32 h-32 rounded-full object-cover"
+            />
+            <CardTitle className="text-md overflow-hidden line-clamp-5 text-wrap">
+              {extractRecipeName(shareAs)}
+            </CardTitle>
+          </CardHeader>
         </div>
-      </CardHeader>
-
-      <CardContent>
-        <CardDescription>
-          <div className="flex flex-row justify-between gap-2 py-2 flex-wrap">
-            <div className=" bg-slate-700 p-2 rounded-sm text-slate-300">
-              {recipe.recipe.source}
-            </div>
-            <div className=" bg-slate-700 p-2 rounded-sm text-slate-300">
-              {Math.round(calories)} calories
-            </div>
-          </div>
-        </CardDescription>
-
-        <CardDescription>
-          <div
-            className={cn(
-              "rounded-sm dark:hover:scrollbar-thumb-gray-500 h-32 overflow-auto  p-0.5"
-            )}
-          >
-            {recipe.recipe.healthLabels.length > 1 ? (
-              recipe.recipe.healthLabels.map(
-                (
-                  // @ts-ignore
-
-                  label
-                ) => (
-                  <span
-                    key={label}
-                    className="rounded-sm flex flex-col flex-wrap text-center font-medium bg-slate-500 text-slate-50 mb-1 p-1"
-                  >
-                    {label}
-                  </span>
-                )
-              )
-            ) : (
-              <span className="rounded-sm flex flex-col flex-wrap text-center font-medium bg-red-900 opacity-70 text-slate-50 mb-1 p-1">
-                No labels found
-              </span>
-            )}
-          </div>
-        </CardDescription>
-      </CardContent>
-
-      {/* <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
-        <Button>Deploy</Button>
-      </CardFooter> */}
-    </Card>
+      </Card>
+    </div>
   )
 }
 
