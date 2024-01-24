@@ -107,9 +107,7 @@ const SearchRecipes = () => {
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col gap-1">
             <div className={cn("container flex justify-between ")}>
-              <Badge variant={"outline"}>
-                Found {recipes.count} recipes 🎉
-              </Badge>
+              <Badge variant={"outline"}>{recipes.count} results 🎉</Badge>
               <Button onClick={handleNextPageBtn}>Next Page</Button>
             </div>
             <div className="flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row">
