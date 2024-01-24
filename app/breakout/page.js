@@ -1,8 +1,9 @@
-'use client';
+"use client"
+
+import { useEffect, useState } from "react"
+import axios from "axios"
+
 import BreakoutGame from "@/components/BreakoutGame"
-import axios from 'axios';
-import { useEffect } from 'react';
-import { useState } from 'react';
 
 const page = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -32,10 +33,9 @@ const page = () => {
   //   fetchData()
   // }, [])
 
-
   return (
     <div>
-      {/* <BreakoutGame /> */}
+      <BreakoutGame />
     </div>
   )
 }
