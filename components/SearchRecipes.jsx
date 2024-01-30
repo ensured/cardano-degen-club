@@ -101,7 +101,15 @@ const SearchRecipes = () => {
 
         {loading &&
           !recipes.hits && ( // Check if loading is true and no recipes
-            <SkeletonDemo />
+            // <SkeletonDemo />
+            <div className="flex items-center justify-center h-full">
+              <Image
+                src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
+                width={16}
+                height={16}
+                alt="loading"
+              />
+            </div>
           )}
 
         {recipes.hits?.length > 0 ? (
