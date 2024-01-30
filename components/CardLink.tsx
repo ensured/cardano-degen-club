@@ -49,22 +49,18 @@ export function CardLink({ recipe }) {
 
   return (
     <div className="flex flex-wrap md:w-full">
-      <Card className="w-full sm:w-1/2 flex-grow overflow-hidden">
-        {/* Use responsive width classes for better adaptability */}
-        <div className="w-full md:w-64">
-          <CardHeader className="h-58 flex flex-row items-center gap-2">
-            {/* {recipe.recipe.images.SMALL.url} */}
-            <Image
-              src={recipe.recipe.images.THUMBNAIL.url}
-              alt="recipe thumbnail"
-              width={recipe.recipe.images.THUMBNAIL.width}
-              height={recipe.recipe.images.THUMBNAIL.height}
-              className="w-32 h-32 rounded-full object-cover"
-            />
-            <CardTitle className="text-md overflow-hidden line-clamp-5 text-wrap">
-              {extractRecipeName(shareAs)}
-            </CardTitle>
-          </CardHeader>
+      <Card className="w-48 sm:w-36 md:w-56 flex-grow overflow-hidden ">
+        <div className="flex flex-col justify-center items-center p-2 hover:bg-zinc-900">
+          <CardTitle className="text-md overflow-ellipsis whitespace-normal text-center">
+            {extractRecipeName(shareAs)}
+          </CardTitle>
+          <Image
+            src={recipe.recipe.images.SMALL.url}
+            alt="recipe thumbnail"
+            width={recipe.recipe.images.SMALL.width}
+            height={recipe.recipe.images.SMALL.height}
+            className="w-40 h-40 rounded-md p-2"
+          />
         </div>
       </Card>
     </div>
