@@ -53,11 +53,12 @@ export function CardLink({ recipe }) {
         {/* Use responsive width classes for better adaptability */}
         <div className="w-full md:w-64">
           <CardHeader className="h-58 flex flex-row items-center gap-2">
+            {/* {recipe.recipe.images.SMALL.url} */}
             <Image
-              src={recipe.recipe.images.REGULAR.url}
+              src={recipe.recipe.images.THUMBNAIL.url}
               alt="recipe thumbnail"
-              width={recipe.recipe.images.REGULAR.width}
-              height={recipe.recipe.images.REGULAR.height}
+              width={recipe.recipe.images.THUMBNAIL.width}
+              height={recipe.recipe.images.THUMBNAIL.height}
               className="w-32 h-32 rounded-full object-cover"
             />
             <CardTitle className="text-md overflow-hidden line-clamp-5 text-wrap">
