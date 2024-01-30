@@ -55,8 +55,8 @@ const SearchRecipes = () => {
 
   const handleNextPageBtn = async () => {
     if (nextPage) {
+      setLoading(true)
       try {
-        setLoading(true)
         const response = await fetch(nextPage, { cache: "force-cache" })
         const data = await response.json()
         setRecipes(data)
@@ -116,7 +116,17 @@ const SearchRecipes = () => {
           <div className="flex flex-col gap-1">
             <div className={cn("container flex justify-between ")}>
               <Badge variant={"outline"}>{recipes.count} results 🎉</Badge>
-              <Button onClick={handleNextPageBtn}>Next Page</Button>
+              {loading && (
+                <div className="flex items-center justify-center h-full">
+                  <Image
+                    src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
+                    width={16}
+                    height={16}
+                    alt="loading"
+                  />
+                </div>
+              )}
+              <Button onClick={handleNextPageBtn}>Next Page </Button>
             </div>
             <div className="flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row">
               {recipes.hits.map((recipe) => (
