@@ -49,9 +49,9 @@ export function CardLink({ recipe }) {
 
   return (
     <div className="flex flex-wrap md:w-full">
-      <Card className="w-48 sm:w-36 md:w-56 flex-grow overflow-hidden ">
+      <Card className="w-48 md:w-56 sm:w-36 xs:w-12 flex-grow overflow-hidden ">
         <div className="flex flex-col justify-center items-center p-2 dark:hover:bg-zinc-900 hover:bg-orange-200 transition">
-          <CardTitle className="text-md overflow-ellipsis whitespace-normal text-center transition">
+          <CardTitle className="overflow-ellipsis whitespace-normal text-center transition xs:text-sm text-lg md:text-xl lg:text-2xl ">
             {extractRecipeName(shareAs)}
           </CardTitle>
           <Image
