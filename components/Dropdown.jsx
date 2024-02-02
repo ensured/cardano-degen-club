@@ -15,6 +15,10 @@ import {
 import { Button } from "./ui/button"
 
 const Dropdown = () => {
+  const handleIagonLinkClick = () => {
+    const url = "https://github.com/ensured/iagon-node-status-webapp"
+    window.open(url, "_blank")
+  }
   return (
     <DropdownMenu className="relative">
       <DropdownMenuTrigger asChild>
@@ -39,14 +43,10 @@ const Dropdown = () => {
         <Link href="/recipe-finder">
           <DropdownMenuItem value="top">Recipe Finder</DropdownMenuItem>
         </Link>
-        <Link
-          href="https://github.com/ensured/iagon-node-status-webapp/tree/main"
-          action="_blank"
-        >
-          <DropdownMenuItem value="top">
-            Iagon Node Status Webapp
-          </DropdownMenuItem>
-        </Link>
+
+        <DropdownMenuItem value="top" onClick={handleIagonLinkClick}>
+          Iagon Node Status Webapp
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
