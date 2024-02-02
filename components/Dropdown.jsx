@@ -39,6 +39,11 @@ const Dropdown = () => {
         <Link href="/recipe-finder">
           <DropdownMenuItem value="top">Recipe Finder</DropdownMenuItem>
         </Link>
+        <Link href="https://github.com/ensured/iagon-node-status-webapp/tree/main">
+          <DropdownMenuItem value="top">
+            Iagon Node Status Webapp
+          </DropdownMenuItem>
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   )
