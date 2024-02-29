@@ -7,7 +7,7 @@ import {
 
 const FullTitleToolTip = ({ children, title }) => {
   return (
-    <TooltipProvider>
+    <TooltipProvider skipDelayDuration={0} delayDuration={0}>
       <Tooltip>
         <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent>
