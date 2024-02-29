@@ -27,6 +27,16 @@ const FullTitleToolTip = ({ children, title }) => {
         // Adjust the threshold as needed
         const newSide = cardMidPoint < windowMidPoint ? "bottom" : "top"
         setSide(newSide)
+
+        // Check if tooltip is too close to the top or bottom
+        const distanceFromTop = cardRect.top
+        const distanceFromBottom = window.innerHeight - cardRect.bottom
+
+        const threshold = 50 // Adjust the threshold as needed
+
+        if (distanceFromTop < threshold || distanceFromBottom < threshold) {
+          setSide(newSide === "bottom" ? "top" : "bottom")
+        }
       }
     }
 
