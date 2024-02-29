@@ -1,12 +1,5 @@
 /* eslint-disable */
 
-import {
-  JSXElementConstructor,
-  Key,
-  PromiseLikeOfReactNode,
-  ReactElement,
-  ReactNode,
-} from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -29,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import FullTitleToolTip from "@/components/FullTitleToolTip"
 
 function extractRecipeName(url: string) {
   const recipePath = url.split("/")[4]
@@ -49,20 +43,25 @@ export function CardLink({ recipe }) {
 
   return (
     <div className="flex flex-wrap md:w-full">
-      <Card className="md:w-56 sm:w-36 xs:w-22 w-36 flex-grow overflow-hidden ">
-        <div className="flex flex-col justify-center items-center p-2 dark:hover:bg-zinc-900 hover:bg-orange-200 transition">
-          <CardTitle className="overflow-ellipsis whitespace-normal text-center transition xs:text-sm text-lg md:text-xl lg:text-2xl ">
-            {extractRecipeName(shareAs)}
-          </CardTitle>
-          <Image
-            src={recipe.recipe.images.SMALL.url}
-            alt="recipe thumbnail"
-            width={recipe.recipe.images.SMALL.width}
-            height={recipe.recipe.images.SMALL.height}
-            className="w-40 h-40 rounded-2xl p-2"
-          />
-        </div>
-      </Card>
+      <FullTitleToolTip title={extractRecipeName(shareAs)}>
+        <Card className="md:w-56 sm:w-36 xs:w-22 w-36 flex-grow overflow-hidden h-60">
+          {" "}
+          {/* Set a fixed height */}
+          <div className="flex flex-col justify-center items-center p-2 dark:hover:bg-zinc-900 hover:bg-orange-200 transition">
+            <Image
+              src={recipe.recipe.images.SMALL.url}
+              alt="recipe thumbnail"
+              width={recipe.recipe.images.SMALL.width}
+              height={recipe.recipe.images.SMALL.height}
+              className="w-40 h-40 rounded-2xl p-2"
+            />
+            <CardTitle className="overflow-hidden line-clamp-1 whitespace-normal text-center transition xs:text-sm text-lg md:text-xl lg:text-2xl">
+              {/* line-clamp-2 truncates to 2 lines, adjust the value as needed */}
+              {extractRecipeName(shareAs)}
+            </CardTitle>
+          </div>
+        </Card>
+      </FullTitleToolTip>
     </div>
   )
 }
