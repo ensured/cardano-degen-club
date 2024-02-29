@@ -55,7 +55,7 @@ export function CardLink({ recipe }) {
               height={recipe.recipe.images.SMALL.height}
               className="w-40 h-40 rounded-2xl p-2"
             />
-            <CardTitle className="overflow-hidden line-clamp-1 whitespace-normal text-center transition xs:text-sm text-lg md:text-xl lg:text-2xl">
+            <CardTitle className="overflow-hidden line-clamp-2 sm:line-clamp-2 whitespace-normal text-center transition xs:text-sm text-lg md:text-xl lg:text-2xl">
               {/* line-clamp-2 truncates to 2 lines, adjust the value as needed */}
               {extractRecipeName(shareAs)}
             </CardTitle>
