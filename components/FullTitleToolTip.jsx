@@ -11,6 +11,7 @@ import {
 
 const FullTitleToolTip = ({ children, title }) => {
   const [side, setSide] = useState("top")
+  const [offset, setOffset] = useState(0)
   const tooltipRef = useRef(null)
 
   useEffect(() => {
@@ -18,44 +19,52 @@ const FullTitleToolTip = ({ children, title }) => {
       calculateSide()
     }
 
+    const handleScroll = () => {
+      calculateSide()
+    }
+
     const calculateSide = () => {
       if (tooltipRef.current) {
         const cardRect = tooltipRef.current.getBoundingClientRect()
-        const cardMidPoint = cardRect.top + cardRect.height / 2
-        const windowMidPoint = window.innerHeight / 2
-
-        // Adjust the threshold as needed
-        const newSide = cardMidPoint < windowMidPoint ? "bottom" : "top"
-        setSide(newSide)
-
-        // Check if tooltip is too close to the top or bottom
         const distanceFromTop = cardRect.top
-        const distanceFromBottom = window.innerHeight - cardRect.bottom
+        const isCloseToTop = distanceFromTop < 50
 
-        const threshold = 50 // Adjust the threshold as needed
+        // Calculate offset based on title length
+        const titleLengthOffset = Math.min(title.length * 5, 100) // Adjust multiplier and maximum offset as needed
 
-        if (distanceFromTop < threshold || distanceFromBottom < threshold) {
-          setSide(newSide === "bottom" ? "top" : "bottom")
+        if (isCloseToTop) {
+          setSide("bottom")
+          setOffset(titleLengthOffset)
+        } else {
+          const cardMidPoint = cardRect.top + cardRect.height / 2
+          const windowMidPoint = window.innerHeight / 2
+
+          const newSide = cardMidPoint < windowMidPoint ? "bottom" : "top"
+          setSide(newSide)
+          setOffset(0)
         }
       }
     }
 
-    calculateSide() // Call it once to set the initial side
+    calculateSide()
 
     window.addEventListener("resize", handleResize)
+    window.addEventListener("scroll", handleScroll)
 
     return () => {
       window.removeEventListener("resize", handleResize)
+      window.removeEventListener("scroll", handleScroll)
     }
-  }, []) // Empty dependency array ensures it only runs on mount and unmount
+  }, [title])
 
   return (
     <TooltipProvider skipDelayDuration={0} delayDuration={0}>
       <Tooltip>
         <TooltipTrigger ref={tooltipRef}>{children}</TooltipTrigger>
         <TooltipContent
+          sideOffset={offset}
           side={side}
-          className="absolute transform -translate-x-1/2 left-1/2 -bottom-full md:-bottom-full max-w-[900px]"
+          className={`absolute transform -translate-x-1/2 left-1/2 -bottom-full md:-bottom-full max-w-[900px]`}
         >
           <p>{title}</p>
         </TooltipContent>
