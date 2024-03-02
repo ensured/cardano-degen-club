@@ -28,11 +28,10 @@ const SearchRecipes = ({ className }) => {
 
   const searchRecipes = useCallback(
     async (e) => {
-      try {
-        e.preventDefault()
-      } catch (err) {
-        console.error(err)
+      if (e?.target?.tagName === "FORM") {
+        e.preventDefault() // Prevent form submission only if triggered by a form
       }
+
       setRecipes({})
       try {
         setLoading(true)
