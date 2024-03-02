@@ -2,13 +2,13 @@
 
 import CardForm from "@/components/CardForm"
 
-import Feedback from "../components/Feedback"
+// import Feedback from "../components/Feedback"
 
 const HomePage = () => {
   return (
     <div className="mt-8">
       <CardForm />
-      <Feedback />
+      {/* <Feedback /> */}
     </div>
   )
 }
