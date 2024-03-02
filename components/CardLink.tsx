@@ -30,8 +30,8 @@ function extractRecipeName(url: string) {
 
   return capitalizedString
 }
-
-export function CardLink({ recipe }) {
+//ts-ignore
+export function CardLink({ recipe }: { recipe: any }) {
   const { shareAs, calories } = recipe.recipe
 
   return (
