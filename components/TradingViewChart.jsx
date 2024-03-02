@@ -43,7 +43,7 @@ function TradingViewWidget() {
         "maLineWidth": 1,
         "maLength": 9,
         "lineWidth": 2,
-        "lineType": 1,
+        "lineType": 0,
         "dateRanges": [
           "1d|1",
           "1m|30",
