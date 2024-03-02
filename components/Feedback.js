@@ -42,7 +42,7 @@ const Feedback = async () => {
 
   return (
     <div className="container">
-      <div className="flex flex-col">
+      <div className="flex flex-col justify-center items-center text-slate-500">
         test
       </div>
     </div>

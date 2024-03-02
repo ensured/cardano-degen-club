@@ -7,15 +7,15 @@ const BreakoutGame = () => {
   const canvasRef = useRef(null)
   const ballX = useRef(50)
   const ballY = useRef(50)
-  const ballDX = useRef(2)
+  const ballDX = useRef(4)
   const ballDY = useRef(4)
   const paddleX = useRef(350)
   const paddleWidth = 100
   const paddleHeight = 15
   const blockWidth = 50
   const blockHeight = 20
-  const numBlocksX = 8
-  const numBlocksY = 4
+  const numBlocksX = 30
+  const numBlocksY = 16
   const blocksRef = useRef([])
   const [gameOver, setGameOver] = useState(false)
   const [isDesktopView, setIsDesktopView] = useState(true)
@@ -67,9 +67,9 @@ const BreakoutGame = () => {
     }
 
     const drawScore = () => {
-      ctx.fillStyle = "#000000"
+      ctx.fillStyle = "springgreen"
       ctx.font = "20px Arial"
-      ctx.fillText(`Score: ${scoreRef.current}`, 10, 20)
+      ctx.fillText(`Score: ${scoreRef.current}`, 5, 20)
     }
 
     const resetGame = () => {

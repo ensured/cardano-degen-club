@@ -1,7 +1,9 @@
-
+import TradingViewChart from "../../components/TradingViewChart"
 const page = () => {
   return (
-    <div>crypto</div>
+    <div className="px-2 flex justify-center items-center">
+      <TradingViewChart />
+    </div>
   )
 }
 

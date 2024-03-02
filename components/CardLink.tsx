@@ -38,7 +38,6 @@ export function CardLink({ recipe }) {
     <div className="flex flex-wrap md:w-full">
       <FullTitleToolTip title={extractRecipeName(shareAs)}>
         <Card className="md:w-56 sm:w-36 xs:w-22 w-36 flex-grow overflow-hidden h-60 dark:hover:bg-zinc-900 hover:bg-orange-200">
-          {" "}
           {/* Set a fixed height */}
           <div className="flex flex-col justify-center items-center p-2">
             <Image

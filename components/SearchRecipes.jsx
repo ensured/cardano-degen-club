@@ -13,7 +13,7 @@ import { SkeletonDemo } from "./SkeletonDemo"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
-const SearchRecipes = () => {
+const SearchRecipes = ({ className }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [recipes, setRecipes] = useState({})
@@ -23,6 +23,7 @@ const SearchRecipes = () => {
   const [fetchUrl, setFetchUrl] = useState(
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
+  const [initialLoad, setInitialLoad] = useState(true)
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -51,7 +52,11 @@ const SearchRecipes = () => {
   useEffect(() => {
     const searchTerm = searchParams.get("q")
     setInput(searchTerm || "")
-  }, [searchParams]) // Include dependencies
+    if (initialLoad && searchTerm) {
+      setInitialLoad(false)
+      searchRecipes() // Automatically submit the form on initial load
+    }
+  }, [searchParams, searchRecipes, initialLoad])
 
   const handleNextPageBtn = async () => {
     if (nextPage) {
@@ -102,7 +107,7 @@ const SearchRecipes = () => {
         {loading &&
           !recipes.hits && ( // Check if loading is true and no recipes
             // <SkeletonDemo />
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <Image
                 src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
                 width={16}
@@ -114,10 +119,10 @@ const SearchRecipes = () => {
 
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col gap-1">
-            <div className={cn("container flex justify-between ")}>
+            <div className={cn("container flex justify-between")}>
               <Badge variant={"outline"}>{recipes.count} results 🎉</Badge>
               {loading && (
-                <div className="flex items-center justify-center h-full">
+                <div className="flex h-full items-center justify-center">
                   <Image
                     src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
                     width={16}
@@ -128,7 +133,12 @@ const SearchRecipes = () => {
               )}
               <Button onClick={handleNextPageBtn}>Next Page </Button>
             </div>
-            <div className="flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row">
+            <div
+              className={cn(
+                "flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row",
+                className
+              )}
+            >
               {recipes.hits.map((recipe) => (
                 <Link
                   target="_blank"

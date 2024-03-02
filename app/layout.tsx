@@ -1,5 +1,6 @@
 import "@/styles/globals.css"
 import { Metadata } from "next"
+import Head from "next/head"
 import { Analytics } from "@vercel/analytics/react"
 
 import { siteConfig } from "@/config/site"
