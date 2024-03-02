@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils"
 import { Badge, badgeVariants } from "@/components/ui/badge"
 
 import { CardLink } from "./CardLink"
-import { SkeletonDemo } from "./SkeletonDemo"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
@@ -150,7 +149,7 @@ const SearchRecipes = ({ className }) => {
                   key={recipe.recipe.shareAs}
                   href={recipe.recipe.shareAs}
                 >
-                  <CardLink className="mb-4" recipe={recipe} />
+                  <CardLink recipe={recipe} />
                 </Link>
               ))}
             </div>

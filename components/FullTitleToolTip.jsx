@@ -61,11 +61,7 @@ const FullTitleToolTip = ({ children, title }) => {
     <TooltipProvider skipDelayDuration={0} delayDuration={0}>
       <Tooltip>
         <TooltipTrigger ref={tooltipRef}>{children}</TooltipTrigger>
-        <TooltipContent
-          sideOffset={offset}
-          side={side}
-          className={`absolute transform -translate-x-1/2 left-1/2 -bottom-full md:-bottom-full max-w-[900px]`}
-        >
+        <TooltipContent side={side}>
           <p>{title}</p>
         </TooltipContent>
       </Tooltip>

@@ -30,25 +30,24 @@ function extractRecipeName(url: string) {
 
   return capitalizedString
 }
-// @ts-ignore
+
 export function CardLink({ recipe }) {
   const { shareAs, calories } = recipe.recipe
 
   return (
     <div className="flex flex-wrap md:w-full">
       <FullTitleToolTip title={extractRecipeName(shareAs)}>
-        <Card className="md:w-56 sm:w-36 xs:w-22 w-36 flex-grow overflow-hidden h-60 dark:hover:bg-zinc-900 hover:bg-orange-200">
+        <Card className="md:w-56 sm:w-36 xs:w-22 w-36 flex-grow overflow-hidden h-52 dark:hover:bg-zinc-900  hover:bg-orange-200">
           {/* Set a fixed height */}
-          <div className="flex flex-col justify-center items-center p-2">
+          <div className="flex flex-col justify-center items-center p-2 ">
             <Image
               src={recipe.recipe.images.SMALL.url}
               alt="recipe thumbnail"
               width={recipe.recipe.images.SMALL.width}
               height={recipe.recipe.images.SMALL.height}
-              className="w-40 h-40 rounded-2xl p-2"
+              className="w-36 h-auto rounded-2xl p-2"
             />
-            <CardTitle className="overflow-hidden line-clamp-2 sm:line-clamp-2 whitespace-normal text-center transition xs:text-sm text-lg md:text-xl lg:text-2xl">
-              {/* line-clamp-2 truncates to 2 lines, adjust the value as needed */}
+            <CardTitle className="overflow-hidden flex-grow whitespace-normal line-clamp-3 sm:line-clamp-3 md:line-clamp-2  text-center transition xs:text-xs text-sm md:text-sm lg:text-sm">
               {extractRecipeName(shareAs)}
             </CardTitle>
           </div>
