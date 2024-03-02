@@ -23,7 +23,8 @@ const SearchRecipes = ({ className }) => {
   const [fetchUrl, setFetchUrl] = useState(
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
-  const [initialLoad, setInitialLoad] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [prevPageUrl, setPrevPageUrl] = useState(null)
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -50,17 +51,20 @@ const SearchRecipes = ({ className }) => {
   )
 
   useEffect(() => {
-    const searchTerm = searchParams.get("q")
-    setInput(searchTerm || "")
-    if (initialLoad && searchTerm) {
-      setInitialLoad(false)
-      searchRecipes() // Automatically submit the form on initial load
+    // Perform initial search only on first load
+    if (isInitialLoad) {
+      const searchTerm = searchParams.get("q")
+      if (searchTerm) {
+        searchRecipes()
+      }
+      setIsInitialLoad(false)
     }
-  }, [searchParams, searchRecipes, initialLoad])
+  }, [searchParams, searchRecipes, isInitialLoad])
 
   const handleNextPageBtn = async () => {
     if (nextPage) {
       setLoading(true)
+      setPrevPageUrl(nextPage) // Store current page URL before fetching next page
       try {
         const response = await fetch(nextPage, { cache: "force-cache" })
         const data = await response.json()
@@ -109,6 +113,7 @@ const SearchRecipes = ({ className }) => {
             // <SkeletonDemo />
             <div className="flex h-full items-center justify-center">
               <Image
+                priority
                 src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
                 width={16}
                 height={16}
@@ -124,6 +129,7 @@ const SearchRecipes = ({ className }) => {
               {loading && (
                 <div className="flex h-full items-center justify-center">
                   <Image
+                    priority
                     src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
                     width={16}
                     height={16}

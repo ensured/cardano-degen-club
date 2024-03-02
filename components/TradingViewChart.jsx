@@ -15,10 +15,10 @@ function TradingViewWidget() {
     script.innerHTML = `
       {
         "symbols": [
-          ["COINBASE:ADAUSD|1D"],
-          ["CRYPTOCAP:BTC.D|1D"],
-          ["COINBASE:ADABTC|1D"],
-          ["COINBASE:ADAETH|1D"]
+          ["BINANCE:ADAUSD|7D"],
+          ["CRYPTOCAP:BTC.D|7D"],
+          ["COINBASE:ADABTC|7D"],
+          ["COINBASE:ADAETH|7D"]
         ],
         "chartOnly": false,
         "width": "${Math.floor(window.innerHeight * 0.98)}",
@@ -34,8 +34,8 @@ function TradingViewWidget() {
         "scalePosition": "right",
         "scaleMode": "Normal",
         "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-        "fontSize": "12",
-        "noTimeScale": false,
+        "fontSize": "10",
+        "noTimeScale": true,
         "valuesTracking": "1",
         "changeMode": "price-and-percent",
         "chartType": "area",
@@ -49,8 +49,7 @@ function TradingViewWidget() {
           "1m|30",
           "3m|60",
           "12m|1D",
-          "60m|1W",
-          "all|1M"
+          "60m|1W"
         ]
       }
     `
