@@ -23,14 +23,18 @@ const SearchRecipes = ({ className }) => {
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [prevPageUrl, setPrevPageUrl] = useState(null)
+  const [prevPageDataStack, setPrevPageDataStack] = useState([])
+  const [currentPage, setCurrentPage] = useState(1)
 
   const searchRecipes = useCallback(
     async (e) => {
       if (e?.target?.tagName === "FORM") {
         e.preventDefault() // Prevent form submission only if triggered by a form
       }
-
+      if (input !== searchParams.get("q")) {
+        setPrevPageDataStack([]) // Clear the stack for a new query
+        setCurrentPage(1) // Reset current page to 1
+      }
       setRecipes({})
       try {
         setLoading(true)
@@ -38,6 +42,8 @@ const SearchRecipes = ({ className }) => {
         const data = await response.json()
         setRecipes(data)
         setNextPage(data._links.next.href)
+        setPrevPageDataStack((prevStack) => [...prevStack, data])
+        setCurrentPage(1)
         router.replace(`?q=${input}`)
       } catch (err) {
         console.log(err)
@@ -45,7 +51,7 @@ const SearchRecipes = ({ className }) => {
         setLoading(false)
       }
     },
-    [fetchUrl, input, router]
+    [fetchUrl, input, router, searchParams]
   )
 
   useEffect(() => {
@@ -62,17 +68,28 @@ const SearchRecipes = ({ className }) => {
   const handleNextPageBtn = async () => {
     if (nextPage) {
       setLoading(true)
-      setPrevPageUrl(nextPage) // Store current page URL before fetching next page
       try {
         const response = await fetch(nextPage, { cache: "force-cache" })
         const data = await response.json()
         setRecipes(data)
         setNextPage(data._links.next.href)
+        setPrevPageDataStack((prevStack) => [...prevStack, data])
+        setCurrentPage((prevPage) => prevPage + 1)
       } catch (error) {
         console.log(error)
       } finally {
         setLoading(false)
       }
+    }
+  }
+
+  const handleBackBtn = () => {
+    if (prevPageDataStack.length > 1) {
+      const prevData = prevPageDataStack[prevPageDataStack.length - 2]
+      setPrevPageDataStack((prevStack) => prevStack.slice(0, -1))
+      setRecipes(prevData)
+      setNextPage(prevData._links.next.href)
+      setCurrentPage((prevPage) => prevPage - 1)
     }
   }
 
@@ -111,7 +128,7 @@ const SearchRecipes = ({ className }) => {
             // <SkeletonDemo />
             <div className="flex h-full items-center justify-center">
               <Image
-                priority
+                priority={true}
                 src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
                 width={16}
                 height={16}
@@ -123,11 +140,20 @@ const SearchRecipes = ({ className }) => {
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col gap-1">
             <div className={cn("container flex justify-between")}>
-              <Badge variant={"outline"}>{recipes.count} results 🎉</Badge>
+              <div className="flex flex-row gap-2">
+                {prevPageDataStack.length > 2 &&
+                  !isInitialLoad &&
+                  currentPage >= 1 && (
+                    <Button onClick={handleBackBtn}>Back</Button>
+                  )}
+                <Badge variant={"outline"}>{recipes.count} results 🎉</Badge>
+                <Badge variant={"outline"}>Page {currentPage}</Badge>
+              </div>
+
               {loading && (
                 <div className="flex h-full items-center justify-center">
                   <Image
-                    priority
+                    priority={true}
                     src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
                     width={16}
                     height={16}
@@ -135,6 +161,7 @@ const SearchRecipes = ({ className }) => {
                   />
                 </div>
               )}
+
               <Button onClick={handleNextPageBtn}>Next Page </Button>
             </div>
             <div
