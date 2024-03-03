@@ -141,7 +141,7 @@ const SearchRecipes = ({ className }) => {
           <div className="flex flex-col gap-1">
             <div className={cn("container flex justify-between")}>
               <div className="flex flex-row gap-2">
-                {prevPageDataStack.length > 2 &&
+                {prevPageDataStack.length > 1 &&
                   !isInitialLoad &&
                   currentPage > 1 && (
                     <Button onClick={handleBackBtn}>Back</Button>
