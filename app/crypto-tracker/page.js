@@ -34,7 +34,7 @@ const Crypto = () => {
   };
 
   return (
-    <div className="px-2 flex flex-col justify-center items-center">
+    <div className="px-2 flex justify-center items-center">
       <TradingViewChart />
 
       <div>
