@@ -15,12 +15,16 @@ import { Input } from "./ui/input"
 const Dropdown = ({ options, selectedOption, onSelect }) => {
   return (
     <select
-      className="flex flex-col justify-center items-center p-4 bg--primary"
+      className="p-2 rounded-md bg-gray-800 text-white focus:outline-none"
       value={selectedOption}
       onChange={(e) => onSelect(e.target.value)}
     >
       {options.map((option) => (
-        <option className="text-2xl bold" key={option} value={option}>
+        <option
+          className="font-bold text-md bg-gray-800"
+          key={option}
+          value={option}
+        >
           Page: {option}
         </option>
       ))}
@@ -90,10 +94,23 @@ const SearchRecipes = ({ className }) => {
       try {
         const response = await fetch(nextPage, { cache: "force-cache" })
         const data = await response.json()
-        setRecipes(data)
-        setNextPage(data._links.next.href)
-        setPrevPageDataStack((prevStack) => [...prevStack, data])
-        setCurrentPage((prevPage) => prevPage + 1)
+        const nextPageUrl = data._links.next.href
+
+        // Check if the new page URL is different from the last one in the stack
+        if (
+          !prevPageDataStack.some(
+            (page) => page._links.next.href === nextPageUrl
+          )
+        ) {
+          setRecipes(data)
+          setNextPage(nextPageUrl)
+          setPrevPageDataStack((prevStack) => [...prevStack, data])
+          setCurrentPage((prevPage) => prevPage + 1)
+        } else {
+          // If the data is the same, update nextPage manually to progress
+          // This handles the case when the same page is fetched again
+          setNextPage(nextPageUrl)
+        }
       } catch (error) {
         console.log(error)
       } finally {
@@ -159,7 +176,7 @@ const SearchRecipes = ({ className }) => {
               )}
             >
               <div className="flex flex-row gap-2">
-                <Badge variant={"outline"}>
+                <Badge variant={"outline"} className="p-2">
                   <Dropdown
                     options={Array.from(
                       { length: prevPageDataStack.length },
