@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -11,6 +11,22 @@ import { Badge, badgeVariants } from "@/components/ui/badge"
 import { CardLink } from "./CardLink"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+
+const Dropdown = ({ options, selectedOption, onSelect }) => {
+  return (
+    <select
+      className="flex flex-col justify-center items-center p-4 bg--primary"
+      value={selectedOption}
+      onChange={(e) => onSelect(e.target.value)}
+    >
+      {options.map((option) => (
+        <option className="text-2xl bold" key={option} value={option}>
+          Page: {option}
+        </option>
+      ))}
+    </select>
+  )
+}
 
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
@@ -26,10 +42,16 @@ const SearchRecipes = ({ className }) => {
   const [prevPageDataStack, setPrevPageDataStack] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
 
+  const lastInputRef = useRef(input)
+
   const searchRecipes = useCallback(
     async (e) => {
       if (e?.target?.tagName === "FORM") {
         e.preventDefault() // Prevent form submission only if triggered by a form
+      }
+      if (input !== lastInputRef.current) {
+        setPrevPageDataStack([])
+        setCurrentPage(1) // Reset current page to 1
       }
       if (input !== searchParams.get("q")) {
         setPrevPageDataStack([]) // Clear the stack for a new query
@@ -56,11 +78,8 @@ const SearchRecipes = ({ className }) => {
 
   useEffect(() => {
     // Perform initial search only on first load
-    if (isInitialLoad) {
-      const searchTerm = searchParams.get("q")
-      if (searchTerm) {
-        searchRecipes()
-      }
+    if (isInitialLoad && searchParams.get("q")) {
+      searchRecipes()
       setIsInitialLoad(false)
     }
   }, [searchParams, searchRecipes, isInitialLoad])
@@ -86,10 +105,21 @@ const SearchRecipes = ({ className }) => {
   const handleBackBtn = () => {
     if (prevPageDataStack.length > 1) {
       const prevData = prevPageDataStack[prevPageDataStack.length - 2]
-      setPrevPageDataStack((prevStack) => prevStack.slice(0, -1))
       setRecipes(prevData)
       setNextPage(prevData._links.next.href)
       setCurrentPage((prevPage) => prevPage - 1)
+    }
+  }
+
+  const handlePageSelect = (selectedPage) => {
+    const selectedPageIndex = parseInt(selectedPage, 10) - 1
+    if (
+      selectedPageIndex >= 0 &&
+      selectedPageIndex < prevPageDataStack.length
+    ) {
+      setCurrentPage(selectedPageIndex + 1)
+      setRecipes(prevPageDataStack[selectedPageIndex])
+      setNextPage(prevPageDataStack[selectedPageIndex]._links.next.href)
     }
   }
 
@@ -99,14 +129,6 @@ const SearchRecipes = ({ className }) => {
     )
     setInput(e.target.value)
     router.push(`?q=${e.target.value}`)
-  }
-
-  function extractRecipeName(url) {
-    const recipePath = url.split("/")[4]
-    const lastDashIndex = recipePath.lastIndexOf("-")
-    const cleanedName =
-      lastDashIndex !== -1 ? recipePath.substring(0, lastDashIndex) : recipePath
-    return cleanedName
   }
 
   return (
@@ -123,19 +145,11 @@ const SearchRecipes = ({ className }) => {
           <Button type="submit">Search</Button>
         </form>
 
-        {loading &&
-          !recipes.hits && ( // Check if loading is true and no recipes
-            // <SkeletonDemo />
-            <div className="flex h-full items-center justify-center">
-              <Image
-                priority={true}
-                src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
-                width={16}
-                height={16}
-                alt="loading"
-              />
-            </div>
-          )}
+        {loading && !recipes.hits && (
+          <div className="flex h-full items-center justify-center">
+            {/* ... Loading spinner */}
+          </div>
+        )}
 
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col gap-1">
@@ -145,24 +159,27 @@ const SearchRecipes = ({ className }) => {
               )}
             >
               <div className="flex flex-row gap-2">
-                {prevPageDataStack.length > 1 &&
-                  !isInitialLoad &&
-                  currentPage > 1 && (
-                    <Button onClick={handleBackBtn}>Back</Button>
-                  )}
-                <Badge variant={"outline"}>{recipes.count} results 🎉</Badge>
-                <Badge variant={"outline"}>Page {currentPage}</Badge>
+                <Badge variant={"outline"}>
+                  <Dropdown
+                    options={Array.from(
+                      { length: prevPageDataStack.length },
+                      (_, i) => i + 1
+                    )}
+                    selectedOption={currentPage.toString()}
+                    onSelect={handlePageSelect}
+                  />
+                  {recipes.count} results 🎉{" "}
+                  {prevPageDataStack.length > 1 &&
+                    !isInitialLoad &&
+                    currentPage > 1 && (
+                      <Button onClick={handleBackBtn}>Back</Button>
+                    )}
+                </Badge>
               </div>
 
               {loading && (
                 <div className="flex h-full items-center justify-center">
-                  <Image
-                    priority={true}
-                    src="https://abs-0.twimg.com/login/img/16/spinner@2x.gif"
-                    width={16}
-                    height={16}
-                    alt="loading"
-                  />
+                  {/* ... Loading spinner */}
                 </div>
               )}
 
