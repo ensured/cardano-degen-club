@@ -43,6 +43,12 @@ const Dropdown = () => {
         <Link href="/recipe-finder">
           <DropdownMenuItem value="top">Recipe Finder</DropdownMenuItem>
         </Link>
+        <Link href="/crypto-tracker">
+          <DropdownMenuItem value="top">Crypto Tracker</DropdownMenuItem>
+        </Link>
+        <Link href="/breakout">
+          <DropdownMenuItem value="top">Breakout Game</DropdownMenuItem>
+        </Link>
 
         <DropdownMenuItem value="top" onClick={handleIagonLinkClick}>
           Iagon Node Status Webapp
