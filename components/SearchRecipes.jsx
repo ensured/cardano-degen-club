@@ -139,7 +139,11 @@ const SearchRecipes = ({ className }) => {
 
         {recipes.hits?.length > 0 ? (
           <div className="flex flex-col gap-1">
-            <div className={cn("container flex justify-between")}>
+            <div
+              className={cn(
+                "container flex items-center gap-2 justify-between py-1"
+              )}
+            >
               <div className="flex flex-row gap-2">
                 {prevPageDataStack.length > 1 &&
                   !isInitialLoad &&
