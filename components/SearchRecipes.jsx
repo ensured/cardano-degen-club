@@ -143,7 +143,7 @@ const SearchRecipes = ({ className }) => {
               <div className="flex flex-row gap-2">
                 {prevPageDataStack.length > 2 &&
                   !isInitialLoad &&
-                  currentPage >= 1 && (
+                  currentPage > 0 && (
                     <Button onClick={handleBackBtn}>Back</Button>
                   )}
                 <Badge variant={"outline"}>{recipes.count} results 🎉</Badge>
