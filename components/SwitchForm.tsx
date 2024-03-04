@@ -131,7 +131,7 @@ const SwitchForm = () => {
             id="amount"
             type="number"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => setAmount(Number(e.target.value))}
             className="rounded-md border border-gray-300 px-3 py-2 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500/50 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           />
 
