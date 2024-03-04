@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useEffect, useRef, useState } from "react"
+import { memo, useEffect, useRef } from "react"
 
 function TradingViewWidget() {
   const container = useRef()
@@ -21,11 +21,11 @@ function TradingViewWidget() {
           ["COINBASE:ADAETH|7D"]
         ],
         "chartOnly": false,
-        "width": "${Math.floor(window.innerHeight * 0.98)}",
-        "height": "${Math.floor(window.innerHeight * 0.93)}",
+        "width": "100%",
+        "height": "500",
         "locale": "en",
         "colorTheme": "dark",
-        "autosize": false,
+        "autosize": true,
         "showVolume": false,
         "showMA": false,
         "hideDateRanges": false,
