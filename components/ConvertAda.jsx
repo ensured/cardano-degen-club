@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 
+const SATOSHIS_PER_BITCOIN = 1e8
 const adaPriceApiUrl =
   "https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=usd"
 const btcPriceApiUrl =
@@ -35,7 +36,7 @@ const ConvertAda = () => {
 
   const handleAmountChange = (event) => {
     const newAmount = parseFloat(event.target.value).toString()
-    setAmount(isNaN(newAmount) ? 0 : parseFloat(newAmount))
+    setAmount(isNaN(newAmount) ? "" : parseFloat(newAmount))
   }
 
   const convertToLovelaces = (amount, conversionRate) => {
@@ -102,7 +103,7 @@ const ConvertAda = () => {
           amount,
           cryptoPrices.BTC * cryptoPrices.ADA
         ).toLocaleString()
-      : (amount * 1e8).toLocaleString()
+      : (amount * SATOSHIS_PER_BITCOIN).toLocaleString()
 
   const convertedBTC =
     currency === "ADA" ? amount / (cryptoPrices.BTC * cryptoPrices.ADA) : amount
@@ -156,19 +157,17 @@ const ConvertAda = () => {
         <div className="flex flex-col justify-between gap-2 p-2">
           {currency === "ADA" && (
             <p>
-              Lovelaces: <strong>{convertedLovelaces}</strong>
+              Lovelaces: {amount > 0 && <strong>{convertedLovelaces}</strong>}
             </p>
           )}
 
-          {currency === "BTC" && <div>ADA: {convertedADA}</div>}
+          {currency === "BTC" && (
+            <div>ADA: {amount > 0 && <strong>{convertedADA}</strong>}</div>
+          )}
 
-          <p>
-            Sats: <strong>{convertedSats}</strong>
-          </p>
+          <p>Sats: {amount > 0 && <strong>{convertedSats}</strong>}</p>
           {currency === "ADA" && cryptoPrices.BTC && (
-            <p>
-              BTC: <strong>{convertedBTC}</strong>
-            </p>
+            <p>BTC: {amount > 0 && <strong>{convertedBTC}</strong>}</p>
           )}
         </div>
       </div>
