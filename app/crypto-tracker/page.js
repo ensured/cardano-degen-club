@@ -8,7 +8,7 @@ const page = () => {
 
 
   return (
-    <div className="flex flex-col items-center justify-center px-2">
+    <div className="flex flex-col items-center justify-center">
       <ConvertAda />
 
       <TradingViewChart />

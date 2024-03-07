@@ -80,6 +80,7 @@ const ConvertAda = () => {
 
   const convertedLovelaces =
     currency === "ADA" && convertToLovelaces(amount, 1000000).toLocaleString()
+
   const convertedADA =
     currency === "ADA"
       ? (amount * cryptoPrices.BTC * cryptoPrices.ADA).toLocaleString(
@@ -106,12 +107,12 @@ const ConvertAda = () => {
       : (amount * SATOSHIS_PER_BITCOIN).toLocaleString()
 
   const convertedBTC =
-    currency === "ADA" ? amount / (cryptoPrices.BTC * cryptoPrices.ADA) : amount
+    currency === "ADA" && amount / (cryptoPrices.ADA * cryptoPrices.BTC)
 
   return (
-    <div className="container">
-      <div className={cn("flex flex-col container")}>
-        <div className="flex flex-row items-center space-x-2 py-2">
+    <div className=" overflow-x-auto">
+      <div className={cn("flex flex-col")}>
+        <div className="flex flex-row items-center gap-2 px-2">
           <Switch
             id="currency-switch"
             checked={currency === "ADA"}
@@ -154,11 +155,12 @@ const ConvertAda = () => {
             </svg>
           )}
         </div>
+
         <div className="flex flex-col justify-between gap-2 p-2">
-          {currency === "ADA" && (
-            <p>
-              Lovelaces: {amount > 0 && <strong>{convertedLovelaces}</strong>}
-            </p>
+          {currency === "ADA" && cryptoPrices.BTC && (
+            <div className="flex flex-nowrap gap-2">
+              BTC: {amount > 0 && <strong>{convertedBTC.toFixed(10)}</strong>}
+            </div>
           )}
 
           {currency === "BTC" && (
@@ -166,8 +168,11 @@ const ConvertAda = () => {
           )}
 
           <p>Sats: {amount > 0 && <strong>{convertedSats}</strong>}</p>
-          {currency === "ADA" && cryptoPrices.BTC && (
-            <p>BTC: {amount > 0 && <strong>{convertedBTC}</strong>}</p>
+
+          {currency === "ADA" && (
+            <p>
+              Lovelaces: {amount > 0 && <strong>{convertedLovelaces}</strong>}
+            </p>
           )}
         </div>
       </div>
