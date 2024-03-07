@@ -156,7 +156,25 @@ const ConvertAda = () => {
           )}
         </div>
 
-        <div className="flex flex-col justify-between gap-2 p-2">
+        <div className="flex flex-col justify-between gap-2">
+          {currency === "ADA" ? (
+            <div className="flex flex-col justify-center items-center text-2xl">
+              {cryptoPrices && <strong>${cryptoPrices.ADA.toFixed(4)}</strong>}
+            </div>
+          ) : (
+            <div className="flex flex-col justify-center items-center text-2xl">
+              {cryptoPrices && (
+                <strong>
+                  $
+                  {cryptoPrices.BTC.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </strong>
+              )}
+            </div>
+          )}
+
           {currency === "ADA" && cryptoPrices.BTC && (
             <div className="flex flex-nowrap gap-2">
               BTC: {amount > 0 && <strong>{convertedBTC.toFixed(10)}</strong>}

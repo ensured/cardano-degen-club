@@ -4,10 +4,9 @@ function Skeleton({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  console.log(className)
   return (
     <div
-      className={cn("animate-pulse bg-slate-900 w-48 h-48 mt-8", className)}
+      className={cn("mt-8 rounded-md animate-pulse bg-slate-50", className)}
       {...props}
     />
   )
