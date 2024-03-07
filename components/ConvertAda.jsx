@@ -119,13 +119,6 @@ const ConvertAda = () => {
             onCheckedChange={handleSwitchChange}
           />
           <Label htmlFor="currency-switch">{currency}</Label>
-
-          <Input
-            type="number"
-            value={amount}
-            onChange={handleAmountChange}
-            placeholder={`Enter ${currency} amount`}
-          />
           {currency === "ADA" ? (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -154,6 +147,12 @@ const ConvertAda = () => {
               />
             </svg>
           )}
+          <Input
+            type="number"
+            value={amount}
+            onChange={handleAmountChange}
+            placeholder={`Enter ${currency} amount`}
+          />
         </div>
 
         <div className="flex flex-col justify-between gap-2">
