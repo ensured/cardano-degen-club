@@ -15,13 +15,13 @@ import { Input } from "./ui/input"
 const Dropdown = ({ options, selectedOption, onSelect }) => {
   return (
     <select
-      className="p-2 rounded-md bg-gray-800 text-white focus:outline-none"
+      className="rounded-md bg-gray-800 p-2 text-white focus:outline-none"
       value={selectedOption}
       onChange={(e) => onSelect(e.target.value)}
     >
       {options.map((option) => (
         <option
-          className="font-bold text-md bg-gray-800"
+          className="text-md bg-gray-800 font-bold"
           key={option}
           value={option}
         >
@@ -31,7 +31,6 @@ const Dropdown = ({ options, selectedOption, onSelect }) => {
     </select>
   )
 }
-
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -43,7 +42,7 @@ const SearchRecipes = ({ className }) => {
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [prevPageDataStack, setPrevPageDataStack] = useState([])
+  const [pageData, setPageData] = useState({})
   const [currentPage, setCurrentPage] = useState(1)
 
   const lastInputRef = useRef(input)
@@ -54,11 +53,10 @@ const SearchRecipes = ({ className }) => {
         e.preventDefault() // Prevent form submission only if triggered by a form
       }
       if (input !== lastInputRef.current) {
-        setPrevPageDataStack([])
         setCurrentPage(1) // Reset current page to 1
       }
       if (input !== searchParams.get("q")) {
-        setPrevPageDataStack([]) // Clear the stack for a new query
+        setPageData({}) // Clear the page data dictionary for a new query
         setCurrentPage(1) // Reset current page to 1
       }
       setRecipes({})
@@ -68,7 +66,10 @@ const SearchRecipes = ({ className }) => {
         const data = await response.json()
         setRecipes(data)
         setNextPage(data._links.next.href)
-        setPrevPageDataStack((prevStack) => [...prevStack, data])
+        setPageData((prevPageData) => ({
+          ...prevPageData,
+          [currentPage]: data,
+        }))
         setCurrentPage(1)
         router.replace(`?q=${input}`)
       } catch (err) {
@@ -77,16 +78,8 @@ const SearchRecipes = ({ className }) => {
         setLoading(false)
       }
     },
-    [fetchUrl, input, router, searchParams]
+    [fetchUrl, input, router, searchParams, currentPage]
   )
-
-  useEffect(() => {
-    // Perform initial search only on first load
-    if (isInitialLoad && searchParams.get("q")) {
-      searchRecipes()
-      setIsInitialLoad(false)
-    }
-  }, [searchParams, searchRecipes, isInitialLoad])
 
   const handleNextPageBtn = async () => {
     if (nextPage) {
@@ -96,19 +89,19 @@ const SearchRecipes = ({ className }) => {
         const data = await response.json()
         const nextPageUrl = data._links.next.href
 
-        // Check if the new page URL is different from the last one in the stack
+        // Check if the new page URL is different from the last one
         if (
-          !prevPageDataStack.some(
-            (page) => page._links.next.href === nextPageUrl
-          )
+          !pageData[currentPage + 1] ||
+          pageData[currentPage + 1]._links.next.href !== nextPageUrl
         ) {
+          setPageData((prevPageData) => ({
+            ...prevPageData,
+            [currentPage + 1]: data,
+          }))
           setRecipes(data)
           setNextPage(nextPageUrl)
-          setPrevPageDataStack((prevStack) => [...prevStack, data])
           setCurrentPage((prevPage) => prevPage + 1)
         } else {
-          // If the data is the same, update nextPage manually to progress
-          // This handles the case when the same page is fetched again
           setNextPage(nextPageUrl)
         }
       } catch (error) {
@@ -120,23 +113,19 @@ const SearchRecipes = ({ className }) => {
   }
 
   const handleBackBtn = () => {
-    if (prevPageDataStack.length > 1) {
-      const prevData = prevPageDataStack[prevPageDataStack.length - 2]
-      setRecipes(prevData)
-      setNextPage(prevData._links.next.href)
+    if (currentPage > 1) {
+      setRecipes(pageData[currentPage - 1])
+      setNextPage(pageData[currentPage - 1]?._links?.next?.href || "")
       setCurrentPage((prevPage) => prevPage - 1)
     }
   }
 
   const handlePageSelect = (selectedPage) => {
-    const selectedPageIndex = parseInt(selectedPage, 10) - 1
-    if (
-      selectedPageIndex >= 0 &&
-      selectedPageIndex < prevPageDataStack.length
-    ) {
-      setCurrentPage(selectedPageIndex + 1)
-      setRecipes(prevPageDataStack[selectedPageIndex])
-      setNextPage(prevPageDataStack[selectedPageIndex]._links.next.href)
+    const selectedPageIndex = parseInt(selectedPage, 10)
+    if (pageData[selectedPageIndex]) {
+      setCurrentPage(selectedPageIndex)
+      setRecipes(pageData[selectedPageIndex])
+      setNextPage(pageData[selectedPageIndex]._links.next.href)
     }
   }
 
@@ -147,6 +136,14 @@ const SearchRecipes = ({ className }) => {
     setInput(e.target.value)
     router.push(`?q=${e.target.value}`)
   }
+
+  useEffect(() => {
+    // Perform initial search only on first load
+    if (isInitialLoad && searchParams.get("q")) {
+      searchRecipes()
+      setIsInitialLoad(false)
+    }
+  }, [searchParams, searchRecipes, isInitialLoad])
 
   return (
     <div className="flex flex-col">
@@ -171,25 +168,20 @@ const SearchRecipes = ({ className }) => {
         <div className="flex flex-col gap-1">
           <div
             className={cn(
-              "container flex items-center gap-2 justify-between py-1"
+              "container flex items-center justify-between gap-2 py-1"
             )}
           >
             <div className="flex flex-row gap-2">
               <Badge variant={"outline"} className="p-2">
                 <Dropdown
                   options={Array.from(
-                    { length: prevPageDataStack.length },
+                    { length: Object.keys(pageData).length },
                     (_, i) => i + 1
                   )}
                   selectedOption={currentPage.toString()}
                   onSelect={handlePageSelect}
                 />
-                {recipes.count} results 🎉{" "}
-                {prevPageDataStack.length > 1 &&
-                  !isInitialLoad &&
-                  currentPage > 1 && (
-                    <Button onClick={handleBackBtn}>Back</Button>
-                  )}
+                {recipes.count} results 🎉
               </Badge>
             </div>
 
@@ -198,8 +190,14 @@ const SearchRecipes = ({ className }) => {
                 {/* ... Loading spinner */}
               </div>
             )}
-
-            <Button onClick={handleNextPageBtn}>Next Page </Button>
+            <div className="flex flex-row justify-center gap-2">
+              {Object.keys(pageData).length > 1 &&
+                !isInitialLoad &&
+                currentPage > 1 && (
+                  <Button onClick={handleBackBtn}>Prev</Button>
+                )}
+              <Button onClick={handleNextPageBtn}>Next</Button>
+            </div>
           </div>
           <div
             className={cn(
