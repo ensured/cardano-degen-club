@@ -150,80 +150,78 @@ const SearchRecipes = ({ className }) => {
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col gap-2">
-        <form onSubmit={searchRecipes} className="container flex gap-2">
-          <Input
-            placeholder="search term"
-            type="text"
-            name="searchTerm"
-            onChange={handleInputChange}
-            value={input}
-          />
-          <Button type="submit">Search</Button>
-        </form>
+      <form onSubmit={searchRecipes} className="container flex gap-2">
+        <Input
+          placeholder="search term"
+          type="text"
+          name="searchTerm"
+          onChange={handleInputChange}
+          value={input}
+        />
+        <Button type="submit">Search</Button>
+      </form>
 
-        {loading && !recipes.hits && (
-          <div className="flex h-full items-center justify-center">
-            {/* ... Loading spinner */}
-          </div>
-        )}
+      {loading && !recipes.hits && (
+        <div className="flex h-full items-center justify-center">
+          {/* ... Loading spinner */}
+        </div>
+      )}
 
-        {recipes.hits?.length > 0 ? (
-          <div className="flex flex-col gap-1">
-            <div
-              className={cn(
-                "container flex items-center gap-2 justify-between py-1"
-              )}
-            >
-              <div className="flex flex-row gap-2">
-                <Badge variant={"outline"} className="p-2">
-                  <Dropdown
-                    options={Array.from(
-                      { length: prevPageDataStack.length },
-                      (_, i) => i + 1
-                    )}
-                    selectedOption={currentPage.toString()}
-                    onSelect={handlePageSelect}
-                  />
-                  {recipes.count} results 🎉{" "}
-                  {prevPageDataStack.length > 1 &&
-                    !isInitialLoad &&
-                    currentPage > 1 && (
-                      <Button onClick={handleBackBtn}>Back</Button>
-                    )}
-                </Badge>
+      {recipes.hits?.length > 0 ? (
+        <div className="flex flex-col gap-1">
+          <div
+            className={cn(
+              "container flex items-center gap-2 justify-between py-1"
+            )}
+          >
+            <div className="flex flex-row gap-2">
+              <Badge variant={"outline"} className="p-2">
+                <Dropdown
+                  options={Array.from(
+                    { length: prevPageDataStack.length },
+                    (_, i) => i + 1
+                  )}
+                  selectedOption={currentPage.toString()}
+                  onSelect={handlePageSelect}
+                />
+                {recipes.count} results 🎉{" "}
+                {prevPageDataStack.length > 1 &&
+                  !isInitialLoad &&
+                  currentPage > 1 && (
+                    <Button onClick={handleBackBtn}>Back</Button>
+                  )}
+              </Badge>
+            </div>
+
+            {loading && (
+              <div className="flex h-full items-center justify-center">
+                {/* ... Loading spinner */}
               </div>
+            )}
 
-              {loading && (
-                <div className="flex h-full items-center justify-center">
-                  {/* ... Loading spinner */}
-                </div>
-              )}
-
-              <Button onClick={handleNextPageBtn}>Next Page </Button>
-            </div>
-            <div
-              className={cn(
-                "flex flex-wrap justify-center gap-4 hover:bg-input sm:flex-col lg:flex-row",
-                className
-              )}
-            >
-              {recipes.hits.map((recipe) => (
-                <Link
-                  target="_blank"
-                  key={recipe.recipe.shareAs}
-                  href={recipe.recipe.shareAs}
-                >
-                  <CardLink recipe={recipe} />
-                </Link>
-              ))}
-            </div>
-            <br />
+            <Button onClick={handleNextPageBtn}>Next Page </Button>
           </div>
-        ) : (
-          ""
-        )}
-      </div>
+          <div
+            className={cn(
+              "flex flex-row flex-wrap justify-center gap-4 hover:bg-input",
+              className
+            )}
+          >
+            {recipes.hits.map((recipe) => (
+              <Link
+                target="_blank"
+                key={recipe.recipe.shareAs}
+                href={recipe.recipe.shareAs}
+              >
+                <CardLink recipe={recipe} />
+              </Link>
+            ))}
+          </div>
+          <br />
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   )
 }
