@@ -7,30 +7,32 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { Badge, badgeVariants } from "@/components/ui/badge"
+import SelectScrollable from "@/components/SelectScrollable"
 
 import { CardLink } from "./CardLink"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
-const Dropdown = ({ options, selectedOption, onSelect }) => {
-  return (
-    <select
-      className="rounded-md bg-gray-800 p-2 text-white focus:outline-none"
-      value={selectedOption}
-      onChange={(e) => onSelect(e.target.value)}
-    >
-      {options.map((option) => (
-        <option
-          className="text-md bg-gray-800 font-bold"
-          key={option}
-          value={option}
-        >
-          Page: {option}
-        </option>
-      ))}
-    </select>
-  )
-}
+// const Dropdown = ({ options, selectedOption, onSelect }) => {
+//   return (
+//     <select
+//       className="rounded-md bg-gray-800 p-2 text-white focus:outline-none"
+//       value={selectedOption}
+//       onChange={(e) => onSelect(e.target.value)}
+//     >
+//       {options.map((option) => (
+//         <option
+//           className="text-md bg-gray-800 font-bold"
+//           key={option}
+//           value={option}
+//         >
+//           Page: {option}
+//         </option>
+//       ))}
+//     </select>
+//   )
+// }
+
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -173,16 +175,16 @@ const SearchRecipes = ({ className }) => {
           >
             <div className="flex flex-row gap-2">
               <Badge variant={"outline"} className="p-2">
-                <Dropdown
-                  options={Array.from(
-                    { length: Object.keys(pageData).length },
-                    (_, i) => i + 1
-                  )}
-                  selectedOption={currentPage.toString()}
-                  onSelect={handlePageSelect}
-                />
                 {recipes.count} results 🎉
               </Badge>
+              <SelectScrollable
+                options={Array.from(
+                  { length: Object.keys(pageData).length },
+                  (_, i) => i + 1
+                )}
+                selectedOption={currentPage.toString()}
+                onSelect={handlePageSelect}
+              />
             </div>
 
             {loading && (
