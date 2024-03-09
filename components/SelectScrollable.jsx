@@ -16,12 +16,11 @@ export default function SelectScrollable({
   return (
     <Select
       onValueChange={(value) => {
-        console.log(value)
         onSelect(value)
       }}
     >
       <SelectTrigger className="w-[280px]">
-        <SelectValue placeholder={"Page: " + selectedOption} />
+        <SelectValue placeholder={`Page: ${selectedOption}`} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
