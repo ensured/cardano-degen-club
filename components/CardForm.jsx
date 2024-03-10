@@ -55,7 +55,7 @@ const CardForm = () => {
               Converted
             </Badge>
             <p className="text-lg font-semibold">{converted}</p>
-            <br />
+
             <Badge variant="outline" className="mb-2">
               {codePoints.length} Code Point{codePoints.length > 1 && "s"}
             </Badge>
@@ -73,7 +73,6 @@ const CardForm = () => {
             </Badge>
             <p className="text-lg font-semibold">{converted}</p>
 
-            <br />
             <Badge variant="outline" className="mb-2">
               {codePoints.length} Code Point{codePoints.length > 1 && "s"}
             </Badge>

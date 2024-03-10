@@ -1,6 +1,7 @@
-import * as React from "react"
+"use client"
 
-import { cn } from "@/lib/utils"
+import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,12 +23,13 @@ import {
 } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
-import { PutObjectCommand, s3Client } from "../lib/s3"
 import { useMediaQuery } from "../lib/use-media-query"
+import { putObjectInS3Bucket } from "./actions"
 
 export default function FeedBackDrawer() {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
 
   if (isDesktop) {
@@ -40,7 +42,7 @@ export default function FeedBackDrawer() {
           <DialogHeader>
             <DialogTitle>Leave feedback</DialogTitle>
             <DialogDescription>
-              Make changes to your profile here. Click save when youre done.
+              Your feedback is very important to us.
             </DialogDescription>
           </DialogHeader>
           <ProfileForm />
@@ -58,11 +60,11 @@ export default function FeedBackDrawer() {
         <DrawerHeader className="text-left">
           <DrawerTitle>Leave feedback</DrawerTitle>
           <DrawerDescription>
-            Your feedback is very much appreciated.
+            Your feedback is very important to us.
           </DrawerDescription>
         </DrawerHeader>
-        <ProfileForm className="px-4" />
-        <DrawerFooter className="pt-2">
+        <ProfileForm />
+        <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
           </DrawerClose>
@@ -72,30 +74,24 @@ export default function FeedBackDrawer() {
   )
 }
 
-function ProfileForm({ className }) {
-  function formatDateShorthand(dateString) {
-    const date = new Date(dateString)
-    return `${date.getFullYear()}${padZero(date.getMonth() + 1)}${padZero(
-      date.getDate()
-    )}-${padZero(date.getHours())}${padZero(date.getMinutes())}${padZero(
-      date.getSeconds()
-    )}`
-  }
-
-  function padZero(number) {
-    return number.toString().padStart(2, "0")
-  }
-
+function ProfileForm() {
   return (
-    <form
-      onSubmit={UploadComment}
-      className={cn("grid items-start gap-4", className)}
-    >
-      <div className="grid gap-2">
-        <Label htmlFor="username">Feedback</Label>
-        <Input id="username" defaultValue=":)" />
+    <form action={putObjectInS3Bucket}>
+      <div className="flex flex-col gap-2 px-4">
+        <Input
+          onPointerDown={(e) => e.stopPropagation()}
+          name="name"
+          id="name"
+          placeholder="name"
+        />
+        <Textarea
+          placeholder="Type your message here."
+          id="feedback"
+          name="feedback"
+          onPointerDown={(e) => e.stopPropagation()}
+        />
+        <Button type="submit">Send</Button>
       </div>
-      <Button type="submit">Send</Button>
     </form>
   )
 }

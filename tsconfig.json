@@ -29,7 +29,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "lib/fonts.js"
-, "components/**/*.js" , "components/**/*.ts"  ],
+    "lib/fonts.js",
+    "components/**/*.js",
+    "components/**/*.ts",
+    "components/**/*.jsx"
+  ],
   "exclude": ["node_modules"]
 }

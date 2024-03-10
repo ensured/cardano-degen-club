@@ -1,4 +1,5 @@
 import HomePage from "../components/HomePage"
+
 export const metadata = {
   title: "Punycode Converter",
 }

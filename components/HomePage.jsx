@@ -2,13 +2,13 @@
 
 import CardForm from "@/components/CardForm"
 
-// import Feedback from "../components/Feedback"
+import FeedBackDrawer from "./FeedbackClient"
 
 const HomePage = () => {
   return (
-    <div className="mt-8">
+    <div className="mt-8 flex flex-col items-center justify-center gap-4">
       <CardForm />
-      {/* <Feedback /> */}
+      <FeedBackDrawer />
     </div>
   )
 }

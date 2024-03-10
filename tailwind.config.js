@@ -14,10 +14,10 @@ module.exports = {
     },
     extend: {
       scrollbar: {
-        width: "4px", /* Adjust width as needed */
-        height: "8px", /* Adjust height as needed */
-        background: "rgba(255, 255, 255, 0.4)", /* Adjust color and opacity */
-        color: "rgba(0, 0, 0, 0.5)", /* Adjust thumb color */
+        width: "4px" /* Adjust width as needed */,
+        height: "8px" /* Adjust height as needed */,
+        background: "rgba(255, 255, 255, 0.4)" /* Adjust color and opacity */,
+        color: "rgba(0, 0, 0, 0.5)" /* Adjust thumb color */,
       },
       colors: {
         border: "hsl(var(--border))",
@@ -82,6 +82,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require('tailwind-scrollbar')],
-
+  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
 }

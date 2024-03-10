@@ -16,8 +16,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
     "@hookform/resolvers": "^3.3.4",
-    "@marlowe.io/runtime-lifecycle": "^0.3.0-beta-rc1",
-    "@marlowe.io/wallet": "^0.3.0-beta-rc1",
     "@octokit/core": "^5.0.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -38,6 +36,7 @@
     "firebase": "^10.7.1",
     "framer-motion": "^11.0.8",
     "lucide-react": "0.105.0-alpha.4",
+    "memory-cache": "^0.2.0",
     "next": "^14.0.4",
     "next-themes": "^0.2.1",
     "prismjs": "^1.29.0",
