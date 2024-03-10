@@ -75,16 +75,31 @@ export default function FeedBackDrawer() {
     </Drawer>
   )
 }
+
 function Submit({ setOpen }) {
   const handleButtonClick = () => {
     const nameInput = document.getElementById("name").value
     const feedbackInput = document.getElementById("feedback").value
 
     if (nameInput.length > 0 && feedbackInput.length > 0) {
-      // Both inputs have at least one character
-      toast("Your feedback has been submitted, thanks!", { type: "success" })
-      setOpen(false)
-      // Additional actions, such as launching the server action
+      const lastSubmissionTime = localStorage.getItem("lastSubmissionTime")
+      const currentTime = new Date().getTime()
+
+      if (!lastSubmissionTime || currentTime - lastSubmissionTime >= 60000) {
+        // It's been at least 60 seconds since the last submission
+        toast("Your feedback has been submitted, thanks!", { type: "success" })
+        setOpen(false)
+        putObjectInS3Bucket(nameInput, feedbackInput)
+        localStorage.setItem("lastSubmissionTime", currentTime)
+      } else {
+        // Show a toast with the time left until the next submission
+        const timeLeft = Math.ceil(
+          (60000 - (currentTime - lastSubmissionTime)) / 1000
+        )
+        toast(`Please wait ${timeLeft} seconds before submitting again.`, {
+          type: "warning",
+        })
+      }
     } else {
       // Show an error toast or handle the case where inputs are not valid
       toast("Please enter both a name and feedback before submitting.", {
@@ -103,44 +118,21 @@ function Submit({ setOpen }) {
 }
 
 function ProfileForm({ setOpen }) {
-  const status = useFormStatus()
-
-  const handleSubmit = (e) => {
-    e.preventDefault() // Prevent the default form submission behavior
-
-    const nameInput = document.getElementById("name").value
-    const feedbackInput = document.getElementById("feedback").value
-
-    if (nameInput.length > 0 && feedbackInput.length > 0) {
-      // Both inputs have at least one character
-      toast("Your feedback has been submitted, thanks!", { type: "success" })
-      setOpen(false)
-      putObjectInS3Bucket(nameInput, feedbackInput)
-    } else {
-      // Show an error toast or handle the case where inputs are not valid
-      toast("Please enter both a name and feedback before submitting.", {
-        type: "error",
-      })
-    }
-  }
-
   return (
-    <form onSubmit={handleSubmit} action={putObjectInS3Bucket}>
-      <div className="flex flex-col gap-2 px-4">
-        <Input
-          onPointerDown={(e) => e.stopPropagation()}
-          name="name"
-          id="name"
-          placeholder="name"
-        />
-        <Textarea
-          placeholder="Type your message here."
-          id="feedback"
-          name="feedback"
-          onPointerDown={(e) => e.stopPropagation()}
-        />
-        <Submit setOpen={setOpen} />
-      </div>
-    </form>
+    <div className="flex flex-col gap-2 px-4">
+      <Input
+        onPointerDown={(e) => e.stopPropagation()}
+        name="name"
+        id="name"
+        placeholder="name"
+      />
+      <Textarea
+        placeholder="Type your message here."
+        id="feedback"
+        name="feedback"
+        onPointerDown={(e) => e.stopPropagation()}
+      />
+      <Submit setOpen={setOpen} />
+    </div>
   )
 }
