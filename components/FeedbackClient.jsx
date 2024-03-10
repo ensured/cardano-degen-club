@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useFormStatus } from "react-dom"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -45,7 +47,7 @@ export default function FeedBackDrawer() {
               Your feedback is very important to us.
             </DialogDescription>
           </DialogHeader>
-          <ProfileForm />
+          <ProfileForm setOpen={setOpen} />
         </DialogContent>
       </Dialog>
     )
@@ -63,7 +65,7 @@ export default function FeedBackDrawer() {
             Your feedback is very important to us.
           </DrawerDescription>
         </DrawerHeader>
-        <ProfileForm />
+        <ProfileForm setOpen={setOpen} />
         <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="outline">Close</Button>
@@ -73,10 +75,57 @@ export default function FeedBackDrawer() {
     </Drawer>
   )
 }
+function Submit({ setOpen }) {
+  const handleButtonClick = () => {
+    const nameInput = document.getElementById("name").value
+    const feedbackInput = document.getElementById("feedback").value
 
-function ProfileForm() {
+    if (nameInput.length > 0 && feedbackInput.length > 0) {
+      // Both inputs have at least one character
+      toast("Your feedback has been submitted, thanks!", { type: "success" })
+      setOpen(false)
+      // Additional actions, such as launching the server action
+    } else {
+      // Show an error toast or handle the case where inputs are not valid
+      toast("Please enter both a name and feedback before submitting.", {
+        type: "error",
+      })
+    }
+  }
+
+  const status = useFormStatus()
+
   return (
-    <form action={putObjectInS3Bucket}>
+    <Button disabled={status.pending} onClick={handleButtonClick}>
+      Submit
+    </Button>
+  )
+}
+
+function ProfileForm({ setOpen }) {
+  const status = useFormStatus()
+
+  const handleSubmit = (e) => {
+    e.preventDefault() // Prevent the default form submission behavior
+
+    const nameInput = document.getElementById("name").value
+    const feedbackInput = document.getElementById("feedback").value
+
+    if (nameInput.length > 0 && feedbackInput.length > 0) {
+      // Both inputs have at least one character
+      toast("Your feedback has been submitted, thanks!", { type: "success" })
+      setOpen(false)
+      putObjectInS3Bucket(nameInput, feedbackInput)
+    } else {
+      // Show an error toast or handle the case where inputs are not valid
+      toast("Please enter both a name and feedback before submitting.", {
+        type: "error",
+      })
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} action={putObjectInS3Bucket}>
       <div className="flex flex-col gap-2 px-4">
         <Input
           onPointerDown={(e) => e.stopPropagation()}
@@ -90,7 +139,7 @@ function ProfileForm() {
           name="feedback"
           onPointerDown={(e) => e.stopPropagation()}
         />
-        <Button type="submit">Send</Button>
+        <Submit setOpen={setOpen} />
       </div>
     </form>
   )

@@ -27,7 +27,7 @@ function getCurrentShorthandDateTime() {
   return shorthandDateTime
 }
 
-export const putObjectInS3Bucket = async (formData) => {
+export const putObjectInS3Bucket = async (nameInput, feedbackInput) => {
   const forwardedFor = headers().get("x-forwarded-for")
   const ip = forwardedFor ? forwardedFor.split(",")[0] : null // Extract first IP
 
@@ -47,18 +47,20 @@ export const putObjectInS3Bucket = async (formData) => {
       message: "Limit exceeded, please try again later",
       timeRemaining: Math.ceil((60000 - (now - lastSubmission)) / 1000), // Optional: Display remaining time
     })
-    return
+    return {
+      message: "Rate limit exceeded, please try again later",
+    }
   }
 
   // Rate limit not exceeded, proceed with server action logic
-  const name = formData.get("name")
-  const message = formData.get("feedback")
+  // const name = formData.get("name")
+  // const message = formData.get("feedback")
   const date = getCurrentShorthandDateTime()
   try {
-    const jsonData = JSON.stringify({ date, message })
+    const jsonData = JSON.stringify({ date, feedbackInput })
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
-      Key: `feedback/${name}-${date}.json`,
+      Key: `feedback/${nameInput}-${date}.json`,
       Body: jsonData,
     }
 
