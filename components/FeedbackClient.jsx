@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useFormStatus } from "react-dom"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -28,111 +28,110 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
 import { useMediaQuery } from "../lib/use-media-query"
-import { putObjectInS3Bucket } from "./actions"
+import { submitFeedback } from "./actions"
+
+// Import the server action
 
 export default function FeedBackDrawer() {
   const [open, setOpen] = useState(false)
   const isDesktop = useMediaQuery("(min-width: 768px)")
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm()
 
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline">Leave feedback</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Leave feedback</DialogTitle>
-            <DialogDescription>
-              Your feedback is very important to us.
-            </DialogDescription>
-          </DialogHeader>
-          <ProfileForm setOpen={setOpen} />
-        </DialogContent>
-      </Dialog>
-    )
-  }
-
-  return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button variant="outline">Have feedback?</Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Leave feedback</DrawerTitle>
-          <DrawerDescription>
-            Your feedback is very important to us.
-          </DrawerDescription>
-        </DrawerHeader>
-        <ProfileForm setOpen={setOpen} />
-        <DrawerFooter>
-          <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  )
-}
-
-function Submit({ setOpen }) {
-  const handleButtonClick = () => {
-    const nameInput = document.getElementById("name").value
-    const feedbackInput = document.getElementById("feedback").value
-
-    if (nameInput.length > 0 && feedbackInput.length > 0) {
-      const lastSubmissionTime = localStorage.getItem("lastSubmissionTime")
-      const currentTime = new Date().getTime()
-
-      if (!lastSubmissionTime || currentTime - lastSubmissionTime >= 60000) {
-        // It's been at least 60 seconds since the last submission
-        toast("Your feedback has been submitted, thanks!", { type: "success" })
-        setOpen(false)
-        putObjectInS3Bucket(nameInput, feedbackInput)
-        localStorage.setItem("lastSubmissionTime", currentTime)
+  const onSubmit = async (data) => {
+    try {
+      const response = await submitFeedback(data.name, data.feedback)
+      if (response.success) {
+        toast(response.message, { type: "success" })
+        setOpen(false) // Close the drawer on successful submission
       } else {
-        // Show a toast with the time left until the next submission
-        const timeLeft = Math.ceil(
-          (60000 - (currentTime - lastSubmissionTime)) / 1000
-        )
-        toast(`Please wait ${timeLeft} seconds before submitting again.`, {
-          type: "warning",
-        })
+        toast(response.message, { type: "error" })
       }
-    } else {
-      // Show an error toast or handle the case where inputs are not valid
-      toast("Please enter both a name and feedback before submitting.", {
+    } catch (error) {
+      console.error(error)
+      toast("An unexpected error occurred. Please try again later.", {
         type: "error",
       })
     }
   }
 
-  const status = useFormStatus()
-
   return (
-    <Button disabled={status.pending} onClick={handleButtonClick}>
-      Submit
-    </Button>
-  )
-}
-
-function ProfileForm({ setOpen }) {
-  return (
-    <div className="flex flex-col gap-2 px-4">
-      <Input
-        onPointerDown={(e) => e.stopPropagation()}
-        name="name"
-        id="name"
-        placeholder="name"
-      />
-      <Textarea
-        placeholder="Type your message here."
-        id="feedback"
-        name="feedback"
-        onPointerDown={(e) => e.stopPropagation()}
-      />
-      <Submit setOpen={setOpen} />
-    </div>
+    <>
+      {isDesktop ? (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline">Leave feedback</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Leave feedback</DialogTitle>
+              <DialogDescription>
+                Your feedback is very important to us.
+              </DialogDescription>
+            </DialogHeader>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col gap-2"
+            >
+              <Input
+                {...register("name", { required: true })}
+                placeholder="name"
+                error={errors.name}
+                errorMessage="Please enter your name."
+              />
+              <Textarea
+                {...register("feedback", { required: true })}
+                placeholder="Type your message here."
+                error={errors.feedback}
+                errorMessage="Please enter your feedback."
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerTrigger asChild>
+            <Button variant="outline">Have feedback?</Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader className="text-left">
+              <DrawerTitle>Leave feedback</DrawerTitle>
+              <DrawerDescription>
+                Your feedback is very important to us.
+              </DrawerDescription>
+            </DrawerHeader>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="flex flex-col gap-2 px-4"
+            >
+              <Input
+                {...register("name", { required: true })}
+                placeholder="name"
+                error={errors.name}
+                errorMessage="Please enter your name."
+                onPointerDown={(e) => e.stopPropagation()}
+              />
+              <Textarea
+                {...register("feedback", { required: true })}
+                placeholder="Type your message here."
+                error={errors.feedback}
+                errorMessage="Please enter your feedback."
+                onPointerDown={(e) => e.stopPropagation()}
+              />
+              <Button type="submit">Submit</Button>
+            </form>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button variant="outline">Close</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      )}
+    </>
   )
 }

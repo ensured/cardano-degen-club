@@ -27,14 +27,14 @@ function getCurrentShorthandDateTime() {
   return shorthandDateTime
 }
 
-export const putObjectInS3Bucket = async (nameInput, feedbackInput) => {
+export async function submitFeedback(name, feedback) {
   const forwardedFor = headers().get("x-forwarded-for")
-  const ip = forwardedFor ? forwardedFor.split(",")[0] : null // Extract first IP
+  const ip = forwardedFor ? forwardedFor.split(",")[0] : null
 
   if (!ip) {
     console.warn("Client IP address not found")
     // Handle cases where IP is missing (e.g., reject request or implement alternative rate limiting)
-    return res.status(400).json({ message: "Client IP address not found" })
+    return { success: false, message: "Client IP address not found" }
   }
 
   const now = Date.now()
@@ -45,31 +45,38 @@ export const putObjectInS3Bucket = async (nameInput, feedbackInput) => {
   if (lastSubmission && now - lastSubmission < 60000) {
     console.log({
       message: "Limit exceeded, please try again later",
-      timeRemaining: Math.ceil((60000 - (now - lastSubmission)) / 1000), // Optional: Display remaining time
+      timeRemaining: Math.ceil((60000 - (now - lastSubmission)) / 1000),
     })
     return {
-      message: "Rate limit exceeded, please try again later",
+      success: false,
+      message: `Rate limit exceeded, please try again in ${Math.ceil(
+        (60000 - (now - lastSubmission)) / 1000
+      )}`,
     }
   }
 
-  // Rate limit not exceeded, proceed with server action logic
-  // const name = formData.get("name")
-  // const message = formData.get("feedback")
+  // Rate limit not exceeded, proceed with logic
+
   const date = getCurrentShorthandDateTime()
   try {
-    const jsonData = JSON.stringify({ date, feedbackInput })
+    const jsonData = JSON.stringify({ date, feedback })
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
-      Key: `feedback/${nameInput}-${date}.json`,
+      Key: `feedback/${name}-${date}.json`,
       Body: jsonData,
     }
 
     const res = await s3Client.send(new PutObjectCommand(params))
     console.log(res)
+    return { success: true, message: "Feedback submitted successfully!" }
   } catch (error) {
-    console.log(error)
+    console.error(error)
+    return {
+      success: false,
+      message: "An error occurred. Please try again later.",
+    }
+  } finally {
+    // Update last submission time in the cache
+    MemoryCache.put(cacheKey, now, 60000) // Cache for 1 minute
   }
-
-  // Update last submission time in the cache
-  MemoryCache.put(cacheKey, now, 60000) // Cache for 1 minute
 }
