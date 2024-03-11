@@ -99,7 +99,7 @@ function TradingViewWidget() {
     return () => {
       window.removeEventListener("resize", handleResize)
     }
-  }, [theme])
+  }, [theme, windowWidth])
 
   return (
     <div className="tradingview-widget-container" ref={container}>
