@@ -1,0 +1,27 @@
+Recommendations:
+
+Move submitFeedback to a Server Component:
+Create a separate server component using getServerSideProps or a getStaticProps function.
+Move the submitFeedback logic within this component.
+Communicate with the Server Component:
+Use techniques like fetch or Next.js's data fetching methods to make a request from the client-side component to the server component.
+The server component will handle form submission, rate limiting, and data storage on the server.
+Here's a possible outline of the revised structure:
+
+Client-Side Component (FeedBackDrawer):
+
+Handles form rendering and user input.
+Sends a POST request to the server component for submission.
+Server Component:
+
+Contains submitFeedback logic, now within getServerSideProps or getStaticProps.
+Processes form data, applies rate limiting, and stores feedback in S3.
+Returns feedback submission status back to the client.
+Additional Considerations:
+
+Validation and Error Handling:
+Implement robust validation and error handling on both client and server sides.
+Cache Busting:
+If needed for dynamic feedback display, use techniques like revalidation or client-side stale-while-revalidate.
+Client-Side Feedback Updates:
+Explore using local state or a state management library to display immediate feedback updates without full page reloads.

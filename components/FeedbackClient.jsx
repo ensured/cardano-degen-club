@@ -28,9 +28,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
 import { useMediaQuery } from "../lib/use-media-query"
-import { submitFeedback } from "./actions"
-
 // Import the server action
+import { submitFeedback } from "./actions"
 
 export default function FeedBackDrawer() {
   const [open, setOpen] = useState(false)

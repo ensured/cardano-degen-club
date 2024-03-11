@@ -66,9 +66,9 @@ function extractTitle(key) {
 
 const commentStyle = {
   border: "1px solid #ccc",
-  borderRadius: "8px",
-  margin: "10px",
-  padding: "10px",
+  borderRadius: "6px",
+  margin: "5px",
+  padding: "5px",
 }
 
 const page = async () => {
@@ -89,7 +89,7 @@ const page = async () => {
           return (
             <div className="flex flex-col items-center justify-center">
               <CardTitle>Comments</CardTitle>
-              <div className="flex flex-wrap justify-center">
+              <div className=" flex flex-wrap justify-center">
                 {/* Display feedback data here */}
 
                 {feedbackList.length > 0 &&
@@ -107,7 +107,7 @@ const page = async () => {
                       </p>
                     </div>
                   ))}
-                <LogoutLink className="mx-20 flex w-full items-center justify-center rounded-md bg-teal-900 p-2 px-5">
+                <LogoutLink className="mx-20 flex w-full items-center justify-center rounded-md bg-teal-700 p-2 px-5 text-slate-50 dark:bg-teal-700 dark:text-slate-950">
                   Log out
                 </LogoutLink>
               </div>
