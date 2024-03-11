@@ -35,8 +35,14 @@ const ConvertAda = () => {
   }
 
   const handleAmountChange = (event) => {
-    const newAmount = parseFloat(event.target.value).toString()
-    setAmount(isNaN(newAmount) ? "" : parseFloat(newAmount))
+    const newAmount = event.target.value.toString()
+    setAmount(
+      isNaN(newAmount)
+        ? ""
+        : newAmount.length > 20
+        ? newAmount.slice(0, 20)
+        : newAmount
+    )
   }
 
   const convertToLovelaces = (amount, conversionRate) => {
@@ -110,7 +116,7 @@ const ConvertAda = () => {
     currency === "ADA" && amount / (cryptoPrices.ADA * cryptoPrices.BTC)
 
   return (
-    <div className="mx-4 mt-4 flex h-44 flex-col">
+    <div className="mx-4 mt-4 flex h-52 flex-col">
       <div className="flex flex-row items-center gap-2">
         <Switch
           id="currency-switch"
@@ -171,13 +177,16 @@ const ConvertAda = () => {
         )}
         <Input
           type="number"
+          min={"1"}
+          max={"20"}
           value={amount}
           onChange={handleAmountChange}
           placeholder={`Enter ${currency} amount`}
         />
+        {amount.length >= 20 ? <div className="inline">Too long!</div> : ""}
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col break-all">
         {currency === "ADA" && cryptoPrices.BTC && (
           <div>
             BTC: {amount > 0 && <strong>{convertedBTC.toFixed(10)}</strong>}
