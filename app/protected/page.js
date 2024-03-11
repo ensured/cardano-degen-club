@@ -97,10 +97,7 @@ const page = async () => {
                     </p>
                     <p>
                       <strong>Title: </strong>
-                      {feedbackObjects.length > 0 &&
-                        feedbackObjects.map(async (object) => {
-                          return extractTitle(object.Key)
-                        })}
+                      {extractTitle(feedbackObjects[index].Key)}
                     </p>
                     <p>
                       <strong>Feedback: </strong> {feedback.feedback}
