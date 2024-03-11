@@ -110,15 +110,15 @@ const ConvertAda = () => {
     currency === "ADA" && amount / (cryptoPrices.ADA * cryptoPrices.BTC)
 
   return (
-    <div className={cn("flex flex-col")}>
-      <div className="flex flex-row items-center gap-2 px-2">
+    <div className="mt-4 flex h-44 flex-col">
+      <div className="flex flex-row items-center gap-2">
         <Switch
           id="currency-switch"
           checked={currency === "ADA"}
           onCheckedChange={handleSwitchChange}
         />
         <Label htmlFor="currency-switch">
-          <div className={"flex justify-center items-center gap-1"}>
+          <div className={"flex items-center justify-center gap-2"}>
             {" "}
             {currency}
           </div>
@@ -140,6 +140,7 @@ const ConvertAda = () => {
             </div>
           )}
         </Label>
+
         {currency === "ADA" ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -176,9 +177,9 @@ const ConvertAda = () => {
         />
       </div>
 
-      <div className="grid grid-cols-2 pb-4">
+      <div className="flex flex-col">
         {currency === "ADA" && cryptoPrices.BTC && (
-          <div className="flex flex-nowrap gap-2">
+          <div>
             BTC: {amount > 0 && <strong>{convertedBTC.toFixed(10)}</strong>}
           </div>
         )}
