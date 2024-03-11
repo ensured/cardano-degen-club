@@ -31,9 +31,11 @@ import { useMediaQuery } from "../lib/use-media-query"
 // Import the server action
 import { submitFeedback } from "./actions"
 
+const MAX_FEEDBACK_LENGTH = 100
+const MAX_NAME_LENGTH = 24
 export default function FeedBackDrawer() {
   const [open, setOpen] = useState(false)
-  const isDesktop = useMediaQuery("(min-width: 768px)")
+  // const isDesktop = useMediaQuery("(min-width: 768px)")
   const {
     register,
     handleSubmit,
@@ -41,6 +43,24 @@ export default function FeedBackDrawer() {
   } = useForm()
 
   const onSubmit = async (data) => {
+    if (!data.name && !data.feedback) return
+
+    if (data.feedback.length > MAX_FEEDBACK_LENGTH) {
+      const remainingCharsNeeded = data.feedback.length - MAX_FEEDBACK_LENGTH
+      toast(`Feedback is too long, remove ${remainingCharsNeeded} more chars`, {
+        type: "error",
+      })
+      return
+    }
+
+    if (data.name.length > MAX_NAME_LENGTH) {
+      const remainingCharsNeeded = data.name.length - MAX_NAME_LENGTH
+      toast(`Name is too long  remove ${remainingCharsNeeded} more chars`, {
+        type: "error",
+      })
+      return
+    }
+
     try {
       const response = await submitFeedback(data.name, data.feedback)
       if (response.success) {
@@ -69,7 +89,7 @@ export default function FeedBackDrawer() {
           <DialogHeader>
             <DialogTitle>Leave feedback</DialogTitle>
             <DialogDescription>
-              Your feedback is very important to us.
+              Your feedback is very important to me.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -84,7 +104,7 @@ export default function FeedBackDrawer() {
             />
             {errors.name && (
               <div className="animate-fade-in text-sm font-bold text-red-600">
-                This field is required
+                This field is required {errors}
               </div>
             )}
             <Textarea
@@ -115,7 +135,7 @@ export default function FeedBackDrawer() {
             <DialogHeader>
               <DialogTitle>Leave feedback</DialogTitle>
               <DialogDescription>
-                Your feedback is very important to us.
+                Your feedback is very important to me.
               </DialogDescription>
             </DialogHeader>
             <form
@@ -159,7 +179,7 @@ export default function FeedBackDrawer() {
             <DrawerHeader className="text-left">
               <DrawerTitle>Leave feedback</DrawerTitle>
               <DrawerDescription>
-                Your feedback is very important to us.
+                Your feedback is very important to me.
               </DrawerDescription>
             </DrawerHeader>
             <form
