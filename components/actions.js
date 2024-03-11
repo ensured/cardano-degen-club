@@ -48,13 +48,13 @@ export async function submitFeedback(name, feedback) {
       success: false,
       message: `Rate limit exceeded, please try again in ${Math.ceil(
         (60000 - (now - lastSubmission)) / 1000
-      )}`,
+      )} seconds`,
     })
     return {
       success: false,
       message: `Rate limit exceeded, please try again in ${Math.ceil(
         (60000 - (now - lastSubmission)) / 1000
-      )}`,
+      )} seconds`,
     }
   }
 
