@@ -60,6 +60,7 @@ function extractTitle(key) {
     .slice(0, parts.length - 1)
     .join("-")
     .replace("feedback/", "")
+    .split("-")[0]
   return title
 }
 
@@ -86,27 +87,30 @@ const page = async () => {
             })
           )
           return (
-            <div className="flex flex-col items-center justify-center pt-40">
-              {/* Display feedback data here */}
-              <CardTitle>Comments </CardTitle>
-              {feedbackList.length > 0 &&
-                feedbackList.map((feedback, index) => (
-                  <div key={index} style={commentStyle}>
-                    <p>
-                      <strong>Date:</strong> {feedback.date}
-                    </p>
-                    <p>
-                      <strong>Title: </strong>
-                      {extractTitle(feedbackObjects[index].Key)}
-                    </p>
-                    <p>
-                      <strong>Feedback: </strong> {feedback.feedback}
-                    </p>
-                  </div>
-                ))}
-              <LogoutLink className="rounded-md bg-teal-900 p-2 px-5">
-                Log out
-              </LogoutLink>
+            <div className="flex flex-col items-center justify-center">
+              <CardTitle>Comments</CardTitle>
+              <div className="flex flex-wrap justify-center">
+                {/* Display feedback data here */}
+
+                {feedbackList.length > 0 &&
+                  feedbackList.map((feedback, index) => (
+                    <div key={index} style={commentStyle}>
+                      <p>
+                        <strong>Date:</strong> {feedback.date}
+                      </p>
+                      <p>
+                        <strong>Name: </strong>
+                        {extractTitle(feedbackObjects[index].Key)}
+                      </p>
+                      <p>
+                        <strong>Feedback: </strong> {feedback.feedback}
+                      </p>
+                    </div>
+                  ))}
+                <LogoutLink className="mx-20 flex w-full items-center justify-center rounded-md bg-teal-900 p-2 px-5">
+                  Log out
+                </LogoutLink>
+              </div>
             </div>
           )
         } else {

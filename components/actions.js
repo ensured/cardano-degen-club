@@ -1,7 +1,8 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
-import { NextResponse } from "next/server"
+import { redirect } from "next/navigation"
 import MemoryCache from "memory-cache"
 
 import { PutObjectCommand, s3Client } from "../lib/s3"
@@ -44,8 +45,10 @@ export async function submitFeedback(name, feedback) {
   const lastSubmission = MemoryCache.get(cacheKey)
   if (lastSubmission && now - lastSubmission < 60000) {
     console.log({
-      message: "Limit exceeded, please try again later",
-      timeRemaining: Math.ceil((60000 - (now - lastSubmission)) / 1000),
+      success: false,
+      message: `Rate limit exceeded, please try again in ${Math.ceil(
+        (60000 - (now - lastSubmission)) / 1000
+      )}`,
     })
     return {
       success: false,
@@ -54,8 +57,6 @@ export async function submitFeedback(name, feedback) {
       )}`,
     }
   }
-
-  // Rate limit not exceeded, proceed with logic
 
   const date = getCurrentShorthandDateTime()
   try {
