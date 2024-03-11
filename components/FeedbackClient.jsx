@@ -52,7 +52,7 @@ export default function FeedBackDrawer() {
       setOpen(false) // Close the drawer
     } catch (error) {
       console.error(error)
-      toast("An unexpected error occurred. Please try again later.", {
+      toast("An unexpected error occurred. Please try again in 60 seconds", {
         type: "error",
       })
     }

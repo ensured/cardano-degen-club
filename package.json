@@ -16,6 +16,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
     "@hookform/resolvers": "^3.3.4",
+    "@kinde-oss/kinde-auth-nextjs": "^1.9.2",
     "@octokit/core": "^5.0.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-dialog": "^1.0.5",
