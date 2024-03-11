@@ -6,9 +6,18 @@ import { useTheme } from "next-themes"
 function TradingViewWidget() {
   const { theme } = useTheme()
   const container = useRef()
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+  const [windowWidth, setWindowWidth] = useState(720)
 
   useEffect(() => {
+    // Debounce function to limit the rate of execution
+    const debounce = (func, delay) => {
+      let timeoutId
+      return (...args) => {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => func(...args), delay)
+      }
+    }
+
     const loadChart = () => {
       // Check if the container is available
       if (!container.current) {
@@ -79,10 +88,8 @@ function TradingViewWidget() {
       // Append the new script to the container
       container.current.appendChild(script)
     }
-
-    // Load the chart when the component mounts
     loadChart()
-    const handleResize = () => {
+    const handleResize = debounce(() => {
       const newWidth = window.innerWidth
 
       // Check if the width has actually changed
@@ -90,7 +97,7 @@ function TradingViewWidget() {
         setWindowWidth(newWidth)
         loadChart()
       }
-    }
+    }, 300) // Adjust the delay as needed
 
     // Add event listener for window resize
     window.addEventListener("resize", handleResize)
