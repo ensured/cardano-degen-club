@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import FeedBackDrawer from "./FeedbackClient"
 import { Button } from "./ui/button"
 
 const Dropdown = () => {
@@ -35,24 +36,24 @@ const Dropdown = () => {
           </DropdownMenuItem>
         </Link>
         <Link href="/">
-          <DropdownMenuItem value="top"> Punycode Converter</DropdownMenuItem>
+          <DropdownMenuItem> Punycode Converter</DropdownMenuItem>
         </Link>
         <Link href="/cardano-links">
-          <DropdownMenuItem value="top">Cardano Links</DropdownMenuItem>
+          <DropdownMenuItem>Cardano Links</DropdownMenuItem>
         </Link>
         <Link href="/recipe-finder">
-          <DropdownMenuItem value="top">Recipe Finder</DropdownMenuItem>
+          <DropdownMenuItem>Recipe Finder</DropdownMenuItem>
         </Link>
         <Link href="/crypto-tracker">
-          <DropdownMenuItem value="top">Crypto Tracker</DropdownMenuItem>
+          <DropdownMenuItem>Crypto Tracker</DropdownMenuItem>
         </Link>
         {/* <Link href="/breakout">
           <DropdownMenuItem value="top">Breakout Game</DropdownMenuItem>
         </Link> */}
-
-        <DropdownMenuItem value="top" onClick={handleIagonLinkClick}>
+        <DropdownMenuItem onClick={handleIagonLinkClick}>
           Iagon Node Status Webapp
         </DropdownMenuItem>
+        <FeedBackDrawer />
       </DropdownMenuContent>
     </DropdownMenu>
   )

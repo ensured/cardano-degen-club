@@ -60,10 +60,57 @@ export default function FeedBackDrawer() {
 
   return (
     <>
-      {isDesktop ? (
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" aria-controls="feedback-dialog">
+            Leave feedback
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Leave feedback</DialogTitle>
+            <DialogDescription>
+              Your feedback is very important to us.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-2"
+          >
+            <Input
+              {...register("name", { required: true })}
+              placeholder="name"
+              error={errors.name}
+              errorMessage="Please enter your name."
+            />
+            {errors.name && (
+              <div className="animate-fade-in text-sm font-bold text-red-600">
+                This field is required
+              </div>
+            )}
+            <Textarea
+              {...register("feedback", { required: true })}
+              placeholder="Type your message here."
+              error={errors.feedback}
+              errorMessage="Please enter your feedback."
+            />
+            {errors.feedback && (
+              <div className="animate-fade-in text-sm font-bold text-red-600">
+                This field is required
+              </div>
+            )}
+            <Button type="submit">Submit Feedback</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* old code for if I want it as a button on the page. */}
+      {/* {isDesktop ? (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">Leave feedback</Button>
+            <Button variant="outline" aria-controls="feedback-dialog">
+              Have feedback about my site?
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -105,7 +152,9 @@ export default function FeedBackDrawer() {
       ) : (
         <Drawer open={open} onOpenChange={setOpen}>
           <DrawerTrigger asChild>
-            <Button variant="outline">Have feedback?</Button>
+            <Button variant="outline" aria-controls="feedback-dialog">
+              Have feedback?
+            </Button>
           </DrawerTrigger>
           <DrawerContent>
             <DrawerHeader className="text-left">
@@ -151,7 +200,7 @@ export default function FeedBackDrawer() {
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
-      )}
+      )} */}
     </>
   )
 }
