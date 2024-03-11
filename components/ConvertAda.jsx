@@ -110,7 +110,7 @@ const ConvertAda = () => {
     currency === "ADA" && amount / (cryptoPrices.ADA * cryptoPrices.BTC)
 
   return (
-    <div className="mt-4 flex h-44 flex-col">
+    <div className="mx-4 mt-4 flex h-44 flex-col">
       <div className="flex flex-row items-center gap-2">
         <Switch
           id="currency-switch"
