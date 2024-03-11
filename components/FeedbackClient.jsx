@@ -55,9 +55,12 @@ export default function FeedBackDrawer() {
 
     if (data.name.length > MAX_NAME_LENGTH) {
       const remainingCharsNeeded = data.name.length - MAX_NAME_LENGTH
-      toast(`Name is too long  remove ${remainingCharsNeeded} more chars`, {
-        type: "error",
-      })
+      toast(
+        `Name is too long. Please remove ${remainingCharsNeeded} ${
+          remainingCharsNeeded === 1 ? "char" : "chars"
+        }`,
+        { type: "error" }
+      )
       return
     }
 
