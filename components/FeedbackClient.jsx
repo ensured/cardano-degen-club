@@ -46,10 +46,10 @@ export default function FeedBackDrawer() {
       const response = await submitFeedback(data.name, data.feedback)
       if (response.success) {
         toast(response.message, { type: "success" })
-        setOpen(false) // Close the drawer on successful submission
       } else {
         toast(response.message, { type: "error" })
       }
+      setOpen(false) // Close the drawer
     } catch (error) {
       console.error(error)
       toast("An unexpected error occurred. Please try again later.", {
@@ -82,12 +82,22 @@ export default function FeedBackDrawer() {
                 error={errors.name}
                 errorMessage="Please enter your name."
               />
+              {errors.name && (
+                <div className="text-sm font-bold text-red-600">
+                  This field is required
+                </div>
+              )}
               <Textarea
                 {...register("feedback", { required: true })}
                 placeholder="Type your message here."
                 error={errors.feedback}
                 errorMessage="Please enter your feedback."
               />
+              {errors.feedback && (
+                <div className="text-sm font-bold text-red-600">
+                  This field is required
+                </div>
+              )}
               <Button type="submit">Submit</Button>
             </form>
           </DialogContent>
@@ -115,6 +125,11 @@ export default function FeedBackDrawer() {
                 errorMessage="Please enter your name."
                 onPointerDown={(e) => e.stopPropagation()}
               />
+              {errors.name && (
+                <div className="text-sm font-bold text-red-600">
+                  This field is required
+                </div>
+              )}
               <Textarea
                 {...register("feedback", { required: true })}
                 placeholder="Type your message here."
@@ -122,6 +137,11 @@ export default function FeedBackDrawer() {
                 errorMessage="Please enter your feedback."
                 onPointerDown={(e) => e.stopPropagation()}
               />
+              {errors.feedback && (
+                <div className="text-sm font-bold text-red-600">
+                  This field is required
+                </div>
+              )}
               <Button type="submit">Submit</Button>
             </form>
             <DrawerFooter>

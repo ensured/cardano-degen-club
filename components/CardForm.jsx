@@ -50,11 +50,13 @@ const CardForm = () => {
       const codePoints = getCodePoints(converted)
       if (codePoints.length === 1) {
         setOutput(
-          <>
+          <div>
             <Badge variant="outline" className=" mb-2">
               Converted
             </Badge>
-            <p className="text-lg font-semibold">{converted}</p>
+            <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+              {converted}
+            </p>
 
             <Badge variant="outline" className="mb-2">
               {codePoints.length} Code Point{codePoints.length > 1 && "s"}
@@ -63,26 +65,28 @@ const CardForm = () => {
             <p className="text-lg font-semibold">
               U+{codePoints[0].toUpperCase()}
             </p>
-          </>
+          </div>
         )
       } else if (codePoints.length > 1 && codePoints.length < 40) {
         setOutput(
-          <>
+          <div>
             <Badge variant="outline" className="mb-2 mt-4">
               Converted
             </Badge>
-            <p className="text-lg font-semibold">{converted}</p>
+            <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+              {converted}
+            </p>
 
             <Badge variant="outline" className="mb-2">
               {codePoints.length} Code Point{codePoints.length > 1 && "s"}
             </Badge>
 
             {codePoints.map((codePoint, index) => (
-              <p key={index} className="inline text-lg font-semibold">
+              <p key={index} className=" text-lg font-semibold">
                 {`U+${codePoint.toUpperCase()} `}
               </p>
             ))}
-          </>
+          </div>
         )
       }
     } catch (error) {
@@ -96,11 +100,13 @@ const CardForm = () => {
 
     if (codePoints.length === 1) {
       setOutput(
-        <>
+        <div>
           <Badge variant="outline" className="mb-2 mt-4">
             Converted
           </Badge>
-          <p className="text-lg font-semibold">{converted}</p>
+          <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+            {converted}
+          </p>
           <br />
           <Badge variant="outline" className="mb-2">
             {codePoints.length} Code Point{codePoints.length > 1 && "s"}
@@ -109,25 +115,28 @@ const CardForm = () => {
           <p className="text-lg font-semibold">
             U+{codePoints[0].toUpperCase()}
           </p>
-        </>
+        </div>
       )
     } else if (codePoints.length > 1) {
       setOutput(
-        <>
+        <div>
           <Badge variant="outline" className="mb-2 mt-4">
             Converted
           </Badge>
-          <p className="text-lg font-semibold">{converted}</p>
+          <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+            {converted}
+          </p>
+
           <br />
           <Badge variant="outline" className="mb-2">
             {codePoints.length} Code Point{codePoints.length > 1 && "s"}
           </Badge>
           {codePoints.map((codePoint, index) => (
-            <p key={index} className="inline text-lg font-semibold">
+            <p key={index} className="text-lg font-semibold">
               {`U+${codePoint.toUpperCase()} `}
             </p>
           ))}
-        </>
+        </div>
       )
     }
   }, [])
@@ -170,8 +179,8 @@ const CardForm = () => {
   }, [searchParams, handleInputChange]) // Include handleInputChange in the dependency array
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="rounded bg-white p-6 shadow-lg">
+    <div className="container flex items-center justify-center">
+      <div>
         <Card>
           <CardHeader>
             <CardTitle>Punycode Converter</CardTitle>
@@ -188,9 +197,13 @@ const CardForm = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <p>
-              {output ? <span className="text-green-500">{output}</span> : null}{" "}
-            </p>
+            <div>
+              {output ? (
+                <span className="overflow-wrap flex w-full flex-col">
+                  {output}
+                </span>
+              ) : null}{" "}
+            </div>
           </CardFooter>
         </Card>
       </div>
