@@ -7,6 +7,7 @@ import MemoryCache from "memory-cache"
 
 import { PutObjectCommand, s3Client } from "../lib/s3"
 
+const FEEDBACK_FORM_TIMEOUT_MS = 300000
 function getCurrentShorthandDateTime() {
   const currentDate = new Date()
   const day = currentDate.getDate()
@@ -43,19 +44,19 @@ export async function submitFeedback(name, feedback) {
 
   // Check if the request is within the rate limit window
   const lastSubmission = MemoryCache.get(cacheKey)
-  if (lastSubmission && now - lastSubmission < 60000) {
+  if (lastSubmission && now - lastSubmission < FEEDBACK_FORM_TIMEOUT_MS) {
     console.log({
       success: false,
       message: `Rate limit exceeded, please try again in ${Math.ceil(
-        (60000 - (now - lastSubmission)) / 1000
+        (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
       )} seconds`,
-    })
+    });
     return {
       success: false,
       message: `Rate limit exceeded, please try again in ${Math.ceil(
-        (60000 - (now - lastSubmission)) / 1000
+        (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
       )} seconds`,
-    }
+    };
   }
 
   const date = getCurrentShorthandDateTime()
@@ -78,6 +79,6 @@ export async function submitFeedback(name, feedback) {
     }
   } finally {
     // Update last submission time in the cache
-    MemoryCache.put(cacheKey, now, 60000) // Cache for 1 minute
+    MemoryCache.put(cacheKey, now, FEEDBACK_FORM_TIMEOUT_MS) // Cache for 1 minute
   }
 }
