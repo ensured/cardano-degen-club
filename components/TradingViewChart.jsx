@@ -1,11 +1,12 @@
 "use client"
 
-import { memo, useEffect, useRef } from "react"
+import { memo, useEffect, useRef, useState } from "react"
 import { useTheme } from "next-themes"
 
 function TradingViewWidget() {
   const { theme } = useTheme()
   const container = useRef()
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
 
   useEffect(() => {
     const loadChart = () => {
@@ -82,7 +83,13 @@ function TradingViewWidget() {
     // Load the chart when the component mounts
     loadChart()
     const handleResize = () => {
-      loadChart()
+      const newWidth = window.innerWidth
+
+      // Check if the width has actually changed
+      if (newWidth !== windowWidth) {
+        setWindowWidth(newWidth)
+        loadChart()
+      }
     }
 
     // Add event listener for window resize
