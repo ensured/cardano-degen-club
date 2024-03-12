@@ -47,7 +47,7 @@ const Comments = ({ children }) => {
   return (
     <div className="flex flex-col items-center justify-center pt-16">
       {loading ? (
-        <div className="h-5 w-5 animate-spin rounded-full border-t-4 border-dotted border-slate-50"></div>
+        <div className="h-10 w-10 animate-spin rounded-full border-t-4 border-dotted border-slate-50"></div>
       ) : comments.length > 0 ? (
         <Card className="">
           <CardHeader>

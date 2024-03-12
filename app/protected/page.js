@@ -15,28 +15,33 @@ const page = async () => {
   if (isAuthenticated) {
     if (user?.email === "finalemail417@gmail.com") {
       return (
-        <>
-          <div className="flex flex-col items-center justify-center">
-
-            <Comments>
-              <LogoutLink className="rounded-md bg-teal-900 p-2 px-5">
-                Log out
-              </LogoutLink></Comments>
-
-          </div>
-
-        </>
-      )
-    } else {
-      return (
-        <div className="flex flex-col items-center justify-center pt-40">
-          {/* Display feedback data here */}
-          <CardTitle>No Comments</CardTitle>
-          <LogoutLink className="rounded-md bg-teal-900 p-2 px-5">
-            Log out
-          </LogoutLink>
+        <div className="flex flex-col items-center justify-center">
+          <Comments>
+            <LogoutLink className="rounded-md bg-teal-900 p-2 px-5">
+              Log out
+            </LogoutLink></Comments>
         </div>
       )
+    } else {
+      if (user) {
+        return (
+          <div className="flex flex-col items-center justify-center">
+            <CardTitle>Hello {user.email}</CardTitle>
+            <LogoutLink className="rounded-md bg-teal-900 p-2 px-5">
+              Log out
+            </LogoutLink>
+          </div>
+        )
+      } else {
+        return (
+          <div className="flex flex-col items-center justify-center">
+            <CardTitle>Not authenticated and not authorized.</CardTitle>
+            <LoginLink className="rounded-md bg-teal-900 p-2 px-5">
+              Log in
+            </LoginLink>
+          </div>
+        )
+      }
     }
   }
 }
