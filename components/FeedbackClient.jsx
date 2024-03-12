@@ -50,6 +50,30 @@ export default function FeedBackDrawer() {
       return
     }
 
+    // Validate name
+    if (!data.name || !/^[a-zA-Z\s-]+$/.test(data.name)) {
+      toast(
+        "Invalid name. Please enter a valid name without special characters.",
+        {
+          type: "error",
+        }
+      )
+      setLoading(false)
+      return
+    }
+
+    // Validate feedback
+    if (!data.feedback || !/^[^\s]+$/.test(data.feedback)) {
+      toast(
+        "Invalid feedback. Please enter a valid message without leading/trailing spaces.",
+        {
+          type: "error",
+        }
+      )
+      setLoading(false)
+      return
+    }
+
     if (data.feedback.length > MAX_FEEDBACK_LENGTH) {
       const remainingCharsNeeded = data.feedback.length - MAX_FEEDBACK_LENGTH
       toast(
