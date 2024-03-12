@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { Badge, badgeVariants } from "@/components/ui/badge"
@@ -65,6 +66,12 @@ const SearchRecipes = ({ className }) => {
       try {
         setLoading(true)
         const response = await fetch(fetchUrl)
+        if (response.status === 429) {
+          toast("Error: Usage limits are exceeded", {
+            type: "error",
+          })
+          return
+        }
         const data = await response.json()
         setRecipes(data)
         setNextPage(data._links.next.href)
@@ -157,48 +164,50 @@ const SearchRecipes = ({ className }) => {
           onChange={handleInputChange}
           value={input}
         />
-        <Button type="submit">Search</Button>
+        <Button type="submit" className="w-32">
+          <div className="flex flex-row justify-center items-center gap-2">
+            Search{" "}
+            {loading && !recipes.hits && (
+              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-50"></div>
+            )}
+          </div>
+        </Button>
       </form>
-
-      {loading && !recipes.hits && (
-        <div className="flex h-full items-center justify-center">
-          {/* ... Loading spinner */}
-        </div>
-      )}
 
       {recipes.hits?.length > 0 ? (
         <div className="flex flex-col gap-1">
-          <div
-            className={cn(
-              "container flex items-center justify-between gap-2 py-1"
-            )}
-          >
-            <div className="flex flex-row gap-2">
+          <div className="container mt-1 flex">
+            <div className="flex flex-row flex-wrap justify-center items-center gap-1">
               <Badge variant={"outline"} className="p-2">
                 {recipes.count} results 🎉
               </Badge>
-              <SelectScrollable
-                options={Array.from(
-                  { length: Object.keys(pageData).length },
-                  (_, i) => i + 1
-                )}
-                selectedOption={currentPage.toString()}
-                onSelect={handlePageSelect}
-              />
-            </div>
 
-            {loading && (
-              <div className="flex h-full items-center justify-center">
-                {/* ... Loading spinner */}
+              <div className="flex flex-wrap">
+                <SelectScrollable
+                  options={Array.from(
+                    { length: Object.keys(pageData).length },
+                    (_, i) => i + 1
+                  )}
+                  selectedOption={currentPage.toString()}
+                  onSelect={handlePageSelect}
+                />
               </div>
-            )}
-            <div className="flex flex-row justify-center gap-2">
-              {Object.keys(pageData).length > 1 &&
-                !isInitialLoad &&
-                currentPage > 1 && (
-                  <Button onClick={handleBackBtn}>Prev</Button>
+
+              <div className="flex gap-1">
+                <div className="flex gap-2">
+                  {Object.keys(pageData).length > 1 &&
+                    !isInitialLoad &&
+                    currentPage > 1 && (
+                      <Button onClick={handleBackBtn}>Prev</Button>
+                    )}
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleNextPageBtn}>Next</Button>
+                </div>
+                {loading && (
+                  <div className="h-5 w-5 animate-spin rounded-full border-t-4 border-dotted border-slate-50"></div>
                 )}
-              <Button onClick={handleNextPageBtn}>Next</Button>
+              </div>
             </div>
           </div>
           <div

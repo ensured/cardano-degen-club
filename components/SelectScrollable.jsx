@@ -19,9 +19,16 @@ export default function SelectScrollable({
         onSelect(value)
       }}
     >
-      <SelectTrigger className="w-[280px]">
-        <SelectValue placeholder={`Page: ${selectedOption}`} />
-      </SelectTrigger>
+      <div>
+        <SelectTrigger
+          className={
+            parseInt(selectedOption, 10) > 9 ? "w-[110px]" : "w-[95px]"
+          }
+        >
+          <SelectValue placeholder={`Page: ${selectedOption}`} />
+        </SelectTrigger>
+      </div>
+
       <SelectContent>
         <SelectGroup>
           {options.map((option) => (
