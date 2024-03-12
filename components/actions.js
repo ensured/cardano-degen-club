@@ -9,9 +9,25 @@ import { PutObjectCommand, s3Client } from "../lib/s3"
 
 const FEEDBACK_FORM_TIMEOUT_MS = 300000
 function getCurrentShorthandDateTime() {
-  return new Date().toISOString().slice(0, 16).replace('T', ' ');
-}
+  const currentDate = new Date()
+  const day = currentDate.getDate()
+  const month = currentDate.getMonth() + 1 // Months are zero-based
+  const year = currentDate.getFullYear()
+  const hours = currentDate.getHours()
+  const minutes = currentDate.getMinutes()
+  const seconds = currentDate.getSeconds()
 
+  // Pad single-digit day, month, hours, minutes, and seconds with leading zeros
+  const paddedDay = day < 10 ? `0${day}` : day
+  const paddedMonth = month < 10 ? `0${month}` : month
+  const paddedHours = hours < 10 ? `0${hours}` : hours
+  const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes
+
+  // Format the date and time as YYYY-MM-DD HH:MM:SS
+  const shorthandDateTime = `${year}-${paddedMonth}-${paddedDay} ${paddedHours}:${paddedMinutes}`
+
+  return shorthandDateTime
+}
 
 export async function submitFeedback(name, feedback) {
   const forwardedFor = headers().get("x-forwarded-for")

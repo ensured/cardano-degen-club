@@ -35,6 +35,7 @@ const MAX_FEEDBACK_LENGTH = 100
 const MAX_NAME_LENGTH = 24
 export default function FeedBackDrawer() {
   const [open, setOpen] = useState(false)
+  const [feedbackData, setFeedbackData] = useState([])
   // const isDesktop = useMediaQuery("(min-width: 768px)")
   const {
     register,
@@ -43,6 +44,11 @@ export default function FeedBackDrawer() {
   } = useForm()
 
   const onSubmit = async (data) => {
+    try {
+      console.log(data)
+    } catch (err) {
+      console.error(err)
+    }
     if (!data.name && !data.feedback) return
 
     if (data.feedback.length > MAX_FEEDBACK_LENGTH) {
@@ -55,12 +61,9 @@ export default function FeedBackDrawer() {
 
     if (data.name.length > MAX_NAME_LENGTH) {
       const remainingCharsNeeded = data.name.length - MAX_NAME_LENGTH
-      toast(
-        `Name is too long. Please remove ${remainingCharsNeeded} ${
-          remainingCharsNeeded === 1 ? "char" : "chars"
-        }`,
-        { type: "error" }
-      )
+      toast(`Name is too long, remove ${remainingCharsNeeded} chars`, {
+        type: "error",
+      })
       return
     }
 
@@ -103,18 +106,16 @@ export default function FeedBackDrawer() {
               {...register("name", { required: true })}
               placeholder="name"
               error={errors.name}
-              errorMessage="Please enter your name."
             />
             {errors.name && (
               <div className="animate-fade-in text-sm font-bold text-red-600">
-                This field is required {errors}
+                This field is required
               </div>
             )}
             <Textarea
               {...register("feedback", { required: true })}
               placeholder="Type your message here."
               error={errors.feedback}
-              errorMessage="Please enter your feedback."
             />
             {errors.feedback && (
               <div className="animate-fade-in text-sm font-bold text-red-600">
