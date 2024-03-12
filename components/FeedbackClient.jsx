@@ -35,7 +35,6 @@ const MAX_FEEDBACK_LENGTH = 100
 const MAX_NAME_LENGTH = 24
 export default function FeedBackDrawer() {
   const [open, setOpen] = useState(false)
-  const [feedbackData, setFeedbackData] = useState([])
   // const isDesktop = useMediaQuery("(min-width: 768px)")
   const {
     register,
@@ -44,26 +43,31 @@ export default function FeedBackDrawer() {
   } = useForm()
 
   const onSubmit = async (data) => {
-    try {
-      console.log(data)
-    } catch (err) {
-      console.error(err)
-    }
     if (!data.name && !data.feedback) return
 
     if (data.feedback.length > MAX_FEEDBACK_LENGTH) {
       const remainingCharsNeeded = data.feedback.length - MAX_FEEDBACK_LENGTH
-      toast(`Feedback is too long, remove ${remainingCharsNeeded} more chars`, {
-        type: "error",
-      })
+      toast(
+        `Feedback is too long, remove ${remainingCharsNeeded} ${
+          remainingCharsNeeded === 1 ? "char" : "chars"
+        } `,
+        {
+          type: "error",
+        }
+      )
       return
     }
 
     if (data.name.length > MAX_NAME_LENGTH) {
       const remainingCharsNeeded = data.name.length - MAX_NAME_LENGTH
-      toast(`Name is too long, remove ${remainingCharsNeeded} chars`, {
-        type: "error",
-      })
+      toast(
+        `Name is too long, remove ${remainingCharsNeeded} ${
+          remainingCharsNeeded === 1 ? "char" : "chars"
+        }`,
+        {
+          type: "error",
+        }
+      )
       return
     }
 
