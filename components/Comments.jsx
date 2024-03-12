@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react"
 
-import { getFeedbackDataByKey, listFeedbackObjects } from "@/app/protected/page"
-
 import extractNameFromFeedbackString from "../lib/helper"
+import getFeedbackDataByKey from "./getFeedback"
+import listFeedbackObjects from "./listFeedbackObjects"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 
-const Comments = () => {
+const Comments = ({ children }) => {
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -51,7 +51,10 @@ const Comments = () => {
       ) : comments.length > 0 ? (
         <Card className="">
           <CardHeader>
-            <CardTitle>Comments</CardTitle>
+            <CardTitle className="flex flex-row items-center justify-around">
+              Comments
+              {children}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {comments.map((feedback, index) => (
