@@ -50,8 +50,9 @@ export default function FeedBackDrawer() {
       return
     }
 
-    // Validate name
-    if (!data.name || !/^[a-zA-Z\s-]+$/.test(data.name)) {
+    const strippedName = data.name.trim()
+
+    if (!strippedName) {
       toast(
         "Invalid name. Please enter a valid name without special characters.",
         {
@@ -62,10 +63,11 @@ export default function FeedBackDrawer() {
       return
     }
 
-    // Validate feedback
-    if (!data.feedback || !/^[^\s]+$/.test(data.feedback)) {
+    const strippedFeedback = data.feedback.trim()
+
+    if (!strippedFeedback) {
       toast(
-        "Invalid feedback. Please enter a valid message without leading/trailing spaces.",
+        "Invalid feedback. Please enter a valid message without only spaces.",
         {
           type: "error",
         }
