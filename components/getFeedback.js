@@ -1,6 +1,7 @@
-"use server";
+"use server"
 
-import { s3Client, GetObjectCommand } from "@/lib/s3"
+import { GetObjectCommand, s3Client } from "@/lib/s3"
+
 async function streamToBuffer(stream) {
   return new Promise((resolve, reject) => {
     const chunks = []
