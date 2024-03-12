@@ -34,6 +34,7 @@ import { submitFeedback } from "./actions"
 const MAX_FEEDBACK_LENGTH = 100
 const MAX_NAME_LENGTH = 24
 export default function FeedBackDrawer() {
+  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   // const isDesktop = useMediaQuery("(min-width: 768px)")
   const {
@@ -43,7 +44,11 @@ export default function FeedBackDrawer() {
   } = useForm()
 
   const onSubmit = async (data) => {
-    if (!data.name && !data.feedback) return
+    setLoading(true)
+    if (!data.name && !data.feedback) {
+      setLoading(false)
+      return
+    }
 
     if (data.feedback.length > MAX_FEEDBACK_LENGTH) {
       const remainingCharsNeeded = data.feedback.length - MAX_FEEDBACK_LENGTH
@@ -55,6 +60,7 @@ export default function FeedBackDrawer() {
           type: "error",
         }
       )
+      setLoading(false)
       return
     }
 
@@ -68,19 +74,23 @@ export default function FeedBackDrawer() {
           type: "error",
         }
       )
+      setLoading(false)
       return
     }
 
     try {
       const response = await submitFeedback(data.name, data.feedback)
       if (response.success) {
+        setLoading(false)
         toast(response.message, { type: "success" })
       } else {
+        setLoading(false)
         toast(response.message, { type: "error" })
       }
       setOpen(false) // Close the drawer
     } catch (error) {
       console.error(error)
+      setLoading(false)
       toast("An unexpected error occurred. Please try again in 60 seconds", {
         type: "error",
       })
@@ -126,7 +136,16 @@ export default function FeedBackDrawer() {
                 This field is required
               </div>
             )}
-            <Button type="submit">Submit Feedback</Button>
+            <Button type="submit">
+              <div className="flex flex-row gap-3">
+                <div>Submit Feedback</div>
+                <div>
+                  {loading && (
+                    <div className="h-5 w-5 animate-spin rounded-full border-t-4 border-dotted border-slate-50"></div>
+                  )}
+                </div>
+              </div>
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
