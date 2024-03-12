@@ -212,7 +212,7 @@ const SearchRecipes = ({ className }) => {
           </div>
           <div
             className={cn(
-              "flex flex-row flex-wrap justify-center gap-4 hover:bg-input",
+              "flex flex-row flex-wrap justify-center gap-4",
               className
             )}
           >

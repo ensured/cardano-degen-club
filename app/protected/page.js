@@ -15,7 +15,7 @@ export async function listFeedbackObjects() {
   try {
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
-      Prefix: "feedback/", getFeedbackDataByKey
+      Prefix: "feedback/"
     }
 
     const response = await s3Client.send(new ListObjectsV2Command(params))

@@ -60,7 +60,7 @@ const Comments = () => {
                 className="flex flex-col items-center flex-wrap"
               >
                 <CardContent>
-                  <div className="text-lg font-bold bg-slate-700 opacity-50 px-4 py-2 mt-4 rounded-lg text-center">
+                  <div className="mt-4 rounded-lg bg-slate-700 px-4 py-2 text-center text-lg font-bold opacity-50">
                     {extractNameFromFeedbackString(feedback.objKey)}
                   </div>
                   <div className="text-lg font-bold  px-4 pt-4 rounded-lg">
