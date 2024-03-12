@@ -46,8 +46,8 @@ const page = async () => {
 
       return (
         <div className="flex flex-col items-center justify-center  ">
-          <div className="h-24 w-48 bg-slate-950 px-4 py-2">
-            <LogoutLink className="flex flex-row items-center justify-center rounded-md  bg-teal-700 p-3  shadow-card border-b-pink-900 border-l-pink-900 border-l-2 border-y border-b-4 hover:border-b hover:border-l  hover:translate-y-px hover:shadow-none">
+          <div className="h-16 w-48 px-4 py-2">
+            <LogoutLink className="flex flex-row items-center justify-center rounded-md  border-y border-b-4 border-l-2 border-b-pink-900 border-l-pink-900 bg-teal-700 p-3 shadow-card hover:translate-y-px hover:border-b  hover:border-l hover:shadow-none">
               Log out
             </LogoutLink>
           </div>
