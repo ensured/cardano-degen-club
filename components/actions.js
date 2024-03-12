@@ -1,8 +1,6 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
 import MemoryCache from "memory-cache"
 
 import { PutObjectCommand, s3Client } from "../lib/s3"
@@ -10,23 +8,13 @@ import { PutObjectCommand, s3Client } from "../lib/s3"
 const FEEDBACK_FORM_TIMEOUT_MS = 300000
 function getCurrentShorthandDateTime() {
   const currentDate = new Date()
-  const day = currentDate.getDate()
-  const month = currentDate.getMonth() + 1 // Months are zero-based
-  const year = currentDate.getFullYear()
-  const hours = currentDate.getHours()
-  const minutes = currentDate.getMinutes()
-  const seconds = currentDate.getSeconds()
+  const padded = (value) => (value < 10 ? `0${value}` : value)
 
-  // Pad single-digit day, month, hours, minutes, and seconds with leading zeros
-  const paddedDay = day < 10 ? `0${day}` : day
-  const paddedMonth = month < 10 ? `0${month}` : month
-  const paddedHours = hours < 10 ? `0${hours}` : hours
-  const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes
-
-  // Format the date and time as YYYY-MM-DD HH:MM:SS
-  const shorthandDateTime = `${year}-${paddedMonth}-${paddedDay} ${paddedHours}:${paddedMinutes}`
-
-  return shorthandDateTime
+  return `${currentDate.getFullYear()}-${padded(
+    currentDate.getMonth() + 1
+  )}-${padded(currentDate.getDate())} ${padded(
+    currentDate.getHours()
+  )}:${padded(currentDate.getMinutes())}:${padded(currentDate.getSeconds())}`
 }
 
 export async function submitFeedback(name, feedback) {
@@ -50,13 +38,13 @@ export async function submitFeedback(name, feedback) {
       message: `Rate limit exceeded, please try again in ${Math.ceil(
         (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
       )} seconds`,
-    });
+    })
     return {
       success: false,
       message: `Rate limit exceeded, please try again in ${Math.ceil(
         (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
       )} seconds`,
-    };
+    }
   }
 
   const date = getCurrentShorthandDateTime()

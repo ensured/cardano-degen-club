@@ -31,8 +31,8 @@ import { useMediaQuery } from "../lib/use-media-query"
 // Import the server action
 import { submitFeedback } from "./actions"
 
-const MAX_FEEDBACK_LENGTH = 100
-const MAX_NAME_LENGTH = 24
+const MAX_FEEDBACK_LENGTH = 250
+const MAX_NAME_LENGTH = 28
 export default function FeedBackDrawer() {
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
