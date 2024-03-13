@@ -51,7 +51,7 @@ const Comments = async () => {
                 <p>{convertDateTimeAgo(comment.feedbackData.date)}</p>
               </CardContent>
               <CardFooter>
-                <p className="font-mono text-sm text-gray-200 opacity-60">
+                <p className="font-mono text-sm text-gray-900 opacity-60 dark:opacity-40 dark:text-slate-50">
                   Posted by{" "}
                   <strong className="text-md ">
                     {extractNameFromFeedbackString(comment.objKey)}

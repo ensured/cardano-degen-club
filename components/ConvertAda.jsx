@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import {
@@ -65,6 +66,15 @@ const ConvertAda = () => {
         BTC: btcRes.bitcoin.usd,
       })
     } catch (error) {
+      let errorMessage = `${error.message}. Coingecko api down?`
+      if (error.response && error.response.status) {
+        toast(`${errorMessage} Status code: ${error.response.status}`, {
+          type: "error",
+        })
+      }
+      toast(errorMessage, {
+        type: "error",
+      })
       console.error("Error fetching prices:", error)
     }
   }, [])

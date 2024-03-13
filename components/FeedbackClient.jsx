@@ -31,8 +31,10 @@ import { useMediaQuery } from "../lib/use-media-query"
 // Import the server action
 import { submitFeedback } from "./actions"
 
+const MIN_FEEDBACK_LENGTH = 25
 const MAX_FEEDBACK_LENGTH = 250
 const MAX_NAME_LENGTH = 28
+const MIN_NAME_LENGTH = 2
 export default function FeedBackDrawer() {
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -41,65 +43,16 @@ export default function FeedBackDrawer() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm()
+  } = useForm({
+    defaultValues: {
+      name: "",
+      feedback: "",
+    },
+  })
 
   const onSubmit = async (data) => {
     setLoading(true)
     if (!data.name && !data.feedback) {
-      setLoading(false)
-      return
-    }
-
-    const strippedName = data.name.trim()
-
-    if (!strippedName) {
-      toast(
-        "Invalid name. Please enter a valid name without special characters.",
-        {
-          type: "error",
-        }
-      )
-      setLoading(false)
-      return
-    }
-
-    const strippedFeedback = data.feedback.trim()
-
-    if (!strippedFeedback) {
-      toast(
-        "Invalid feedback. Please enter a valid message without only spaces.",
-        {
-          type: "error",
-        }
-      )
-      setLoading(false)
-      return
-    }
-
-    if (data.feedback.length > MAX_FEEDBACK_LENGTH) {
-      const remainingCharsNeeded = data.feedback.length - MAX_FEEDBACK_LENGTH
-      toast(
-        `Feedback is too long, remove ${remainingCharsNeeded} ${
-          remainingCharsNeeded === 1 ? "char" : "chars"
-        } `,
-        {
-          type: "error",
-        }
-      )
-      setLoading(false)
-      return
-    }
-
-    if (data.name.length > MAX_NAME_LENGTH) {
-      const remainingCharsNeeded = data.name.length - MAX_NAME_LENGTH
-      toast(
-        `Name is too long, remove ${remainingCharsNeeded} ${
-          remainingCharsNeeded === 1 ? "char" : "chars"
-        }`,
-        {
-          type: "error",
-        }
-      )
       setLoading(false)
       return
     }
@@ -143,23 +96,41 @@ export default function FeedBackDrawer() {
             className="flex flex-col gap-2"
           >
             <Input
-              {...register("name", { required: true })}
+              {...register("name", {
+                required: "Name is required",
+                minLength: {
+                  value: MIN_NAME_LENGTH,
+                  message: "Name is too short",
+                },
+                maxLength: {
+                  value: MAX_NAME_LENGTH,
+                  message: "Name is too long",
+                },
+              })}
               placeholder="name"
-              error={errors.name}
             />
             {errors.name && (
               <div className="animate-fade-in text-sm font-bold text-red-600">
-                This field is required
+                {errors.name.message}
               </div>
             )}
             <Textarea
-              {...register("feedback", { required: true })}
+              {...register("feedback", {
+                required: "Message is required",
+                minLength: {
+                  value: MIN_FEEDBACK_LENGTH,
+                  message: `Minimum length is ${MIN_FEEDBACK_LENGTH} characters.`,
+                },
+                maxLength: {
+                  value: MAX_FEEDBACK_LENGTH,
+                  message: `Max length is ${MAX_FEEDBACK_LENGTH}`,
+                },
+              })}
               placeholder="Type your message here."
-              error={errors.feedback}
             />
             {errors.feedback && (
               <div className="animate-fade-in text-sm font-bold text-red-600">
-                This field is required
+                {errors.feedback.message}
               </div>
             )}
             <Button type="submit">
