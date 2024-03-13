@@ -52,13 +52,9 @@ export default function FeedBackDrawer() {
 
   const onSubmit = async (data) => {
     setLoading(true)
-    if (!data.name && !data.feedback) {
-      setLoading(false)
-      return
-    }
 
     try {
-      const response = await submitFeedback(data.name, data.feedback)
+      const response = await submitFeedback(data)
       if (response.success) {
         setLoading(false)
         toast(response.message, { type: "success" })
@@ -100,11 +96,11 @@ export default function FeedBackDrawer() {
                 required: "Name is required",
                 minLength: {
                   value: MIN_NAME_LENGTH,
-                  message: "Name is too short",
+                  message: "Name must be at least 2 characters long",
                 },
                 maxLength: {
                   value: MAX_NAME_LENGTH,
-                  message: "Name is too long",
+                  message: `Name must be at most ${MAX_NAME_LENGTH} characters long`,
                 },
               })}
               placeholder="name"
