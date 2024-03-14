@@ -24,7 +24,9 @@ export default function HeroLandingPage() {
           </div>
           <div className="w-full max-w-sm space-y-2">
             <Link href="/cardano-links">
-              <Button variant="primary">Explore Cardano Ecosystem</Button>
+              <Button variant="primary">
+                Explore the global financial operating system
+              </Button>
             </Link>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Dive into our curated collection of Cardano resources and start
