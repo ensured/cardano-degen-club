@@ -25,7 +25,13 @@ module.exports = {
         color: "rgba(0, 0, 0, 0.5)" /* Adjust thumb color */,
       },
       colors: {
-
+        blue: '#1fb6ff',
+        pink: '#ff49db',
+        orange: '#ff7849',
+        green: '#13ce66',
+        grayDark: '#273444',
+        // gray: '#8492a6',
+        grayLight: '#d3dce6',
         moon: "hsl(240, 60%, 50%)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -44,10 +50,10 @@ module.exports = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
-        green: {
-          DEFAULT: "hsl(var(--green))",
-          foreground: "hsl(var(--green-foreground))",
-        },
+        // green: {
+        //   DEFAULT: "hsl(var(--green))",
+        //   foreground: "hsl(var(--green-foreground))",
+        // },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -38,7 +39,7 @@ function getCodePoints(input) {
   return codePoints
 }
 
-const CardForm = () => {
+const CardForm = ({ autoFocus }) => {
   const [searchInput, setSearchInput] = useState("")
   const [output, setOutput] = useState("")
   const searchParams = useSearchParams()
@@ -141,19 +142,6 @@ const CardForm = () => {
     }
   }, [])
 
-  // const handleInputChange = (e) => {
-  //   const inputText = e.target.value
-  //   router.push(`?q=${inputText}`)
-  //   setSearchInput(inputText)
-  //   const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
-
-  //   if (hasNonASCII) {
-  //     handleNonASCIIInput(inputText)
-  //   } else {
-  //     handleASCIIInput(inputText)
-  //   }
-  // }
-
   const handleInputChange = useCallback(
     (e) => {
       const inputText = e.target.value
@@ -178,35 +166,61 @@ const CardForm = () => {
     }
   }, [searchParams, handleInputChange]) // Include handleInputChange in the dependency array
 
+  const emojis = ["😃", "💁", "👌", "🎍", "😍"]
+  const handleAddEmojiToInput = (e) => {
+    setSearchInput(searchInput + e.target.innerText)
+    router.push(`?q=${searchInput + e.target.innerText}`)
+  }
   return (
-    <div className="container flex items-center justify-center">
-      <div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Punycode Converter</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col space-y-4">
-              <Input
-                autoFocus={true}
-                type="text"
-                placeholder="Enter text here..."
-                onChange={handleInputChange}
-                value={searchInput}
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <div>
-              {output ? (
-                <span className="overflow-wrap flex w-full flex-col">
-                  {output}
-                </span>
-              ) : null}{" "}
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
+    <div className="container items-center justify-center">
+      <Card>
+        <CardHeader>
+          <CardTitle className="rounded-sm text-sky-600 opacity-100 dark:text-sky-500 dark:opacity-50 flex justify-center p-4">
+            Punycode Converter
+          </CardTitle>
+          <CardDescription className="text-md">
+            Get started by entering either a emoji, punycode, or unicode.{" "}
+            <i>ex</i>:{" "}
+            <span
+              className="hover:cursor-pointer"
+              onClick={(e) => handleAddEmojiToInput(e)}
+            >
+              📙
+            </span>{" "}
+            Here are some emojis. <strong>Click one</strong> to try it out!{" "}
+            {emojis.map((emoji, index) => (
+              <span
+                key={index}
+                className="hover:cursor-pointer"
+                onClick={(e) => handleAddEmojiToInput(e)}
+              >
+                {emoji}
+              </span>
+            ))}
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <div className="flex flex-col space-y-4">
+            <Input
+              autoFocus={autoFocus}
+              type="text"
+              placeholder="Enter text here..."
+              onChange={handleInputChange}
+              value={searchInput}
+            />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <div>
+            {output ? (
+              <span className="overflow-wrap flex w-full flex-col">
+                {output}
+              </span>
+            ) : null}{" "}
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
