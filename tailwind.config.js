@@ -25,6 +25,7 @@ module.exports = {
         color: "rgba(0, 0, 0, 0.5)" /* Adjust thumb color */,
       },
       colors: {
+        moon: "hsl(240, 60%, 50%)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

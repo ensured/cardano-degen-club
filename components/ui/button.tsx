@@ -9,6 +9,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        moon: "bg-moon text-white hover:bg-moon/90",
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         green: "bg-green-600 text-white hover:bg-green-500",
         destructive:

@@ -3,7 +3,7 @@ import TradingViewChart from "../../components/TradingViewChart"
 
 const page = () => {
   return (
-    <div className="flex flex-col items-center justify-between">
+    <div className="flex flex-col">
       <ConvertAda />
 
       <TradingViewChart />

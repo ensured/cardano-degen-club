@@ -76,7 +76,7 @@ export default function FeedBackDrawer() {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" aria-controls="feedback-dialog">
+          <Button variant="moon" aria-controls="feedback-dialog">
             Leave feedback
           </Button>
         </DialogTrigger>

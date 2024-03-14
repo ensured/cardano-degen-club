@@ -53,7 +53,6 @@ const Dropdown = () => {
         <DropdownMenuItem onClick={handleIagonLinkClick}>
           Iagon Node Status Webapp
         </DropdownMenuItem>
-        <FeedBackDrawer />
       </DropdownMenuContent>
     </DropdownMenu>
   )
