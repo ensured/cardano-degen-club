@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="m-4 rounded-lg bg-white shadow dark:bg-gray-800">
       <div className="mx-auto w-full max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
         <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
-          © 2023{" "}
+          © 2024{" "}
           <a href="https://flowbite.com/" className="hover:underline">
             cardanodegen.club
           </a>
