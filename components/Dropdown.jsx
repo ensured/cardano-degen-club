@@ -35,7 +35,7 @@ const Dropdown = () => {
             Tradingview Script: Auto-Close Ads
           </DropdownMenuItem>
         </Link>
-        <Link href="/">
+        <Link href="/punycode">
           <DropdownMenuItem> Punycode Converter</DropdownMenuItem>
         </Link>
         <Link href="/cardano-links">
@@ -53,7 +53,6 @@ const Dropdown = () => {
         <DropdownMenuItem onClick={handleIagonLinkClick}>
           Iagon Node Status Webapp
         </DropdownMenuItem>
-        <FeedBackDrawer />
       </DropdownMenuContent>
     </DropdownMenu>
   )

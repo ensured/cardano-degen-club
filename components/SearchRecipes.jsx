@@ -155,7 +155,7 @@ const SearchRecipes = ({ className }) => {
   }, [searchParams, searchRecipes, isInitialLoad])
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col pt-4">
       <form onSubmit={searchRecipes} className="container flex gap-2">
         <Input
           placeholder="search term"
@@ -165,7 +165,7 @@ const SearchRecipes = ({ className }) => {
           value={input}
         />
         <Button type="submit" className="w-32">
-          <div className="flex flex-row justify-center items-center gap-2">
+          <div className="flex flex-row items-center justify-center gap-2">
             Search{" "}
             {loading && !recipes.hits && (
               <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-50"></div>

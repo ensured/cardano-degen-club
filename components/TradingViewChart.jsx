@@ -7,6 +7,7 @@ function TradingViewWidget() {
   const { theme } = useTheme()
   const container = useRef()
   const [windowWidth, setWindowWidth] = useState(720)
+  const [windowHeight, setWindowHeight] = useState(650)
 
   useEffect(() => {
     // Debounce function to limit the rate of execution
@@ -44,7 +45,7 @@ function TradingViewWidget() {
           ],
           "chartOnly": false,
           "width": "100%",
-          "height": "500",
+          "height": "770",
           "locale": "en",
           "colorTheme": "${theme}",
           "autosize": true,

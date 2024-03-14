@@ -54,7 +54,7 @@ const CardForm = () => {
             <Badge variant="outline" className=" mb-2">
               Converted
             </Badge>
-            <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+            <p className="white-space:nowrap flex w-full flex-col flex-wrap">
               {converted}
             </p>
 
@@ -73,7 +73,7 @@ const CardForm = () => {
             <Badge variant="outline" className="mb-2 mt-4">
               Converted
             </Badge>
-            <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+            <p className="white-space:nowrap flex w-full flex-col flex-wrap">
               {converted}
             </p>
 

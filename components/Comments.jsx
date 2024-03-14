@@ -10,7 +10,6 @@ const Comments = async () => {
   const fetchComments = async () => {
     try {
       const { success, feedbackObjects } = await listFeedbackObjects()
-      console.log(feedbackObjects)
       if (success) {
         if (feedbackObjects) {
           const feedbackList = await Promise.all(
