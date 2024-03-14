@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import MemoryCache from "memory-cache"
 
 import { PutObjectCommand, s3Client } from "../lib/s3"
+import { revalidatePath } from "next/cache"
 
 const FEEDBACK_FORM_TIMEOUT_MS = 300000
 function getCurrentShorthandDateTime() {
@@ -33,18 +34,14 @@ export async function submitFeedback(name, feedback) {
   // Check if the request is within the rate limit window
   const lastSubmission = MemoryCache.get(cacheKey)
   if (lastSubmission && now - lastSubmission < FEEDBACK_FORM_TIMEOUT_MS) {
-    console.log({
-      success: false,
-      message: `Rate limit exceeded, please try again in ${Math.ceil(
-        (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
-      )} seconds`,
-    })
-    return {
+    const data = {
       success: false,
       message: `Rate limit exceeded, please try again in ${Math.ceil(
         (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
       )} seconds`,
     }
+    console.log(data)
+    return data
   }
 
   const date = getCurrentShorthandDateTime()
@@ -58,6 +55,7 @@ export async function submitFeedback(name, feedback) {
 
     const res = await s3Client.send(new PutObjectCommand(params))
     console.log(res)
+    revalidatePath("/protected")
     return { success: true, message: "Feedback submitted successfully!" }
   } catch (error) {
     console.error(error)

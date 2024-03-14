@@ -119,11 +119,11 @@ export default function FeedBackDrawer() {
                 required: "Message is required",
                 minLength: {
                   value: MIN_FEEDBACK_LENGTH,
-                  message: `Minimum length is ${MIN_FEEDBACK_LENGTH} characters.`,
+                  message: `Feedback too short, min is ${MIN_FEEDBACK_LENGTH} chars`,
                 },
                 maxLength: {
                   value: MAX_FEEDBACK_LENGTH,
-                  message: `Max length is ${MAX_FEEDBACK_LENGTH}`,
+                  message: `Feedback too long, max is ${MAX_FEEDBACK_LENGTH} chars`,
                 },
               })}
               placeholder="Type your message here."
