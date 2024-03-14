@@ -35,6 +35,7 @@ const MIN_FEEDBACK_LENGTH = 25
 const MAX_FEEDBACK_LENGTH = 250
 const MAX_NAME_LENGTH = 28
 const MIN_NAME_LENGTH = 2
+
 export default function FeedBackDrawer() {
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -76,7 +77,11 @@ export default function FeedBackDrawer() {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="moon" aria-controls="feedback-dialog">
+          <Button
+            variant={"link"}
+            className="text-link bg-slate-200 hover:text-black dark:bg-zinc-950 dark:text-slate-200  dark:opacity-90"
+            aria-controls="feedback-dialog"
+          >
             Leave feedback
           </Button>
         </DialogTrigger>
@@ -84,7 +89,8 @@ export default function FeedBackDrawer() {
           <DialogHeader>
             <DialogTitle>Leave feedback</DialogTitle>
             <DialogDescription>
-              Your feedback is very important to me.
+              If there&#39;s anything you want me to add, modify, change let me
+              know! Your feedback is important to me.
             </DialogDescription>
           </DialogHeader>
           <form

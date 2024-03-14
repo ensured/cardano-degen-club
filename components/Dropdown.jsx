@@ -21,7 +21,7 @@ const Dropdown = () => {
     window.open(url, "_blank")
   }
   return (
-    <DropdownMenu className="relative">
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant={"ghost"} size={"sm"}>
           {" "}
@@ -29,30 +29,41 @@ const Dropdown = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
+        <DropdownMenuLabel className="text-moon dark:text-cardano">
+          Crypto
+        </DropdownMenuLabel>
+
+        <Link href="/punycode">
+          <DropdownMenuItem> Punycode Converter</DropdownMenuItem>
+        </Link>
+
+        <Link href="/cardano-links">
+          <DropdownMenuItem>Cardano Links</DropdownMenuItem>
+        </Link>
+
+        <Link href="/crypto-tracker">
+          <DropdownMenuItem>Crypto Tracker</DropdownMenuItem>
+        </Link>
+        <Link href="/recipe-finder">
+          <DropdownMenuItem>Recipe Finder</DropdownMenuItem>
+        </Link>
+        <DropdownMenuSeparator />
+
+        {/* <Link href="/breakout">
+          <DropdownMenuItem value="top">Breakout Game</DropdownMenuItem>
+        </Link> */}
+        <DropdownMenuLabel className="text-moon dark:text-cardano">
+          Scripts
+        </DropdownMenuLabel>
+        <DropdownMenuItem onClick={handleIagonLinkClick}>
+          Iagon Node Status Webapp
+        </DropdownMenuItem>
         <Link href="/tradingview-script">
           <DropdownMenuItem value="top">
             {" "}
             Tradingview Script: Auto-Close Ads
           </DropdownMenuItem>
         </Link>
-        <Link href="/punycode">
-          <DropdownMenuItem> Punycode Converter</DropdownMenuItem>
-        </Link>
-        <Link href="/cardano-links">
-          <DropdownMenuItem>Cardano Links</DropdownMenuItem>
-        </Link>
-        <Link href="/recipe-finder">
-          <DropdownMenuItem>Recipe Finder</DropdownMenuItem>
-        </Link>
-        <Link href="/crypto-tracker">
-          <DropdownMenuItem>Crypto Tracker</DropdownMenuItem>
-        </Link>
-        {/* <Link href="/breakout">
-          <DropdownMenuItem value="top">Breakout Game</DropdownMenuItem>
-        </Link> */}
-        <DropdownMenuItem onClick={handleIagonLinkClick}>
-          Iagon Node Status Webapp
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

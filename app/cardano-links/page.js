@@ -7,9 +7,7 @@ export const metadata = {
 
 const page = () => {
   return (
-    <div className="flex flex-col">
-      <CardanoLinks />
-    </div>
+    <CardanoLinks />
   )
 }
 

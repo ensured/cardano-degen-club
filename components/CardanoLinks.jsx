@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 
-import { cn } from "@/lib/utils"
 import {
   Select,
   SelectContent,
@@ -99,7 +98,7 @@ const CardanoLinks = () => {
   )
 
   return (
-    <div className="px-2">
+    <div className="px-2 pt-2">
       <Select value={activeCategory} onValueChange={handleChange}>
         <SelectTrigger>
           <SelectValue>{camelCaseToSpaced(activeCategory)}</SelectValue>

@@ -7,7 +7,6 @@
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 
 export default function HeroLandingPage() {
   return (
@@ -25,7 +24,7 @@ export default function HeroLandingPage() {
           <div className="w-full max-w-sm space-y-2">
             <Link href="/cardano-links">
               <Button variant="primary">
-                Explore the global financial operating system
+                Explore the new global financial operating system
               </Button>
             </Link>
             <p className="text-sm text-gray-600 dark:text-gray-400">

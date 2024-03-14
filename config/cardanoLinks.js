@@ -302,6 +302,34 @@ const cloudServices = [
   },
 ]
 
+const contentCreators = [
+  {
+    name: "Army Of Spies",
+    twitter: "https://twitter.com/ArmySpies",
+    url: "https://www.youtube.com/@ArmyofSpies/videos",
+  },
+  {
+    name: "The Crypto Crow",
+    twitter: "https://twitter.com/jasonappleton",
+    url: "https://www.youtube.com/@CryptoCrowOfficial/videos"
+  },
+  {
+    name: "AllinCrypto",
+    twitter: "https://twitter.com/RealAllinCrypto",
+    url: "https://www.youtube.com/@realallincrypto/videos"
+  },
+  {
+    name: "ConvincingCrypto",
+    twitter: "https://twitter.com/convincingcryp2",
+    url: "https://www.youtube.com/@ConvincingCrypto/videos"
+  },
+  {
+    name: "CardanoWithPaul",
+    twitter: "https://twitter.com/cwpaulm",
+    url: "https://www.youtube.com/@CardanoWithPaul/videos"
+  }
+]
+
 const allLinks = {
   officialCardano,
   wallets,
@@ -317,6 +345,7 @@ const allLinks = {
   oracles,
   memecoins,
   metaverse,
+  contentCreators,
   other,
 }
 
