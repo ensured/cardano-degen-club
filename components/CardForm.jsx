@@ -170,7 +170,11 @@ const CardForm = ({ autoFocus }) => {
   const handleAddEmojiToInput = (e) => {
     setSearchInput(searchInput + e.target.innerText)
     router.push(`?q=${searchInput + e.target.innerText}`)
+    // handleInputChange({ target: { value: searchInput + e.target.innerText } })
+    inputRef.current.focus()
   }
+
+  const inputRef = useRef()
   return (
     <div className="container items-center justify-center">
       <Card>
@@ -183,6 +187,7 @@ const CardForm = ({ autoFocus }) => {
             <i>ex</i>:{" "}
             <span
               className="hover:cursor-pointer"
+              ref={inputRef}
               onClick={(e) => handleAddEmojiToInput(e)}
             >
               📙
