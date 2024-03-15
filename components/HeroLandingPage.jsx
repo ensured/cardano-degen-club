@@ -8,20 +8,20 @@ import { Button } from "@/components/ui/button"
 
 export default function HeroLandingPage() {
   return (
-    <div className="dark:bg-gray-800 bg-gray-100">
+    <div className="bg-gray-100 dark:bg-gray-800">
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full bg-gray-100 pt-4 opacity-0 transition-opacity delay-300 duration-1000 dark:bg-gray-800 "
+        transition={{ duration: 0.6 }}
+        className="w-full bg-gray-100 pt-8 opacity-0 dark:bg-gray-800 "
       >
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
             <motion.div
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1.1 }}
               transition={{ duration: 0.5 }}
-              className="space-y- transition-transform duration-1000"
+              className="space-y-2"
             >
               <h1 className=" text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
                 Discover Cardano
@@ -32,14 +32,14 @@ export default function HeroLandingPage() {
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1.1 }}
-              transition={{ duration: 0.5 }}
-              className="w-full max-w-sm space-y-2 transition-transform duration-1000"
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg  hover:scale-105 dark:bg-background"
             >
               <Link href="/cardano-links">
                 <Button
                   variant="link"
-                  className=" dark:text-slate-50 text-moon transition-transform duration-500 hover:scale-105 transition duration-500"
+                  className=" text-moon hover:scale-105   dark:text-slate-50  "
                 >
                   Explore the new global financial operating system
                 </Button>
@@ -52,9 +52,9 @@ export default function HeroLandingPage() {
           </div>
         </div>
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.6 }}
           className="h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
@@ -63,22 +63,22 @@ export default function HeroLandingPage() {
       <section className="bg-gray-100 py-12 dark:bg-gray-800">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1.2 }}
-            transition={{ duration: 0.5 }}
-            className="text-2xl font-bold text-center text-zinc-900 dark:text-slate-50 mb-6"
+            transition={{ duration: 0.8 }}
+            className="mb-6 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-2xl"
           >
             Key Features
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {/* Feature 1 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
             >
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+              <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
                 Decentralization
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
@@ -99,8 +99,8 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
             >
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
                 Security
@@ -114,8 +114,8 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
                 Scalability
@@ -129,8 +129,8 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
                 Scaling Solutions for Cardano
@@ -195,8 +195,6 @@ export default function HeroLandingPage() {
           </div>
         </div>
       </section>
-      {/* More Sections */}
-      {/* Add more sections following a similar structure for Use Cases, Testimonials, Educational Content, etc. */}
     </div>
   )
 }
