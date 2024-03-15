@@ -111,7 +111,6 @@ const chartsAnalytics = [
     twitter: "https://twitter.com/EdinburghUni",
     name: "Edinburgh Decentralization Index (EDI)",
     url: "http://blockchainlab.inf.ed.ac.uk/edi-dashboard/#/consensus",
-    website: "https://www.ed.ac.uk/informatics/blockchain/edi/",
   },
   {
     name: "@TapTools",

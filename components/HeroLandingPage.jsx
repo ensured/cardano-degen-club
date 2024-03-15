@@ -1,24 +1,46 @@
+/* eslint-disable react/no-unescaped-entities */
+"use client"
+
 import Link from "next/link"
+import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 
 export default function HeroLandingPage() {
   return (
-    <>
-      <section className="w-full bg-gray-100 pb-12 pt-14 dark:bg-gray-800 md:pb-24 lg:pb-32 xl:pb-48 transition-opacity duration-500 delay-300 opacity-0 animate-slide-in-fade-in">
+    <div className="dark:bg-gray-800 bg-gray-100">
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full bg-gray-100 pt-4 opacity-0 transition-opacity delay-300 duration-1000 dark:bg-gray-800 "
+      >
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
-            <div className="space-y- transition-transform duration-500">
-              <h1 className="text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="space-y- transition-transform duration-1000"
+            >
+              <h1 className=" text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
                 Discover Cardano
               </h1>
               <p className="mx-auto max-w-lg text-gray-600 dark:text-gray-400 md:text-lg">
                 Unlock the potential of the future internet.
               </p>
-            </div>
-            <div className="w-full max-w-sm space-y-2 transition-transform duration-500">
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1.1 }}
+              transition={{ duration: 0.5 }}
+              className="w-full max-w-sm space-y-2 transition-transform duration-1000"
+            >
               <Link href="/cardano-links">
-                <Button variant="primary" className="">
+                <Button
+                  variant="link"
+                  className=" dark:text-slate-50 text-moon transition-transform duration-500 hover:scale-105 transition duration-500"
+                >
                   Explore the new global financial operating system
                 </Button>
               </Link>
@@ -26,11 +48,155 @@ export default function HeroLandingPage() {
                 Dive into our curated collection of Cardano resources and start
                 your journey today.
               </p>
-            </div>
+            </motion.div>
+          </div>
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+        ></motion.div>
+      </motion.section>
+
+      {/* Additional Sections */}
+      <section className="bg-gray-100 py-12 dark:bg-gray-800">
+        <div className="container mx-auto px-4 md:px-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1.2 }}
+            transition={{ duration: 0.5 }}
+            className="text-2xl font-bold text-center text-zinc-900 dark:text-slate-50 mb-6"
+          >
+            Key Features
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+            >
+              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+                Decentralization
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Cardano offers the most decentralized global financial operating
+                system, empowering individuals by eliminating intermediaries and
+                distributing control to the edges. If you are curious about the
+                decentralization between different popular blockchains click{" "}
+                <Link
+                  href="http://blockchainlab.inf.ed.ac.uk/edi-dashboard/#/consensus"
+                  className="text-slate-200"
+                  target="_blank"
+                >
+                  Here
+                </Link>
+              </p>
+            </motion.div>
+            {/* Feature 2 */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+            >
+              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+                Security
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                With its layered architecture and rigorous peer-review process,
+                Cardano ensures high levels of security for its users.
+              </p>
+            </motion.div>
+            {/* Feature 3 */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+            >
+              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+                Scalability
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Cardano's innovative technology enables high transaction
+                throughput and scalability, making it suitable for various
+                applications.
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-1000 hover:scale-105 dark:bg-background"
+            >
+              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+                Scaling Solutions for Cardano
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Cardano is implementing various strategies to enhance
+                scalability and performance. These include on-chain and
+                off-chain solutions.
+              </p>
+
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+                On-chain Solutions
+              </h4>
+              <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
+                <li>
+                  Block size increase: Enhancing transaction capacity by
+                  increasing block size.
+                </li>
+                <li>
+                  Pipelining: Improving block propagation times for faster
+                  transactions.
+                </li>
+                <li>
+                  Input Endorsers: Enhancing block propagation and throughput.
+                </li>
+                <li>
+                  Memory/CPU parameters for Plutus: Optimizing memory usage for
+                  efficiency.
+                </li>
+                <li>
+                  Plutus script enhancements: Making smart contracts more
+                  efficient and cost-effective.
+                </li>
+              </ul>
+
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+                Node Enhancements
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400">
+                Improvements made to the Cardano network nodes to ensure better
+                distribution, memory efficiency, and reduced load at critical
+                points.
+              </p>
+
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+                On-disk Storage
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400">
+                Utilizing on-disk storage for efficient data handling, reducing
+                memory usage and scalability bottlenecks.
+              </p>
+
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+                Off-chain Solutions
+              </h4>
+              <p className="text-gray-600 dark:text-gray-400">
+                Strategies employed outside the Cardano blockchain, such as
+                sidechains, Hydra protocol, off-chain computing, and Mithril for
+                greater scalability and efficiency.
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
-      <div className="h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"></div>
-    </>
+      {/* More Sections */}
+      {/* Add more sections following a similar structure for Use Cases, Testimonials, Educational Content, etc. */}
+    </div>
   )
 }
