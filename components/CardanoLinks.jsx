@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Description } from "@radix-ui/react-dialog"
 
 import {
   Select,
@@ -88,6 +89,9 @@ const CardanoLinks = () => {
   const categoryNames = Object.keys(allLinks)
 
   function camelCaseToSpaced(str) {
+    if (str === "ai") {
+      return "AI"
+    }
     return str
       .replace(/([a-z])([A-Z])/g, "$1 $2")
       .replace(/^./, (match) => match.toUpperCase())
@@ -99,8 +103,12 @@ const CardanoLinks = () => {
 
   return (
     <div className="px-2 pt-2">
+      <div className="flex w-full items-center justify-center rounded-t-md bg-slate-100 pt-2 text-center text-xs text-gray-700 opacity-60 dark:bg-slate-300 dark:bg-opacity-50 dark:text-slate-50 md:text-sm">
+        Always do your due diligence and double check any links you click online
+        {" ;)"}
+      </div>
       <Select value={activeCategory} onValueChange={handleChange}>
-        <SelectTrigger>
+        <SelectTrigger className="rounded-t-none">
           <SelectValue>{camelCaseToSpaced(activeCategory)}</SelectValue>
         </SelectTrigger>
         <SelectContent>

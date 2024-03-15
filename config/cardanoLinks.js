@@ -114,8 +114,14 @@ const chartsAnalytics = [
   },
   {
     name: "@TapTools",
+    twitter: "https://twitter.com/taptools",
     url: "https://taptools.io",
   },
+  {
+    name: "Cardano Blockchain Insights",
+    url: "https://lookerstudio.google.com/u/0/reporting/3136c55b-635e-4f46-8e4b-b8ab54f2d460/page/p_wxcw6g0irc",
+  },
+
   {
     name: "CNFT Tools",
     url: "https://cnft.tools/",
@@ -124,10 +130,7 @@ const chartsAnalytics = [
     name: "Cardano Messari - ADA Market data",
     url: "https://messari.io/project/cardano/markets",
   },
-  {
-    name: "Opencnft",
-    url: "https://opencnft.io/",
-  },
+
   {
     name: "adahandle tools",
     url: "handle.tools",
@@ -273,10 +276,9 @@ const metaverse = [
 
 const other = [
   {
-    name: "Cardano Blockchain Insights",
-    url: "https://lookerstudio.google.com/u/0/reporting/3136c55b-635e-4f46-8e4b-b8ab54f2d460/page/p_wxcw6g0irc",
+    name: "Book.io (Decentralized books)",
+    url: "https://book.io",
   },
-
   {
     name: "Cardano Cube",
     url: "https://cardanocube.com/",
@@ -289,7 +291,7 @@ const other = [
 
   {
     name: "adahandle punycode converter",
-    url: "https://punycode-converter.vercel.app/",
+    url: "https://punycode-converter.vercel.app/punycode",
   },
 ]
 
@@ -300,7 +302,36 @@ const cloudServices = [
     url: "https://iagon.com",
   },
 ]
+const telecomms = [
+  {
+    name: "World Mobile Token",
+    twitter: "https://twitter.com/wmtoken",
+    url: "https://worldmobiletoken.com/",
+  },
+  {
+    name: "World Mobile",
+    twitter: "https://twitter.com/worldmobileteam",
+    url: "https://worldmobile.io/",
+  },
+]
 
+const ai = [
+  {
+    name: "SingularityNet + AGIX Token",
+    twitter: "https://twitter.com/SingularityNET",
+    url: "https://singularitynet.io/",
+  },
+  {
+    name: "Rejuve + RJV Token",
+    twitter: "https://twitter.com/Rejuve_AI",
+    url: "https://rejuve.ai/",
+  },
+  {
+    name: "CardanoGPT",
+    twitter: "https://twitter.com/replyada",
+    url: "https://cardanogpt.ai/",
+  },
+]
 const contentCreators = [
   {
     name: "Army Of Spies",
@@ -310,30 +341,32 @@ const contentCreators = [
   {
     name: "The Crypto Crow",
     twitter: "https://twitter.com/jasonappleton",
-    url: "https://www.youtube.com/@CryptoCrowOfficial/videos"
+    url: "https://www.youtube.com/@CryptoCrowOfficial/videos",
   },
   {
     name: "AllinCrypto",
     twitter: "https://twitter.com/RealAllinCrypto",
-    url: "https://www.youtube.com/@realallincrypto/videos"
+    url: "https://www.youtube.com/@realallincrypto/videos",
   },
   {
     name: "ConvincingCrypto",
     twitter: "https://twitter.com/convincingcryp2",
-    url: "https://www.youtube.com/@ConvincingCrypto/videos"
+    url: "https://www.youtube.com/@ConvincingCrypto/videos",
   },
   {
     name: "CardanoWithPaul",
     twitter: "https://twitter.com/cwpaulm",
-    url: "https://www.youtube.com/@CardanoWithPaul/videos"
-  }
+    url: "https://www.youtube.com/@CardanoWithPaul/videos",
+  },
 ]
 
 const allLinks = {
   officialCardano,
   wallets,
-  cloudServices,
   dexs,
+  cloudServices,
+  telecomms,
+  ai,
   marketplaces,
   chartsAnalytics,
   lendingBorrowing,
