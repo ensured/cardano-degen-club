@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
-import { Badge, badgeVariants } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge"
 import SelectScrollable from "@/components/SelectScrollable"
 
 import { CardLink } from "./CardLink"
@@ -177,7 +177,7 @@ const SearchRecipes = ({ className }) => {
       {recipes.hits?.length > 0 ? (
         <div className="flex flex-col gap-1">
           <div className="container mt-1 flex">
-            <div className="flex flex-row flex-wrap justify-center items-center gap-1">
+            <div className="flex flex-row flex-wrap items-center justify-center gap-1">
               <Badge variant={"outline"} className="p-2">
                 {recipes.count} results 🎉
               </Badge>
