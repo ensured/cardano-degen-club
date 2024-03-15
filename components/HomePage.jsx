@@ -4,8 +4,6 @@ import { useEffect, useState } from "react"
 
 import CardForm from "@/components/CardForm"
 
-import styles from "./HomePage.module.css"
-
 const HomePage = () => {
   const [showForm, setShowForm] = useState(false)
 
@@ -18,7 +16,7 @@ const HomePage = () => {
     <div className="mb-20 mt-24">
       <div
         className={`transition-all duration-1000 ${
-          showForm ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+          showForm ? "translate-x-0 opacity-100" : "translate-x-32 opacity-0"
         }`}
       >
         <CardForm autoFocus={false} />

@@ -145,7 +145,9 @@ const CardForm = ({ autoFocus }) => {
   const handleInputChange = useCallback(
     (e) => {
       const inputText = e.target.value
-      router.push(`?q=${inputText}`)
+      router.replace(`?q=${inputText}`, {
+        scroll: false,
+      })
       setSearchInput(inputText)
       const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
 
@@ -168,10 +170,16 @@ const CardForm = ({ autoFocus }) => {
 
   const emojis = ["😃", "💁", "👌", "🎍", "😍"]
   const handleAddEmojiToInput = (e) => {
-    setSearchInput(searchInput + e.target.innerText)
-    router.push(`?q=${searchInput + e.target.innerText}`)
-    // handleInputChange({ target: { value: searchInput + e.target.innerText } })
-    inputRef.current.focus()
+    const inputText = searchInput + e.target.innerText
+    // router.push(`?q=${inputText}`)
+    setSearchInput(inputText)
+    const hasNonASCII = /[^\x00-\x7F]/.test(inputText)
+    router.replace(`?q=${inputText}`, { scroll: false })
+    if (hasNonASCII) {
+      handleNonASCIIInput(inputText)
+    } else {
+      handleASCIIInput(inputText)
+    }
   }
 
   const inputRef = useRef()
