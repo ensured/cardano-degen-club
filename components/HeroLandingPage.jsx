@@ -59,7 +59,6 @@ export default function HeroLandingPage() {
         ></motion.div>
       </motion.section>
 
-      {/* Additional Sections */}
       <section className="bg-gray-100 py-12 dark:bg-gray-800">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
@@ -71,7 +70,6 @@ export default function HeroLandingPage() {
             Key Features
           </motion.div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {/* Feature 1 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
