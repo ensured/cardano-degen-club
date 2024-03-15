@@ -89,7 +89,7 @@ export default function FeedBackDrawer() {
           <DialogHeader>
             <DialogTitle>Leave feedback</DialogTitle>
             <DialogDescription>
-              If there&apos;s anything you want me to add, modify, change let me
+              If there{"'"}s anything you want me to add, modify, change let me
               know! Your feedback is important to me.
             </DialogDescription>
           </DialogHeader>
