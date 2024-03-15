@@ -88,9 +88,10 @@ export default function FeedBackDrawer() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Leave feedback</DialogTitle>
+            {/* eslint-disable-next-line react/no-unescaped-entities */}
             <DialogDescription>
-              If there{"'"}s anything you want me to add, modify, change let me
-              know! Your feedback is important to me.
+              If there&lsquo;s anything you want me to add, modify, change let
+              me know! Your feedback is important to me.
             </DialogDescription>
           </DialogHeader>
           <form
