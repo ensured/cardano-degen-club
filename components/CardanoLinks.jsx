@@ -1,4 +1,3 @@
-/* eslint-disable tailwindcss/classnames-order */
 "use client"
 
 import { useEffect, useState } from "react"
@@ -104,6 +103,7 @@ const CardanoLinks = () => {
 
   return (
     <div className="px-2 pt-2">
+      {"// eslint-disable-next-line tailwindcss/migration-from-tailwind-2"}
       <div className="pt-2 bg-slate-100 dark:bg-slate-300 dark:bg-opacity-50 dark:text-slate-100 rounded-t-md flex w-full items-center justify-center text-center text-xs md:text-sm text-gray-700 opacity-60">
         Always do your due diligence and double check any links you click online
         {" ;)"}
