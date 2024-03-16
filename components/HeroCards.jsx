@@ -51,7 +51,7 @@ const HeroCards = () => {
         </motion.div>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
         {/* Feature 1 (wrapped in motion.div) */}
         <motion.div
           initial="hidden"
@@ -63,7 +63,7 @@ const HeroCards = () => {
           transition={{ duration: 0.5 }} // Adjust animation duration as needed
           className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-500 hover:scale-105 dark:bg-background"
         >
-          <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+          <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
             Decentralization
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
@@ -82,7 +82,7 @@ const HeroCards = () => {
           transition={{ duration: 0.5 }} // Adjust animation duration as needed
           className="rounded-lg bg-slate-200 p-6 shadow-lg transition-transform duration-500 hover:scale-105 dark:bg-background"
         >
-          <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+          <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
             Security
           </h3>
           <p className="text-gray-600 dark:text-gray-400">

@@ -25,7 +25,7 @@ const Icon = ({
 
 export function MainNav({ items }: MainNavProps) {
   return (
-    <div className="flex  gap-1 md:gap-10">
+    <div className="flex gap-1 md:gap-10">
       <Link href="/" className="flex items-center space-x-2">
         <Icons.ada className="h-6 w-6 text-black dark:text-white" />
         <span className="inline-block font-bold">{siteConfig.name}</span>

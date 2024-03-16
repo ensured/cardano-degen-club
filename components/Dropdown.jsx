@@ -29,7 +29,7 @@ const Dropdown = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuLabel className="text-moon dark:text-cardano">
+        <DropdownMenuLabel className="dark:text-cardano text-moon">
           Crypto
         </DropdownMenuLabel>
 
@@ -52,7 +52,7 @@ const Dropdown = () => {
         {/* <Link href="/breakout">
           <DropdownMenuItem value="top">Breakout Game</DropdownMenuItem>
         </Link> */}
-        <DropdownMenuLabel className="text-moon dark:text-cardano">
+        <DropdownMenuLabel className="dark:text-cardano text-moon">
           Scripts
         </DropdownMenuLabel>
         <DropdownMenuItem onClick={handleIagonLinkClick}>

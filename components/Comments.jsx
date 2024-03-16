@@ -31,7 +31,7 @@ const Comments = async () => {
   return (
     <div className="flex flex-col items-center justify-center  ">
       <div className="h-16 w-48 px-4 py-2">
-        <LogoutLink className="flex flex-row items-center justify-center rounded-md  border-y border-b-4 border-l-2 border-b-pink-900 border-l-pink-900 bg-teal-700 p-3 shadow-card hover:translate-y-px hover:border-b  hover:border-l hover:shadow-none">
+        <LogoutLink className="border-b-pink-900 border-l-pink-900 flex flex-row items-center  justify-center rounded-md border-y border-b-4 border-l-2 bg-teal-700 p-3 shadow-card hover:translate-y-px hover:border-b  hover:border-l hover:shadow-none">
           Log out
         </LogoutLink>
       </div>
@@ -50,7 +50,7 @@ const Comments = async () => {
                 <p>{convertDateTimeAgo(comment.feedbackData.date)}</p>
               </CardContent>
               <CardFooter>
-                <p className="font-mono text-sm text-gray-900 opacity-60 dark:opacity-40 dark:text-slate-50">
+                <p className="font-mono text-sm text-gray-900 opacity-60 dark:text-slate-50 dark:opacity-40">
                   Posted by{" "}
                   <strong className="text-md ">
                     {extractNameFromFeedbackString(comment.objKey)}

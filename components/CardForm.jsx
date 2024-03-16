@@ -105,7 +105,7 @@ const CardForm = ({ autoFocus }) => {
           <Badge variant="outline" className="mb-2 mt-4">
             Converted
           </Badge>
-          <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+          <p className="white-space:nowrap flex w-full flex-col flex-wrap">
             {converted}
           </p>
           <br />
@@ -124,7 +124,7 @@ const CardForm = ({ autoFocus }) => {
           <Badge variant="outline" className="mb-2 mt-4">
             Converted
           </Badge>
-          <p className="flex w-full flex-col flex-wrap white-space:nowrap">
+          <p className="white-space:nowrap flex w-full flex-col flex-wrap">
             {converted}
           </p>
 
@@ -187,7 +187,7 @@ const CardForm = ({ autoFocus }) => {
     <div className="container items-center justify-center">
       <Card>
         <CardHeader>
-          <CardTitle className="rounded-sm text-sky-600 opacity-100 dark:text-sky-500 dark:opacity-50 flex justify-center p-4">
+          <CardTitle className="flex justify-center rounded-sm p-4 text-sky-600 opacity-100 dark:text-sky-500 dark:opacity-50">
             Punycode Converter
           </CardTitle>
           <CardDescription className="text-md">
