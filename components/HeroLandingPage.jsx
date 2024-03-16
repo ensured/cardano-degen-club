@@ -166,7 +166,26 @@ export default function HeroLandingPage() {
               className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
               <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
-                Scalability
+                <div className="flex flex-row items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-rocket"
+                  >
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                  </svg>
+                  Scalability
+                </div>
               </h3>
               <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
                 Cardano's innovative technology enables high transaction
@@ -181,7 +200,24 @@ export default function HeroLandingPage() {
               className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
               <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
-                Scaling Solutions for Cardano
+                <div className="flex items-center gap-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="44"
+                    height="44"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-chevrons-up"
+                  >
+                    <path d="m17 11-5-5-5 5" />
+                    <path d="m17 18-5-5-5 5" />
+                  </svg>
+                  Scaling Solutions for Cardano
+                </div>
               </h3>
               <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
                 Cardano is implementing various strategies to enhance
