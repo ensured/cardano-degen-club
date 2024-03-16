@@ -6,6 +6,8 @@ export const metadata = {
 
 export default function IndexPage() {
   return (
-    <HeroLandingPage />
+    <div className="overflow-auto">
+      <HeroLandingPage />
+    </div>
   )
 }
