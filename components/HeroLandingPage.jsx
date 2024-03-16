@@ -4,7 +4,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ExternalLink, LockKeyhole } from "lucide-react"
+import { ExternalLink, FilePlus2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
@@ -47,14 +47,14 @@ export default function HeroLandingPage() {
               >
                 <Button
                   variant="link"
-                  className="relative text-xl text-sky-500 transition-all duration-700 hover:translate-x-1 dark:text-slate-50 md:text-2xl"
+                  className="h-18 relative text-lg text-sky-700/90 transition-all duration-500 hover:translate-x-1 hover:text-sky-950 dark:text-slate-50 dark:hover:text-sky-300 md:text-xl xl:text-2xl"
                 >
                   {isHovered && (
-                    <span className="absolute -right-4">
+                    <div className="absolute -right-4">
                       <ExternalLink />
-                    </span>
+                    </div>
                   )}
-                  Explore the new global financial operating system
+                  <div>Explore the new global financial operating system</div>
                 </Button>
               </Link>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -117,7 +117,7 @@ export default function HeroLandingPage() {
                 decentralization between different popular blockchains click{" "}
                 <Link
                   href="http://blockchainlab.inf.ed.ac.uk/edi-dashboard/#/consensus"
-                  className="text-slate-200"
+                  className=" text-sky-600/60 transition-all hover:text-slate-100 hover:underline"
                   target="_blank"
                 >
                   Here
