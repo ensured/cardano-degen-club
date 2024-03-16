@@ -69,20 +69,24 @@ function TradingViewWidget() {
           "noTimeScale": true,
           "valuesTracking": "1",
           "changeMode": "price-and-percent",
-          "chartType": "area",
+          "chartType": "candlesticks",
           "maLineColor": "#2962FF",
           "maLineWidth": 1,
           "maLength": 9,
-          "lineWidth": 2,
           "lineType": 0,
           "dateRanges": [
-            "1d|1",
             "1m|30",
             "3m|60",
             "12m|1D",
             "60m|1W",
             "all|1M"
-          ]
+          ],
+          "upColor": "#22ab94",
+          "downColor": "#f7525f",
+          "borderUpColor": "#22ab94",
+          "borderDownColor": "#f7525f",
+          "wickUpColor": "#22ab94",
+          "wickDownColor": "#f7525f"
         }
       `
 
