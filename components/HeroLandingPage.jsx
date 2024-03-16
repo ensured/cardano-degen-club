@@ -30,15 +30,16 @@ export default function HeroLandingPage() {
               <h1 className="mx-auto max-w-lg text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
                 Discover Cardano
               </h1>
-              <p className=" text-md text-gray-600 dark:text-gray-400 md:text-lg lg:text-lg">
-                Unlock the potential of the future internet.
-              </p>
+              <div className="max-w-96 text-md px-8  text-gray-600 dark:text-gray-400 md:text-xl lg:text-lg">
+                Unlock a new version of the web and discover the nation of
+                Cardano.
+              </div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg border-sky-300 border-x-2 border-y-2  hover:scale-105 dark:bg-background"
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-xl dark:bg-background"
             >
               <Link
                 href="/cardano-links"
@@ -65,10 +66,10 @@ export default function HeroLandingPage() {
           </div>
         </div>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+          transition={{ duration: 2 }}
+          className="mt-6 h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
 
@@ -82,12 +83,12 @@ export default function HeroLandingPage() {
           >
             Key Features
           </motion.div>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg border-sky-300 border-x-2 border-y-2 hover:scale-105 dark:bg-background"
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
                 <div className="inline-flex items-center gap-2">
@@ -129,7 +130,7 @@ export default function HeroLandingPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg border-sky-300 border-x-2 border-y-2 dark:bg-background"
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
                 {" "}
@@ -163,7 +164,7 @@ export default function HeroLandingPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="rounded-lg bg-slate-200 p-6 shadow-lg border-sky-300 border-x-2 border-y-2   hover:scale-105 dark:bg-background"
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105   dark:bg-background"
             >
               <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                 <div className="flex flex-row items-center gap-2">
@@ -197,7 +198,7 @@ export default function HeroLandingPage() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="rounded-lg bg-slate-200 p-6 shadow-lg border-sky-300 border-x-2 border-y-2 border-sky-300 border-x-2 border-y-2 dark:bg-background"
+            className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
           >
             <h3 className=" text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
               <div className="flex items-center gap-4">
