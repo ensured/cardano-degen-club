@@ -30,7 +30,7 @@ export default function HeroLandingPage() {
               <h1 className="mx-auto max-w-lg text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
                 Discover Cardano
               </h1>
-              <p className=" text-gray-600 dark:text-gray-400 md:text-lg text-md lg:text-lg">
+              <p className=" text-md text-gray-600 dark:text-gray-400 md:text-lg lg:text-lg">
                 Unlock the potential of the future internet.
               </p>
             </motion.div>
@@ -150,10 +150,10 @@ export default function HeroLandingPage() {
                     <rect x="3" y="10" width="18" height="12" rx="2" />
                     <path d="M7 10V7a5 5 0 0 1 10 0v3" />
                   </svg>
-                  <div>Security</div>
+                  <div className="text-md md:text-3xl">Security</div>
                 </div>
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-md lg:text-lg">
+              <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
                 With its layered architecture and rigorous peer-review process,
                 Cardano ensures high levels of security for its users.
               </p>
@@ -165,10 +165,10 @@ export default function HeroLandingPage() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
-              <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
+              <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                 Scalability
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-md lg:text-lg">
+              <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
                 Cardano's innovative technology enables high transaction
                 throughput and scalability, making it suitable for various
                 applications.
@@ -180,10 +180,10 @@ export default function HeroLandingPage() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
-              <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
+              <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                 Scaling Solutions for Cardano
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-md lg:text-lg">
+              <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
                 Cardano is implementing various strategies to enhance
                 scalability and performance. These include on-chain and
                 off-chain solutions.
