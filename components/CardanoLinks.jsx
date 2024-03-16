@@ -105,17 +105,22 @@ const CardanoLinks = () => {
 
   return (
     <div className="px-2 pt-2">
-      <div className="pt-2 bg-slate-100 dark:bg-slate-300/50 dark:text-slate-100 rounded-t-md flex w-full items-center justify-center text-center text-xs md:text-sm text-gray-700 opacity-60">
-        Always do your due diligence and double check any links you click online
+      <div className="border-x-2 border-t-2 border-gray-300 p-2 dark:text-slate-300 rounded-t-md flex w-full justify-center text-center text-xs md:text-sm text-gray-700 dark:text-opacity-50">
+        Always do your due diligence and double check any links you click
+        online!
       </div>
       <Select value={activeCategory} onValueChange={handleChange}>
-        <SelectTrigger className="rounded-t-none">
+        <SelectTrigger className=" border-gray-300 rounded-t-none focus:border-gray-300 border-2">
           <SelectValue>{camelCaseToSpaced(activeCategory)}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
             {categoryNames.map((category, index) => (
-              <SelectItem key={index} value={category}>
+              <SelectItem
+                key={index}
+                value={category}
+                className="text-indigo-500"
+              >
                 {spacedCategoryNames[index]}
               </SelectItem>
             ))}

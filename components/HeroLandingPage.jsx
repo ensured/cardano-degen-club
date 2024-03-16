@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button"
 
 export default function HeroLandingPage() {
   return (
-    <div className="bg-gray-100 dark:bg-gray-800">
+    <div className=" bg-gray-100 dark:bg-gray-800">
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-gray-100 pt-8 opacity-0 dark:bg-gray-800 "
+        className=" bg-gray-100 pt-16 opacity-0 dark:bg-gray-800 "
       >
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
