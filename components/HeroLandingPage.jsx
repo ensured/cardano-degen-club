@@ -100,7 +100,7 @@ export default function HeroLandingPage() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="rounded-lg bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
             >
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+              <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
                 Security
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
@@ -115,7 +115,7 @@ export default function HeroLandingPage() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+              <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
                 Scalability
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
@@ -130,7 +130,7 @@ export default function HeroLandingPage() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="rounded-lg bg-slate-200 p-6 shadow-lg   hover:scale-105 dark:bg-background"
             >
-              <h3 className="text-xl font-semibold text-zinc-900 dark:text-slate-50 mb-2">
+              <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
                 Scaling Solutions for Cardano
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
@@ -139,10 +139,10 @@ export default function HeroLandingPage() {
                 off-chain solutions.
               </p>
 
-              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+              <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
                 On-chain Solutions
               </h4>
-              <ul className="list-disc list-inside text-gray-600 dark:text-gray-400">
+              <ul className="list-inside list-disc text-gray-600 dark:text-gray-400">
                 <li>
                   Block size increase: Enhancing transaction capacity by
                   increasing block size.
@@ -164,7 +164,7 @@ export default function HeroLandingPage() {
                 </li>
               </ul>
 
-              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+              <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
                 Node Enhancements
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
@@ -173,7 +173,7 @@ export default function HeroLandingPage() {
                 points.
               </p>
 
-              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+              <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
                 On-disk Storage
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
@@ -181,7 +181,7 @@ export default function HeroLandingPage() {
                 memory usage and scalability bottlenecks.
               </p>
 
-              <h4 className="text-lg font-semibold text-zinc-900 dark:text-slate-50 mt-4 mb-2">
+              <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
                 Off-chain Solutions
               </h4>
               <p className="text-gray-600 dark:text-gray-400">
