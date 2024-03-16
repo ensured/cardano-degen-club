@@ -78,7 +78,7 @@ export default function HeroLandingPage() {
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1.2 }}
             transition={{ duration: 0.8 }}
-            className="mb-6 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl"
+            className="pb-6 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl"
           >
             Key Features
           </motion.div>

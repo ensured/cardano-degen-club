@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function IndexPage() {
   return (
-    <div className="overflow-auto">
+    <div className="overflow-x-clip">
       <HeroLandingPage />
     </div>
   )
