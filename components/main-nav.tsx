@@ -25,29 +25,13 @@ const Icon = ({
 
 export function MainNav({ items }: MainNavProps) {
   return (
-    <div className="flex gap-6 md:gap-10">
+    <div className="flex  gap-1 md:gap-10 overflow-x-auto">
       <Link href="/" className="flex items-center space-x-2">
-        <Icons.ada className="text-black dark:text-white h-6 w-6" />
+        <Icons.ada className="h-6 w-6 text-black dark:text-white" />
         <span className="inline-block font-bold">{siteConfig.name}</span>
       </Link>
       {items?.length ? (
         <nav className="flex gap-6">
-          {/* old system with config site.ts */}
-          {/* {items?.map(
-            (item, index) =>
-              item.href && (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center text-sm font-medium text-muted-foreground",
-                    item.disabled && "cursor-not-allowed opacity-80"
-                  )}
-                >
-                  {item.title}
-                </Link>
-              )
-          )} */}
           <Dropdown />
         </nav>
       ) : null}
