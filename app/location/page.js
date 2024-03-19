@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import toast from "sonner";
+import { toast } from "sonner";
 
 const Page = () => {
   const [weather, setWeather] = useState({
