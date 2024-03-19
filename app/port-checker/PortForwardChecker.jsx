@@ -34,8 +34,8 @@ function PortForwardChecker({ usersIp }) {
   }
 
   return (
-    <div className="mt-2 flex md:flex-row flex-col items-center justify-center rounded-md p-6 md:gap-10 lg:gap-20 gap-4">
-      <h1 className="text-center max-w-[269px] md:max-w-[500px] md:text-4xl text-2xl">
+    <div className="mt-2 flex flex-col items-center justify-center gap-4 rounded-md p-6 md:flex-row md:gap-10 lg:gap-20">
+      <h1 className="max-w-[269px] text-center text-2xl md:max-w-[500px] md:text-4xl">
         Check open/closed ports for any ip address
       </h1>
       <Form>
@@ -93,7 +93,7 @@ function PortForwardChecker({ usersIp }) {
           </div>
 
           <Button
-            className="relative w-full flex items-center justify-center" // Add flexbox styles
+            className="relative flex w-full items-center justify-center" // Add flexbox styles
             variant={"moon"}
             type="submit"
             disabled={loading}
