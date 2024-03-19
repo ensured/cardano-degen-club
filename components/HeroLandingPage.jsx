@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 import { ExternalLink, FilePlus2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 
 export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
@@ -72,6 +73,7 @@ export default function HeroLandingPage() {
           className="mt-6 h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
+      <Separator />
 
       <section className="bg-gray-100 py-12 dark:bg-gray-800">
         <div className="container mx-auto px-4 md:px-6">
@@ -278,6 +280,13 @@ export default function HeroLandingPage() {
           </motion.div>
         </div>
       </section>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 2 }}
+        className="h-10 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+      />
     </div>
   )
 }

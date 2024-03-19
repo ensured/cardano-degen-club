@@ -49,8 +49,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Toaster
-              visibleToasts={1}
-              closeButton={true}
               richColors={true}
               toastOptions={{
                 style: { minWidth: "20rem", maxWidth: "40rem" },
