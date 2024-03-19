@@ -80,6 +80,13 @@ function PortForwardChecker({ usersIp }) {
                     </b>
                   </>
                 )}
+                {result.includes("Connection timed out") && (
+                  <>
+                    <b className="text-red-600 opacity-90">
+                      Connection timed out
+                    </b>
+                  </>
+                )}
               </p>
             )}
             {error && <p className="text-red-600">{error}</p>}

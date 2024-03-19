@@ -40,15 +40,15 @@ export async function GET(req: NextRequest, res: NextResponse) {
         socket.end();
         resolve(true); // Port is open
       });
-      socket.on('error', (err) => {
-        if (err.code === 'ECONNREFUSED') {
+      socket.on('error', (err:Error) => {
+        if (err.message.includes('ECONNREFUSED')) {
           resolve(false); // Port is closed
         } else {
           reject(err); // Other error occurred
         }
       });
       socket.on('timeout', () => {
-        reject(new Error('Connection timed out')); // Timeout occurred
+        reject('Connection timed out'); // Timeout occurred
       });
       socket.connect(parseInt(port, 10), ip); // Connect to the specified port
     });
@@ -59,10 +59,9 @@ export async function GET(req: NextRequest, res: NextResponse) {
       message: isOpen ? 'Port is open' : 'Port is closed'
     });
   } catch (err) {
-    console.error(err);
     return NextResponse.json({
       status: 500,
-      message: 'Error checking port'
+      message: err
     });
 }
 
