@@ -32,7 +32,11 @@
     "lib/fonts.js",
     "components/**/*.js",
     "components/**/*.ts",
-    "components/**/*.jsx"
+    "components/**/*.jsx",
+    "app/**/*.js",
+    "app/**/*.jsx",
+    "app/**/*.ts",
+    "app/**/*.tsx"
   ],
   "exclude": ["node_modules"]
 }

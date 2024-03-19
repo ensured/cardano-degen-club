@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { CopyIcon } from "lucide-react"
 import Prism from "prismjs"
 import { toast } from "sonner"
 
@@ -105,15 +106,17 @@ const PrismData = () => {
     <div>
       <pre className="rounded-md">
         {/* button to copy text */}
-        <div className={cn("relative flex justify-end")}>
-          <Button
+        <div className={cn("relative flex")}>
+          {/* <Button
             variant={"green"}
-            className="absolute text-lg font-bold md:text-2xl"
+            className="w-14 absolute text-lg font-bold md:text-2xl -right-3 bg-slate-50/20 -top-2"
+
+          > */}
+          <CopyIcon
+            size={"30px"}
             onClick={handleCopy}
-          >
-            <Image src="/copy.png" width={24} height={24} alt="Copy icon" />
-            Copy
-          </Button>
+            className="absolute right-0 bg-slate-900 p-2 rounded-sm hover:cursor-pointer hover:bg-slate-950 hover:text-green transition-all hover:scale-110"
+          />
         </div>
         <code
           className="language-javascript"
@@ -124,7 +127,7 @@ const PrismData = () => {
         </code>
       </pre>
       <Link
-        className="flex justify-center bg-red-500 p-4 text-sm md:text-base"
+        className="flex justify-center text-xs text-gray-400"
         href="https://www.flaticon.com/free-icons/ui"
         title="ui icons"
       >

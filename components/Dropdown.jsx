@@ -48,10 +48,6 @@ const Dropdown = () => {
           <DropdownMenuItem>Recipe Finder</DropdownMenuItem>
         </Link>
         <DropdownMenuSeparator />
-
-        {/* <Link href="/breakout">
-          <DropdownMenuItem value="top">Breakout Game</DropdownMenuItem>
-        </Link> */}
         <DropdownMenuLabel className="dark:text-cardano text-moon">
           Scripts
         </DropdownMenuLabel>
@@ -62,6 +58,17 @@ const Dropdown = () => {
           <DropdownMenuItem value="top">
             {" "}
             Tradingview Script: Auto-Close Ads
+          </DropdownMenuItem>
+        </Link>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="dark:text-cardano text-moon">
+          Misc
+        </DropdownMenuLabel>
+        <Link href="/port-checker">
+          <DropdownMenuItem value="top">
+            <div className="flex flex-col justify-center">
+              <span>Port Checker</span>
+            </div>
           </DropdownMenuItem>
         </Link>
       </DropdownMenuContent>
