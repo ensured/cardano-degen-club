@@ -16,7 +16,9 @@ const Page = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition, handleError);
       } else {
-        toast.error("Geolocation is not supported by this browser.");
+        toast("Geolocation is not supported by this browser.", {
+          type: "error",
+        });
       }
     }
 
@@ -29,8 +31,10 @@ const Page = () => {
     }
 
     function handleError(error) {
-      console.error("Error getting geolocation:", error);
-      toast.error("Error getting geolocation. Please try again later.");
+      toast("Error getting geolocation. Please try again later.",
+        {
+          type: "error",
+        });
     }
 
     async function fetchCityStateZip(lat, lon) {
@@ -46,7 +50,9 @@ const Page = () => {
         setWeather((prevWeather) => ({ ...prevWeather, city, state, zip }));
       } catch (error) {
         console.error("Error fetching city/state/zip data:", error);
-        toast.error("Error fetching city/state/zip data. Please try again later.");
+        toast("Error fetching city/state/zip data. Please try again later.", {
+          type: "error",
+        });
       }
     }
 
