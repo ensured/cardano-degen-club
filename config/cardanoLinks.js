@@ -27,6 +27,10 @@ const officialCardano = [
 
 const wallets = [
   {
+    name: "Typhon Wallet",
+    url: "https://typhonwallet.io/#/",
+  },
+  {
     name: "@vesprwallet",
     url: "https://vespr.xyz/",
   },

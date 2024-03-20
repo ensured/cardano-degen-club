@@ -49,7 +49,7 @@ export default function HeroLandingPage() {
               >
                 <Button
                   variant="link"
-                  className="h-18 relative text-lg text-sky-700/90 transition-all duration-500 hover:translate-x-1 hover:text-sky-950 dark:text-slate-50 dark:hover:text-sky-300 md:text-xl xl:text-2xl"
+                  className="h-18 relative text-lg text-sky-700/90 transition-all duration-100 hover:translate-x-1 hover:text-sky-950 dark:text-slate-50 dark:hover:text-sky-300 md:text-xl xl:text-2xl"
                 >
                   {isHovered && (
                     <div className="absolute -right-4">
