@@ -1,27 +1,28 @@
-import FeedBackDrawer from "./FeedbackClient"
+import FeedBackDrawer from "./Feedback"
 
 const Footer = () => {
   return (
-    <footer className="m-4 rounded-lg bg-white shadow dark:bg-gray-800">
-      <div className="mx-auto w-full max-w-screen-xl p-4 md:flex md:items-center md:justify-between">
-        <span className="text-sm text-gray-500 dark:text-gray-400 sm:text-center">
-          © 2024{" "}
-          <a href="https://flowbite.com/" className="hover:underline">
-            cardanodegen.club
-          </a>
-          . All Rights Reserved.
+    <footer className="mx-2 mb-1 mt-7 rounded-md bg-white shadow dark:bg-gray-800">
+      <div className="mx-auto flex w-full max-w-screen-xl items-center justify-between gap-4 p-3">
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="flex flex-col items-center justify-center gap-x-4 md:flex-row">
+            <span>© 2024</span>
+            <span className="text-sm text-gray-500 hover:underline dark:text-gray-400">
+              cardanodegen.club
+            </span>
+          </span>{" "}
         </span>
-        <ul className="mt-3 flex flex-wrap items-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
-          <li>
+        <ul className="flex flex-nowrap items-center justify-center">
+          {/* <li>
             <a href="#" className="me-4 hover:underline md:me-6">
               About
             </a>
-          </li>
-          <li>
+          </li> */}
+          {/* <li>
             <a href="#" className="me-4 hover:underline md:me-6">
               Privacy Policy
             </a>
-          </li>
+          </li> */}
           <li>
             <FeedBackDrawer />
           </li>

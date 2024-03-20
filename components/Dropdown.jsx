@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import FeedBackDrawer from "./FeedbackClient"
+import FeedBackDrawer from "./Feedback"
 import { Button } from "./ui/button"
 
 const Dropdown = () => {

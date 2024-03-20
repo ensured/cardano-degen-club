@@ -78,9 +78,8 @@ export default function FeedBackDrawer() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button
-            variant={"link"}
-            className="bg-slate-200 text-zinc-500 hover:text-black dark:bg-zinc-950 dark:text-slate-200  dark:opacity-90"
             aria-controls="feedback-dialog"
+            className="bg-zinc-100 text-zinc-600 hover:bg-green  hover:text-primary dark:bg-zinc-900 dark:text-zinc-200"
           >
             Leave feedback
           </Button>
@@ -150,7 +149,8 @@ export default function FeedBackDrawer() {
         </DialogContent>
       </Dialog>
 
-      {/* old code for if I want it as a button on the page. */}
+      {/* Dialog version **
+      if I want it as a button on the page.*/}
       {/* {isDesktop ? (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
