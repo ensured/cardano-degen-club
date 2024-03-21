@@ -25,7 +25,10 @@ export default function SelectScrollable({
             parseInt(selectedOption, 10) > 9 ? "w-[110px]" : "w-[95px]"
           }
         >
-          <SelectValue placeholder={`Page: ${selectedOption}`} />
+          <SelectValue
+            placeholder={`Page: ${selectedOption}`}
+            onValueChange={selectedOption}
+          />
         </SelectTrigger>
       </div>
 

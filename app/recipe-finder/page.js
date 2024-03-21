@@ -1,9 +1,7 @@
 import SearchRecipes from "../../components/SearchRecipes"
 
 const page = () => {
-  return (
-    <SearchRecipes />
-  )
+  return <SearchRecipes />
 }
 
 export default page

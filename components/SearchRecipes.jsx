@@ -14,26 +14,6 @@ import { CardLink } from "./CardLink"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
-// const Dropdown = ({ options, selectedOption, onSelect }) => {
-//   return (
-//     <select
-//       className="rounded-md bg-gray-800 p-2 text-white focus:outline-none"
-//       value={selectedOption}
-//       onChange={(e) => onSelect(e.target.value)}
-//     >
-//       {options.map((option) => (
-//         <option
-//           className="text-md bg-gray-800 font-bold"
-//           key={option}
-//           value={option}
-//         >
-//           Page: {option}
-//         </option>
-//       ))}
-//     </select>
-//   )
-// }
-
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -94,11 +74,10 @@ const SearchRecipes = ({ className }) => {
     if (nextPage) {
       setLoading(true)
       try {
-        const response = await fetch(nextPage, { cache: "force-cache" })
+        const response = await fetch(nextPage)
         const data = await response.json()
         const nextPageUrl = data._links.next.href
 
-        // Check if the new page URL is different from the last one
         if (
           !pageData[currentPage + 1] ||
           pageData[currentPage + 1]._links.next.href !== nextPageUrl
@@ -109,7 +88,6 @@ const SearchRecipes = ({ className }) => {
           }))
           setRecipes(data)
           setNextPage(nextPageUrl)
-          setCurrentPage((prevPage) => prevPage + 1)
         } else {
           setNextPage(nextPageUrl)
         }
@@ -117,6 +95,7 @@ const SearchRecipes = ({ className }) => {
         console.log(error)
       } finally {
         setLoading(false)
+        setCurrentPage((prevPage) => prevPage + 1)
       }
     }
   }
@@ -124,7 +103,7 @@ const SearchRecipes = ({ className }) => {
   const handleBackBtn = () => {
     if (currentPage > 1) {
       setRecipes(pageData[currentPage - 1])
-      setNextPage(pageData[currentPage - 1]?._links?.next?.href || "")
+      // setNextPage(pageData[currentPage - 1]?._links?.next?.href || "")
       setCurrentPage((prevPage) => prevPage - 1)
     }
   }
@@ -175,44 +154,42 @@ const SearchRecipes = ({ className }) => {
       </form>
 
       {recipes.hits?.length > 0 ? (
-        <div className="flex flex-col gap-1">
-          <div className="container mt-1 flex">
-            <div className="flex flex-row flex-wrap items-center justify-center gap-1">
-              <Badge variant={"outline"} className="p-2">
-                {recipes.count} results 🎉
+        <div className="flex flex-col gap-2">
+          <div className="container mt-1 flex gap-2">
+            <div className="flex w-full flex-col items-center justify-between ">
+              <Badge
+                variant={"outline"}
+                className="flex w-full justify-between gap-2 p-2"
+              >
+                <span>{recipes.count} results 🎉</span>
+                <span>Page {currentPage}</span>
               </Badge>
-
-              <div className="flex flex-wrap">
-                <SelectScrollable
+            </div>
+            {/* <SelectScrollable
                   options={Array.from(
                     { length: Object.keys(pageData).length },
                     (_, i) => i + 1
                   )}
                   selectedOption={currentPage.toString()}
                   onSelect={handlePageSelect}
-                />
-              </div>
-
-              <div className="flex gap-1">
-                <div className="flex gap-2">
-                  {Object.keys(pageData).length > 1 &&
-                    !isInitialLoad &&
-                    currentPage > 1 && (
-                      <Button onClick={handleBackBtn}>Prev</Button>
-                    )}
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleNextPageBtn}>Next</Button>
-                </div>
-                {loading && (
-                  <div className="h-5 w-5 animate-spin rounded-full border-t-4 border-dotted border-slate-50"></div>
+                /> */}
+            <div className="flex gap-2">
+              {Object.keys(pageData).length > 1 &&
+                !isInitialLoad &&
+                currentPage > 1 && (
+                  <Button onClick={handleBackBtn}>Prev</Button>
                 )}
-              </div>
+              <Button onClick={handleNextPageBtn}>Next</Button>
             </div>
+          </div>
+          <div className="relative ">
+            {loading && (
+              <div className="absolute -top-28 right-2 h-5 w-5 animate-spin rounded-full border-t-2 border-dotted border-slate-50"></div>
+            )}
           </div>
           <div
             className={cn(
-              "flex flex-row flex-wrap justify-center gap-4",
+              "flex flex-row flex-wrap justify-center gap-2",
               className
             )}
           >

@@ -4,10 +4,9 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ExternalLink, FilePlus2 } from "lucide-react"
+import { ExternalLink, LockKeyhole } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 
 export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
@@ -31,16 +30,15 @@ export default function HeroLandingPage() {
               <h1 className="mx-auto max-w-lg text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
                 Discover Cardano
               </h1>
-              <div className="max-w-96 text-md px-8  text-gray-600 dark:text-gray-400 md:text-xl lg:text-lg">
-                Unlock a new version of the web and discover the nation of
-                Cardano.
-              </div>
+              <p className=" text-md text-gray-600 dark:text-gray-400 md:text-lg lg:text-lg">
+                Unlock the potential of the future internet.
+              </p>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-xl dark:bg-background"
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105  dark:bg-background"
             >
               <Link
                 href="/cardano-links"
@@ -49,14 +47,14 @@ export default function HeroLandingPage() {
               >
                 <Button
                   variant="link"
-                  className="h-18 relative text-lg text-sky-700/90 transition-all duration-100 hover:translate-x-1 hover:text-sky-950 dark:text-slate-50 dark:hover:text-sky-300 md:text-xl xl:text-2xl"
+                  className="h-auto relative text-xl text-sky-500 transition-all duration-700 hover:translate-x-1 dark:text-slate-50 md:text-2xl"
                 >
                   {isHovered && (
-                    <div className="absolute -right-4">
+                    <span className="absolute -right-4">
                       <ExternalLink />
-                    </div>
+                    </span>
                   )}
-                  <div>Explore the new global financial operating system</div>
+                  Explore the new global financial operating system
                 </Button>
               </Link>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -67,29 +65,28 @@ export default function HeroLandingPage() {
           </div>
         </div>
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 2 }}
-          className="mt-6 h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+          transition={{ duration: 0.6 }}
+          className="h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
-      <Separator />
 
       <section className="bg-gray-100 py-12 dark:bg-gray-800">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1.2 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
             className="pb-6 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl"
           >
             Key Features
           </motion.div>
-          <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-3">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
+              transition={{ duration: 0.6 }}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
@@ -120,7 +117,7 @@ export default function HeroLandingPage() {
                 decentralization between different popular blockchains click{" "}
                 <Link
                   href="http://blockchainlab.inf.ed.ac.uk/edi-dashboard/#/consensus"
-                  className=" text-sky-600/60 transition-all hover:text-slate-100 hover:underline"
+                  className="text-slate-200"
                   target="_blank"
                 >
                   Here
@@ -131,7 +128,7 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
@@ -165,8 +162,8 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105   dark:bg-background"
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
             >
               <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                 <div className="flex flex-row items-center gap-2">
@@ -199,7 +196,7 @@ export default function HeroLandingPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
           >
             <h3 className=" text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
@@ -280,13 +277,6 @@ export default function HeroLandingPage() {
           </motion.div>
         </div>
       </section>
-
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 2 }}
-        className="h-10 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
-      />
     </div>
   )
 }
