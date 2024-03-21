@@ -147,7 +147,7 @@ const SearchRecipes = ({ className }) => {
           <div className="flex flex-row items-center justify-center gap-2">
             Search{" "}
             {loading && !recipes.hits && (
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-50"></div>
+              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-50 dark:border-slate-900"></div>
             )}
           </div>
         </Button>
@@ -174,11 +174,12 @@ const SearchRecipes = ({ className }) => {
                   onSelect={handlePageSelect}
                 /> */}
             <div className="flex gap-2">
-              {Object.keys(pageData).length > 1 &&
+              {/* fix */}
+              {/* {Object.keys(pageData).length > 1 &&
                 !isInitialLoad &&
                 currentPage > 1 && (
                   <Button onClick={handleBackBtn}>Prev</Button>
-                )}
+                )} */}
               <Button onClick={handleNextPageBtn}>Next</Button>
             </div>
           </div>
