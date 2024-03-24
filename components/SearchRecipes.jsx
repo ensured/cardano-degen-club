@@ -186,9 +186,9 @@ const SearchRecipes = ({ className }) => {
           className="relative flex w-32 items-center justify-center"
           disabled={!inputChanged}
         >
-          <div className="flex flex-row items-center justify-center">
+          <div className="flex flex-row">
             {loading && (
-              <Loader2Icon className="absolute right-2 flex h-5 w-5 animate-spin" />
+              <Loader2Icon className="absolute right-1 flex h-5 w-5 animate-spin" />
             )}
             <span>Search</span>
           </div>

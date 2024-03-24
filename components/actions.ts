@@ -100,9 +100,13 @@ export async function submitFeedback(data: Inputs) {
   }
 }
 
-type RecipeFetchUrl = z.infer<typeof RecipeFetchUrlSchema>
+export async function getRecipes(input: string) {
+  const url = `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.APP_ID}&app_key=${process.env.APP_KEY}`
+  const response = await fetch(url)
+  return response
+}
 
-export async function getRecipes(fetchUrl: RecipeFetchUrl) {
-  const result = RecipeFetchUrlSchema.safeParse(fetchUrl)
-  console.log(result)
+export async function getNextRecipe(nextUrl: string) {
+  const response = await fetch(nextUrl)
+  return response
 }
