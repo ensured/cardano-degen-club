@@ -15,7 +15,7 @@ import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
 
-const throttleWindow = 333
+const throttleWindow = 444
 
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
@@ -91,7 +91,7 @@ const SearchRecipes = ({ className }) => {
   }, [searchResults])
 
   useEffect(() => {
-    // Perform initial search only on first load
+    // Perform initial search only on first load if q searchParam exists
     if (isInitialLoad && searchParams.get("q")) {
       searchRecipes()
       setIsInitialLoad(false)
