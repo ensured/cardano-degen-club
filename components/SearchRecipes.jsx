@@ -53,8 +53,8 @@ const SearchRecipes = ({ className }) => {
           // Reset search results only if the input has changed
           setSearchResults({
             hits: data.hits,
-            count: 0,
-            nextPage: "",
+            count: data.count,
+            nextPage: data._links.next?.href || "",
           })
         } else {
           setSearchResults((prevSearchResults) => ({
@@ -205,7 +205,7 @@ const SearchRecipes = ({ className }) => {
                     <Card
                       className="xs:w-22 hover:bg-orange-200 h-52 w-36 grow overflow-hidden dark:hover:bg-zinc-900 sm:w-36  md:w-56"
                       ref={
-                        index === searchResults.hits.length - 12
+                        index === searchResults.hits.length - 8
                           ? lastFoodItemRef
                           : null
                       }
