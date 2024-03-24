@@ -4,17 +4,18 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Loader2Icon, ShieldAlert } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
+import { throttle } from "throttle-debounce"
 
 import { cn, extractRecipeName } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
 
-import { CardLink } from "./CardLink"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
+
+const throttleWindow = 333
 
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
@@ -42,7 +43,7 @@ const SearchRecipes = ({ className }) => {
       try {
         const response = await fetch(fetchUrl)
         if (response.status === 429) {
-          toast("Error: Usage limits are exceeded", {
+          toast("Usage limits are exceeded, try again later.", {
             type: "error",
           })
           return
@@ -97,6 +98,11 @@ const SearchRecipes = ({ className }) => {
     }
   }, [searchParams, searchRecipes, isInitialLoad])
 
+  const throttledFetchNextPage = throttle(throttleWindow, handleNextPage, {
+    noLeading: true,
+    noTrailing: false,
+  }) // Throttle handleNextPage
+
   useEffect(() => {
     // Intersection Observer for the last food item
     const observer = new IntersectionObserver(
@@ -106,10 +112,10 @@ const SearchRecipes = ({ className }) => {
           searchResults.nextPage &&
           !loadingMore
         ) {
-          handleNextPage()
+          throttledFetchNextPage()
         }
       },
-      { threshold: 0.5 } // Trigger when 50% of the item is visible
+      { threshold: 0.3 } // Trigger when 30% of the item is visible
     )
 
     const currentLastFoodItemRef = lastFoodItemRef.current
@@ -123,7 +129,7 @@ const SearchRecipes = ({ className }) => {
         observer.unobserve(currentLastFoodItemRef)
       }
     }
-  }, [searchResults, handleNextPage, lastFoodItemRef, loadingMore])
+  }, [searchResults, throttledFetchNextPage, lastFoodItemRef, loadingMore])
 
   const handleInputChange = (e) => {
     setFetchUrl((prevFetchUrl) =>
@@ -184,7 +190,7 @@ const SearchRecipes = ({ className }) => {
                     <Card
                       className="xs:w-22 hover:bg-orange-200 h-52 w-36 grow overflow-hidden dark:hover:bg-zinc-900 sm:w-36  md:w-56"
                       ref={
-                        index === searchResults.hits.length - 1
+                        index === searchResults.hits.length - 12
                           ? lastFoodItemRef
                           : null
                       }
