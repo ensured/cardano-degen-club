@@ -37,6 +37,7 @@
     "clsx": "^1.2.1",
     "firebase": "^10.7.1",
     "framer-motion": "^11.0.14",
+    "lodash": "^4.17.21",
     "lucide-react": "0.105.0-alpha.4",
     "memory-cache": "^0.2.0",
     "net": "^1.0.2",

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Loader2Icon, ShieldAlert } from "lucide-react"
 import { toast } from "sonner"
 
 import { cn, extractRecipeName } from "@/lib/utils"
@@ -149,7 +150,9 @@ const SearchRecipes = ({ className }) => {
           <div className="flex flex-row items-center justify-center gap-2">
             Search{" "}
             {loading && (
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-50 dark:border-slate-900"></div>
+              <div className="relative flex h-4 w-4 items-center justify-center">
+                <div className="absolute h-4 w-4 animate-spin rounded-full border-y-2 border-white dark:border-gray-900"></div>
+              </div>
             )}
           </div>
         </Button>
@@ -205,8 +208,10 @@ const SearchRecipes = ({ className }) => {
             ))}
           </div>
           {loadingMore && (
-            <div className="flex w-full flex-col items-center justify-center">
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-900 dark:border-slate-50"></div>
+            <div className="p0 relative -my-1 flex flex-col items-center justify-center">
+              <div className="absolute -bottom-7 animate-spin">
+                <Loader2Icon />
+              </div>
             </div>
           )}
         </div>
