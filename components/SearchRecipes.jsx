@@ -6,17 +6,19 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 
-import { cn } from "@/lib/utils"
+import { cn, extractRecipeName } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import FullTitleToolTip from "@/components/FullTitleToolTip"
 
 import { CardLink } from "./CardLink"
 import { Button } from "./ui/button"
+import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
 
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
+  const [loadingMore, setLoadingMore] = useState(false) // State to track loading more data
   const [searchResults, setSearchResults] = useState({
     hits: [],
     count: 0,
@@ -63,7 +65,7 @@ const SearchRecipes = ({ className }) => {
   const handleNextPage = useCallback(async () => {
     const { nextPage } = searchResults
     if (nextPage) {
-      setLoading(true)
+      setLoadingMore(true) // Set loading more state
       try {
         const response = await fetch(nextPage)
         if (!response.ok) {
@@ -75,25 +77,16 @@ const SearchRecipes = ({ className }) => {
           hits: [...prevSearchResults.hits, ...data.hits],
           nextPage: data._links.next?.href || "",
         }))
-        setCurrentPage((prevPage) => prevPage + 1)
       } catch (error) {
         console.error("Error fetching next page:", error)
         toast("Error fetching next page", {
           type: "error",
         })
       } finally {
-        setLoading(false)
+        setLoadingMore(false) // Reset loading more state
       }
     }
   }, [searchResults])
-
-  const handleInputChange = (e) => {
-    setFetchUrl((prevFetchUrl) =>
-      prevFetchUrl.replace(`q=${input}`, `q=${e.target.value}`)
-    )
-    setInput(e.target.value)
-    router.push(`?q=${e.target.value}`)
-  }
 
   useEffect(() => {
     // Perform initial search only on first load
@@ -107,11 +100,15 @@ const SearchRecipes = ({ className }) => {
     // Intersection Observer for the last food item
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && searchResults.nextPage) {
+        if (
+          entries[0].isIntersecting &&
+          searchResults.nextPage &&
+          !loadingMore
+        ) {
           handleNextPage()
         }
       },
-      { threshold: 0.3 } // Trigger when half the item is fully visible
+      { threshold: 0.5 } // Trigger when 50% of the item is visible
     )
 
     const currentLastFoodItemRef = lastFoodItemRef.current
@@ -125,7 +122,15 @@ const SearchRecipes = ({ className }) => {
         observer.unobserve(currentLastFoodItemRef)
       }
     }
-  }, [searchResults, handleNextPage, lastFoodItemRef])
+  }, [searchResults, handleNextPage, lastFoodItemRef, loadingMore])
+
+  const handleInputChange = (e) => {
+    setFetchUrl((prevFetchUrl) =>
+      prevFetchUrl.replace(`q=${input}`, `q=${e.target.value}`)
+    )
+    setInput(e.target.value)
+    router.push(`?q=${e.target.value}`)
+  }
 
   return (
     <div className="flex flex-col pt-4">
@@ -169,12 +174,41 @@ const SearchRecipes = ({ className }) => {
                 key={recipe.recipe.shareAs}
                 href={recipe.recipe.shareAs}
               >
-                <CardLink recipe={recipe} />
+                <div className="flex flex-wrap md:w-full">
+                  <FullTitleToolTip
+                    title={extractRecipeName(recipe.recipe.shareAs)}
+                  >
+                    <Card
+                      className="xs:w-22 hover:bg-orange-200 h-52 w-36 grow overflow-hidden dark:hover:bg-zinc-900 sm:w-36  md:w-56"
+                      ref={
+                        index === searchResults.hits.length - 1
+                          ? lastFoodItemRef
+                          : null
+                      }
+                    >
+                      <div className="flex flex-col items-center justify-center p-2 ">
+                        <Image
+                          src={recipe.recipe.images.SMALL.url}
+                          alt="recipe thumbnail"
+                          width={recipe.recipe.images.SMALL.width}
+                          height={recipe.recipe.images.SMALL.height}
+                          className="h-auto w-36 rounded-2xl p-2"
+                        />
+                        <CardTitle className="xs:text-xs line-clamp-3 grow overflow-hidden whitespace-normal text-center  text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
+                          {extractRecipeName(recipe.recipe.shareAs)}
+                        </CardTitle>
+                      </div>
+                    </Card>
+                  </FullTitleToolTip>
+                </div>
               </Link>
             ))}
-            {/* Element to observe */}
-            <div ref={lastFoodItemRef}></div>
           </div>
+          {loadingMore && (
+            <div className="flex w-full flex-col items-center justify-center">
+              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-900 dark:border-slate-50"></div>
+            </div>
+          )}
         </div>
       )}
     </div>
