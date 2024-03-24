@@ -137,7 +137,13 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 444ms ease;
+  animation: fadeIn 600ms ease-in-out;
+}
+.animate-fade-in-fast {
+  animation: fadeIn 350ms ease;
+}
+.animate-fade-out-fast {
+  animation: fadeOut 600ms ease-in-out;
 }
 
 .animate-fade-out {

@@ -185,7 +185,7 @@ const SearchRecipes = () => {
           className="relative flex w-32 items-center justify-center"
           disabled={!inputChanged}
         >
-          <div className="flex flex-row items-center justify-center">
+          <div className="flex items-center justify-center">
             {loading && (
               <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:right-3 md:h-5 md:w-5" />
             )}
@@ -208,7 +208,7 @@ const SearchRecipes = () => {
       )}
 
       {searchResults.hits.length > 0 && (
-        <div className="flex flex-col gap-2 p-4">
+        <div className={`animate-fade-in flex flex-col gap-2 p-4`}>
           <div className={"flex flex-row flex-wrap justify-center gap-2"}>
             {searchResults.hits.map((recipe, index) => (
               <Link
@@ -221,22 +221,22 @@ const SearchRecipes = () => {
                     title={extractRecipeName(recipe.recipe.shareAs)}
                   >
                     <Card
-                      className="xs:w-22 hover:bg-orange-200 h-52 w-36 grow overflow-hidden dark:hover:bg-zinc-900 sm:w-36  md:w-56"
+                      className="xs:w-22 h-52 w-36 grow overflow-hidden sm:w-36  md:w-56"
                       ref={
                         index === searchResults.hits.length - 8
                           ? lastFoodItemRef
                           : null
                       }
                     >
-                      <div className="flex flex-col items-center justify-center p-2 ">
+                      <div className="flex flex-col items-center justify-center pb-1">
                         <Image
                           src={recipe.recipe.images.SMALL.url}
                           alt="recipe thumbnail"
                           width={recipe.recipe.images.SMALL.width}
                           height={recipe.recipe.images.SMALL.height}
-                          className="h-auto w-36 rounded-2xl p-2"
+                          className="mt-0 h-auto w-36 rounded-t-lg md:mt-2 md:rounded-xl"
                         />
-                        <CardTitle className="xs:text-xs line-clamp-3 grow overflow-hidden whitespace-normal text-center  text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
+                        <CardTitle className="xs:text-xs line-clamp-3 flex grow items-center justify-center overflow-hidden whitespace-normal text-center  text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
                           {extractRecipeName(recipe.recipe.shareAs)}
                         </CardTitle>
                       </div>
