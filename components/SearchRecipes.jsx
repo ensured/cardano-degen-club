@@ -11,13 +11,13 @@ import { throttle } from "throttle-debounce"
 import { cn, extractRecipeName } from "@/lib/utils"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
 
+import { getRecipes } from "./actions"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
 
-const throttleWindow = 444
-
 const SearchRecipes = ({ className }) => {
+  const throttleWindow = 444
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false) // State to track loading more data
@@ -33,11 +33,18 @@ const SearchRecipes = ({ className }) => {
   )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [lastSearch, setLastSearch] = useState("")
+  const [lastSuccessfulSearchQuery, setLastSuccessfulSearchQuery] = useState("")
   const lastFoodItemRef = useRef()
+
   const searchRecipes = useCallback(
     async (e) => {
       if (e?.target?.tagName === "FORM") {
-        e.preventDefault() // Prevent form submission only if triggered by a form
+        e.preventDefault()
+        setSearchResults({
+          hits: [],
+          count: 0,
+          nextPage: "",
+        })
       }
       setLoading(true)
       try {
@@ -49,13 +56,14 @@ const SearchRecipes = ({ className }) => {
           return
         }
         const data = await response.json()
-        if (input !== lastSearch) {
+        if (input !== lastSuccessfulSearchQuery) {
           // Reset search results only if the input has changed
           setSearchResults({
             hits: data.hits,
             count: data.count,
             nextPage: data._links.next?.href || "",
           })
+          setLastSuccessfulSearchQuery(input)
         } else {
           setSearchResults((prevSearchResults) => ({
             ...prevSearchResults,
@@ -66,22 +74,22 @@ const SearchRecipes = ({ className }) => {
         }
 
         router.replace(`?q=${input}`)
-        setLastSearch(input) // Update the last successful search input
+        setLastSearch(input) // Update the last search input
       } catch (err) {
         console.log(err)
       } finally {
         setLoading(false)
       }
     },
-    [fetchUrl, input, lastSearch, router]
+    [fetchUrl, input, lastSuccessfulSearchQuery, router]
   )
 
   const inputChanged = input !== lastSearch
 
-  const handleNextPage = useCallback(async () => {
+  const handleLoadNextPage = useCallback(async () => {
     const { nextPage } = searchResults
     if (nextPage) {
-      setLoadingMore(true) // Set loading more state
+      setLoadingMore(true)
       try {
         const response = await fetch(nextPage)
         if (!response.ok) {
@@ -91,15 +99,15 @@ const SearchRecipes = ({ className }) => {
         setSearchResults((prevSearchResults) => ({
           ...prevSearchResults,
           hits: [...prevSearchResults.hits, ...data.hits],
+          count: data.count,
           nextPage: data._links.next?.href || "",
         }))
       } catch (error) {
-        console.error("Error fetching next page:", error)
         toast("Error fetching next page", {
           type: "error",
         })
       } finally {
-        setLoadingMore(false) // Reset loading more state
+        setLoadingMore(false)
       }
     }
   }, [searchResults])
@@ -118,10 +126,10 @@ const SearchRecipes = ({ className }) => {
     }
   }, [searchParams, searchRecipes, isInitialLoad, input])
 
-  const throttledFetchNextPage = throttle(throttleWindow, handleNextPage, {
+  const throttledFetchNextPage = throttle(throttleWindow, handleLoadNextPage, {
     noLeading: true,
     noTrailing: false,
-  }) // Throttle handleNextPage
+  }) // Throttle handleLoadNextPage
 
   useEffect(() => {
     // Intersection Observer for the last food item
@@ -173,20 +181,28 @@ const SearchRecipes = ({ className }) => {
           onChange={handleInputChange}
           value={input}
         />
-        <Button type="submit" className="w-32" disabled={!inputChanged}>
+        <Button
+          type="submit"
+          className="relative flex w-32 items-center justify-center"
+          disabled={!inputChanged}
+        >
           <div className="flex flex-row items-center justify-center">
-            Search{" "}
             {loading && (
-              <div className="relative ">
-                <Loader2Icon className="absolute -bottom-2 left-0.5 flex h-5 w-5 animate-spin items-center justify-center" />
-              </div>
+              <Loader2Icon className="absolute right-2 flex h-5 w-5 animate-spin" />
             )}
+            <span>Search</span>
           </div>
         </Button>
       </form>
       <div className="flex h-4 justify-center pt-1 text-sm">
         <span>
-          <b>{searchResults.count}</b> results
+          {searchResults.count > 0 ? (
+            <div>
+              <b>{searchResults.count}</b> results
+            </div>
+          ) : (
+            ""
+          )}
         </span>
       </div>
 

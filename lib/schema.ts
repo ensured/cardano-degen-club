@@ -10,3 +10,10 @@ export const FormDataSchema = z.object({
     .min(16, { message: "Message must be at least 16 characters" })
     .max(250, { message: "Message must be less than 250 characters" }),
 })
+
+export const RecipeFetchUrlSchema = z.object({
+  url: z
+    .string()
+    .min(2, { message: "search query must be at least 2 characters" })
+    .max(250, { message: "search query must be no more than 250 characters" }),
+})

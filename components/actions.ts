@@ -1,11 +1,12 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import MemoryCache from "memory-cache"
 import { z } from "zod"
-import { revalidatePath } from "next/cache"
 
-import { FormDataSchema } from "@/lib/schema"
+import { FormDataSchema, RecipeFetchUrlSchema } from "@/lib/schema"
+
 import { PutObjectCommand, s3Client } from "../lib/s3"
 
 type Inputs = z.infer<typeof FormDataSchema>
@@ -97,4 +98,11 @@ export async function submitFeedback(data: Inputs) {
       message: result.error.errors[0].message,
     }
   }
+}
+
+type RecipeFetchUrl = z.infer<typeof RecipeFetchUrlSchema>
+
+export async function getRecipes(fetchUrl: RecipeFetchUrl) {
+  const result = RecipeFetchUrlSchema.safeParse(fetchUrl)
+  console.log(result)
 }
