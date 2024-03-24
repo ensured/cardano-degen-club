@@ -103,10 +103,13 @@ export async function submitFeedback(data: Inputs) {
 export async function getRecipes(input: string) {
   const url = `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.APP_ID}&app_key=${process.env.APP_KEY}`
   const response = await fetch(url)
-  return response
+  const recipes = await response.json()
+  console.log(recipes)
+  return recipes
 }
 
 export async function getNextRecipe(nextUrl: string) {
   const response = await fetch(nextUrl)
-  return response
+  const recipes = await response.json()
+  return recipes
 }

@@ -32,7 +32,7 @@ const SearchRecipes = ({ className }) => {
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [lastSearch, setLastSearch] = useState("")
+  const [currentInput, setCurrentInput] = useState("")
   const [lastSuccessfulSearchQuery, setLastSuccessfulSearchQuery] = useState("")
   const lastFoodItemRef = useRef()
 
@@ -74,7 +74,7 @@ const SearchRecipes = ({ className }) => {
         }
 
         router.replace(`?q=${input}`)
-        setLastSearch(input) // Update the last search input
+        setCurrentInput(input)
       } catch (err) {
         console.log(err)
       } finally {
@@ -84,7 +84,7 @@ const SearchRecipes = ({ className }) => {
     [fetchUrl, input, lastSuccessfulSearchQuery, router]
   )
 
-  const inputChanged = input !== lastSearch
+  const inputChanged = input !== currentInput
 
   const handleLoadNextPage = useCallback(async () => {
     const { nextPage } = searchResults
