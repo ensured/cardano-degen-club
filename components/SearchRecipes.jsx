@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Loader2Icon } from "lucide-react"
+import { Loader, Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { throttle } from "throttle-debounce"
 
@@ -105,12 +105,18 @@ const SearchRecipes = ({ className }) => {
   }, [searchResults])
 
   useEffect(() => {
-    // Perform initial search only on first load if q searchParam exists
-    if (isInitialLoad && searchParams.get("q")) {
-      searchRecipes()
+    // Perform initial search only if q searchParam exists and input is not empty
+    try {
+      if (isInitialLoad && searchParams.get("q")) {
+        searchRecipes()
+        setIsInitialLoad(false)
+      }
+    } catch (e) {
+      console.log(e)
+    } finally {
       setIsInitialLoad(false)
     }
-  }, [searchParams, searchRecipes, isInitialLoad])
+  }, [searchParams, searchRecipes, isInitialLoad, input])
 
   const throttledFetchNextPage = throttle(throttleWindow, handleNextPage, {
     noLeading: true,
@@ -168,11 +174,11 @@ const SearchRecipes = ({ className }) => {
           value={input}
         />
         <Button type="submit" className="w-32" disabled={!inputChanged}>
-          <div className="flex flex-row items-center justify-center gap-2">
+          <div className="flex flex-row items-center justify-center">
             Search{" "}
             {loading && (
-              <div className="relative flex h-4 w-4 items-center justify-center">
-                <div className="absolute h-4 w-4 animate-spin rounded-full border-y-2 border-white dark:border-gray-900"></div>
+              <div className="relative ">
+                <Loader2Icon className="absolute -bottom-2 left-0.5 flex h-5 w-5 animate-spin items-center justify-center" />
               </div>
             )}
           </div>
