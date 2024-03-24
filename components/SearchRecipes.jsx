@@ -32,8 +32,8 @@ const SearchRecipes = ({ className }) => {
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [lastSearch, setLastSearch] = useState("")
   const lastFoodItemRef = useRef()
-
   const searchRecipes = useCallback(
     async (e) => {
       if (e?.target?.tagName === "FORM") {
@@ -49,20 +49,34 @@ const SearchRecipes = ({ className }) => {
           return
         }
         const data = await response.json()
-        setSearchResults({
-          hits: data.hits,
-          count: data.count,
-          nextPage: data._links.next?.href || "",
-        })
+        if (input !== lastSearch) {
+          // Reset search results only if the input has changed
+          setSearchResults({
+            hits: data.hits,
+            count: 0,
+            nextPage: "",
+          })
+        } else {
+          setSearchResults((prevSearchResults) => ({
+            ...prevSearchResults,
+            hits: data.hits,
+            count: data.count,
+            nextPage: data._links.next?.href || "",
+          }))
+        }
+
         router.replace(`?q=${input}`)
+        setLastSearch(input) // Update the last successful search input
       } catch (err) {
         console.log(err)
       } finally {
         setLoading(false)
       }
     },
-    [fetchUrl, input, router]
+    [fetchUrl, input, lastSearch, router]
   )
+
+  const inputChanged = input !== lastSearch
 
   const handleNextPage = useCallback(async () => {
     const { nextPage } = searchResults
@@ -132,11 +146,12 @@ const SearchRecipes = ({ className }) => {
   }, [searchResults, throttledFetchNextPage, lastFoodItemRef, loadingMore])
 
   const handleInputChange = (e) => {
+    const newInput = e.target.value
     setFetchUrl((prevFetchUrl) =>
-      prevFetchUrl.replace(`q=${input}`, `q=${e.target.value}`)
+      prevFetchUrl.replace(`q=${input}`, `q=${newInput}`)
     )
-    setInput(e.target.value)
-    router.push(`?q=${e.target.value}`)
+    setInput(newInput)
+    router.push(`?q=${newInput}`)
   }
 
   return (
@@ -152,7 +167,7 @@ const SearchRecipes = ({ className }) => {
           onChange={handleInputChange}
           value={input}
         />
-        <Button type="submit" className="w-32">
+        <Button type="submit" className="w-32" disabled={!inputChanged}>
           <div className="flex flex-row items-center justify-center gap-2">
             Search{" "}
             {loading && (
