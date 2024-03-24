@@ -8,15 +8,14 @@ import { Loader, Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { throttle } from "throttle-debounce"
 
-import { cn, extractRecipeName } from "@/lib/utils"
+import { extractRecipeName } from "@/lib/utils"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
 
-import { getRecipes } from "./actions"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
 
-const SearchRecipes = ({ className }) => {
+const SearchRecipes = () => {
   const throttleWindow = 444
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -194,26 +193,23 @@ const SearchRecipes = ({ className }) => {
           </div>
         </Button>
       </form>
-      <div className="flex h-4 justify-center pt-1 text-sm">
-        <span>
-          {searchResults.count > 0 ? (
-            <div>
-              <b>{searchResults.count}</b> results
-            </div>
-          ) : (
-            ""
-          )}
-        </span>
-      </div>
+      {searchResults.count > 0 ? (
+        <div
+          className={`animate-fade-in flex h-4 justify-center pt-1 text-sm opacity-100 transition-opacity duration-500`}
+        >
+          <span>
+            <b>{searchResults.count}</b> results
+          </span>
+        </div>
+      ) : (
+        <div
+          className={`animate-fade-out flex h-4 justify-center pt-1 text-sm opacity-0 transition-opacity duration-500`}
+        ></div>
+      )}
 
       {searchResults.hits.length > 0 && (
         <div className="flex flex-col gap-2 p-4">
-          <div
-            className={cn(
-              "flex flex-row flex-wrap justify-center gap-2",
-              className
-            )}
-          >
+          <div className={"flex flex-row flex-wrap justify-center gap-2"}>
             {searchResults.hits.map((recipe, index) => (
               <Link
                 target="_blank"
