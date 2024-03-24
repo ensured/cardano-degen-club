@@ -1,6 +1,7 @@
 /* eslint-disable */
 "use client"
 
+import { useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -18,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
 
-function extractRecipeName(url: string) {
+function extractRecipeName(url) {
   const recipePath = url.split("/")[4]
   const lastDashIndex = recipePath.lastIndexOf("-")
   const cleanedName =
@@ -27,12 +28,12 @@ function extractRecipeName(url: string) {
   const capitalizedString = cleanedName
     .split("-")
     .join(" ")
-    .replace(/(^|\s)\S/g, (char: string) => char.toUpperCase())
+    .replace(/(^|\s)\S/g, (char) => char.toUpperCase())
 
   return capitalizedString
 }
 //ts-ignore
-export function CardLink({ recipe }: { recipe: any }) {
+export function CardLink({ recipe }) {
   const { shareAs, calories } = recipe.recipe
 
   return (

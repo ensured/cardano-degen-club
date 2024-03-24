@@ -8,7 +8,6 @@ import { toast } from "sonner"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import SelectScrollable from "@/components/SelectScrollable"
 
 import { CardLink } from "./CardLink"
 import { Button } from "./ui/button"
@@ -17,34 +16,27 @@ import { Input } from "./ui/input"
 const SearchRecipes = ({ className }) => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [recipes, setRecipes] = useState({})
-  const [nextPage, setNextPage] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [searchResults, setSearchResults] = useState({
+    hits: [],
+    count: 0,
+    nextPage: "",
+  })
   const searchParams = useSearchParams()
   const [input, setInput] = useState(searchParams.get("q") || "")
   const [fetchUrl, setFetchUrl] = useState(
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [pageData, setPageData] = useState({})
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const lastInputRef = useRef(input)
+  const lastFoodItemRef = useRef()
 
   const searchRecipes = useCallback(
     async (e) => {
       if (e?.target?.tagName === "FORM") {
         e.preventDefault() // Prevent form submission only if triggered by a form
       }
-      if (input !== lastInputRef.current) {
-        setCurrentPage(1) // Reset current page to 1
-      }
-      if (input !== searchParams.get("q")) {
-        setPageData({}) // Clear the page data dictionary for a new query
-        setCurrentPage(1) // Reset current page to 1
-      }
-      setRecipes({})
+      setLoading(true)
       try {
-        setLoading(true)
         const response = await fetch(fetchUrl)
         if (response.status === 429) {
           toast("Error: Usage limits are exceeded", {
@@ -53,13 +45,11 @@ const SearchRecipes = ({ className }) => {
           return
         }
         const data = await response.json()
-        setRecipes(data)
-        setNextPage(data._links.next.href)
-        setPageData((prevPageData) => ({
-          ...prevPageData,
-          [currentPage]: data,
-        }))
-        setCurrentPage(1)
+        setSearchResults({
+          hits: data.hits,
+          count: data.count,
+          nextPage: data._links.next?.href || "",
+        })
         router.replace(`?q=${input}`)
       } catch (err) {
         console.log(err)
@@ -67,55 +57,35 @@ const SearchRecipes = ({ className }) => {
         setLoading(false)
       }
     },
-    [fetchUrl, input, router, searchParams, currentPage]
+    [fetchUrl, input, router]
   )
 
-  const handleNextPageBtn = async () => {
+  const handleNextPage = useCallback(async () => {
+    const { nextPage } = searchResults
     if (nextPage) {
       setLoading(true)
       try {
         const response = await fetch(nextPage)
-        const data = await response.json()
-        const nextPageUrl = data._links.next.href
-
-        if (
-          !pageData[currentPage + 1] ||
-          pageData[currentPage + 1]._links.next.href !== nextPageUrl
-        ) {
-          setPageData((prevPageData) => ({
-            ...prevPageData,
-            [currentPage + 1]: data,
-          }))
-          setRecipes(data)
-          setNextPage(nextPageUrl)
-        } else {
-          setNextPage(nextPageUrl)
+        if (!response.ok) {
+          throw new Error("Failed to fetch next page")
         }
+        const data = await response.json()
+        setSearchResults((prevSearchResults) => ({
+          ...prevSearchResults,
+          hits: [...prevSearchResults.hits, ...data.hits],
+          nextPage: data._links.next?.href || "",
+        }))
+        setCurrentPage((prevPage) => prevPage + 1)
       } catch (error) {
-        console.log(error)
+        console.error("Error fetching next page:", error)
+        toast("Error fetching next page", {
+          type: "error",
+        })
       } finally {
         setLoading(false)
-        setCurrentPage((prevPage) => prevPage + 1)
       }
     }
-  }
-
-  const handleBackBtn = () => {
-    if (currentPage > 1) {
-      setRecipes(pageData[currentPage - 1])
-      // setNextPage(pageData[currentPage - 1]?._links?.next?.href || "")
-      setCurrentPage((prevPage) => prevPage - 1)
-    }
-  }
-
-  const handlePageSelect = (selectedPage) => {
-    const selectedPageIndex = parseInt(selectedPage, 10)
-    if (pageData[selectedPageIndex]) {
-      setCurrentPage(selectedPageIndex)
-      setRecipes(pageData[selectedPageIndex])
-      setNextPage(pageData[selectedPageIndex]._links.next.href)
-    }
-  }
+  }, [searchResults])
 
   const handleInputChange = (e) => {
     setFetchUrl((prevFetchUrl) =>
@@ -133,9 +103,36 @@ const SearchRecipes = ({ className }) => {
     }
   }, [searchParams, searchRecipes, isInitialLoad])
 
+  useEffect(() => {
+    // Intersection Observer for the last food item
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && searchResults.nextPage) {
+          handleNextPage()
+        }
+      },
+      { threshold: 0.3 } // Trigger when half the item is fully visible
+    )
+
+    const currentLastFoodItemRef = lastFoodItemRef.current
+
+    if (currentLastFoodItemRef) {
+      observer.observe(currentLastFoodItemRef)
+    }
+
+    return () => {
+      if (currentLastFoodItemRef) {
+        observer.unobserve(currentLastFoodItemRef)
+      }
+    }
+  }, [searchResults, handleNextPage, lastFoodItemRef])
+
   return (
     <div className="flex flex-col pt-4">
-      <form onSubmit={searchRecipes} className="container flex gap-2">
+      <form
+        onSubmit={searchRecipes}
+        className="container flex items-center justify-center gap-2"
+      >
         <Input
           placeholder="search term"
           type="text"
@@ -146,55 +143,27 @@ const SearchRecipes = ({ className }) => {
         <Button type="submit" className="w-32">
           <div className="flex flex-row items-center justify-center gap-2">
             Search{" "}
-            {loading && !recipes.hits && (
+            {loading && (
               <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-dotted border-slate-50 dark:border-slate-900"></div>
             )}
           </div>
         </Button>
       </form>
+      <div className="flex h-4 justify-center pt-1 text-sm">
+        <span>
+          <b>{searchResults.count}</b> results
+        </span>
+      </div>
 
-      {recipes.hits?.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <div className="container mt-1 flex gap-2">
-            <div className="flex w-full flex-col items-center justify-between ">
-              <Badge
-                variant={"outline"}
-                className="flex w-full justify-between gap-2 p-2"
-              >
-                <span>{recipes.count} results 🎉</span>
-                <span>Page {currentPage}</span>
-              </Badge>
-            </div>
-            {/* <SelectScrollable
-                  options={Array.from(
-                    { length: Object.keys(pageData).length },
-                    (_, i) => i + 1
-                  )}
-                  selectedOption={currentPage.toString()}
-                  onSelect={handlePageSelect}
-                /> */}
-            <div className="flex gap-2">
-              {/* fix */}
-              {/* {Object.keys(pageData).length > 1 &&
-                !isInitialLoad &&
-                currentPage > 1 && (
-                  <Button onClick={handleBackBtn}>Prev</Button>
-                )} */}
-              <Button onClick={handleNextPageBtn}>Next</Button>
-            </div>
-          </div>
-          <div className="relative ">
-            {loading && (
-              <div className="absolute -top-28 right-2 h-5 w-5 animate-spin rounded-full border-t-2 border-dotted border-slate-50"></div>
-            )}
-          </div>
+      {searchResults.hits.length > 0 && (
+        <div className="flex flex-col gap-2 p-4">
           <div
             className={cn(
               "flex flex-row flex-wrap justify-center gap-2",
               className
             )}
           >
-            {recipes.hits.map((recipe) => (
+            {searchResults.hits.map((recipe, index) => (
               <Link
                 target="_blank"
                 key={recipe.recipe.shareAs}
@@ -203,11 +172,10 @@ const SearchRecipes = ({ className }) => {
                 <CardLink recipe={recipe} />
               </Link>
             ))}
+            {/* Element to observe */}
+            <div ref={lastFoodItemRef}></div>
           </div>
-          <br />
         </div>
-      ) : (
-        ""
       )}
     </div>
   )
