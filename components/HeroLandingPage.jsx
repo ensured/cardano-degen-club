@@ -91,7 +91,7 @@ export default function HeroLandingPage() {
         ></motion.div>
       </motion.section>
 
-      <section className="bg-gray-100 pt-14 dark:bg-gray-800">
+      <section className="bg-gray-100 py-12 dark:bg-gray-800">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
