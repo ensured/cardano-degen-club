@@ -4,11 +4,19 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ExternalLink } from "lucide-react"
+import {
+  CornerLeftDown,
+  Drumstick,
+  ExternalLink,
+  HardDrive,
+  HardDriveIcon,
+  ScalingIcon,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -83,13 +91,13 @@ export default function HeroLandingPage() {
         ></motion.div>
       </motion.section>
 
-      <section className="bg-gray-100 py-12 dark:bg-gray-800">
+      <section className="bg-gray-100 pt-14 dark:bg-gray-800">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="pb-6 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl"
+            className="h-20 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl"
           >
             Key Features
           </motion.div>
@@ -180,23 +188,7 @@ export default function HeroLandingPage() {
                 >
                   <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                     <div className="flex flex-row items-center gap-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-                        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-                      </svg>
-                      Scalability
+                      <ScalingIcon /> Scalability
                     </div>
                   </h3>
                   <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
@@ -232,14 +224,14 @@ export default function HeroLandingPage() {
                       Scaling Solutions for Cardano
                     </div>
                   </h3>
-                  <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
+                  <p className="text-md pr-24 text-gray-600 dark:text-gray-400 lg:text-lg">
                     Cardano is implementing various strategies to enhance
                     scalability and performance. These include on-chain and
                     off-chain solutions.
                   </p>
 
-                  <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
-                    On-chain Solutions
+                  <h4 className="mb-2 mt-4 flex flex-row gap-1 text-lg font-semibold text-zinc-900 dark:text-slate-50">
+                    On-chain Solutions <CornerLeftDown />
                   </h4>
                   <ul className="list-inside list-disc text-gray-600 dark:text-gray-400">
                     <li>
@@ -273,8 +265,8 @@ export default function HeroLandingPage() {
                     critical points.
                   </p>
 
-                  <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
-                    On-disk Storage
+                  <h4 className="mb-2 mt-4 inline-flex gap-1 text-lg font-semibold text-zinc-900 dark:text-slate-50">
+                    <HardDriveIcon /> On-disk Storage
                   </h4>
                   <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
                     Utilizing on-disk storage for efficient data handling,
@@ -289,6 +281,13 @@ export default function HeroLandingPage() {
                     sidechains, Hydra protocol, off-chain computing, and Mithril
                     for greater scalability and efficiency.
                   </p>
+                  <div className="flex flex-col pt-4 md:pt-5">
+                    <DialogClose asChild className="p-4">
+                      <Button type="button" variant="outline">
+                        Close
+                      </Button>
+                    </DialogClose>
+                  </div>
                 </motion.div>
               </DialogContent>
             </Dialog>
