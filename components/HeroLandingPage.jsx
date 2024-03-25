@@ -50,7 +50,8 @@ export default function HeroLandingPage() {
                 Discover Cardano
               </h1>
               <p className=" text-md text-gray-600 dark:text-gray-400 md:text-lg lg:text-lg">
-                Unlock the potential of the future internet.
+                Unlock the potential of the future internet while also
+                safeguarding against inflation.
               </p>
             </motion.div>
             <motion.div
