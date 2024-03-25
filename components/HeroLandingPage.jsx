@@ -31,7 +31,7 @@ export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <div className=" bg-gray-100 dark:bg-gray-800">
+    <div className=" dark:bg-background">
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -42,7 +42,7 @@ export default function HeroLandingPage() {
           <div className="flex flex-col items-center space-y-4 text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
               className="space-y-2"
             >
@@ -87,17 +87,17 @@ export default function HeroLandingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="h-20 bg-gradient-to-b from-gray-100 to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+          className="h-20 bg-gradient-to-b from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
 
       <section className="bg-gray-100 py-12 dark:bg-gray-800">
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="h-20 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl"
+            className="h-20 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl "
           >
             Key Features
           </motion.div>
@@ -133,13 +133,13 @@ export default function HeroLandingPage() {
                 Cardano offers the most decentralized global financial operating
                 system, empowering individuals by eliminating intermediaries and
                 distributing control to the edges. If you are curious about the
-                decentralization between different popular blockchains click{" "}
+                decentralization between different popular blockchains{" "}
                 <Link
                   href="http://blockchainlab.inf.ed.ac.uk/edi-dashboard/#/consensus"
-                  className="text-slate-200"
+                  className=" text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-500"
                   target="_blank"
                 >
-                  Here
+                  click here
                 </Link>
               </p>
             </motion.div>
@@ -294,6 +294,12 @@ export default function HeroLandingPage() {
           </div>
         </div>
       </section>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="h-24 bg-gradient-to-b from-gray-100 to-gray-200 shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+      ></motion.div>
     </div>
   )
 }
