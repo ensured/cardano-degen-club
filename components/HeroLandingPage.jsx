@@ -4,9 +4,20 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ExternalLink, LockKeyhole } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
@@ -47,7 +58,7 @@ export default function HeroLandingPage() {
               >
                 <Button
                   variant="link"
-                  className="h-auto relative text-xl text-sky-500 transition-all duration-700 hover:translate-x-1 dark:text-slate-50 md:text-2xl"
+                  className="relative h-auto text-xl text-sky-500 transition-all duration-700 hover:translate-x-1 dark:text-slate-50 md:text-2xl"
                 >
                   {isHovered && (
                     <span className="absolute -right-4">
@@ -159,122 +170,129 @@ export default function HeroLandingPage() {
               </p>
             </motion.div>
             {/* Feature 3 */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
-            >
-              <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
-                <div className="flex flex-row items-center gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
-                    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
-                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
-                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
-                  </svg>
-                  Scalability
-                </div>
-              </h3>
-              <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
-                Cardano's innovative technology enables high transaction
-                throughput and scalability, making it suitable for various
-                applications.
-              </p>
-            </motion.div>
-          </div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
-          >
-            <h3 className=" text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
-              <div className="flex items-center gap-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="44"
-                  height="44"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-chevrons-up"
+            <Dialog>
+              <DialogTrigger>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="cursor-pointer rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105 hover:bg-slate-300 dark:bg-background hover:dark:bg-slate-500"
                 >
-                  <path d="m17 11-5-5-5 5" />
-                  <path d="m17 18-5-5-5 5" />
-                </svg>
-                Scaling Solutions for Cardano
-              </div>
-            </h3>
-            <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
-              Cardano is implementing various strategies to enhance scalability
-              and performance. These include on-chain and off-chain solutions.
-            </p>
+                  <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
+                    <div className="flex flex-row items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                      </svg>
+                      Scalability
+                    </div>
+                  </h3>
+                  <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
+                    Cardano's innovative technology enables high transaction
+                    throughput and scalability, making it suitable for various
+                    applications.
+                  </p>
+                </motion.div>
+              </DialogTrigger>
+              <DialogContent className="h-full w-full overflow-y-auto">
+                <motion.div
+                  initial={{ opacity: 1, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
+                    <div className="flex items-center gap-4">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="44"
+                        height="44"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="lucide lucide-chevrons-up"
+                      >
+                        <path d="m17 11-5-5-5 5" />
+                        <path d="m17 18-5-5-5 5" />
+                      </svg>
+                      Scaling Solutions for Cardano
+                    </div>
+                  </h3>
+                  <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
+                    Cardano is implementing various strategies to enhance
+                    scalability and performance. These include on-chain and
+                    off-chain solutions.
+                  </p>
 
-            <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
-              On-chain Solutions
-            </h4>
-            <ul className="list-inside list-disc text-gray-600 dark:text-gray-400">
-              <li>
-                Block size increase: Enhancing transaction capacity by
-                increasing block size.
-              </li>
-              <li>
-                Pipelining: Improving block propagation times for faster
-                transactions.
-              </li>
-              <li>
-                Input Endorsers: Enhancing block propagation and throughput.
-              </li>
-              <li>
-                Memory/CPU parameters for Plutus: Optimizing memory usage for
-                efficiency.
-              </li>
-              <li>
-                Plutus script enhancements: Making smart contracts more
-                efficient and cost-effective.
-              </li>
-            </ul>
+                  <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
+                    On-chain Solutions
+                  </h4>
+                  <ul className="list-inside list-disc text-gray-600 dark:text-gray-400">
+                    <li>
+                      Block size increase: Enhancing transaction capacity by
+                      increasing block size.
+                    </li>
+                    <li>
+                      Pipelining: Improving block propagation times for faster
+                      transactions.
+                    </li>
+                    <li>
+                      Input Endorsers: Enhancing block propagation and
+                      throughput.
+                    </li>
+                    <li>
+                      Memory/CPU parameters for Plutus: Optimizing memory usage
+                      for efficiency.
+                    </li>
+                    <li>
+                      Plutus script enhancements: Making smart contracts more
+                      efficient and cost-effective.
+                    </li>
+                  </ul>
 
-            <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
-              Node Enhancements
-            </h4>
-            <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
-              Improvements made to the Cardano network nodes to ensure better
-              distribution, memory efficiency, and reduced load at critical
-              points.
-            </p>
+                  <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
+                    Node Enhancements
+                  </h4>
+                  <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
+                    Improvements made to the Cardano network nodes to ensure
+                    better distribution, memory efficiency, and reduced load at
+                    critical points.
+                  </p>
 
-            <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
-              On-disk Storage
-            </h4>
-            <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
-              Utilizing on-disk storage for efficient data handling, reducing
-              memory usage and scalability bottlenecks.
-            </p>
+                  <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
+                    On-disk Storage
+                  </h4>
+                  <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
+                    Utilizing on-disk storage for efficient data handling,
+                    reducing memory usage and scalability bottlenecks.
+                  </p>
 
-            <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
-              Off-chain Solutions
-            </h4>
-            <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
-              Strategies employed outside the Cardano blockchain, such as
-              sidechains, Hydra protocol, off-chain computing, and Mithril for
-              greater scalability and efficiency.
-            </p>
-          </motion.div>
+                  <h4 className="mb-2 mt-4 text-lg font-semibold text-zinc-900 dark:text-slate-50">
+                    Off-chain Solutions
+                  </h4>
+                  <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
+                    Strategies employed outside the Cardano blockchain, such as
+                    sidechains, Hydra protocol, off-chain computing, and Mithril
+                    for greater scalability and efficiency.
+                  </p>
+                </motion.div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </section>
     </div>
