@@ -235,6 +235,7 @@ const SearchRecipes = () => {
                           width={recipe.recipe.images.SMALL.width}
                           height={recipe.recipe.images.SMALL.height}
                           className="mt-0 h-auto w-36 rounded-t-lg md:mt-2 md:rounded-xl"
+                          unoptimized
                         />
                         <CardTitle className="xs:text-xs line-clamp-3 flex grow items-center justify-center overflow-hidden whitespace-normal text-center  text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
                           {extractRecipeName(recipe.recipe.shareAs)}
