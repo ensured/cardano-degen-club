@@ -2,6 +2,7 @@ import "@/styles/globals.css"
 import { Metadata } from "next"
 import Head from "next/head"
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 import { siteConfig } from "@/config/site"
 import { fontSans } from "@/lib/fonts"
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               </div>
               <main className="grow">{children}</main>
               <Footer />
+              <SpeedInsights />
               <Analytics />
             </div>
             <TailwindIndicator />
