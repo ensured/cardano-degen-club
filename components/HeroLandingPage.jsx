@@ -31,14 +31,14 @@ export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <div className=" dark:bg-background">
+    <div className="dark:bg-slate-800">
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className=" bg-gray-100 pt-16 opacity-0 dark:bg-gray-800 "
       >
-        <div className="container mx-auto px-4 md:px-6">
+        <div className="container mx-auto px-4 pb-16 md:px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
@@ -88,7 +88,13 @@ export default function HeroLandingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="h-20 bg-gradient-to-b from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+          className="h-16 bg-gradient-to-b from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
+        ></motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="h-16 bg-gradient-to-t from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
 
@@ -102,7 +108,7 @@ export default function HeroLandingPage() {
           >
             Key Features
           </motion.div>
-          <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-3">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -296,7 +302,7 @@ export default function HeroLandingPage() {
         </div>
       </section>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 1, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="h-24 bg-gradient-to-b from-gray-100 to-gray-200 shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"

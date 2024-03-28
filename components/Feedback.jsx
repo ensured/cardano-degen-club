@@ -79,7 +79,7 @@ export default function FeedBackDrawer() {
         <DialogTrigger asChild>
           <Button
             aria-controls="feedback-dialog"
-            className="bg-zinc-100 text-zinc-600 hover:bg-green  hover:text-primary dark:bg-zinc-900 dark:text-zinc-200"
+            className="bg-zinc-100 text-zinc-600 hover:bg-sky-300 hover:text-primary  dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-slate-800"
           >
             Leave feedback
           </Button>

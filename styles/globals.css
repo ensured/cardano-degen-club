@@ -149,3 +149,16 @@
 .animate-fade-out {
   animation: fadeOut 0.4444s ease-in-out;
 }
+
+@keyframes electricity {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.electricity {
+  animation: electricity 2s linear infinite;
+}
