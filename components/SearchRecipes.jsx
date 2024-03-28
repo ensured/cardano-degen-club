@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Loader, Loader2Icon } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { throttle } from "throttle-debounce"
 
@@ -247,13 +247,16 @@ const SearchRecipes = () => {
               </Link>
             ))}
           </div>
-          {loadingMore && (
-            <div className="p0 relative -my-1 flex flex-col items-center justify-center">
-              <div className="absolute -bottom-7 animate-spin">
-                <Loader2Icon />
+
+          <div class="mb-4">
+            {loadingMore && (
+              <div className="p0 relative -my-1 flex flex-col items-center justify-center">
+                <div className="absolute -bottom-7 animate-spin">
+                  <Loader2Icon />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>
