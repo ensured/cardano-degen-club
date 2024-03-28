@@ -67,7 +67,7 @@ export default function HeroLandingPage() {
               >
                 <Button
                   variant="link"
-                  className="relative h-auto text-xl text-sky-500 transition-all duration-700 hover:translate-x-1 dark:text-slate-50 md:text-2xl"
+                  className="relative h-auto text-xl text-sky-500 dark:text-slate-50 md:text-2xl"
                 >
                   {isHovered && (
                     <span className="absolute -right-4">
