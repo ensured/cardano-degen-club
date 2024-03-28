@@ -35,7 +35,7 @@ export default function HeroLandingPage() {
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.2 }}
         className=" bg-gray-100 pt-16 opacity-0 dark:bg-gray-800 "
       >
         <div className="container mx-auto px-4 pb-16 md:px-6">
@@ -43,7 +43,7 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.2 }}
               className="space-y-2"
             >
               <h1 className="mx-auto max-w-lg text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
@@ -57,8 +57,8 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105  dark:bg-background"
+              transition={{ duration: 0.2 }}
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
               <Link
                 href="/cardano-links"
@@ -87,13 +87,13 @@ export default function HeroLandingPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.2 }}
           className="h-16 bg-gradient-to-b from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.2 }}
           className="h-16 bg-gradient-to-t from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
@@ -103,7 +103,7 @@ export default function HeroLandingPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.2 }}
             className="h-20 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl "
           >
             Key Features
@@ -112,8 +112,8 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105 dark:bg-background"
+              transition={{ duration: 0.2 }}
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
                 <div className="inline-flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
+              transition={{ duration: 0.2, delay: 0.2 }}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
@@ -186,25 +186,26 @@ export default function HeroLandingPage() {
             </motion.div>
             {/* Feature 3 */}
             <Dialog>
-              <DialogTrigger>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                  className="cursor-pointer rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:scale-105 hover:bg-slate-300 dark:bg-background hover:dark:bg-slate-500"
-                >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2, delay: 0.2 }}
+                className="flex items-center justify-center"
+              >
+                <DialogTrigger className="cursor-pointer rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:bg-slate-300 dark:bg-background hover:dark:bg-slate-500">
                   <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                     <div className="flex flex-row items-center gap-2">
                       <ScalingIcon /> Scalability
                     </div>
                   </h3>
-                  <p className="text-md text-gray-600 dark:text-gray-400 lg:text-lg">
+                  <p className="text-md text-start text-gray-600 dark:text-gray-400 lg:text-lg">
                     Cardano's innovative technology enables high transaction
                     throughput and scalability, making it suitable for various
                     applications.
                   </p>
-                </motion.div>
-              </DialogTrigger>
+                </DialogTrigger>
+              </motion.div>
+
               <DialogContent className="h-full w-full overflow-y-auto">
                 <motion.div
                   initial={{ opacity: 1, scale: 0.5 }}
@@ -304,7 +305,7 @@ export default function HeroLandingPage() {
       <motion.div
         initial={{ opacity: 1, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.2 }}
         className="h-24 bg-gradient-to-b from-gray-100 to-gray-200 shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
       ></motion.div>
     </div>
