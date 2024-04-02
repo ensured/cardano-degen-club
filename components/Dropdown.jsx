@@ -44,9 +44,7 @@ const Dropdown = () => {
         <Link href="/crypto-tracker">
           <DropdownMenuItem>Crypto Tracker</DropdownMenuItem>
         </Link>
-        <Link href="/recipe-finder">
-          <DropdownMenuItem>Recipe Finder</DropdownMenuItem>
-        </Link>
+
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="dark:text-cardano text-moon">
           Scripts
@@ -64,6 +62,9 @@ const Dropdown = () => {
         <DropdownMenuLabel className="dark:text-cardano text-moon">
           Misc
         </DropdownMenuLabel>
+        <Link href="/recipe-finder">
+          <DropdownMenuItem>Recipe Finder</DropdownMenuItem>
+        </Link>
         <Link href="/port-checker">
           <DropdownMenuItem value="top">
             <div className="flex flex-col justify-center">

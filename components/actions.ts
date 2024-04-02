@@ -5,11 +5,11 @@ import { headers } from "next/headers"
 import MemoryCache from "memory-cache"
 import { z } from "zod"
 
-import { FormDataSchema, RecipeFetchUrlSchema } from "@/lib/schema"
+import { FeedbackFormSchema, RecipeFetchUrlSchema } from "@/lib/schema"
 
 import { PutObjectCommand, s3Client } from "../lib/s3"
 
-type Inputs = z.infer<typeof FormDataSchema>
+type Inputs = z.infer<typeof FeedbackFormSchema>
 
 const FEEDBACK_FORM_TIMEOUT_MS = 300000
 function getCurrentShorthandDateTime() {
@@ -24,7 +24,7 @@ function getCurrentShorthandDateTime() {
 }
 
 export async function submitFeedback(data: Inputs) {
-  const result = FormDataSchema.safeParse(data)
+  const result = FeedbackFormSchema.safeParse(data)
 
   if (!result) {
     return {

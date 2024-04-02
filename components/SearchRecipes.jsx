@@ -195,7 +195,7 @@ const SearchRecipes = () => {
       </form>
       {searchResults.count > 0 ? (
         <div
-          className={`animate-fade-in flex h-4 justify-center pt-1 text-sm opacity-100 transition-opacity duration-500`}
+          className={`flex h-4 justify-center pt-1 text-sm opacity-100 transition-opacity duration-100`}
         >
           <span>
             <b>{searchResults.count}</b> results
@@ -203,7 +203,7 @@ const SearchRecipes = () => {
         </div>
       ) : (
         <div
-          className={`animate-fade-out flex h-4 justify-center pt-1 text-sm opacity-0 transition-opacity duration-500`}
+          className={`flex h-4 justify-center pt-1 text-sm opacity-0 transition-opacity duration-150`}
         ></div>
       )}
 
