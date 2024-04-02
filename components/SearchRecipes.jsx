@@ -195,6 +195,45 @@ const SearchRecipes = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
+  const handleStarIconClick = (index) => (e) => {
+    e.preventDefault()
+
+    const recipeName = extractRecipeName(
+      searchResults.hits[index].recipe.shareAs
+    )
+    const recipeLink = searchResults.hits[index].recipe.shareAs
+
+    // Check if recipe is already favorited
+    const isFavorited = favorites[recipeName] !== undefined
+
+    if (isFavorited) {
+      // Remove from favorites
+      setFavorites((prevFavorites) => {
+        const newFavorites = { ...prevFavorites }
+        delete newFavorites[recipeName]
+        return newFavorites
+      })
+      localStorage.setItem("favorites", JSON.stringify(favorites))
+      toast("Removed from favorites", {
+        type: "message",
+        position: "bottom-center",
+        icon: <Trash2Icon color="#e74c3c" />,
+      })
+    } else {
+      // Add to favorites
+      setFavorites((prevFavorites) => ({
+        ...prevFavorites,
+        [recipeName]: recipeLink,
+      }))
+      localStorage.setItem("favorites", JSON.stringify(favorites))
+      toast("Added to favorites", {
+        type: "message",
+        position: "bottom-center",
+        icon: <Check color="#22bb33" />,
+      })
+    }
+  }
+
   return (
     <div className="flex flex-col pt-4">
       <form
@@ -304,24 +343,16 @@ const SearchRecipes = () => {
                   </FullTitleToolTip>
 
                   <StarIcon
-                    onMouseEnter={handleStarIconHover(index)} // Pass index to function
-                    onMouseLeave={handleStarIconHover(null)} // Reset hover state on leave
+                    onMouseEnter={handleStarIconHover(index)}
+                    onMouseLeave={handleStarIconHover(null)}
                     color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-                    className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-75 hover:scale-125" // Adjust positioning as needed
-                    onClick={(e) => {
-                      e.preventDefault()
-                      console.log(extractRecipeName(recipe.recipe.shareAs))
-
-                      addToFavorites(
-                        extractRecipeName(recipe.recipe.shareAs),
-                        recipe.recipe.shareAs
-                      )
-                      toast("Added to favorites", {
-                        type: "message",
-                        position: "top-center",
-                        icon: <Check color="#22bb33" />,
-                      })
-                    }}
+                    className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-75 hover:scale-125"
+                    fill={
+                      favorites[extractRecipeName(recipe.recipe.shareAs)]
+                        ? "#FFD700"
+                        : "none"
+                    }
+                    onClick={handleStarIconClick(index)} // Pass index to function
                   />
                 </div>
               </Link>
