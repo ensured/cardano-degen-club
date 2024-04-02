@@ -267,36 +267,34 @@ const SearchRecipes = () => {
 
       {searchResults.count > 0 ? (
         <div
-          className={`container flex h-14 w-full items-center justify-between text-sm opacity-100 transition-opacity duration-100`}
+          className={`container flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100`}
         >
           <Badge variant={"outline"}>
             <b>{searchResults.count}</b> results
           </Badge>
           <FavoritesSheet>
-            <div className="flex h-full flex-wrap overflow-auto rounded-md pb-4">
-              <div className="flex flex-col items-center justify-start ">
-                {Object.entries(favorites).map(([recipeName, link]) => (
-                  <Link
-                    target="_blank"
-                    href={link}
-                    key={recipeName}
-                    className="text-blue-500 flex w-full items-center justify-between border-t p-3 shadow-lg transition duration-300 ease-in-out hover:underline hover:shadow-lg hover:shadow-fuchsia-900 "
+            <div className="flex flex-col h-[92%] overflow-auto gap-1 rounded-md">
+              {Object.entries(favorites).map(([recipeName, link]) => (
+                <Link
+                  target="_blank"
+                  href={link}
+                  key={recipeName}
+                  className="flex items-center justify-between gap-2 border-t p-2 shadow-lg transition duration-300 ease-in-out hover:underline hover:shadow-lg hover:shadow-fuchsia-900 "
+                >
+                  {recipeName}
+                  <button
+                    className="text-red-500 hover:text-red-700 focus:outline-none"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      removeFromFavorites(recipeName)
+                      toast("Removed from favorites", { type: "success" })
+                    }}
                   >
-                    {recipeName}
-                    <button
-                      className="text-red-500 hover:text-red-700 focus:outline-none"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        removeFromFavorites(recipeName)
-                        toast("Removed from favorites", { type: "success" })
-                      }}
-                    >
-                      <Trash2Icon size={18} />
-                      <Separator className="bg-red-900 text-red-500" />
-                    </button>
-                  </Link>
-                ))}
-              </div>
+                    <Trash2Icon size={18} />
+                    <Separator className="bg-red-900 text-red-500" />
+                  </button>
+                </Link>
+              ))}
             </div>
           </FavoritesSheet>
         </div>
