@@ -4,7 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { BookmarkPlus, Loader2Icon, StarIcon, Trash2Icon } from "lucide-react"
+import { Separator } from "@radix-ui/react-dropdown-menu"
+import {
+  BookmarkPlus,
+  Loader2Icon,
+  LucideAlignVerticalSpaceAround,
+  StarIcon,
+  Trash2Icon,
+} from "lucide-react"
 import { toast } from "sonner"
 import { throttle } from "throttle-debounce"
 
@@ -223,31 +230,31 @@ const SearchRecipes = () => {
             <b>{searchResults.count}</b> results
           </div>
           <FavoritesSheet>
-            {" "}
-            <div className="flex items-center justify-center">
-              <div className="flex flex-wrap items-center justify-center">
-                {Object.entries(favorites).map(([recipeName, link]) => (
-                  <div
-                    key={recipeName}
-                    className="flex select-none items-center gap-1 rounded-md p-2 hover:cursor-pointer hover:bg-slate-900"
+            <div className="flex flex-col items-center justify-center">
+              {Object.entries(favorites).map(([recipeName, link]) => (
+                <div
+                  key={recipeName}
+                  className="mb-2 flex w-full items-center justify-between rounded-md p-3 shadow-md transition duration-300 ease-in-out hover:shadow-lg"
+                >
+                  <Link
+                    target="_blank"
+                    href={link}
+                    className="text-blue-500 hover:underline"
                   >
-                    <Link target="_blank" href={link}>
-                      {recipeName}
-                    </Link>
-                    <Trash2Icon
-                      className="hover:text-green"
-                      onClick={() => {
-                        removeFromFavorites(recipeName)
-                        toast("Removed from favorites", {
-                          type: "success",
-                        })
-                      }}
-                      size={18}
-                      color="#FFD700"
-                    />
-                  </div>
-                ))}
-              </div>
+                    {recipeName}
+                  </Link>
+                  <button
+                    className="text-red-500 hover:text-red-700 focus:outline-none"
+                    onClick={() => {
+                      removeFromFavorites(recipeName)
+                      toast("Removed from favorites", { type: "success" })
+                    }}
+                  >
+                    <Trash2Icon size={18} />
+                    <Separator className="bg-red-900 text-red-500" />
+                  </button>
+                </div>
+              ))}
             </div>
           </FavoritesSheet>
         </div>
@@ -297,7 +304,8 @@ const SearchRecipes = () => {
                   </FullTitleToolTip>
 
                   <BookmarkPlus
-                    className="absolute bottom-0 right-0 m-2 h-10 w-10 rounded-md p-2 transition-all duration-500 hover:cursor-crosshair hover:bg-moon" // Adjust positioning as needed
+                    color="#FFD700"
+                    className="absolute bottom-0 right-0 h-8 w-8 rounded-md p-1 transition-all duration-150 hover:cursor-crosshair hover:bg-emerald-700" // Adjust positioning as needed
                     onClick={(e) => {
                       e.preventDefault()
 

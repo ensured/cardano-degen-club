@@ -21,11 +21,8 @@ const FavoritesSheet = ({ children }) => {
     <div className="flex">
       <Sheet key={"right"}>
         <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            className="flex items-center justify-center gap-2 "
-          >
-            Favorites <Bookmark />
+          <Button variant="" className="flex items-center justify-center gap-1">
+            <Bookmark className="h-5 w-5" color="#006400" /> Favorites
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>
