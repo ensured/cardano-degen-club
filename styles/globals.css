@@ -63,10 +63,10 @@
 }
 
 /* Firefox
-* {
+ {
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) !important;
-} */
+} 
 
 /* Chrome, Edge and Safari */
 /* *::-webkit-scrollbar {

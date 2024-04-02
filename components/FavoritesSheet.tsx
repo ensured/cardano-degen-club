@@ -34,10 +34,8 @@ const FavoritesSheet = ({ children }: { children: ReactNode }) => {
               </div>
             </SheetTitle>
           </SheetHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-1 items-center gap-4">
-              {children}
-            </div>
+          <div className="flex h-full flex-wrap items-center gap-4 overflow-auto rounded-md  bg-zinc-900 p-1 [&::-webkit-slider-runnable-track]:rounded-full ">
+            {children}
           </div>
           <SheetFooter>
             {/* <SheetClose asChild>
