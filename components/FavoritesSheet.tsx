@@ -1,5 +1,6 @@
 "use client"
 
+import { ReactNode } from "react"
 import { Label } from "@radix-ui/react-label"
 import { Bookmark, BookmarkPlus, StarIcon } from "lucide-react"
 
@@ -16,12 +17,12 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 
-const FavoritesSheet = ({ children }) => {
+const FavoritesSheet = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex">
       <Sheet key={"right"}>
         <SheetTrigger asChild>
-          <Button variant="" className="flex items-center justify-center gap-1">
+          <Button className="flex items-center justify-center gap-1">
             <Bookmark className="h-5 w-5" color="#006400" /> Favorites
           </Button>
         </SheetTrigger>
