@@ -305,7 +305,7 @@ const SearchRecipes = () => {
 
                   <BookmarkPlus
                     color="#FFD700"
-                    className="absolute bottom-0 right-0 h-8 w-8 rounded-md p-1 transition-all duration-150 hover:cursor-crosshair hover:bg-emerald-700" // Adjust positioning as needed
+                    className="absolute bottom-0 right-0 h-8 w-8 rounded-md p-1 transition-all duration-150 hover:cursor-pointer md:hover:bg-emerald-700" // Adjust positioning as needed
                     onClick={(e) => {
                       e.preventDefault()
 
