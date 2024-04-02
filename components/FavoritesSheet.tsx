@@ -22,21 +22,21 @@ const FavoritesSheet = ({ children }: { children: ReactNode }) => {
     <div className="flex">
       <Sheet key={"right"}>
         <SheetTrigger asChild>
-          <Button className="flex items-center justify-center gap-1">
-            <Bookmark className="h-5 w-5" color="#006400" /> Favorites
+          <Button className="flex gap-1">
+            <Bookmark className="h-4 w-4" /> Favorites
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>
           <SheetHeader>
             <SheetTitle>
-              <div className="flex select-none items-center justify-center gap-2">
-                Favorites <StarIcon size={18} color="#FFD700" />
+              <div className="flex select-none items-center justify-center gap-1 p-2">
+                Favorites <StarIcon size={20} color="#FFD700" />
               </div>
             </SheetTitle>
           </SheetHeader>
-          <div className="flex h-full flex-wrap items-center gap-4 overflow-auto rounded-md  bg-zinc-900 p-1 [&::-webkit-slider-runnable-track]:rounded-full ">
-            {children}
-          </div>
+
+          {children}
+
           <SheetFooter>
             {/* <SheetClose asChild>
               <Button type="submit">Save changes</Button>

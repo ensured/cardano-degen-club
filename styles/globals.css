@@ -102,6 +102,32 @@
 *::-webkit-scrollbar-thumb:active {
   background-color: var(--scrollbar-thumb-active) !important;
 } */
+/* Define scrollbar track */
+::-webkit-scrollbar {
+  width: 6px;
+  background-color: #333; /* Dark background color */
+}
+
+/* Define scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: #00ff00; /* Neon green */
+  border-radius: 5px;
+}
+
+/* Define scrollbar thumb on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #00cc00; /* Slightly darker neon green */
+}
+
+/* Define scrollbar track on hover */
+::-webkit-scrollbar-track:hover {
+  background-color: #444; /* Darker background color */
+}
+
+/* Define scrollbar corner */
+::-webkit-scrollbar-corner {
+  background-color: #222; /* Darker background color for scrollbar corner */
+}
 
 @keyframes fadeIn {
   from {

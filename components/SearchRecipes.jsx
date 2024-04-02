@@ -19,7 +19,6 @@ import { extractRecipeName } from "@/lib/utils"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
 
 import FavoritesSheet from "./FavoritesSheet"
-import ScrollToTopButton from "./ScrollToTopButton"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
@@ -43,9 +42,13 @@ const SearchRecipes = () => {
   const [currentInput, setCurrentInput] = useState("")
   const [lastSuccessfulSearchQuery, setLastSuccessfulSearchQuery] = useState("")
   const lastFoodItemRef = useRef()
-  const [favorites, setFavorites] = useState(
-    JSON.parse(localStorage.getItem("favorites")) || {}
-  )
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("favorites")) || {}
+    } catch (error) {
+      return {}
+    }
+  })
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
 
   const searchRecipes = useCallback(
@@ -270,31 +273,30 @@ const SearchRecipes = () => {
             <b>{searchResults.count}</b> results
           </Badge>
           <FavoritesSheet>
-            <div className="flex flex-col items-center justify-center">
-              {Object.entries(favorites).map(([recipeName, link]) => (
-                <div
-                  key={recipeName}
-                  className="mb-2 flex w-full items-center justify-between rounded-md p-3 shadow-md transition duration-300 ease-in-out hover:shadow-lg"
-                >
+            <div className="flex h-full flex-wrap overflow-auto rounded-md pb-4">
+              <div className="flex flex-col items-center justify-start ">
+                {Object.entries(favorites).map(([recipeName, link]) => (
                   <Link
                     target="_blank"
                     href={link}
-                    className="text-blue-500 hover:underline"
+                    key={recipeName}
+                    className="text-blue-500 flex w-full items-center justify-between border-t p-3 shadow-lg transition duration-300 ease-in-out hover:underline hover:shadow-lg hover:shadow-fuchsia-900 "
                   >
                     {recipeName}
+                    <button
+                      className="text-red-500 hover:text-red-700 focus:outline-none"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        removeFromFavorites(recipeName)
+                        toast("Removed from favorites", { type: "success" })
+                      }}
+                    >
+                      <Trash2Icon size={18} />
+                      <Separator className="bg-red-900 text-red-500" />
+                    </button>
                   </Link>
-                  <button
-                    className="text-red-500 hover:text-red-700 focus:outline-none"
-                    onClick={() => {
-                      removeFromFavorites(recipeName)
-                      toast("Removed from favorites", { type: "success" })
-                    }}
-                  >
-                    <Trash2Icon size={18} />
-                    <Separator className="bg-red-900 text-red-500" />
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </FavoritesSheet>
         </div>
@@ -347,10 +349,10 @@ const SearchRecipes = () => {
                     onMouseEnter={handleStarIconHover(index)}
                     onMouseLeave={handleStarIconHover(null)}
                     color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-                    className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-75 hover:scale-125"
+                    className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-500 hover:scale-125 hover:animate-pulse"
                     fill={
                       favorites[extractRecipeName(recipe.recipe.shareAs)]
-                        ? "#FFD700"
+                        ? "#FFA726"
                         : "none"
                     }
                     onClick={handleStarIconClick(index)} // Pass index to function
