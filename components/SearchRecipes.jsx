@@ -195,6 +195,10 @@ const SearchRecipes = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites))
+  }, [favorites])
+
   const handleStarIconClick = (index) => (e) => {
     e.preventDefault()
 
