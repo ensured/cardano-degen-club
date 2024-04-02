@@ -19,6 +19,7 @@ import { extractRecipeName } from "@/lib/utils"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
 
 import FavoritesSheet from "./FavoritesSheet"
+import ScrollToTopButton from "./ScrollToTopButton"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
@@ -324,6 +325,8 @@ const SearchRecipes = () => {
               </Link>
             ))}
           </div>
+
+          <ScrollToTopButton />
 
           <div className="mb-4">
             {loadingMore && (
