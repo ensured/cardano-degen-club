@@ -7,13 +7,13 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import {
   BookmarkPlus,
+  Check,
+  CheckCircle2,
   Loader2Icon,
-  LucideAlignVerticalSpaceAround,
   StarIcon,
   Trash2Icon,
 } from "lucide-react"
 import { toast } from "sonner"
-import { throttle } from "throttle-debounce"
 
 import { extractRecipeName } from "@/lib/utils"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
@@ -25,7 +25,6 @@ import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
 
 const SearchRecipes = () => {
-  const throttleWindow = 444
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false) // State to track loading more data
@@ -50,6 +49,7 @@ const SearchRecipes = () => {
       return {}
     }
   })
+  const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -141,11 +141,6 @@ const SearchRecipes = () => {
     }
   }, [searchParams, searchRecipes, isInitialLoad, input])
 
-  const throttledFetchNextPage = throttle(throttleWindow, handleLoadNextPage, {
-    noLeading: true,
-    noTrailing: false,
-  }) // Throttle handleLoadNextPage
-
   useEffect(() => {
     // Intersection Observer for the last food item
     const observer = new IntersectionObserver(
@@ -155,7 +150,7 @@ const SearchRecipes = () => {
           searchResults.nextPage &&
           !loadingMore
         ) {
-          throttledFetchNextPage()
+          handleLoadNextPage()
         }
       },
       { threshold: 0.3 } // Trigger when 30% of the item is visible
@@ -172,7 +167,7 @@ const SearchRecipes = () => {
         observer.unobserve(currentLastFoodItemRef)
       }
     }
-  }, [searchResults, throttledFetchNextPage, lastFoodItemRef, loadingMore])
+  }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
   const handleInputChange = (e) => {
     const newInput = e.target.value
@@ -194,6 +189,10 @@ const SearchRecipes = () => {
     delete newFavorites[recipeName]
     setFavorites(newFavorites)
     localStorage.setItem("favorites", JSON.stringify(newFavorites))
+  }
+
+  const handleStarIconHover = (index) => () => {
+    setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
   return (
@@ -304,20 +303,23 @@ const SearchRecipes = () => {
                     </Card>
                   </FullTitleToolTip>
 
-                  <BookmarkPlus
-                    color="#FFD700"
-                    className="absolute bottom-0 right-0 h-8 w-8 rounded-md p-1 transition-all duration-150 hover:cursor-pointer md:hover:bg-emerald-700" // Adjust positioning as needed
+                  <StarIcon
+                    onMouseEnter={handleStarIconHover(index)} // Pass index to function
+                    onMouseLeave={handleStarIconHover(null)} // Reset hover state on leave
+                    color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
+                    className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-75 hover:scale-125" // Adjust positioning as needed
                     onClick={(e) => {
                       e.preventDefault()
-
                       console.log(extractRecipeName(recipe.recipe.shareAs))
 
                       addToFavorites(
                         extractRecipeName(recipe.recipe.shareAs),
                         recipe.recipe.shareAs
                       )
-                      toast(`Added to favorites`, {
-                        type: "success",
+                      toast("Added to favorites", {
+                        type: "message",
+                        position: "top-center",
+                        icon: <Check color="#22bb33" />,
                       })
                     }}
                   />
@@ -325,8 +327,6 @@ const SearchRecipes = () => {
               </Link>
             ))}
           </div>
-
-          <ScrollToTopButton />
 
           <div className="mb-4">
             {loadingMore && (
