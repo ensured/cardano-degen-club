@@ -20,6 +20,7 @@ import FullTitleToolTip from "@/components/FullTitleToolTip"
 
 import FavoritesSheet from "./FavoritesSheet"
 import ScrollToTopButton from "./ScrollToTopButton"
+import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
@@ -42,13 +43,9 @@ const SearchRecipes = () => {
   const [currentInput, setCurrentInput] = useState("")
   const [lastSuccessfulSearchQuery, setLastSuccessfulSearchQuery] = useState("")
   const lastFoodItemRef = useRef()
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("favorites")) || {}
-    } catch (error) {
-      return {}
-    }
-  })
+  const [favorites, setFavorites] = useState(
+    JSON.parse(localStorage.getItem("favorites")) || {}
+  )
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
 
   const searchRecipes = useCallback(
@@ -269,9 +266,9 @@ const SearchRecipes = () => {
         <div
           className={`container flex h-14 w-full items-center justify-between text-sm opacity-100 transition-opacity duration-100`}
         >
-          <div>
+          <Badge variant={"outline"}>
             <b>{searchResults.count}</b> results
-          </div>
+          </Badge>
           <FavoritesSheet>
             <div className="flex flex-col items-center justify-center">
               {Object.entries(favorites).map(([recipeName, link]) => (
