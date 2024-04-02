@@ -217,45 +217,45 @@ const SearchRecipes = () => {
 
       {searchResults.count > 0 ? (
         <div
-          className={`flex h-4 justify-center pt-1 text-sm opacity-100 transition-opacity duration-100`}
+          className={`container flex h-14 w-full items-center justify-between text-sm opacity-100 transition-opacity duration-100`}
         >
-          <span>
+          <div>
             <b>{searchResults.count}</b> results
-          </span>
+          </div>
+          <FavoritesSheet>
+            {" "}
+            <div className="flex items-center justify-center">
+              <div className="flex flex-wrap items-center justify-center">
+                {Object.entries(favorites).map(([recipeName, link]) => (
+                  <div
+                    key={recipeName}
+                    className="flex select-none items-center gap-1 rounded-md p-2 hover:cursor-pointer hover:bg-slate-900"
+                  >
+                    <Link target="_blank" href={link}>
+                      {recipeName}
+                    </Link>
+                    <Trash2Icon
+                      className="hover:text-green"
+                      onClick={() => {
+                        removeFromFavorites(recipeName)
+                        toast("Removed from favorites", {
+                          type: "success",
+                        })
+                      }}
+                      size={18}
+                      color="#FFD700"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </FavoritesSheet>
         </div>
       ) : (
         <div
           className={`flex h-4 justify-center pt-1 text-sm opacity-0 transition-opacity duration-150`}
         ></div>
       )}
-      <FavoritesSheet>
-        {" "}
-        <div className="flex items-center justify-center">
-          <div className="flex flex-wrap items-center justify-center gap-2 ">
-            {Object.entries(favorites).map(([recipeName, link]) => (
-              <div
-                key={recipeName}
-                className="flex select-none items-center gap-1 rounded-md p-2 hover:cursor-pointer hover:bg-slate-900"
-              >
-                <Link target="_blank" href={link}>
-                  {recipeName}
-                </Link>
-                <Trash2Icon
-                  className="hover:text-green"
-                  onClick={() => {
-                    removeFromFavorites(recipeName)
-                    toast("Removed from favorites", {
-                      type: "success",
-                    })
-                  }}
-                  size={18}
-                  color="#FFD700"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </FavoritesSheet>
 
       {searchResults.hits.length > 0 && (
         <div className={`animate-fade-in flex flex-col gap-2 p-4`}>

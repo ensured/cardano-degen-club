@@ -1,7 +1,7 @@
 "use client"
 
 import { Label } from "@radix-ui/react-label"
-import { BookmarkPlus, StarIcon } from "lucide-react"
+import { Bookmark, BookmarkPlus, StarIcon } from "lucide-react"
 
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -18,14 +18,14 @@ import {
 
 const FavoritesSheet = ({ children }) => {
   return (
-    <div className="container flex justify-end">
+    <div className="flex">
       <Sheet key={"right"}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
             className="flex items-center justify-center gap-2 "
           >
-            Favorites <BookmarkPlus />
+            Favorites <Bookmark />
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>
