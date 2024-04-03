@@ -258,7 +258,7 @@ const SearchRecipes = () => {
         <div
           className={`container flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100`}
         >
-          <Badge variant={"outline"}>
+          <Badge variant={"outline"} className="p-2">
             <b>{searchResults.count}</b> results
           </Badge>
           <FavoritesSheet>
