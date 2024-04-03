@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
-import { Loader2Icon, Trash2Icon } from "lucide-react"
+import { Loader, Loader2Icon, Trash2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
 
 import FavoritesSheet from "./FavoritesSheet"
@@ -32,7 +32,7 @@ const SearchRecipes = () => {
   } = useRecipeSearch()
 
   return (
-    <div className="flex flex-col pt-4">
+    <div className="relative flex min-h-[80vh] flex-col pb-8 pt-4">
       <RecipeSearchForm
         searchRecipes={searchRecipes}
         handleInputChange={handleInputChange}
@@ -46,6 +46,12 @@ const SearchRecipes = () => {
         searchResults={searchResults}
         favorites={favorites}
       />
+
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Loader2Icon className="h-16 w-16 animate-spin" />
+        </div>
+      )}
 
       {searchResults.hits.length > 0 && (
         <div className={`animate-fade-in flex flex-col gap-2 p-4`}>
@@ -68,14 +74,15 @@ const SearchRecipes = () => {
           <div className="mb-4">
             {loadingMore && (
               <div className="p0 relative -my-1 flex flex-col items-center justify-center">
-                <div className="absolute -bottom-7 animate-spin">
-                  <Loader2Icon />
+                <div className="absolute -bottom-14 animate-spin">
+                  <Loader2Icon className="h-12 w-12" />
                 </div>
               </div>
             )}
           </div>
         </div>
       )}
+
       <Toaster
         toastOptions={{
           className: "dark:bg-zinc-950 dark:text-slate-100",

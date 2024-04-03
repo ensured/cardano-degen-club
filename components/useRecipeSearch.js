@@ -51,6 +51,8 @@ const useRecipeSearch = () => {
           return
         }
         const data = await response.json()
+        if (!input || input.length === 0 || input === "") return
+
         if (input !== lastSuccessfulSearchQuery) {
           // Reset search results only if the input has changed
           setSearchResults({
@@ -79,7 +81,7 @@ const useRecipeSearch = () => {
     [fetchUrl, input, lastSuccessfulSearchQuery, router]
   )
 
-  const inputChanged = input !== currentInput
+  const inputChanged = input !== currentInput && input.length > 0
 
   const handleLoadNextPage = useCallback(async () => {
     const { nextPage } = searchResults
@@ -155,7 +157,7 @@ const useRecipeSearch = () => {
       prevFetchUrl.replace(`q=${input}`, `q=${newInput}`)
     )
     setInput(newInput)
-    router.push(`?q=${newInput}`)
+    router.replace(`?q=${newInput}`)
   }
 
   const removeFromFavorites = (recipeName) => {
