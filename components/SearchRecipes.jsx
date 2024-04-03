@@ -41,7 +41,11 @@ const SearchRecipes = () => {
         loading={loading}
       />
 
-      <RecipesMenu searchResults={searchResults} favorites={favorites} />
+      <RecipesMenu
+        removeFromFavorites={removeFromFavorites}
+        searchResults={searchResults}
+        favorites={favorites}
+      />
 
       {searchResults.hits.length > 0 && (
         <div className={`animate-fade-in flex flex-col gap-2 p-4`}>

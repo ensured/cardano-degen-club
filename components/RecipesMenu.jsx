@@ -6,7 +6,7 @@ import { Trash2Icon } from "lucide-react"
 import FavoritesSheet from "./FavoritesSheet"
 import { Badge } from "./ui/badge"
 
-const RecipesMenu = ({ searchResults, favorites }) => {
+const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   return searchResults.count > 0 ? (
     <div
       className={`container flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100`}
