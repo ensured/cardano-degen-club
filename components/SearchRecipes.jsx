@@ -276,6 +276,9 @@ const SearchRecipes = () => {
                     onClick={(e) => {
                       e.preventDefault()
                       removeFromFavorites(recipeName)
+                      toast("Removed from favorites", {
+                        icon: <Trash2Icon color="#e74c3c" />,
+                      })
                     }}
                   >
                     <Trash2Icon size={18} />
