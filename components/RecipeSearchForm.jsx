@@ -28,9 +28,9 @@ const RecipeSearchForm = ({
         disabled={!inputChanged}
       >
         <div className="flex items-center justify-center">
-          {/* {loading && (
+          {loading && (
             <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:right-3 md:h-5 md:w-5" />
-          )} */}
+          )}
           <span>Search</span>
         </div>
       </Button>
