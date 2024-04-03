@@ -81,7 +81,7 @@ const SearchRecipes = () => {
                   <button
                     className="text-red-500 hover:text-red-700 focus:outline-none"
                     onClick={(e) => {
-                      e.preventDefault()
+                      e.preventDefault() // prevent default Link click which otherwise would happen
                       removeFromFavorites(recipeName)
                     }}
                   >

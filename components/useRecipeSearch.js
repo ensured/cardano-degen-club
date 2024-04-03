@@ -14,8 +14,12 @@ const useRecipeSearch = () => {
     count: 0,
     nextPage: '',
   });
+
   const [input, setInput] = useState(searchParams.get('q') || '');
-  const [currentInput, setCurrentInput] = useState(input);
+  const [lastSuccessfulInput, setLastSuccessfulInput] = useState(input);
+  const [fetchUrl, setFetchUrl] = useState(
+    `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
+  );
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const lastFoodItemRef = useRef();
   const [favorites, setFavorites] = useState(() => {
@@ -27,47 +31,61 @@ const useRecipeSearch = () => {
   });
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null);
 
-  const removeFromFavorites = useCallback((recipeName) => {
-    setFavorites((prevFavorites) => {
-      const newFavorites = { ...prevFavorites };
-      delete newFavorites[recipeName];
-      return newFavorites;
-    });
-    toast("Removed from favorites", {
-      icon: <Trash2Icon color="#e74c3c" />,
-    });
-  }, []);
-
   const searchRecipes = useCallback(
-    async (input) => {
+    async (e) => {
+      try {
+        const isFormSubmission = e?.target?.tagName === 'FORM';
+
+        if (isFormSubmission) {
+          e.preventDefault();
+          setSearchResults({
+            hits: [],
+            count: 0,
+            nextPage: '',
+          });
+        }
+      } catch (e) {
+        console.log(e);
+      }
+
       setLoading(true);
       try {
-        const url = `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`;
-        const response = await fetch(url);
+        const response = await fetch(fetchUrl);
         if (response.status === 429) {
           toast('Usage limits are exceeded, try again later.', { type: 'error' });
           return;
         }
         const data = await response.json();
-        setSearchResults({
-          hits: data.hits,
-          count: data.count,
-          nextPage: data._links.next?.href || '',
-        });
+        if (input !== lastSuccessfulInput) {
+          // Reset search results only if the input has changed
+          setSearchResults({
+            hits: data.hits,
+            count: data.count,
+            nextPage: data._links.next?.href || '',
+          });
+          setLastSuccessfulInput(input);
+        } else {
+          setSearchResults((prevSearchResults) => ({
+            ...prevSearchResults,
+            hits: data.hits,
+            count: data.count,
+            nextPage: data._links.next?.href || '',
+          }));
+        }
+
         router.replace(`?q=${input}`);
       } catch (err) {
-        console.error('Error fetching search results:', err);
+        console.log(err);
       } finally {
         setLoading(false);
       }
     },
-    [router]
+    [fetchUrl, input, lastSuccessfulInput, router]
   );
 
   const handleInputChange = useCallback((e) => {
     const newInput = e.target.value;
     setInput(newInput);
-    setCurrentInput(newInput);
     router.push(`?q=${newInput}`);
   }, [router]);
 
@@ -75,13 +93,13 @@ const useRecipeSearch = () => {
     if (isInitialLoad && searchParams.get('q')) {
       const initialInput = searchParams.get('q');
       setInput(initialInput);
-      setCurrentInput(initialInput);
-      searchRecipes(initialInput);
+      setLastSuccessfulInput(initialInput);
       setIsInitialLoad(false);
+      searchRecipes({ target: { tagName: 'FORM' } }); // Simulate form submission to trigger initial search
     }
   }, [searchParams, searchRecipes, isInitialLoad]);
 
-  const inputChanged = input !== currentInput;
+  const inputChanged = input !== lastSuccessfulInput;
 
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites))
@@ -121,6 +139,7 @@ const useRecipeSearch = () => {
       })
     }
   }
+
 
   const handleLoadNextPage = useCallback(async () => {
     const { nextPage } = searchResults;
@@ -183,6 +202,18 @@ const useRecipeSearch = () => {
     }
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
+  const removeFromFavorites = (recipeName) => {
+    setFavorites((prevFavorites) => {
+      const newFavorites = { ...prevFavorites }
+      delete newFavorites[recipeName]
+      return newFavorites
+    })
+    localStorage.setItem("favorites", JSON.stringify(favorites))
+    toast("Removed from favorites", {
+      icon: <Trash2Icon color="#e74c3c" />,
+    })
+  }
+
   return {
     handleStarIconHover,
     loading,
@@ -191,14 +222,12 @@ const useRecipeSearch = () => {
     input,
     handleInputChange,
     lastFoodItemRef,
-    removeFromFavorites,
     favorites,
     setFavorites,
     inputChanged,
     searchRecipes,
     hoveredRecipeIndex,
-    handleStarIconClick,
-    removeFromFavorites
+    handleStarIconClick, removeFromFavorites
   };
 };
 
