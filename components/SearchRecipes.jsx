@@ -5,15 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Separator } from "@radix-ui/react-dropdown-menu"
-import {
-  BookmarkPlus,
-  Check,
-  CheckCircle2,
-  Loader2Icon,
-  StarIcon,
-  Trash2Icon,
-} from "lucide-react"
-import { toast } from "sonner"
+import { FolderCheck, Loader2Icon, StarIcon, Trash2Icon } from "lucide-react"
+import toast, { Toaster } from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
 import FullTitleToolTip from "@/components/FullTitleToolTip"
@@ -23,6 +16,8 @@ import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
+import useFavorites from "./useFavorites"
+import useIntersectionObserver from "./useIntersectionObserver"
 
 const SearchRecipes = () => {
   const router = useRouter()
@@ -42,14 +37,43 @@ const SearchRecipes = () => {
   const [currentInput, setCurrentInput] = useState("")
   const [lastSuccessfulSearchQuery, setLastSuccessfulSearchQuery] = useState("")
   const lastFoodItemRef = useRef()
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("favorites")) || {}
-    } catch (error) {
-      return {}
-    }
-  })
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites()
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
+
+  const performInitialSearch = useCallback(async () => {
+    try {
+      if (isInitialLoad && searchParams.get("q")) {
+        setSearchResults({
+          hits: [],
+          count: 0,
+          nextPage: "",
+        })
+
+        setLoading(true)
+        const response = await fetch(fetchUrl)
+        if (response.status === 429) {
+          toast("Usage limits are exceeded, try again later.", {
+            type: "error",
+          })
+          return
+        }
+        const data = await response.json()
+        setSearchResults({
+          hits: data.hits,
+          count: data.count,
+          nextPage: data._links.next?.href || "",
+        })
+        setLastSuccessfulSearchQuery(input)
+        router.replace(`?q=${input}`)
+        setCurrentInput(input)
+      }
+    } catch (error) {
+      console.error("Error performing initial search:", error)
+    } finally {
+      setLoading(false)
+      setIsInitialLoad(false)
+    }
+  }, [fetchUrl, input, isInitialLoad, router, searchParams])
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -127,47 +151,15 @@ const SearchRecipes = () => {
     }
   }, [searchResults])
 
-  useEffect(() => {
-    // Perform initial search only if q searchParam exists and input is not empty
-    try {
-      if (isInitialLoad && searchParams.get("q")) {
-        searchRecipes()
-        setIsInitialLoad(false)
+  useIntersectionObserver(
+    lastFoodItemRef,
+    ([entry]) => {
+      if (entry.isIntersecting && searchResults.nextPage && !loadingMore) {
+        handleLoadNextPage()
       }
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setIsInitialLoad(false)
-    }
-  }, [searchParams, searchRecipes, isInitialLoad, input])
-
-  useEffect(() => {
-    // Intersection Observer for the last food item
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          searchResults.nextPage &&
-          !loadingMore
-        ) {
-          handleLoadNextPage()
-        }
-      },
-      { threshold: 0.3 } // Trigger when 30% of the item is visible
-    )
-
-    const currentLastFoodItemRef = lastFoodItemRef.current
-
-    if (currentLastFoodItemRef) {
-      observer.observe(currentLastFoodItemRef)
-    }
-
-    return () => {
-      if (currentLastFoodItemRef) {
-        observer.unobserve(currentLastFoodItemRef)
-      }
-    }
-  }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
+    },
+    { threshold: 0.3 }
+  )
 
   const handleInputChange = (e) => {
     const newInput = e.target.value
@@ -176,19 +168,6 @@ const SearchRecipes = () => {
     )
     setInput(newInput)
     router.push(`?q=${newInput}`)
-  }
-
-  const addToFavorites = (recipeName, link) => {
-    const newFavorites = { ...favorites, [recipeName]: link }
-    setFavorites(newFavorites)
-    localStorage.setItem("favorites", JSON.stringify(newFavorites))
-  }
-
-  const removeFromFavorites = (recipeName) => {
-    const newFavorites = { ...favorites }
-    delete newFavorites[recipeName]
-    setFavorites(newFavorites)
-    localStorage.setItem("favorites", JSON.stringify(newFavorites))
   }
 
   const handleStarIconHover = (index) => () => {
@@ -212,15 +191,9 @@ const SearchRecipes = () => {
 
     if (isFavorited) {
       // Remove from favorites
-      setFavorites((prevFavorites) => {
-        const newFavorites = { ...prevFavorites }
-        delete newFavorites[recipeName]
-        return newFavorites
-      })
+      addToFavorites(recipeName, recipeLink)
       localStorage.setItem("favorites", JSON.stringify(favorites))
       toast("Removed from favorites", {
-        type: "message",
-        position: "bottom-center",
         icon: <Trash2Icon color="#e74c3c" />,
       })
     } else {
@@ -231,12 +204,14 @@ const SearchRecipes = () => {
       }))
       localStorage.setItem("favorites", JSON.stringify(favorites))
       toast("Added to favorites", {
-        type: "message",
-        position: "bottom-center",
-        icon: <Check color="#22bb33" />,
+        icon: <FolderCheck color="#22bb33" />,
       })
     }
   }
+
+  useEffect(() => {
+    performInitialSearch()
+  }, [performInitialSearch])
 
   return (
     <div className="flex flex-col pt-4">
@@ -273,7 +248,7 @@ const SearchRecipes = () => {
             <b>{searchResults.count}</b> results
           </Badge>
           <FavoritesSheet>
-            <div className="flex flex-col h-[92%] overflow-auto gap-1 rounded-md">
+            <div className="flex h-[92%] flex-col gap-1 overflow-auto rounded-md">
               {Object.entries(favorites).map(([recipeName, link]) => (
                 <Link
                   target="_blank"
@@ -287,7 +262,6 @@ const SearchRecipes = () => {
                     onClick={(e) => {
                       e.preventDefault()
                       removeFromFavorites(recipeName)
-                      toast("Removed from favorites", { type: "success" })
                     }}
                   >
                     <Trash2Icon size={18} />
@@ -371,6 +345,22 @@ const SearchRecipes = () => {
           </div>
         </div>
       )}
+      <Toaster
+        toastOptions={{
+          className: "dark:bg-zinc-950 dark:text-slate-100",
+          duration: 800,
+          success: {
+            style: {
+              background: "green",
+            },
+          },
+          error: {
+            style: {
+              background: "red",
+            },
+          },
+        }}
+      />
     </div>
   )
 }
