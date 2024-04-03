@@ -1,17 +1,11 @@
 "use client"
 
-import Link from "next/link"
-import { Separator } from "@radix-ui/react-dropdown-menu"
-import { Loader, Loader2Icon, Trash2Icon } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
 
-import FavoritesSheet from "./FavoritesSheet"
 import { RecipeCard } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
 import RecipesMenu from "./RecipesMenu"
-import { Badge } from "./ui/badge"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
 import useRecipeSearch from "./useRecipeSearch"
 
 const SearchRecipes = () => {
