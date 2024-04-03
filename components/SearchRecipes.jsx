@@ -16,8 +16,6 @@ import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Card, CardTitle } from "./ui/card"
 import { Input } from "./ui/input"
-import useFavorites from "./useFavorites"
-import useIntersectionObserver from "./useIntersectionObserver"
 
 const SearchRecipes = () => {
   const router = useRouter()
@@ -37,43 +35,14 @@ const SearchRecipes = () => {
   const [currentInput, setCurrentInput] = useState("")
   const [lastSuccessfulSearchQuery, setLastSuccessfulSearchQuery] = useState("")
   const lastFoodItemRef = useRef()
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites()
-  const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
-
-  const performInitialSearch = useCallback(async () => {
+  const [favorites, setFavorites] = useState(() => {
     try {
-      if (isInitialLoad && searchParams.get("q")) {
-        setSearchResults({
-          hits: [],
-          count: 0,
-          nextPage: "",
-        })
-
-        setLoading(true)
-        const response = await fetch(fetchUrl)
-        if (response.status === 429) {
-          toast("Usage limits are exceeded, try again later.", {
-            type: "error",
-          })
-          return
-        }
-        const data = await response.json()
-        setSearchResults({
-          hits: data.hits,
-          count: data.count,
-          nextPage: data._links.next?.href || "",
-        })
-        setLastSuccessfulSearchQuery(input)
-        router.replace(`?q=${input}`)
-        setCurrentInput(input)
-      }
+      return JSON.parse(localStorage.getItem("favorites")) || {}
     } catch (error) {
-      console.error("Error performing initial search:", error)
-    } finally {
-      setLoading(false)
-      setIsInitialLoad(false)
+      return {}
     }
-  }, [fetchUrl, input, isInitialLoad, router, searchParams])
+  })
+  const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -151,15 +120,47 @@ const SearchRecipes = () => {
     }
   }, [searchResults])
 
-  useIntersectionObserver(
-    lastFoodItemRef,
-    ([entry]) => {
-      if (entry.isIntersecting && searchResults.nextPage && !loadingMore) {
-        handleLoadNextPage()
+  useEffect(() => {
+    // Perform initial search only if q searchParam exists and input is not empty
+    try {
+      if (isInitialLoad && searchParams.get("q")) {
+        searchRecipes()
+        setIsInitialLoad(false)
       }
-    },
-    { threshold: 0.3 }
-  )
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setIsInitialLoad(false)
+    }
+  }, [searchParams, searchRecipes, isInitialLoad, input])
+
+  useEffect(() => {
+    // Intersection Observer for the last food item
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          searchResults.nextPage &&
+          !loadingMore
+        ) {
+          handleLoadNextPage()
+        }
+      },
+      { threshold: 0.3 } // Trigger when 30% of the item is visible
+    )
+
+    const currentLastFoodItemRef = lastFoodItemRef.current
+
+    if (currentLastFoodItemRef) {
+      observer.observe(currentLastFoodItemRef)
+    }
+
+    return () => {
+      if (currentLastFoodItemRef) {
+        observer.unobserve(currentLastFoodItemRef)
+      }
+    }
+  }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
   const handleInputChange = (e) => {
     const newInput = e.target.value
@@ -168,6 +169,19 @@ const SearchRecipes = () => {
     )
     setInput(newInput)
     router.push(`?q=${newInput}`)
+  }
+
+  const addToFavorites = (recipeName, link) => {
+    const newFavorites = { ...favorites, [recipeName]: link }
+    setFavorites(newFavorites)
+    localStorage.setItem("favorites", JSON.stringify(newFavorites))
+  }
+
+  const removeFromFavorites = (recipeName) => {
+    const newFavorites = { ...favorites }
+    delete newFavorites[recipeName]
+    setFavorites(newFavorites)
+    localStorage.setItem("favorites", JSON.stringify(newFavorites))
   }
 
   const handleStarIconHover = (index) => () => {
@@ -191,7 +205,11 @@ const SearchRecipes = () => {
 
     if (isFavorited) {
       // Remove from favorites
-      addToFavorites(recipeName, recipeLink)
+      setFavorites((prevFavorites) => {
+        const newFavorites = { ...prevFavorites }
+        delete newFavorites[recipeName]
+        return newFavorites
+      })
       localStorage.setItem("favorites", JSON.stringify(favorites))
       toast("Removed from favorites", {
         icon: <Trash2Icon color="#e74c3c" />,
@@ -208,10 +226,6 @@ const SearchRecipes = () => {
       })
     }
   }
-
-  useEffect(() => {
-    performInitialSearch()
-  }, [performInitialSearch])
 
   return (
     <div className="flex flex-col pt-4">
