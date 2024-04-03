@@ -38,11 +38,14 @@ const useRecipeSearch = () => {
 
         if (isFormSubmission) {
           e.preventDefault();
+          const response = await fetch(fetchUrl);
+          const data = await response.json();
           setSearchResults({
-            hits: [],
-            count: 0,
-            nextPage: '',
+            hits: data.hits,
+            count: data.count,
+            nextPage: data._links.next?.href || '',
           });
+          setLastSuccessfulInput(input);
         }
       } catch (e) {
         console.log(e);
@@ -83,11 +86,34 @@ const useRecipeSearch = () => {
     [fetchUrl, input, lastSuccessfulInput, router]
   );
 
-  const handleInputChange = useCallback((e) => {
-    const newInput = e.target.value;
-    setInput(newInput);
-    router.push(`?q=${newInput}`);
-  }, [router]);
+  const handleInputChange = (e) => {
+    const newInput = e.target.value
+    setFetchUrl((prevFetchUrl) =>
+      prevFetchUrl.replace(`q=${input}`, `q=${newInput}`)
+    )
+    setInput(newInput)
+    router.push(`?q=${newInput}`)
+  }
+
+
+  useEffect(() => {
+    if (searchResults.hits.length === 0) {
+      setLoadingMore(false);
+    }
+  }, [searchResults.hits]);
+
+  useEffect(() => {
+    if (searchResults.nextPage) {
+      setLoadingMore(true);
+      setFetchUrl(searchResults.nextPage);
+    }
+  }, [searchResults.nextPage]);
+
+  useEffect(() => {
+    if (hoveredRecipeIndex !== null) {
+      lastFoodItemRef.current.focus();
+    }
+  }, [hoveredRecipeIndex]);
 
   useEffect(() => {
     if (isInitialLoad && searchParams.get('q')) {
