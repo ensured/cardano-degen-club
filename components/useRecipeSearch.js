@@ -152,7 +152,7 @@ const useRecipeSearch = () => {
           handleLoadNextPage()
         }
       },
-      { threshold: 0.3 } // Trigger when 30% of the item is visible
+      { threshold: [0, 0.3] }
     )
 
     const currentLastFoodItemRef = lastFoodItemRef.current

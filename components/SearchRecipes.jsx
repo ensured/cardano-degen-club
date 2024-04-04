@@ -41,18 +41,21 @@ const SearchRecipes = () => {
         loading={loading}
       />
 
+      {/* results count + interactive favorites sheet*/}
       <RecipesMenu
         removeFromFavorites={removeFromFavorites}
         searchResults={searchResults}
         favorites={favorites}
       />
 
+      {/* loading spinner in the center of the page */}
       {loading && (
         <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
           <Loader2Icon className="h-16 w-16 animate-spin" />
         </div>
       )}
 
+      {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
         <div className="animate-fade-in flex flex-col gap-2 p-4">
           <div className="flex flex-row flex-wrap justify-center gap-2">
@@ -86,7 +89,8 @@ const SearchRecipes = () => {
       <Toaster
         toastOptions={{
           className: "dark:bg-zinc-950 dark:text-slate-100",
-          duration: 800,
+          duration: 1500,
+          position: "bottom-center",
           success: {
             style: {
               background: "green",
