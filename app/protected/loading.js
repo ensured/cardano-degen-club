@@ -1,9 +1,9 @@
+import { Loader2 } from "lucide-react"
+
 const Loading = () => {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="animate-pulse text-center text-2xl font-bold text-white">
-        <div>Loading... 🚀</div>
-      </div>
+    <div className="relative flex h-[86vh] flex-row items-center justify-center gap-2 ">
+      <Loader2 className="animate-spin" />
     </div>
   )
 }
