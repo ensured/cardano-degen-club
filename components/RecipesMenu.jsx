@@ -9,7 +9,7 @@ import { Badge } from "./ui/badge"
 const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   return (
     <div
-      className={`container flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100`}
+      className={`container flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100 `}
     >
       <>
         {searchResults.count > 0 && (
@@ -19,27 +19,35 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
         )}
         <div className="grow"></div>
         <FavoritesSheet>
-          <div className="flex flex-col gap-1 overflow-auto rounded-md">
-            {Object.entries(favorites).map(([recipeName, link]) => (
-              <Link
-                target="_blank"
-                href={link}
-                key={recipeName}
-                className="flex items-center justify-between gap-2 border-t p-2 shadow-lg transition duration-300 ease-in-out hover:underline hover:shadow-lg hover:shadow-fuchsia-900 "
-              >
-                {recipeName}
-                <button
-                  className="text-red-500 hover:text-red-700 focus:outline-none"
-                  onClick={(e) => {
-                    e.preventDefault() // prevent default Link click which otherwise would happen
-                    removeFromFavorites(recipeName)
-                  }}
+          <div className="flex h-[94%] flex-col overflow-auto rounded-md">
+            <div className="my-2">
+              {Object.entries(favorites).map(([recipeName, link]) => (
+                <Link
+                  target="_blank"
+                  href={link}
+                  key={recipeName}
+                  className="flex items-center justify-between gap-2 border-t px-1 py-0.5 transition duration-300 ease-in-out hover:underline"
+                  style={{ textDecoration: "none" }} // Ensure default Link underline is removed
                 >
-                  <Trash2Icon size={18} />
-                  <Separator className="bg-red-900 text-red-500" />
-                </button>
-              </Link>
-            ))}
+                  <div className="flex w-full items-center gap-2">
+                    <span className="rounded-md p-2 decoration-purple-500 hover:text-purple-500  hover:shadow-inner hover:shadow-purple-500 hover:ring-2 hover:ring-inset hover:ring-purple-600">
+                      {recipeName}
+                    </span>
+
+                    <button
+                      className="p-2 text-red-600/90 hover:scale-125 hover:text-red-700 focus:outline-none"
+                      onClick={(e) => {
+                        e.preventDefault() // prevent default Link click which otherwise would happen
+                        removeFromFavorites(recipeName)
+                      }}
+                    >
+                      <Trash2Icon size={18} />
+                      <Separator className="bg-red-900 text-red-500" />
+                    </button>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </FavoritesSheet>
       </>
