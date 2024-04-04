@@ -33,7 +33,7 @@ const ScrollToTopButton = () => {
     <button
       className={`fixed bottom-4 right-4 rounded-full p-2 outline-none transition-opacity duration-200 ${
         isVisible ? "opacity-100" : "opacity-0"
-      }`}
+      } bg-zinc-950 text-white shadow-[inset_0px_0px_1px_1px_#553C9A] hover:bg-zinc-900 hover:text-white focus:outline-none`}
       onClick={scrollToTop}
     >
       <ChevronUp />

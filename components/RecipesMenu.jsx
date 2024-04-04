@@ -29,8 +29,8 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                   className="flex items-center justify-between gap-2 border-t px-1 py-0.5 transition duration-300 ease-in-out hover:underline"
                   style={{ textDecoration: "none" }} // Ensure default Link underline is removed
                 >
-                  <div className="flex w-full items-center justify-between gap-2">
-                    <span className="rounded-md p-2 decoration-purple-500 hover:text-purple-500  hover:shadow-inner hover:shadow-purple-500 hover:ring-2 hover:ring-inset hover:ring-purple-600">
+                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-[#553C9A]">
+                    <span className="rounded-md p-2 decoration-[#553C9A]  hover:shadow-inner ">
                       {recipeName}
                     </span>
 
