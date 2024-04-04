@@ -19,8 +19,7 @@ const useRecipeSearch = () => {
     `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
   )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [currentInput, setCurrentInput] = useState("")
-  const [lastSuccessfulSearchQuery, setLastSuccessfulSearchQuery] = useState("")
+  const [lastInputSearched, setLastInputSearched] = useState("")
   const lastFoodItemRef = useRef()
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -53,14 +52,14 @@ const useRecipeSearch = () => {
         const data = await response.json()
         if (!input || input.length === 0 || input === "") return
 
-        if (input !== lastSuccessfulSearchQuery) {
+        if (input !== lastInputSearched) {
           // Reset search results only if the input has changed
           setSearchResults({
             hits: data.hits,
             count: data.count,
             nextPage: data._links.next?.href || "",
           })
-          setLastSuccessfulSearchQuery(input)
+          setLastInputSearched(input)
         } else {
           setSearchResults((prevSearchResults) => ({
             ...prevSearchResults,
@@ -71,17 +70,17 @@ const useRecipeSearch = () => {
         }
 
         router.replace(`?q=${input}`)
-        setCurrentInput(input)
+        setLastInputSearched(input)
       } catch (err) {
         console.log(err)
       } finally {
         setLoading(false)
       }
     },
-    [fetchUrl, input, lastSuccessfulSearchQuery, router]
+    [fetchUrl, input, lastInputSearched, router]
   )
 
-  const inputChanged = input !== currentInput && input.length > 0
+  const inputChanged = input !== lastInputSearched && input.length > 0
 
   const handleLoadNextPage = useCallback(async () => {
     const { nextPage } = searchResults
