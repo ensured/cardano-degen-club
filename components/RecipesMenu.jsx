@@ -1,13 +1,23 @@
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import jsPDF from "jspdf"
-import { FileText, Trash2Icon } from "lucide-react"
+import { Download, FileText, Trash2Icon } from "lucide-react"
+import toast from "react-hot-toast"
 
 import FavoritesSheet from "./FavoritesSheet"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 
 const generateFavoritesPDF = (favorites) => {
+  if (!favorites || Object.keys(favorites).length === 0) {
+    toast("No favorites found", {
+      icon: "🙈",
+      style: {
+        background: "#18181b",
+      },
+    })
+    return
+  }
   const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
   let yOffset = 10
   const lineHeight = 3 // Adjust line height as needed for compactness
@@ -68,15 +78,19 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
         <div className="grow"></div>
         <FavoritesSheet>
           {" "}
-          <div className="w-full flex ">
-            <Button
-              variant={"moon"}
-              onClick={handleDownloadPDF}
-              className="gap-1 w-full"
-            >
-              <FileText /> Download Favorites as PDF
-            </Button>
-          </div>
+          {Object.keys(favorites).length > 0 && (
+            <div className="flex justify-center">
+              <Button
+                variant={"moon"}
+                onClick={handleDownloadPDF}
+                className="lg:text-lg md:text-md text-sm gap-1 p-2 "
+              >
+                {" "}
+                <Download />
+                <div className="line-clamp-1">Download Favorites (PDF)</div>
+              </Button>
+            </div>
+          )}
           <div className="flex h-[94%] flex-col overflow-auto rounded-md">
             <div className="my-2">
               {Object.entries(favorites).map(([recipeName, link]) => (
@@ -87,8 +101,8 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                   className="flex items-center justify-between gap-2 border-t px-1 py-0.5 transition duration-300 ease-in-out hover:underline"
                   style={{ textDecoration: "none" }} // Ensure default Link underline is removed
                 >
-                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-[#553C9A]">
-                    <span className="rounded-md p-2 decoration-[#553C9A]  hover:shadow-inner ">
+                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
+                    <span className="rounded-md p-2 decoration-moon  hover:shadow-inner ">
                       {recipeName}
                     </span>
 

@@ -15,6 +15,7 @@ module.exports = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
+        xs: "320px",
       },
     },
     extend: {
@@ -25,13 +26,13 @@ module.exports = {
         color: "rgba(0, 0, 0, 0.5)" /* Adjust thumb color */,
       },
       colors: {
-        blue: '#1fb6ff',
-        pink: '#ff49db',
-        orange: '#ff7849',
-        green: '#13ce66',
-        grayDark: '#273444',
+        blue: "#1fb6ff",
+        pink: "#ff49db",
+        orange: "#ff7849",
+        green: "#13ce66",
+        grayDark: "#273444",
         // gray: '#8492a6',
-        grayLight: '#d3dce6',
+        grayLight: "#d3dce6",
         moon: "hsl(240, 60%, 50%)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
