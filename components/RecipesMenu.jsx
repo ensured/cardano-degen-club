@@ -83,7 +83,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
               <Button
                 variant={"moon"}
                 onClick={handleDownloadPDF}
-                className="lg:text-lg md:text-md text-sm gap-1 p-2 "
+                className="md:text-md gap-1 p-2 text-sm lg:text-lg"
               >
                 {" "}
                 <Download />

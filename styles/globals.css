@@ -103,30 +103,24 @@
   background-color: var(--scrollbar-thumb-active) !important;
 } */
 /* Define scrollbar track */
+/* Hide scrollbar */
 ::-webkit-scrollbar {
-  width: 1px;
-  background-color: #2c2c2c; /* Dark background color */
+  display: none;
 }
 
-/* Define scrollbar thumb */
+/* Hide scrollbar thumb */
 ::-webkit-scrollbar-thumb {
-  background-color: #00ff00; /* Neon green */
-  border-radius: 2px;
+  display: none;
 }
 
-/* Define scrollbar thumb on hover */
-::-webkit-scrollbar-thumb:hover {
-  background-color: #00cc00; /* Slightly darker neon green */
+/* Hide scrollbar track */
+::-webkit-scrollbar-track {
+  display: none;
 }
 
-/* Define scrollbar track on hover */
-::-webkit-scrollbar-track:hover {
-  background-color: #444; /* Darker background color */
-}
-
-/* Define scrollbar corner */
+/* Hide scrollbar corner */
 ::-webkit-scrollbar-corner {
-  background-color: #222; /* Darker background color for scrollbar corner */
+  display: none;
 }
 
 @keyframes fadeIn {
