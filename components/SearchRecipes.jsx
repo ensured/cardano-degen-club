@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Loader2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
 
