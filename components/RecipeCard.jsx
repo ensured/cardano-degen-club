@@ -25,7 +25,7 @@ export const RecipeCard = ({
     <div className="relative">
       <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
         <Card
-          className="xs:w-22 h-52 w-36 grow overflow-hidden sm:w-36 md:w-36"
+          className="xs:w-22 relative h-52 w-36 grow overflow-hidden sm:w-36 md:w-36"
           ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
         >
           <div className="flex flex-col items-center justify-center">
@@ -38,9 +38,18 @@ export const RecipeCard = ({
               unoptimized
               priority
             />
-            <CardTitle className="xs:text-xs line-clamp-3 flex grow items-center justify-center overflow-hidden whitespace-normal text-center text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
+            {/* <div className="absolute inset-0 flex items-center justify-center"></div>{" "} */}
+            <div
+              className="text-center text-sm font-bold"
+              style={{
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: 3,
+                overflow: "hidden",
+              }}
+            >
               {extractRecipeName(recipe.recipe.shareAs)}
-            </CardTitle>
+            </div>
           </div>
         </Card>
       </FullTitleToolTip>
@@ -49,7 +58,7 @@ export const RecipeCard = ({
         onMouseEnter={handleStarIconHover(index)}
         onMouseLeave={handleStarIconHover(null)}
         color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-        className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-500 hover:scale-125 hover:animate-pulse"
+        className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-200 hover:scale-125 hover:animate-pulse"
         fill={
           favorites[extractRecipeName(recipe.recipe.shareAs)]
             ? "#FFA726"
