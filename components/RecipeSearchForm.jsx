@@ -16,7 +16,7 @@ const RecipeSearchForm = ({
       className="container flex items-center justify-center gap-2"
     >
       <Input
-        placeholder="search term"
+        placeholder="search a food"
         type="text"
         name="searchTerm"
         onChange={handleInputChange}
