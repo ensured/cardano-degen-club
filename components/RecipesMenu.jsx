@@ -29,13 +29,13 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                   className="flex items-center justify-between gap-2 border-t px-1 py-0.5 transition duration-300 ease-in-out hover:underline"
                   style={{ textDecoration: "none" }} // Ensure default Link underline is removed
                 >
-                  <div className="flex w-full items-center gap-2">
+                  <div className="flex w-full items-center justify-between gap-2">
                     <span className="rounded-md p-2 decoration-purple-500 hover:text-purple-500  hover:shadow-inner hover:shadow-purple-500 hover:ring-2 hover:ring-inset hover:ring-purple-600">
                       {recipeName}
                     </span>
 
                     <button
-                      className="p-2 text-red-600/90 hover:scale-125 hover:text-red-700 focus:outline-none"
+                      className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
                       onClick={(e) => {
                         e.preventDefault() // prevent default Link click which otherwise would happen
                         removeFromFavorites(recipeName)
