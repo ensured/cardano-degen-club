@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { StarIcon } from "lucide-react"
@@ -16,47 +17,77 @@ export const RecipeCard = ({
   hoveredRecipeIndex,
   searchResults,
   handleStarIconHover,
-}) => (
-  <Link
-    target="_blank"
-    key={recipe.recipe.shareAs}
-    href={recipe.recipe.shareAs}
-  >
-    <div className="relative flex flex-wrap md:w-full">
-      <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
-        <Card
-          className="xs:w-22 h-52 w-36 grow overflow-hidden sm:w-36 md:w-56"
-          ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
-        >
-          <div className="flex flex-col items-center justify-center pb-1">
-            <Image
-              src={recipe.recipe.images.SMALL.url}
-              alt="recipe thumbnail"
-              width={recipe.recipe.images.SMALL.width}
-              height={recipe.recipe.images.SMALL.height}
-              className="mt-0 h-auto w-36 rounded-t-lg md:mt-2 md:rounded-xl"
-              unoptimized
-              priority
-            />
-            <CardTitle className="xs:text-xs line-clamp-3 flex grow items-center justify-center overflow-hidden whitespace-normal text-center text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
-              {extractRecipeName(recipe.recipe.shareAs)}
-            </CardTitle>
-          </div>
-        </Card>
-      </FullTitleToolTip>
+}) => {
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
 
-      <StarIcon
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0)
+    }
+
+    checkTouchDevice()
+
+    // Add event listener to detect touch device on resize
+    window.addEventListener("resize", checkTouchDevice)
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", checkTouchDevice)
+    }
+  }, [])
+
+  const isHovered = hoveredRecipeIndex === index
+  const shouldShowStar = isTouchDevice || isHovered
+
+  return (
+    <Link
+      target="_blank"
+      key={recipe.recipe.shareAs}
+      href={recipe.recipe.shareAs}
+    >
+      <div
+        className="relative"
         onMouseEnter={handleStarIconHover(index)}
         onMouseLeave={handleStarIconHover(null)}
-        color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-        className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-500 hover:scale-125 hover:animate-pulse"
-        fill={
-          favorites[extractRecipeName(recipe.recipe.shareAs)]
-            ? "#FFA726"
-            : "none"
-        }
-        onClick={handleStarIconClick(index)}
-      />
-    </div>
-  </Link>
-)
+      >
+        <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
+          <Card
+            className="xs:w-22 h-52 w-32 grow overflow-hidden sm:w-36 md:w-36"
+            ref={
+              index === searchResults.hits.length - 8 ? lastFoodItemRef : null
+            }
+          >
+            <div className="flex flex-col items-center justify-center">
+              <Image
+                src={recipe.recipe.images.SMALL.url}
+                alt="recipe thumbnail"
+                width={recipe.recipe.images.SMALL.width}
+                height={recipe.recipe.images.SMALL.height}
+                className="mt-0 h-auto w-32 rounded-t-md"
+                unoptimized
+                priority
+              />
+              <CardTitle className="xs:text-xs line-clamp-3 flex grow items-center justify-center overflow-hidden whitespace-normal text-center text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
+                {extractRecipeName(recipe.recipe.shareAs)}
+              </CardTitle>
+            </div>
+          </Card>
+        </FullTitleToolTip>
+        {shouldShowStar && (
+          <StarIcon
+            onMouseEnter={handleStarIconHover(index)}
+            onMouseLeave={handleStarIconHover(null)}
+            color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
+            className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-500 hover:scale-125 hover:animate-pulse"
+            fill={
+              favorites[extractRecipeName(recipe.recipe.shareAs)]
+                ? "#FFA726"
+                : "none"
+            }
+            onClick={handleStarIconClick(index)}
+          />
+        )}
+      </div>
+    </Link>
+  )
+}
