@@ -1,3 +1,4 @@
+// - This is a Recipe Sheet + results
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import jsPDF from "jspdf"
@@ -57,8 +58,12 @@ const generateFavoritesPDF = (favorites) => {
       yOffset = 10
     }
   })
-
-  doc.save("Recipe-Favorites.pdf")
+  const date = new Date()
+  let formattedDateTime = date.toISOString()
+  const formattedDate = formattedDateTime.substring(0, 10)
+  const formattedTime = formattedDateTime.substring(11, 19)
+  const filename = `Favorites-[${formattedDate}-${formattedTime}].pdf`
+  doc.save(filename)
 }
 
 const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
@@ -78,17 +83,23 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
         <div className="grow"></div>
         <FavoritesSheet>
           {" "}
-          {Object.keys(favorites).length > 0 && (
+          {Object.keys(favorites).length > 0 ? (
             <div className="flex justify-center">
               <Button
                 variant={"moon"}
                 onClick={handleDownloadPDF}
-                className="md:text-md gap-1 p-2 text-sm lg:text-lg"
+                className="md:text-md gap-2 p-2 text-sm lg:text-lg"
               >
                 {" "}
-                <Download />
-                <div className="line-clamp-1">Download Favorites (PDF)</div>
+                <div className="line-clamp-1 items-center">
+                  Download favorites.pdf
+                </div>
+                <Download className="w-5" />
               </Button>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              Get started by favoriting something!
             </div>
           )}
           <div className="flex h-[94%] flex-col overflow-auto rounded-md">
