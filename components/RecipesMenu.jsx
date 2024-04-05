@@ -170,6 +170,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [isLoadingPdf, setIsLoadingPdf] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleDownloadPDF = async () => {
     try {
@@ -187,6 +188,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
     try {
       const previewUrl = await previewFavoritesPDF(favorites)
       setPdfPreviewUrl(previewUrl)
+      setIsOpen(false)
     } catch (e) {
       console.error(e)
     } finally {
@@ -205,15 +207,17 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
           <Badge variant={"outline"} className="p-2">
             <b>{searchResults.count}</b> results
           </Badge>
+          {isLoadingPdfPreview && (
+            <div className="absolute left-7">
+              <Loader2 className="w-10 animate-spin" />
+            </div>
+          )}
         </>
       )}
-      <div className="grow"></div>
-
       {pdfPreviewUrl && (
         <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
       )}
-
-      <FavoritesSheet>
+      <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen}>
         {Object.keys(favorites).length > 0 ? (
           <div className="flex justify-center gap-2">
             <Button
@@ -221,13 +225,8 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
               onClick={handlePreviewPDF}
               className="md:text-md gap-2 p-2 text-sm lg:text-lg"
             >
-              {isLoadingPdfPreview ? (
-                <>
-                  Preview favorites.pdf <Loader2 className="w-5 animate-spin" />
-                </>
-              ) : (
-                "Preview favorites.pdf"
-              )}
+              Preview favorites.pdf{" "}
+              {isLoadingPdfPreview && <Loader2 className="w-10 animate-spin" />}
             </Button>
             <Button
               variant={"moon"}

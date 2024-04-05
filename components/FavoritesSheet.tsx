@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode } from "react"
+import { ReactNode, useState } from "react"
 import { Label } from "@radix-ui/react-label"
 import { Bookmark, BookmarkPlus, StarIcon } from "lucide-react"
 
@@ -17,12 +17,18 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 
-const FavoritesSheet = ({ children }: { children: ReactNode }) => {
+const FavoritesSheet = ({
+  children,
+  setOpen,
+  isOpen,
+}: {
+  children: ReactNode
+}) => {
   return (
     <div className="flex">
-      <Sheet key={"right"}>
+      <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button className="flex gap-1">
+          <Button className="flex gap-1" onClick={setOpen}>
             <Bookmark className="h-4 w-4" /> Favorites
           </Button>
         </SheetTrigger>
@@ -37,11 +43,11 @@ const FavoritesSheet = ({ children }: { children: ReactNode }) => {
 
           {children}
 
-          <SheetFooter>
-            {/* <SheetClose asChild>
+          {/* <SheetFooter>
+             <SheetClose asChild>
               <Button type="submit">Save changes</Button>
-            </SheetClose> */}
-          </SheetFooter>
+            </SheetClose>
+          </SheetFooter> */}
         </SheetContent>
       </Sheet>
     </div>

@@ -69,46 +69,51 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
     <div>
       <label htmlFor="file"></label>{" "}
       <input onChange={onFileChange} type="file" hidden />
-      {!file ||
-        (file !== null && (
-          <Button
-            variant={"moon"}
-            onClick={() => {
-              if (file) {
-                setFile(null)
-              }
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="feather feather-x"
-            >
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-              <line x1="6" y1="18" x2="18" y2="6"></line>
-            </svg>
-            Close PDF
-          </Button>
-        ))}
       <div
         ref={setContainerRef}
-        className="absolute inset-x-0 z-40 mx-auto w-[92vw] overflow-auto rounded-md"
+        className="absolute inset-x-0 top-28 z-40 mx-auto w-[92vw] overflow-auto rounded-md"
       >
+        {!file ||
+          (file !== null && (
+            <Button
+              variant={"moon"}
+              className="absolute right-0 z-50 rounded-md "
+              onClick={() => {
+                if (file) {
+                  setFile(null)
+                }
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="feather feather-x"
+              >
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <line x1="6" y1="18" x2="18" y2="6"></line>
+              </svg>
+            </Button>
+          ))}
         <Document
           file={file}
           noData={""}
           onLoadSuccess={onDocumentLoadSuccess}
           options={options}
+          className={"rounded-md "}
         >
           {Array.from(new Array(numPages), (el, index) => (
-            <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+            <Page
+              canvasBackground="white"
+              key={`page_${index + 1}`}
+              pageNumber={index + 1}
+            />
           ))}
         </Document>
       </div>
