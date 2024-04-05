@@ -196,6 +196,14 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
       const previewUrl = await previewFavoritesPDF(favorites)
       setPdfPreviewUrl(previewUrl)
       setIsOpen(false)
+      toast("Your preview is ready!", {
+        icon: "🎉",
+        position: "top-center",
+        duration: 1500,
+        style: {
+          background: "#2b2b2b",
+        },
+      })
     } catch (e) {
       console.error(e)
     } finally {
