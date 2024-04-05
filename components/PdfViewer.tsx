@@ -66,14 +66,15 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   }
 
   return (
-    <div className="border-pink-900 border-2">
+    <div>
       <label htmlFor="file"></label>{" "}
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className={`absolute inset-x-0 top-28 z-40 mx-auto w-[90vw] overflow-auto rounded-md shadow-md ${
+        className={`absolute inset-x-0 top-28 z-40 mx-auto overflow-auto rounded-md shadow-md ${
           file ? "border-2 border-indigo-400/50 shadow-indigo-700" : ""
         }`}
+        style={{ maxWidth: `${maxWidth}px` }}
       >
         {!file ||
           (file !== null && (
@@ -108,7 +109,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
           noData={""}
           onLoadSuccess={onDocumentLoadSuccess}
           options={options}
-          className={"rounded-md "}
+          className={"rounded-md"}
         >
           {Array.from(new Array(numPages), (el, index) => (
             <Page

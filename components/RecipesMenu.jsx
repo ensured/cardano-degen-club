@@ -270,7 +270,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                   /> // Adjust width and height as needed
                 )}
                 <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                  <span className="rounded-md p-2 decoration-moon  hover:shadow-inner ">
+                  <span className="rounded-md p-2 decoration-moon hover:shadow-inner ">
                     {recipeName}
                   </span>
                   <button
