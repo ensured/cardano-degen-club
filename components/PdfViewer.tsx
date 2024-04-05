@@ -7,6 +7,7 @@ import { Document, Page, pdfjs } from "react-pdf"
 import "react-pdf/dist/esm/Page/AnnotationLayer.css"
 import "react-pdf/dist/esm/Page/TextLayer.css"
 import type { PDFDocumentProxy } from "pdfjs-dist"
+import { File } from "react-pdf/dist/cjs/shared/types"
 
 import { Button } from "./ui/button"
 
@@ -26,7 +27,7 @@ const maxWidth = 800
 
 type PDFFile = string | File | null
 
-export default function PDFViewer({ inputFile }) {
+export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   const [file, setFile] = useState<PDFFile>(inputFile)
   const [numPages, setNumPages] = useState<number>()
   const [containerRef, setContainerRef] = useState<HTMLElement | null>(null)
@@ -47,10 +48,14 @@ export default function PDFViewer({ inputFile }) {
   useResizeObserver(containerRef, resizeObserverOptions, onResize)
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    const { files } = event.target
+    try {
+      const { files } = event.target
 
-    if (files && files[0]) {
-      setFile(files[0] || null)
+      if (files && files[0]) {
+        setFile(files[0] || null)
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
