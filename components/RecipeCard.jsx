@@ -4,6 +4,7 @@ import { StarIcon } from "lucide-react"
 
 import { extractRecipeName } from "@/lib/utils"
 
+import { CardBody, CardContainer, CardItem } from "../components/ui/3d-card"
 import FullTitleToolTip from "./FullTitleToolTip"
 import { Card, CardTitle } from "./ui/card"
 
@@ -22,10 +23,13 @@ export const RecipeCard = ({
     key={recipe.recipe.shareAs}
     href={recipe.recipe.shareAs}
   >
-    <div className="relative">
+    <div
+      className="relative"
+      ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
+    >
       <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
-        <Card
-          className="xs:w-22 relative h-52 w-36 grow overflow-hidden sm:w-36 md:w-36"
+        {/* <Card
+          className="xs:w-22 h-52 w-36 grow overflow-hidden sm:w-36 md:w-36"
           ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
         >
           <div className="flex flex-col items-center justify-center">
@@ -38,34 +42,49 @@ export const RecipeCard = ({
               unoptimized
               priority
             />
-            {/* <div className="absolute inset-0 flex items-center justify-center"></div>{" "} */}
-            <div
-              className="text-center text-sm font-bold"
-              style={{
-                display: "-webkit-box",
-                WebkitBoxOrient: "vertical",
-                WebkitLineClamp: 3,
-                overflow: "hidden",
-              }}
+            <CardTitle className="xs:text-xs line-clamp-3 flex grow items-center justify-center overflow-hidden whitespace-normal text-center text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
+              {extractRecipeName(recipe.recipe.shareAs)}
+            </CardTitle>
+          </div>
+        </Card> */}
+        <CardContainer className="inter-var">
+          <CardBody className="group/card relative h-64 w-44 rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]  ">
+            <CardItem
+              translateZ="50"
+              className="text-xl font-bold text-neutral-600 dark:text-white"
             >
               {extractRecipeName(recipe.recipe.shareAs)}
-            </div>
-          </div>
-        </Card>
-      </FullTitleToolTip>
+            </CardItem>
 
-      <StarIcon
-        onMouseEnter={handleStarIconHover(index)}
-        onMouseLeave={handleStarIconHover(null)}
-        color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-        className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-200 hover:scale-125 hover:animate-pulse"
-        fill={
-          favorites[extractRecipeName(recipe.recipe.shareAs)]
-            ? "#FFA726"
-            : "none"
-        }
-        onClick={handleStarIconClick(index)}
-      />
+            <CardItem
+              translateZ="100"
+              className="relative mt-4 flex w-full justify-center "
+            >
+              <Image
+                src={recipe.recipe.images.SMALL.url}
+                alt="recipe thumbnail"
+                width={recipe.recipe.images.SMALL.width}
+                height={recipe.recipe.images.SMALL.height}
+                className="mt-0 h-auto w-36 rounded-md"
+                unoptimized
+                priority
+              />
+            </CardItem>
+          </CardBody>
+        </CardContainer>{" "}
+        <StarIcon
+          onMouseEnter={handleStarIconHover(index)}
+          onMouseLeave={handleStarIconHover(null)}
+          color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
+          className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-200 hover:scale-125 hover:animate-pulse"
+          fill={
+            favorites[extractRecipeName(recipe.recipe.shareAs)]
+              ? "#FFA726"
+              : "none"
+          }
+          onClick={handleStarIconClick(index)}
+        />
+      </FullTitleToolTip>
     </div>
   </Link>
 )

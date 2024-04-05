@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import toast from 'react-hot-toast';
-import { FolderCheck, Trash2Icon } from 'lucide-react';
-import { extractRecipeName } from '@/lib/utils';
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { FolderCheck, Trash2Icon } from "lucide-react"
+import toast from "react-hot-toast"
+
+import { extractRecipeName } from "@/lib/utils"
 
 const useRecipeSearch = () => {
   const router = useRouter()
@@ -30,7 +31,6 @@ const useRecipeSearch = () => {
   })
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
   const [scrollProgress, setScrollProgress] = useState(0)
-
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -226,7 +226,6 @@ const useRecipeSearch = () => {
     }
   }
 
-
   return {
     handleStarIconHover,
     loading,
@@ -242,8 +241,8 @@ const useRecipeSearch = () => {
     hoveredRecipeIndex,
     handleStarIconClick,
     removeFromFavorites,
-    scrollProgress
-  };
-};
+    scrollProgress,
+  }
+}
 
-export default useRecipeSearch;
+export default useRecipeSearch
