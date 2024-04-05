@@ -208,7 +208,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
             <b>{searchResults.count}</b> results
           </Badge>
           {isLoadingPdfPreview && (
-            <div className="absolute left-7">
+            <div className="absolute left-6">
               <Loader2 className="w-10 animate-spin" />
             </div>
           )}
@@ -223,10 +223,12 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
             <Button
               variant={"moon"}
               onClick={handlePreviewPDF}
-              className="md:text-md gap-2 p-2 text-sm lg:text-lg"
+              className="relative md:text-md gap-2 p-2 text-sm lg:text-lg"
             >
               Preview favorites.pdf{" "}
-              {isLoadingPdfPreview && <Loader2 className="w-10 animate-spin" />}
+              {isLoadingPdfPreview && (
+                <Loader2 className="absolute right-0 w-6 animate-spin" />
+              )}
             </Button>
             <Button
               variant={"moon"}
