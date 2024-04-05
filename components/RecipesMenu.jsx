@@ -70,9 +70,10 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   const handleDownloadPDF = () => {
     generateFavoritesPDF(favorites) // Call the PDF generation function
   }
+
   return (
     <div
-      className={`mx-14  flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20 `}
+      className={`mx-14 flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20 `}
     >
       <>
         {searchResults.count > 0 && (

@@ -182,3 +182,21 @@
 .electricity {
   animation: electricity 2s linear infinite;
 }
+
+.zoom-tooltip-enter {
+  transform: scale(0);
+}
+
+.zoom-tooltip-enter-active {
+  transform: scale(1);
+  transition: transform 200ms ease-in-out;
+}
+
+.zoom-tooltip-exit {
+  transform: scale(1);
+}
+
+.zoom-tooltip-exit-active {
+  transform: scale(0);
+  transition: transform 200ms ease-in-out;
+}

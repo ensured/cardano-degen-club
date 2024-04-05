@@ -31,6 +31,7 @@ const useRecipeSearch = () => {
   })
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
   const [scrollProgress, setScrollProgress] = useState(0)
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -131,6 +132,11 @@ const useRecipeSearch = () => {
         document.documentElement.scrollHeight - window.innerHeight
       const progress = (scrollTop / scrollHeight) * 100
       setScrollProgress(progress)
+
+      const totalCards = searchResults.hits.length;
+      const maxIndex = totalCards - 1;
+      const currentIndex = Math.min(Math.round((progress / 100) * maxIndex), maxIndex);
+      setCurrentCardIndex(currentIndex + 1);
     }
 
     window.addEventListener("scroll", onScroll)
@@ -138,7 +144,7 @@ const useRecipeSearch = () => {
     return () => {
       window.removeEventListener("scroll", onScroll)
     }
-  }, [])
+  }, [searchResults])
 
   useEffect(() => {
     // Intersection Observer for the last food item
@@ -242,6 +248,7 @@ const useRecipeSearch = () => {
     handleStarIconClick,
     removeFromFavorites,
     scrollProgress,
+    currentCardIndex
   }
 }
 

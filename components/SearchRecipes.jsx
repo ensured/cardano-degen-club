@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast"
 import { RecipeCard } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
 import RecipesMenu from "./RecipesMenu"
+import ScrollTooltip from "./ScrollToolTip"
 import useRecipeSearch from "./useRecipeSearch"
 
 const SearchRecipes = () => {
@@ -24,15 +25,20 @@ const SearchRecipes = () => {
     handleStarIconClick,
     removeFromFavorites,
     scrollProgress,
+    currentCardIndex,
   } = useRecipeSearch()
 
   return (
     <div className="relative flex flex-col pb-8 pt-4">
       <div
-        className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-[#00ff00]"
+        className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-sky-600"
         style={{ width: `${scrollProgress}%` }}
       ></div>
-
+      <ScrollTooltip
+        currentCardIndex={currentCardIndex}
+        totalCards={searchResults.hits.length}
+      />{" "}
+      {/* Include the ScrollTooltip component */}
       <RecipeSearchForm
         searchRecipes={searchRecipes}
         handleInputChange={handleInputChange}
@@ -40,21 +46,18 @@ const SearchRecipes = () => {
         input={input}
         loading={loading}
       />
-
       {/* results count + interactive favorites sheet*/}
       <RecipesMenu
         removeFromFavorites={removeFromFavorites}
         searchResults={searchResults}
         favorites={favorites}
       />
-
       {/* loading spinner in the center of the page */}
       {loading && (
         <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
           <Loader2Icon className="h-16 w-16 animate-spin" />
         </div>
       )}
-
       {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
         <div className="animate-fade-in flex flex-col gap-2 p-4">
@@ -85,7 +88,6 @@ const SearchRecipes = () => {
           </div>
         </div>
       )}
-
       <Toaster
         toastOptions={{
           className: "dark:bg-zinc-950 dark:text-slate-100",
