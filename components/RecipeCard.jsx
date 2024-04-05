@@ -48,12 +48,12 @@ export const RecipeCard = ({
           </div>
         </Card> */}
         <CardContainer className="inter-var">
-          <CardBody className="group/card relative h-64 w-44 rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
+          <CardBody className="group/card relative h-60 w-40 rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
             <div className="flex h-full flex-col justify-between">
               {/* Title */}
               <CardItem
                 translateZ="50"
-                className="line-clamp-3 text-xl font-bold text-neutral-600 dark:text-white"
+                className="text-md line-clamp-3 font-bold text-neutral-600 dark:text-white"
               >
                 {extractRecipeName(recipe.recipe.shareAs)}
               </CardItem>
