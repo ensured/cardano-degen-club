@@ -30,7 +30,7 @@ const FavoritesSheet = ({
     <div className="flex">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button className="flex gap-1" onClick={setOpen}>
+          <Button className="flex gap-1" onClick={() => setOpen(!isOpen)}>
             <Bookmark className="h-4 w-4" /> Favorites
           </Button>
         </SheetTrigger>
