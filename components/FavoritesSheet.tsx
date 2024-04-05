@@ -23,6 +23,8 @@ const FavoritesSheet = ({
   isOpen,
 }: {
   children: ReactNode
+  setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
+  isOpen: boolean
 }) => {
   return (
     <div className="flex">
