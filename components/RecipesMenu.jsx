@@ -176,6 +176,13 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
     try {
       setIsLoadingPdf(true)
       await downloadFavoritesPDF(favorites)
+      toast("Your download is ready!", {
+        icon: "🎉",
+        duration: 5000,
+        style: {
+          background: "#18181b",
+        },
+      })
     } catch (e) {
       console.error(e)
     } finally {
