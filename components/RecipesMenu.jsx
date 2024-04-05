@@ -223,10 +223,10 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
             >
               {isLoadingPdfPreview ? (
                 <>
-                  Preview favorites PDF <Loader2 className="w-5 animate-spin" />
+                  Preview favorites.pdf <Loader2 className="w-5 animate-spin" />
                 </>
               ) : (
-                "Preview favorites"
+                "Preview favorites.pdf"
               )}
             </Button>
             <Button
