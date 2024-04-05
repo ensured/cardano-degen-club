@@ -116,6 +116,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
               canvasBackground="white"
               key={`page_${index + 1}`}
               pageNumber={index + 1}
+              width={containerWidth}
             />
           ))}
         </Document>

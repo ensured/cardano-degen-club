@@ -238,7 +238,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
             <Button
               variant={"moon"}
               onClick={handlePreviewPDF}
-              className="relative md:text-md gap-2 p-2 text-sm lg:text-lg"
+              className="md:text-md relative gap-2 p-2 text-sm lg:text-lg"
             >
               Preview favorites.pdf{" "}
               {isLoadingPdfPreview && (
