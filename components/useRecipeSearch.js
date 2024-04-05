@@ -183,6 +183,11 @@ const useRecipeSearch = () => {
     router.replace(`?q=${newInput}`)
   }
 
+
+  const handleStarIconHover = (index) => () => {
+    setHoveredRecipeIndex(index) // Update hover state on enter/leave
+  }
+
   const removeFromFavorites = (recipeName) => {
     const newFavorites = { ...favorites }
     delete newFavorites[recipeName]
@@ -193,39 +198,34 @@ const useRecipeSearch = () => {
     })
   }
 
-  const handleStarIconHover = (index) => () => {
-    setHoveredRecipeIndex(index) // Update hover state on enter/leave
-  }
-
   const handleStarIconClick = (index) => (e) => {
     e.preventDefault()
 
-    const recipeName = extractRecipeName(
-      searchResults.hits[index].recipe.shareAs
-    )
-    const recipeLink = searchResults.hits[index].recipe.shareAs
+    const recipe = searchResults.hits[index].recipe
+    const recipeName = extractRecipeName(recipe.shareAs)
+    const recipeLink = recipe.shareAs
+    const recipeImage = recipe.image // Get the image URL from the recipe object
 
     // Check if recipe is already favorited
     const isFavorited = favorites[recipeName] !== undefined
 
     if (isFavorited) {
       // Remove from favorites
-      setFavorites((prevFavorites) => {
-        const newFavorites = { ...prevFavorites }
-        delete newFavorites[recipeName]
-        return newFavorites
-      })
-      localStorage.setItem("favorites", JSON.stringify(favorites))
+      const newFavorites = { ...favorites }
+      delete newFavorites[recipeName]
+      setFavorites(newFavorites)
+      localStorage.setItem("favorites", JSON.stringify(newFavorites))
       toast("Removed from favorites", {
         icon: <Trash2Icon color="#e74c3c" />,
       })
     } else {
       // Add to favorites
-      setFavorites((prevFavorites) => ({
-        ...prevFavorites,
-        [recipeName]: recipeLink,
-      }))
-      localStorage.setItem("favorites", JSON.stringify(favorites))
+      const newFavorites = {
+        ...favorites,
+        [recipeName]: { link: recipeLink, image: recipeImage }, // Store both link and image
+      }
+      setFavorites(newFavorites)
+      localStorage.setItem("favorites", JSON.stringify(newFavorites))
       toast("Added to favorites", {
         icon: <FolderCheck color="#22bb33" />,
       })

@@ -113,3 +113,15 @@ export async function getNextRecipe(nextUrl: string) {
   const recipes = await response.json()
   return recipes
 }
+
+export const downloadAndEmbedImage = async (url: string) => {
+  try {
+    const response = await fetch(url)
+    const imageBuffer = await response.arrayBuffer() // Use arrayBuffer instead of buffer
+    const imageBase64 = Buffer.from(imageBuffer).toString("base64") // Convert buffer to Base64
+    return `data:image/jpeg;base64,${imageBase64}` // Return the Base64 image data
+  } catch (error) {
+    console.error("Error downloading image:", error)
+    return null
+  }
+}
