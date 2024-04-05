@@ -1,11 +1,12 @@
 // - This is a Recipe Sheet + results
 
 import { btoa } from "buffer"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import jsPDF from "jspdf"
-import { Download, FileText, Trash2Icon } from "lucide-react"
+import { Download, FileText, Loader2, Trash2Icon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import FavoritesSheet from "./FavoritesSheet"
@@ -37,9 +38,9 @@ const generateFavoritesPDF = async (favorites) => {
         const imgData = await downloadAndEmbedImage(image)
         if (imgData) {
           // Add image at current yOffset
-          doc.addImage(imgData, 15, yOffset, 50, 50) // Adjust width and height as needed
+          doc.addImage(imgData, 20, yOffset, 32, 32) // Adjust width and height as needed
           // Increase yOffset for next content
-          yOffset += 60 // Adjust vertical spacing between image and title
+          yOffset += 5 // Adjust vertical spacing between image and title
         } else {
           console.error(`Failed to embed image for ${recipeName}`)
         }
@@ -89,8 +90,17 @@ const generateFavoritesPDF = async (favorites) => {
 }
 
 const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
-  const handleDownloadPDF = () => {
-    generateFavoritesPDF(favorites)
+  const [isLoadingPdf, setIsLoadingPdf] = useState(false)
+  const handleDownloadPDF = async () => {
+    try {
+      setIsLoadingPdf(true)
+
+      await generateFavoritesPDF(favorites)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLoadingPdf(false)
+    }
   }
 
   return (
@@ -112,7 +122,11 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
               <div className="line-clamp-1 items-center">
                 Download favorites.pdf
               </div>
-              <Download className="w-5" />
+              {isLoadingPdf ? (
+                <Loader2 className="w-5 animate-spin" />
+              ) : (
+                <Download className="w-5 " />
+              )}
             </Button>
           </div>
         ) : (
