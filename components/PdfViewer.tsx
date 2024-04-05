@@ -66,18 +66,20 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   }
 
   return (
-    <div>
+    <div className="border-pink-900 border-2">
       <label htmlFor="file"></label>{" "}
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className="absolute inset-x-0 top-28 z-40 mx-auto w-[92vw] overflow-auto rounded-md"
+        className={`absolute inset-x-0 top-28 z-40 mx-auto w-[90vw] overflow-auto rounded-md shadow-md ${
+          file ? "border-2 border-indigo-400/50 shadow-indigo-700" : ""
+        }`}
       >
         {!file ||
           (file !== null && (
             <Button
               variant={"moon"}
-              className="absolute right-0 z-50 rounded-md "
+              className="absolute right-0 z-50 h-8 w-8 rounded-md p-1 text-sm" // Adjust padding and font size here
               onClick={() => {
                 if (file) {
                   setFile(null)
