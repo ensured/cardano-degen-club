@@ -48,28 +48,32 @@ export const RecipeCard = ({
           </div>
         </Card> */}
         <CardContainer className="inter-var">
-          <CardBody className="group/card relative h-64 w-44 rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]  ">
-            <CardItem
-              translateZ="50"
-              className="text-xl font-bold text-neutral-600 dark:text-white"
-            >
-              {extractRecipeName(recipe.recipe.shareAs)}
-            </CardItem>
+          <CardBody className="group/card relative h-64 w-44 rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
+            <div className="flex h-full flex-col justify-between">
+              {/* Title */}
+              <CardItem
+                translateZ="50"
+                className="line-clamp-3 text-xl font-bold text-neutral-600 dark:text-white"
+              >
+                {extractRecipeName(recipe.recipe.shareAs)}
+              </CardItem>
 
-            <CardItem
-              translateZ="100"
-              className="relative mt-4 flex w-full justify-center "
-            >
-              <Image
-                src={recipe.recipe.images.SMALL.url}
-                alt="recipe thumbnail"
-                width={recipe.recipe.images.SMALL.width}
-                height={recipe.recipe.images.SMALL.height}
-                className="mt-0 h-auto w-36 rounded-md"
-                unoptimized
-                priority
-              />
-            </CardItem>
+              {/* Image */}
+              <CardItem
+                translateZ="100"
+                className="relative flex justify-center"
+              >
+                <Image
+                  src={recipe.recipe.images.SMALL.url}
+                  alt="recipe thumbnail"
+                  width={recipe.recipe.images.SMALL.width}
+                  height={recipe.recipe.images.SMALL.height}
+                  className="mt-0 h-auto w-36 rounded-md"
+                  unoptimized
+                  priority
+                />
+              </CardItem>
+            </div>
           </CardBody>
         </CardContainer>{" "}
         <StarIcon
