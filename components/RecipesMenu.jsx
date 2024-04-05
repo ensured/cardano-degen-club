@@ -1,20 +1,30 @@
 // - This is a Recipe Sheet + results
 
-import { btoa } from "buffer"
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { DialogDescription } from "@radix-ui/react-dialog"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import jsPDF from "jspdf"
-import { Download, FileText, Loader2, Trash2Icon } from "lucide-react"
+import { Download, Loader2, Trash2Icon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import FavoritesSheet from "./FavoritesSheet"
+import PDFViewer from "./PdfViewer"
 import { downloadAndEmbedImage } from "./actions"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Label,
+} from "./ui/dialog"
+import { Input } from "./ui/input"
 
-const generateFavoritesPDF = async (favorites) => {
+const downloadFavoritesPDF = async (favorites) => {
   if (!favorites || Object.keys(favorites).length === 0) {
     toast("No favorites found", {
       icon: "🙈",
@@ -24,7 +34,6 @@ const generateFavoritesPDF = async (favorites) => {
     })
     return
   }
-
   const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
   let yOffset = 10
   const lineHeight = 10 // Adjust line height as needed
@@ -88,14 +97,84 @@ const generateFavoritesPDF = async (favorites) => {
   const filename = `Favorites-[${formattedDate}-${formattedTime}].pdf`
   doc.save(filename)
 }
+const previewFavoritesPDF = async (favorites) => {
+  if (!favorites || Object.keys(favorites).length === 0) {
+    toast("No favorites found", {
+      icon: "🙈",
+      style: {
+        background: "#18181b",
+      },
+    })
+    return
+  }
+  const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
+  let yOffset = 10
+  const lineHeight = 10 // Adjust line height as needed
+  const pageHeight = doc.internal.pageSize.height
+
+  for (const [recipeName, { link, image }] of Object.entries(favorites)) {
+    // Embed image if available
+    if (image) {
+      try {
+        const imgData = await downloadAndEmbedImage(image)
+        if (imgData) {
+          // Add image at current yOffset
+          doc.addImage(imgData, 20, yOffset, 32, 32) // Adjust width and height as needed
+          // Increase yOffset for next content
+          yOffset += 5 // Adjust vertical spacing between image and title
+        } else {
+          console.error(`Failed to embed image for ${recipeName}`)
+        }
+      } catch (error) {
+        console.error(`Error embedding image for ${recipeName}:`, error)
+      }
+    }
+
+    // Style for recipe name
+    doc.setTextColor(0, 0, 0)
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(13)
+    const truncatedName = recipeName.substring(0, 40)
+    const textLines = doc.splitTextToSize(truncatedName, 100)
+    doc.text(textLines, 60, yOffset)
+
+    // Calculate number of lines for link
+    const linkLines = doc.splitTextToSize(link, 160)
+
+    // Style for link
+    doc.setTextColor(0, 0, 255)
+    doc.setFont("helvetica", "normal")
+    doc.setFontSize(10)
+    const linkYOffset = yOffset + textLines.length * lineHeight // Use same yOffset as recipe name
+
+    const maxLinkLength = 60
+    const truncatedLink =
+      link.length > maxLinkLength
+        ? link.substring(0, maxLinkLength) + "..."
+        : link
+    doc.textWithLink(truncatedLink, 60, linkYOffset + lineHeight, { url: link })
+
+    yOffset += (textLines.length + linkLines.length + 1) * lineHeight
+
+    if (yOffset > pageHeight - 20) {
+      doc.addPage()
+      yOffset = 10
+    }
+  }
+
+  const pdfBlob = doc.output("blob")
+  return URL.createObjectURL(pdfBlob)
+}
 
 const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
+  const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [isLoadingPdf, setIsLoadingPdf] = useState(false)
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
+
   const handleDownloadPDF = async () => {
     try {
       setIsLoadingPdf(true)
-
-      await generateFavoritesPDF(favorites)
+      await downloadFavoritesPDF(favorites)
     } catch (e) {
       console.error(e)
     } finally {
@@ -103,17 +182,53 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
     }
   }
 
+  const handlePreviewPDF = async () => {
+    setIsLoadingPdfPreview(true)
+    try {
+      const previewUrl = await previewFavoritesPDF(favorites)
+      setPdfPreviewUrl(previewUrl)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLoadingPdfPreview(false)
+    }
+  }
+
+  const handleClosePreview = () => {
+    setPdfPreviewUrl(null)
+  }
+
   return (
     <div className="mx-14 flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20">
       {searchResults.count > 0 && (
-        <Badge variant={"outline"} className="p-2">
-          <b>{searchResults.count}</b> results
-        </Badge>
+        <>
+          <Badge variant={"outline"} className="p-2">
+            <b>{searchResults.count}</b> results
+          </Badge>
+        </>
       )}
       <div className="grow"></div>
+
+      {pdfPreviewUrl && (
+        <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
+      )}
+
       <FavoritesSheet>
         {Object.keys(favorites).length > 0 ? (
-          <div className="flex justify-center">
+          <div className="flex justify-center gap-2">
+            <Button
+              variant={"moon"}
+              onClick={handlePreviewPDF}
+              className="md:text-md gap-2 p-2 text-sm lg:text-lg"
+            >
+              {isLoadingPdfPreview ? (
+                <>
+                  Preview favorites PDF <Loader2 className="w-5 animate-spin" />
+                </>
+              ) : (
+                "Preview favorites"
+              )}
+            </Button>
             <Button
               variant={"moon"}
               onClick={handleDownloadPDF}
