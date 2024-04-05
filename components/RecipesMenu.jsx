@@ -67,7 +67,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   }
   return (
     <div
-      className={`container flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100 `}
+      className={`mx-14  flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20 `}
     >
       <>
         {searchResults.count > 0 && (

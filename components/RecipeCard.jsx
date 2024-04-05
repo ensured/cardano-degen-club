@@ -53,7 +53,7 @@ export const RecipeCard = ({
               {/* Title */}
               <CardItem
                 translateZ="50"
-                className="text-md line-clamp-3 font-bold text-neutral-600 dark:text-white"
+                className="line-clamp-3 font-bold leading-6 tracking-tight text-neutral-600 dark:text-white sm:text-lg md:text-xl"
               >
                 {extractRecipeName(recipe.recipe.shareAs)}
               </CardItem>
