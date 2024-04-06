@@ -43,11 +43,16 @@ const downloadFavoritesPDF = async (favorites) => {
     // Embed image if available
     if (image) {
       try {
-        console.log(image)
-        const imgData = await downloadAndEmbedImage(image)
-        if (imgData) {
+        // const imgData = await downloadAndEmbedImage(image)
+        const imgData = await fetch("/api/embed/image?imageUrl=" + image)
+        const img = imgData.url.replace(
+          "http://localhost:3000/api/embed/image?imageUrl=",
+          ""
+        )
+
+        if (img) {
           // Add image at current yOffset
-          doc.addImage(imgData, 20, yOffset, 32, 32) // Adjust width and height as needed
+          doc.addImage(img, 20, yOffset, 32, 32) // Adjust width and height as needed
           // Increase yOffset for next content
           yOffset += 5 // Adjust vertical spacing between image and title
         } else {
@@ -282,6 +287,8 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                     height={40}
                     alt={recipeName}
                     className="rounded-md p-1"
+                    unoptimized
+                    priority
                   /> // Adjust width and height as needed
                 )}
                 <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
