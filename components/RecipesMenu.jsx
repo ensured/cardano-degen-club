@@ -43,16 +43,11 @@ const downloadFavoritesPDF = async (favorites) => {
     // Embed image if available
     if (image) {
       try {
-        // const imgData = await downloadAndEmbedImage(image)
-        const imgData = await fetch("/api/embed/image?imageUrl=" + image)
-        const img = imgData.url.replace(
-          "http://localhost:3000/api/embed/image?imageUrl=",
-          ""
-        )
-
-        if (img) {
+        console.log(image)
+        const imgData = await downloadAndEmbedImage(image)
+        if (imgData) {
           // Add image at current yOffset
-          doc.addImage(img, 20, yOffset, 32, 32) // Adjust width and height as needed
+          doc.addImage(imgData, 20, yOffset, 32, 32) // Adjust width and height as needed
           // Increase yOffset for next content
           yOffset += 5 // Adjust vertical spacing between image and title
         } else {
