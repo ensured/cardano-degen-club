@@ -8,10 +8,16 @@ const ScrollTooltip = ({ currentCardIndex, totalCards }) => {
   const tooltipRef = useRef(null)
 
   useEffect(() => {
-    setShowTooltip(true) // Show tooltip when totalCards changes
+    const MIN_VISIBILITY_THRESHOLD = 100
+    if (window.scrollY > MIN_VISIBILITY_THRESHOLD) {
+      setShowTooltip(true)
+    } else {
+      setShowTooltip(false)
+    }
     setTrigger(true) // Trigger CSS transition
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 0
+      console.log(window.scrollY)
+      const isScrolled = window.scrollY > MIN_VISIBILITY_THRESHOLD
       setShowTooltip(isScrolled)
     }
 
