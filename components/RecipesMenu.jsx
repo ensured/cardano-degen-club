@@ -232,6 +232,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
       {pdfPreviewUrl && (
         <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
       )}
+      <div className="grow-0"></div>
       <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen}>
         {Object.keys(favorites).length > 0 ? (
           <div className="flex justify-center gap-2">
