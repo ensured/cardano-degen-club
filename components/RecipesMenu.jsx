@@ -207,7 +207,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   }
 
   return (
-    <div className="mx-14 flex h-12 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20">
+    <div className="mx-6 flex h-12 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20">
       {searchResults.count > 0 && (
         <>
           <Badge variant={"outline"} className="p-2">

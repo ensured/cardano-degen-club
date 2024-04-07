@@ -1,5 +1,5 @@
 const { fontFamily } = require("tailwindcss/defaultTheme")
-
+const defaultTheme = require("tailwindcss/defaultTheme")
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -15,7 +15,8 @@ module.exports = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
-        xs: "320px",
+        xs: "325px",
+        ...defaultTheme.screens,
       },
     },
     extend: {
