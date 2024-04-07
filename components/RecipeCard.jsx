@@ -66,11 +66,7 @@ export const RecipeCard = ({
               ? "#FFA726"
               : "none"
           }
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            handleStarIconClick(index)
-          }}
+          onClick={handleStarIconClick(index)}
           width={34}
           height={34}
         />
