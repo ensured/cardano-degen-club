@@ -32,6 +32,7 @@ const useRecipeSearch = () => {
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
 
   const searchRecipes = useCallback(
     async (e) => {
@@ -110,6 +111,21 @@ const useRecipeSearch = () => {
       }
     }
   }, [searchResults])
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent)
+      setIsMobile(isMobileDevice)
+    }
+
+    checkIsMobile()
+
+    // Add resize event listener to check for changes in device type
+    window.addEventListener("resize", checkIsMobile)
+
+    // Cleanup the event listener on component unmount
+    return () => window.removeEventListener("resize", checkIsMobile)
+  }, [])
 
   useEffect(() => {
     // Perform initial search only if q searchParam exists and input is not empty
@@ -245,6 +261,7 @@ const useRecipeSearch = () => {
     removeFromFavorites,
     scrollProgress,
     currentCardIndex,
+    isMobile,
   }
 }
 

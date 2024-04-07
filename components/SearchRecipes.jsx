@@ -26,6 +26,7 @@ const SearchRecipes = () => {
     removeFromFavorites,
     scrollProgress,
     currentCardIndex,
+    isMobile,
   } = useRecipeSearch()
 
   return (
@@ -73,6 +74,7 @@ const SearchRecipes = () => {
                 hoveredRecipeIndex={hoveredRecipeIndex}
                 searchResults={searchResults}
                 handleStarIconHover={handleStarIconHover}
+                isMobile={isMobile}
               />
             ))}
           </div>
