@@ -109,7 +109,7 @@ const previewFavoritesPDF = async (favorites) => {
         const imgData = await downloadAndEmbedImage(image)
         if (imgData) {
           // Add image at current yOffset
-          doc.addImage(imgData, 20, yOffset, 32, 32) // Adjust width and height as needed
+          doc.addImage(imgData, 2, yOffset, 32, 32) // Adjust width and height as needed
           // Increase yOffset for next content
           yOffset += 5 // Adjust vertical spacing between image and title
         } else {
@@ -123,10 +123,10 @@ const previewFavoritesPDF = async (favorites) => {
     // Style for recipe name
     doc.setTextColor(0, 0, 0)
     doc.setFont("helvetica", "bold")
-    doc.setFontSize(13)
-    const truncatedName = recipeName.substring(0, 40)
-    const textLines = doc.splitTextToSize(truncatedName, 100)
-    doc.text(textLines, 60, yOffset)
+    doc.setFontSize(16)
+    const textLines = doc.splitTextToSize(recipeName, 100)
+    doc.text(textLines, 40, yOffset)
+    console.log(yOffset)
 
     // Calculate number of lines for link
     const linkLines = doc.splitTextToSize(link, 160)
@@ -135,14 +135,14 @@ const previewFavoritesPDF = async (favorites) => {
     doc.setTextColor(0, 0, 255)
     doc.setFont("helvetica", "normal")
     doc.setFontSize(10)
-    const linkYOffset = yOffset + textLines.length * lineHeight // Use same yOffset as recipe name
+    const linkYOffset = yOffset + textLines.length * lineHeight - 5 // Use same yOffset as recipe name
 
     const maxLinkLength = 60
     const truncatedLink =
       link.length > maxLinkLength
         ? link.substring(0, maxLinkLength) + "..."
         : link
-    doc.textWithLink(truncatedLink, 60, linkYOffset + lineHeight, { url: link })
+    doc.textWithLink(truncatedLink, 40, linkYOffset + lineHeight, { url: link })
 
     yOffset += (textLines.length + linkLines.length + 1) * lineHeight
 
