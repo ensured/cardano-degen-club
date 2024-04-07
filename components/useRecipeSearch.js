@@ -202,6 +202,7 @@ const useRecipeSearch = () => {
 
   const handleStarIconClick = (index) => (e) => {
     e.preventDefault()
+    e.stopPropagation()
 
     const recipe = searchResults.hits[index].recipe
     const recipeName = extractRecipeName(recipe.shareAs)
