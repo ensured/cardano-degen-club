@@ -67,6 +67,7 @@ export const RecipeCard = ({
               : "none"
           }
           onClick={(e) => {
+            e.preventDefault()
             e.stopPropagation()
             handleStarIconClick(index)
           }}
