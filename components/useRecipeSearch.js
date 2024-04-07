@@ -226,7 +226,6 @@ const useRecipeSearch = () => {
       setFavorites(newFavorites)
       localStorage.setItem("favorites", JSON.stringify(newFavorites))
     }
-    e.stopPropagation()
   }
 
   return {
