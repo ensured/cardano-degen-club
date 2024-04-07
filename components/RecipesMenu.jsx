@@ -6,7 +6,8 @@ import Link from "next/link"
 import { DialogDescription } from "@radix-ui/react-dialog"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import jsPDF from "jspdf"
-import { Download, Loader2, Trash2Icon } from "lucide-react"
+import { Download, File, Loader2, Trash2Icon } from "lucide-react"
+import { useTheme } from "next-themes"
 import toast from "react-hot-toast"
 
 import FavoritesSheet from "./FavoritesSheet"
@@ -191,7 +192,9 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   }
 
   const handlePreviewPDF = async () => {
+    const theme = useTheme()
     setIsLoadingPdfPreview(true)
+
     try {
       const previewUrl = await previewFavoritesPDF(favorites)
       setPdfPreviewUrl(previewUrl)
@@ -235,34 +238,40 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
       <div className="grow-0"></div>
       <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen}>
         {Object.keys(favorites).length > 0 ? (
-          <div className="flex justify-center gap-2">
+          <div className="flex flex-col justify-center gap-2 sm:flex-row ">
             <Button
               variant={"moon"}
               onClick={handlePreviewPDF}
-              className="md:text-md relative gap-2 p-2 text-sm lg:text-lg"
+              className="relative gap-2 p-2 "
+              size={"sm"}
             >
-              Preview favorites.pdf{" "}
-              {isLoadingPdfPreview && (
+              <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
+                Preview favorites.pdf{" "}
+              </div>
+              {isLoadingPdfPreview ? (
                 <Loader2 className="absolute right-0 w-6 animate-spin" />
+              ) : (
+                <File className="absolute left-2 w-5" />
               )}
             </Button>
             <Button
               variant={"moon"}
               onClick={handleDownloadPDF}
-              className="md:text-md gap-2 p-2 text-sm lg:text-lg"
+              className="relative gap-2 p-2 "
+              size={"sm"}
             >
-              <div className="line-clamp-1 items-center">
+              <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
                 Download favorites.pdf
               </div>
               {isLoadingPdf ? (
                 <Loader2 className="w-5 animate-spin" />
               ) : (
-                <Download className="w-5 " />
+                <Download className="absolute left-2 w-5" />
               )}
             </Button>
           </div>
         ) : (
-          <div className="flex justify-center">
+          <div className="flex justify-center ">
             Get started by favoriting something!
           </div>
         )}

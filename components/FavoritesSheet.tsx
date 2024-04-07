@@ -2,7 +2,8 @@
 
 import { ReactNode, useState } from "react"
 import { Label } from "@radix-ui/react-label"
-import { Bookmark, BookmarkPlus, StarIcon } from "lucide-react"
+import { Bookmark, BookmarkPlus, Star, StarIcon } from "lucide-react"
+import { useTheme } from "next-themes"
 
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -26,19 +27,28 @@ const FavoritesSheet = ({
   setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
   isOpen: boolean
 }) => {
+  const theme = useTheme()
   return (
     <div className="flex">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button className="flex gap-1" onClick={() => setOpen(!isOpen)}>
-            <Bookmark className="h-4 w-4" /> Favorites
+            <Star
+              className="h-5 w-5"
+              color={theme.theme === "light" ? "#FFD700" : "black"}
+            />
+            Favorites
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>
           <SheetHeader>
             <SheetTitle>
               <div className="flex select-none items-center justify-center gap-1 p-2">
-                Favorites <StarIcon size={20} color="#FFD700" />
+                Favorites{" "}
+                <StarIcon
+                  size={20}
+                  color={theme.theme === "light" ? "black" : "#FFD700"}
+                />
               </div>
             </SheetTitle>
           </SheetHeader>
@@ -55,5 +65,4 @@ const FavoritesSheet = ({
     </div>
   )
 }
-
 export default FavoritesSheet
