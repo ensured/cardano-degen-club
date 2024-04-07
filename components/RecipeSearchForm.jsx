@@ -13,7 +13,7 @@ const RecipeSearchForm = ({
   return (
     <form
       onSubmit={searchRecipes}
-      className="mx-14 flex items-center justify-center gap-2 md:mx-20"
+      className="mx-8 flex items-center justify-center gap-2 md:mx-20"
     >
       <Input
         placeholder="search a food"

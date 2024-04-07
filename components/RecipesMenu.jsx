@@ -207,7 +207,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   }
 
   return (
-    <div className="mx-14 flex h-14 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20">
+    <div className="mx-14 flex h-12 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20">
       {searchResults.count > 0 && (
         <>
           <Badge variant={"outline"} className="p-2">
@@ -226,20 +226,20 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
       <div className="grow-0"></div>
       <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen}>
         {Object.keys(favorites).length > 0 ? (
-          <div className="flex flex-col justify-center gap-2 sm:flex-row ">
+          <div className="flex flex-col justify-center gap-2 sm:flex-row">
             <Button
               variant={"moon"}
               onClick={handlePreviewPDF}
-              className="relative gap-2 p-2 "
+              className="relative flex gap-2 p-2 "
               size={"sm"}
             >
+              <File className="left-2 w-5 md:w-6" />
+
               <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
                 Preview favorites.pdf{" "}
               </div>
-              {isLoadingPdfPreview ? (
+              {isLoadingPdfPreview && (
                 <Loader2 className="absolute right-0 w-6 animate-spin" />
-              ) : (
-                <File className="absolute left-2 w-5" />
               )}
             </Button>
             <Button
@@ -248,13 +248,12 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
               className="relative gap-2 p-2 "
               size={"sm"}
             >
+              <Download className="left-2 w-5 md:w-6" />
               <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
                 Download favorites.pdf
               </div>
-              {isLoadingPdf ? (
-                <Loader2 className="w-5 animate-spin" />
-              ) : (
-                <Download className="absolute left-2 w-5" />
+              {isLoadingPdf && (
+                <Loader2 className="absolute right-0 w-6 animate-spin" />
               )}
             </Button>
           </div>
@@ -263,8 +262,8 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
             Get started by favoriting something!
           </div>
         )}
-        <div className="flex h-[94%] flex-col overflow-auto rounded-md">
-          <div className="my-2">
+        <div className="flex h-[90%] flex-col overflow-auto rounded-md">
+          <div className="pb-[10vh] pt-2">
             {Object.entries(favorites).map(([recipeName, { link, image }]) => (
               <Link
                 target="_blank"
@@ -285,7 +284,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                   />
                 )}
                 <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                  <span className="rounded-md p-2 decoration-moon hover:shadow-inner ">
+                  <span className="line-clamp-3 rounded-md decoration-moon hover:shadow-inner">
                     {recipeName}
                   </span>
                   <button
