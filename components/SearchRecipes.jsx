@@ -93,7 +93,7 @@ const SearchRecipes = () => {
       <Toaster
         toastOptions={{
           className: "dark:bg-zinc-950 dark:text-slate-100",
-          duration: 1500,
+          duration: 1000,
           position: "bottom-center",
           success: {
             style: {

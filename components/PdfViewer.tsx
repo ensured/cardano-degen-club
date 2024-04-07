@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useResizeObserver } from "@wojtekmaj/react-hooks"
 import { Document, Page, pdfjs } from "react-pdf"
 
+import "./PdfViewer.css"
 import "react-pdf/dist/esm/Page/AnnotationLayer.css"
 import "react-pdf/dist/esm/Page/TextLayer.css"
 import type { PDFDocumentProxy } from "pdfjs-dist"
@@ -74,7 +75,6 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
         className={`absolute inset-x-0 top-28 z-40 mx-auto overflow-auto rounded-md shadow-md ${
           file ? "border-2 border-indigo-400/50 shadow-indigo-700" : ""
         }`}
-        style={{ maxWidth: `${maxWidth}px` }}
       >
         {!file ||
           (file !== null && (
@@ -115,7 +115,6 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
             <Page
               key={`page_${index + 1}`}
               pageNumber={index + 1}
-              scale={1.2}
               width={containerWidth}
             />
           ))}
