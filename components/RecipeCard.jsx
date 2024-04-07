@@ -59,16 +59,15 @@ export const RecipeCard = ({
           onMouseEnter={handleStarIconHover(index)}
           onMouseLeave={handleStarIconHover(null)}
           color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-          // eslint-disable-next-line tailwindcss/enforces-negative-arbitrary-values
-          className="absolute bottom-0 right-0 -m-[0.269rem] cursor-pointer rounded-md p-2 transition-all duration-200 hover:scale-125 hover:animate-pulse"
+          className="absolute bottom-0 right-0 m-[-0.269rem] cursor-pointer rounded-md p-2 transition-all duration-200 hover:scale-125 hover:animate-pulse"
           fill={
             favorites[extractRecipeName(recipe.recipe.shareAs)]
               ? "#FFA726"
               : "none"
           }
           onClick={handleStarIconClick(index)}
-          width={34}
-          height={34}
+          width={36}
+          height={36}
         />
       </FullTitleToolTip>
     </div>
