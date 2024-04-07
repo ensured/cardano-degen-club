@@ -28,9 +28,9 @@ export const RecipeCard = ({
     >
       <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
         <CardContainer className="inter-var">
-          <CardBody className="rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
+          <CardBody className="rounded-xl border border-black/[0.1] bg-gray-50 p-2 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
             {/* Title */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center justify-end">
               <CardItem
                 translateZ="50"
                 className="flex h-16 items-center justify-center text-sm font-bold tracking-tight text-neutral-600 dark:text-white md:h-20 md:text-base"
@@ -41,7 +41,7 @@ export const RecipeCard = ({
               </CardItem>
 
               {/* Image */}
-              <CardItem translateZ="100" className="flex justify-center">
+              <CardItem translateZ="100" className="flex w-28 justify-center">
                 <Image
                   src={recipe.recipe.images.SMALL.url}
                   alt="recipe thumbnail"
@@ -59,13 +59,16 @@ export const RecipeCard = ({
           onMouseEnter={handleStarIconHover(index)}
           onMouseLeave={handleStarIconHover(null)}
           color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-          className="absolute bottom-0 right-0 h-8 w-8 cursor-pointer rounded-md p-2 transition-all duration-200 hover:scale-125 hover:animate-pulse"
+          // eslint-disable-next-line tailwindcss/enforces-negative-arbitrary-values
+          className="absolute bottom-0 right-0 -m-[0.269rem] cursor-pointer rounded-md p-2 transition-all duration-200 hover:scale-125 hover:animate-pulse"
           fill={
             favorites[extractRecipeName(recipe.recipe.shareAs)]
               ? "#FFA726"
               : "none"
           }
           onClick={handleStarIconClick(index)}
+          width={34}
+          height={34}
         />
       </FullTitleToolTip>
     </div>
