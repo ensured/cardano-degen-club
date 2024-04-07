@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { DialogDescription } from "@radix-ui/react-dialog"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import jsPDF from "jspdf"
 import { Download, File, Loader2, Trash2Icon } from "lucide-react"
@@ -14,15 +13,6 @@ import PDFViewer from "./PdfViewer"
 import { downloadAndEmbedImage } from "./actions"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Label,
-} from "./ui/dialog"
-import { Input } from "./ui/input"
 
 const downloadFavoritesPDF = async (favorites) => {
   if (!favorites || Object.keys(favorites).length === 0) {
@@ -280,19 +270,19 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                 target="_blank"
                 href={link}
                 key={recipeName}
-                className="flex items-center justify-between gap-2 border-t px-1 py-0.5 transition duration-300 ease-in-out hover:underline"
+                className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-900/70 hover:underline"
                 style={{ textDecoration: "none" }}
               >
                 {image && (
                   <Image
                     src={image}
-                    width={40}
-                    height={40}
+                    width={42}
+                    height={42}
                     alt={recipeName}
-                    className="rounded-md p-1"
+                    className="rounded-full"
                     unoptimized
                     priority
-                  /> // Adjust width and height as needed
+                  />
                 )}
                 <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
                   <span className="rounded-md p-2 decoration-moon hover:shadow-inner ">
