@@ -6,7 +6,6 @@ import { extractRecipeName } from "@/lib/utils"
 
 import { CardBody, CardContainer, CardItem } from "../components/ui/3d-card"
 import FullTitleToolTip from "./FullTitleToolTip"
-import { Card, CardTitle } from "./ui/card"
 
 export const RecipeCard = ({
   recipe,
@@ -28,47 +27,27 @@ export const RecipeCard = ({
       ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
     >
       <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
-        {/* <Card
-          className="xs:w-22 h-52 w-36 grow overflow-hidden sm:w-36 md:w-36"
-          ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
-        >
-          <div className="flex flex-col items-center justify-center">
-            <Image
-              src={recipe.recipe.images.SMALL.url}
-              alt="recipe thumbnail"
-              width={recipe.recipe.images.SMALL.width}
-              height={recipe.recipe.images.SMALL.height}
-              className="mt-0 h-auto w-36 rounded-t-md"
-              unoptimized
-              priority
-            />
-            <CardTitle className="xs:text-xs line-clamp-3 flex grow items-center justify-center overflow-hidden whitespace-normal text-center text-sm transition sm:line-clamp-3 md:line-clamp-2 md:text-sm lg:text-sm">
-              {extractRecipeName(recipe.recipe.shareAs)}
-            </CardTitle>
-          </div>
-        </Card> */}
         <CardContainer className="inter-var">
-          <CardBody className="group/card relative h-60 w-40 rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
-            <div className="flex h-full flex-col justify-between">
-              {/* Title */}
+          <CardBody className="rounded-xl border border-black/[0.1] bg-gray-50 p-6 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
+            {/* Title */}
+            <div className="flex flex-col items-center">
               <CardItem
                 translateZ="50"
-                className="line-clamp-3 font-bold leading-6 tracking-tight text-neutral-600 dark:text-white sm:text-lg md:text-xl"
+                className="flex h-16 items-center justify-center text-sm font-bold tracking-tight text-neutral-600 dark:text-white md:h-20 md:text-base"
               >
-                {extractRecipeName(recipe.recipe.shareAs)}
+                <div className="line-clamp-3">
+                  {extractRecipeName(recipe.recipe.shareAs)}
+                </div>
               </CardItem>
 
               {/* Image */}
-              <CardItem
-                translateZ="100"
-                className="relative flex justify-center"
-              >
+              <CardItem translateZ="100" className="flex justify-center">
                 <Image
                   src={recipe.recipe.images.SMALL.url}
                   alt="recipe thumbnail"
                   width={recipe.recipe.images.SMALL.width}
                   height={recipe.recipe.images.SMALL.height}
-                  className="mt-0 h-auto w-36 rounded-md"
+                  className="rounded-md "
                   unoptimized
                   priority
                 />
