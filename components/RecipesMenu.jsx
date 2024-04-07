@@ -7,7 +7,6 @@ import { DialogDescription } from "@radix-ui/react-dialog"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import jsPDF from "jspdf"
 import { Download, File, Loader2, Trash2Icon } from "lucide-react"
-import { useTheme } from "next-themes"
 import toast from "react-hot-toast"
 
 import FavoritesSheet from "./FavoritesSheet"
@@ -192,7 +191,6 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
   }
 
   const handlePreviewPDF = async () => {
-    const theme = useTheme()
     setIsLoadingPdfPreview(true)
 
     try {
