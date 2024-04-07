@@ -217,9 +217,6 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeName]
       setFavorites(newFavorites)
       localStorage.setItem("favorites", JSON.stringify(newFavorites))
-      toast("Removed from favorites", {
-        icon: <Trash2Icon color="#e74c3c" />,
-      })
     } else {
       // Add to favorites
       const newFavorites = {
@@ -228,9 +225,6 @@ const useRecipeSearch = () => {
       }
       setFavorites(newFavorites)
       localStorage.setItem("favorites", JSON.stringify(newFavorites))
-      toast("Added to favorites", {
-        icon: <FolderCheck color="#22bb33" />,
-      })
     }
     e.stopPropagation()
   }
