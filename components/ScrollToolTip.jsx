@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react"
-import { ArrowUp } from "lucide-react"
 import { CSSTransition } from "react-transition-group"
 
 const ScrollTooltip = ({ currentCardIndex, totalCards }) => {
@@ -16,7 +15,6 @@ const ScrollTooltip = ({ currentCardIndex, totalCards }) => {
     }
     setTrigger(true) // Trigger CSS transition
     const handleScroll = () => {
-      console.log(window.scrollY)
       const isScrolled = window.scrollY > MIN_VISIBILITY_THRESHOLD
       setShowTooltip(isScrolled)
     }
