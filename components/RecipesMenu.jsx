@@ -28,18 +28,38 @@ const downloadFavoritesPDF = async (favorites) => {
   let yOffset = 10
   const lineHeight = 10 // Adjust line height as needed
   const pageHeight = doc.internal.pageSize.height
+  const imageWidth = 32 // Adjust width of the image
+  const imageHeight = 32 // Adjust height of the image
+  const borderPadding = 2 // Adjust padding for the border
+  const borderWidth = 0.5 // Adjust width of the border
 
   for (const [recipeName, { link, image }] of Object.entries(favorites)) {
+    // Draw border
+    doc.setLineWidth(borderWidth)
+    doc.roundedRect(
+      borderPadding, // x-coordinate of the top-left corner
+      yOffset, // y-coordinate of the top-left corner
+      doc.internal.pageSize.width - 2 * borderPadding, // width of the rectangle
+      imageHeight + 2 * borderPadding, // height of the rectangle
+      3, // radius of the rounded corners (adjust as needed)
+      3, // radius of the rounded corners (adjust as needed)
+      "S" // draw "stroke" (border)
+    )
+
     // Embed image if available
     if (image) {
       try {
-        console.log(image)
         const imgData = await downloadAndEmbedImage(image)
         if (imgData) {
           // Add image at current yOffset
-          doc.addImage(imgData, 2, yOffset, 32, 32) // Adjust width and height as needed
-          // Increase yOffset for next content
-          yOffset += 5 // Adjust vertical spacing between image and title
+          doc.addImage(
+            imgData,
+            "JPEG",
+            borderPadding + borderWidth + 2,
+            yOffset + borderPadding,
+            imageWidth,
+            imageHeight
+          ) // Adjust width and height as needed, considering the border
         } else {
           console.error(`Failed to embed image for ${recipeName}`)
         }
@@ -54,25 +74,27 @@ const downloadFavoritesPDF = async (favorites) => {
     doc.setFontSize(16)
     const truncatedName = recipeName.substring(0, 40)
     const textLines = doc.splitTextToSize(truncatedName, 100)
-    doc.text(textLines, 40, yOffset)
-
-    // Calculate number of lines for link
-    const linkLines = doc.splitTextToSize(link, 160)
+    doc.text(textLines, borderPadding + imageWidth + 10, yOffset + lineHeight)
 
     // Style for link
     doc.setTextColor(0, 0, 255)
     doc.setFont("helvetica", "normal")
     doc.setFontSize(12)
-    const linkYOffset = yOffset + textLines.length * lineHeight - 5 // Use same yOffset as recipe name
 
     const maxLinkLength = 60
     const truncatedLink =
       link.length > maxLinkLength
         ? link.substring(0, maxLinkLength) + "..."
         : link
-    doc.textWithLink(truncatedLink, 40, linkYOffset + lineHeight, { url: link })
+    const linkTextWidth =
+      (doc.getStringUnitWidth(truncatedLink) * doc.internal.getFontSize()) /
+      doc.internal.scaleFactor // Calculate width of link text
+    const linkXOffset = (doc.internal.pageSize.width - linkTextWidth) / 2 // Center the link horizontally within the border
+    doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
+      url: link,
+    })
 
-    yOffset += (textLines.length + linkLines.length + 1) * lineHeight
+    yOffset += imageHeight + 2 * borderPadding + lineHeight + borderPadding // Adjust yOffset to move to the next content with border and padding
 
     if (yOffset > pageHeight - 20) {
       doc.addPage()
@@ -87,6 +109,7 @@ const downloadFavoritesPDF = async (favorites) => {
   const filename = `Favorites-[${formattedDate}-${formattedTime}].pdf`
   doc.save(filename)
 }
+
 const previewFavoritesPDF = async (favorites) => {
   if (!favorites || Object.keys(favorites).length === 0) {
     toast("No favorites found", {
@@ -101,17 +124,38 @@ const previewFavoritesPDF = async (favorites) => {
   let yOffset = 10
   const lineHeight = 10 // Adjust line height as needed
   const pageHeight = doc.internal.pageSize.height
+  const imageWidth = 32 // Adjust width of the image
+  const imageHeight = 32 // Adjust height of the image
+  const borderPadding = 2 // Adjust padding for the border
+  const borderWidth = 0.5 // Adjust width of the border
 
   for (const [recipeName, { link, image }] of Object.entries(favorites)) {
+    // Draw border
+    doc.setLineWidth(borderWidth)
+    doc.roundedRect(
+      borderPadding, // x-coordinate of the top-left corner
+      yOffset, // y-coordinate of the top-left corner
+      doc.internal.pageSize.width - 2 * borderPadding, // width of the rectangle
+      imageHeight + 2 * borderPadding, // height of the rectangle
+      3, // radius of the rounded corners (adjust as needed)
+      3, // radius of the rounded corners (adjust as needed)
+      "S" // draw "stroke" (border)
+    )
+
     // Embed image if available
     if (image) {
       try {
         const imgData = await downloadAndEmbedImage(image)
         if (imgData) {
           // Add image at current yOffset
-          doc.addImage(imgData, 2, yOffset, 32, 32) // Adjust width and height as needed
-          // Increase yOffset for next content
-          yOffset += 5 // Adjust vertical spacing between image and title
+          doc.addImage(
+            imgData,
+            "JPEG",
+            borderPadding + borderWidth + 2,
+            yOffset + borderPadding,
+            imageWidth,
+            imageHeight
+          ) // Adjust width and height as needed, considering the border
         } else {
           console.error(`Failed to embed image for ${recipeName}`)
         }
@@ -126,22 +170,27 @@ const previewFavoritesPDF = async (favorites) => {
     doc.setFontSize(16)
     const truncatedName = recipeName.substring(0, 40)
     const textLines = doc.splitTextToSize(truncatedName, 100)
-    doc.text(textLines, 40, yOffset)
+    doc.text(textLines, borderPadding + imageWidth + 10, yOffset + lineHeight)
 
     // Style for link
     doc.setTextColor(0, 0, 255)
     doc.setFont("helvetica", "normal")
     doc.setFontSize(12)
-    const linkYOffset = yOffset + textLines.length * lineHeight // Place link directly below the recipe name
 
     const maxLinkLength = 60
     const truncatedLink =
       link.length > maxLinkLength
         ? link.substring(0, maxLinkLength) + "..."
         : link
-    doc.textWithLink(truncatedLink, 40, linkYOffset, { url: link })
+    const linkTextWidth =
+      (doc.getStringUnitWidth(truncatedLink) * doc.internal.getFontSize()) /
+      doc.internal.scaleFactor // Calculate width of link text
+    const linkXOffset = (doc.internal.pageSize.width - linkTextWidth) / 2 // Center the link horizontally within the border
+    doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
+      url: link,
+    })
 
-    yOffset += (textLines.length + 1) * lineHeight // Adjust yOffset to move to the next content
+    yOffset += imageHeight + 2 * borderPadding + lineHeight + borderPadding // Adjust yOffset to move to the next content with border and padding
 
     if (yOffset > pageHeight - 20) {
       doc.addPage()
