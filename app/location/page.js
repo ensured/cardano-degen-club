@@ -3,9 +3,6 @@
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
-export const metadata = {
-  title: "Location",
-}
 const Page = () => {
   const [weather, setWeather] = useState({
     lat: "",
