@@ -6,10 +6,10 @@ import { Icons } from "@/components/icons"
 
 export function MainNav() {
   return (
-    <div className="flex gap-2 md:gap-10">
-      <Link href="/" className="flex items-center space-x-2">
-        <Icons.ada className="h-6 w-6" />
-        <span className="inline-block font-bold">{siteConfig.name}</span>
+    <div className="flex gap-1">
+      <Link href="/" className="ml-1 flex items-center space-x-2">
+        <Icons.ada className=" h-6 w-6" />
+        <span className="font-bold">{siteConfig.name}</span>
       </Link>
       <Dropdown />
     </div>
