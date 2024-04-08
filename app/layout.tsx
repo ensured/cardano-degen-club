@@ -15,12 +15,8 @@ import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
-  },
+  title: "Home",
   description: siteConfig.description,
-
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",

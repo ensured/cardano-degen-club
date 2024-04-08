@@ -7,6 +7,9 @@ import {
 import { CardTitle } from "@/components/ui/card"
 import Comments from "@/components/Comments"
 
+export const metadata = {
+  title: "admin",
+}
 const page = async () => {
   const { getUser, isAuthenticated } = getKindeServerSession()
   const user = getUser()

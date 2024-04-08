@@ -2,7 +2,7 @@ export type SiteConfig = typeof siteConfig
 
 export const siteConfig = {
   name: "Home",
-  description: "punycode converter",
+  description: "All things Cardano and Food related.",
   mainNav: [
     {
       title: "Projects",

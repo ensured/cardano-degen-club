@@ -1,63 +1,66 @@
-"use client";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+"use client"
 
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+
+export const metadata = {
+  title: "Location",
+}
 const Page = () => {
   const [weather, setWeather] = useState({
     lat: "",
     lon: "",
     city: "",
     state: "",
-    zip: ""
-  });
+    zip: "",
+  })
 
   useEffect(() => {
     function getLocation() {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, handleError);
+        navigator.geolocation.getCurrentPosition(showPosition, handleError)
       } else {
         toast("Geolocation is not supported by this browser.", {
           type: "error",
-        });
+        })
       }
     }
 
     function showPosition(position) {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-      setWeather({ lat, lon });
+      const lat = position.coords.latitude
+      const lon = position.coords.longitude
+      setWeather({ lat, lon })
 
-      fetchCityStateZip(lat, lon);
+      fetchCityStateZip(lat, lon)
     }
 
     function handleError(error) {
-      toast("Error getting geolocation. Please try again later.",
-        {
-          type: "error",
-        });
+      toast("Error getting geolocation. Please try again later.", {
+        type: "error",
+      })
     }
 
     async function fetchCityStateZip(lat, lon) {
       try {
         const response = await fetch(
           `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
-        );
-        const data = await response.json();
-        const address = data.address;
-        const city = address.city || address.town || address.village || "";
-        const state = address.state || address.county || "";
-        const zip = address.postcode || "";
-        setWeather((prevWeather) => ({ ...prevWeather, city, state, zip }));
+        )
+        const data = await response.json()
+        const address = data.address
+        const city = address.city || address.town || address.village || ""
+        const state = address.state || address.county || ""
+        const zip = address.postcode || ""
+        setWeather((prevWeather) => ({ ...prevWeather, city, state, zip }))
       } catch (error) {
-        console.error("Error fetching city/state/zip data:", error);
+        console.error("Error fetching city/state/zip data:", error)
         toast("Error fetching city/state/zip data. Please try again later.", {
           type: "error",
-        });
+        })
       }
     }
 
-    getLocation();
-  }, []);
+    getLocation()
+  }, [])
 
   return (
     <div>
@@ -68,12 +71,13 @@ const Page = () => {
             <h1>Longitude: {weather.lon}</h1>
             <h1>City: {weather.city}</h1>
             <h1>State: {weather.state}</h1>
-            <h1>Zip Code: {weather.zip}</h1></div>
+            <h1>Zip Code: {weather.zip}</h1>
+          </div>
         )}
       </div>
       {/* <ProfileForm /> */}
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page
