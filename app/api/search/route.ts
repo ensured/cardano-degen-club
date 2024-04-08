@@ -1,6 +1,5 @@
 import { headers } from "next/headers"
-import { NextRequest } from "next/server"
-// import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import MemoryCache from "memory-cache"
 
 const RECIPIES_FETCH_TIMEOUT_MS = 1000
@@ -18,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(NextPageUrl)
     const data = await response.json()
-    return Response.json(data)
+    return NextResponse.json(data)
   }
 
   const forwardedFor = headers().get("x-forwarded-for")
