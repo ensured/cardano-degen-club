@@ -5,9 +5,6 @@ import axios from "axios"
 
 import BreakoutGame from "@/components/BreakoutGame"
 
-export const metadata = {
-  title: "Breakout Game",
-}
 const page = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   // const [data, setData] = useState({})
