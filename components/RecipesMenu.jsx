@@ -259,11 +259,6 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
           <Badge variant={"outline"} className="p-2">
             <b>{searchResults.count}</b> results
           </Badge>
-          {isLoadingPdfPreview && (
-            <div className="absolute left-6">
-              <Loader2 className="w-10 animate-spin" />
-            </div>
-          )}
         </>
       )}
       {pdfPreviewUrl && (
