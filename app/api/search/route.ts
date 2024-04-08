@@ -1,23 +1,24 @@
 import { headers } from "next/headers"
+import { NextRequest } from "next/server"
 // import { NextResponse } from "next/server"
 import MemoryCache from "memory-cache"
 
 const RECIPIES_FETCH_TIMEOUT_MS = 1000
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
 
   // first check if there is a nextUrl searchParam if so fetch that instead.
-  const nextPage = searchParams.get("nextPage")
-  if (nextPage) {
-    console.log(nextPage)
-    const response = await fetch(nextPage)
-    console.log(response.status, response)
+  if (searchParams.get("nextPage")) {
+    const NextPageUrl = `${searchParams.get(
+      "nextPage"
+    )}&app_key=${searchParams.get("app_key")}&_cont=${searchParams.get(
+      "_cont"
+    )}&type=${searchParams.get("type")}&app_id=${searchParams.get("app_id")}`
+
+    const response = await fetch(NextPageUrl)
     const data = await response.json()
-    return Response.json({
-      success: true,
-      data,
-    })
+    return Response.json(data)
   }
 
   const forwardedFor = headers().get("x-forwarded-for")
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
     const data = await response.json()
     return Response.json({
       success: true,
-      data: data,
+      data,
     })
   } catch (err) {
     return Response.json({

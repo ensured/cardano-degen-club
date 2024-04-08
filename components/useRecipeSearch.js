@@ -5,6 +5,8 @@ import toast from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
 
+import { getNextPageData } from "./actions"
+
 const useRecipeSearch = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -38,32 +40,28 @@ const useRecipeSearch = () => {
     async (e) => {
       if (e?.target?.tagName === "FORM") {
         e.preventDefault()
-        setSearchResults({
-          hits: [],
-          count: 0,
-          nextPage: "",
-        })
+        // setSearchResults({
+        //   hits: [],
+        //   count: 0,
+        //   nextPage: "",
+        // })
       }
       setLoading(true)
       try {
         const res = await fetch(`/api/search?q=${input}`)
         const data = await res.json()
-        if (data && data.message && data.message.includes("Rate limit exceeded")) {
-          toast(data.message, {
-            type: "error",
-          })
+        if (data.success === false) {
+          toast(data.message, { type: "error" })
           return
         }
-        if (!input || input.length === 0 || input === "") return
 
         if (input !== lastInputSearched) {
-          // Reset search results only if the input has changed
-          setSearchResults({
+          // Clear all results in state if input changes
+          setSearchResults((prevSearchResults) => ({
             hits: data.data.hits,
             count: data.data.count,
             nextPage: data.data._links.next?.href || "",
-          })
-          setLastInputSearched(input)
+          }))
         } else {
           setSearchResults((prevSearchResults) => ({
             ...prevSearchResults,
@@ -91,12 +89,11 @@ const useRecipeSearch = () => {
     if (nextPage) {
       setLoadingMore(true)
       try {
-        console.log(nextPage)
         const response = await fetch(`/api/search?nextPage=${nextPage}`)
         const data = await response.json()
-        if (!data.success) return
-
-        console.log(data)
+        if (data.success === false) {
+          return
+        }
 
         setSearchResults((prevSearchResults) => ({
           ...prevSearchResults,
@@ -112,7 +109,6 @@ const useRecipeSearch = () => {
         setLoadingMore(false)
       }
     }
-
   }, [searchResults])
 
   useEffect(() => {
