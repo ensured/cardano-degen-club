@@ -26,12 +26,12 @@ export const RecipeCard = ({
       href={recipe.recipe.shareAs}
     >
       <div
-        className="relative"
+        className="relative "
         ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
       >
         <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
-          <CardContainer className="inter-var">
-            <CardBody className="rounded-xl border border-black/[0.1] bg-gray-50 p-2 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
+          <CardContainer className="inter-var ">
+            <CardBody className="md:w-80 md:h-72 rounded-xl border border-black/[0.1] bg-gray-50 p-2 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
               {/* Title */}
               <div className="flex flex-col items-center justify-end">
                 <CardItem
@@ -44,13 +44,16 @@ export const RecipeCard = ({
                 </CardItem>
 
                 {/* Image */}
-                <CardItem translateZ="100" className="flex w-28 justify-center">
+                <CardItem
+                  translateZ="100"
+                  className="flex w-28 justify-center md:w-44 "
+                >
                   <Image
                     src={recipe.recipe.images.SMALL.url}
                     alt="recipe thumbnail"
                     width={recipe.recipe.images.SMALL.width}
                     height={recipe.recipe.images.SMALL.height}
-                    className="rounded-md "
+                    className="rounded-md"
                     unoptimized
                     priority
                   />

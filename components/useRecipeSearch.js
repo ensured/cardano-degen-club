@@ -40,16 +40,17 @@ const useRecipeSearch = () => {
     async (e) => {
       if (e?.target?.tagName === "FORM") {
         e.preventDefault()
-        // setSearchResults({
-        //   hits: [],
-        //   count: 0,
-        //   nextPage: "",
-        // })
+        setSearchResults({
+          hits: [],
+          count: 0,
+          nextPage: "",
+        })
       }
       setLoading(true)
       try {
         const res = await fetch(`/api/search?q=${input}`)
         const data = await res.json()
+        console.log(data)
         if (data.success === false) {
           toast(data.message, { type: "error" })
           return
@@ -85,13 +86,14 @@ const useRecipeSearch = () => {
   const inputChanged = input !== lastInputSearched && input.length > 0
 
   const handleLoadNextPage = useCallback(async () => {
+    setLoadingMore(true)
     const { nextPage } = searchResults
     if (nextPage) {
-      setLoadingMore(true)
       try {
         const response = await fetch(`/api/search?nextPage=${nextPage}`)
         const data = await response.json()
         if (data.success === false) {
+          toast(data.message, { type: "error" })
           return
         }
 

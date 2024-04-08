@@ -30,7 +30,7 @@ const SearchRecipes = () => {
   } = useRecipeSearch()
 
   return (
-    <div className="relative flex flex-col pb-8 pt-4">
+    <div className="relative flex flex-col p-2">
       <div
         className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-sky-600"
         style={{ width: `${scrollProgress}%` }}
@@ -38,7 +38,8 @@ const SearchRecipes = () => {
       <ScrollTooltip
         currentCardIndex={currentCardIndex}
         totalCards={searchResults.hits.length}
-      />{" "}
+      />
+
       {/* Include the ScrollTooltip component */}
       <RecipeSearchForm
         searchRecipes={searchRecipes}

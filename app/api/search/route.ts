@@ -3,11 +3,21 @@ import { NextRequest, NextResponse } from "next/server"
 import MemoryCache from "memory-cache"
 
 const RECIPIES_FETCH_TIMEOUT_MS = 1000
+const RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS = 300
+
+const getUserIP = async () => {
+  const ip = headers().get("x-forwarded-for")
+  return ip
+}
+
+export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+  const forwardedFor = await getUserIP()
+  const ip = forwardedFor ? forwardedFor.split(",")[0] : null
+  const cacheKey = `rateLimit-${ip}`
 
-  // first check if there is a nextUrl searchParam if so fetch that instead.
+  const { searchParams } = new URL(request.url)
   if (searchParams.get("nextPage")) {
     const NextPageUrl = `${searchParams.get(
       "nextPage"
@@ -15,25 +25,38 @@ export async function GET(request: NextRequest) {
       "_cont"
     )}&type=${searchParams.get("type")}&app_id=${searchParams.get("app_id")}`
 
-    const response = await fetch(NextPageUrl)
-    const data = await response.json()
-    return NextResponse.json(data)
-  }
-
-  const forwardedFor = headers().get("x-forwarded-for")
-  const ip = forwardedFor ? forwardedFor.split(",")[0] : null
-
-  const now = Date.now()
-  const cacheKey = `rateLimit-${ip}`
-  // Check if the request is within the rate limit window
-  const lastSubmission = MemoryCache.get(cacheKey)
-  if (lastSubmission && now - lastSubmission < RECIPIES_FETCH_TIMEOUT_MS) {
-    return NextResponse.json({
-      success: false,
-      message: `Rate limit exceeded, please try again in ${Math.ceil(
-        (RECIPIES_FETCH_TIMEOUT_MS - (now - lastSubmission)) / 1000
-      )} seconds`,
-    })
+    try {
+      const now = Date.now()
+      const lastSubmission = MemoryCache.get(cacheKey)
+      if (
+        lastSubmission &&
+        now - lastSubmission < RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS
+      ) {
+        // sleep for remaining time then continue
+        const remainingTime =
+          RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS - (now - lastSubmission)
+        console.log(`remaining tim: ${remainingTime + 1000}`)
+        await new Promise((resolve) =>
+          setTimeout(resolve, remainingTime + 1000)
+        )
+      }
+      const response = await fetch(NextPageUrl)
+      const data = await response.json()
+      return NextResponse.json(data)
+    } catch (error) {
+      console.log(error)
+      return NextResponse.json({
+        success: false,
+        message: "An error occurred. Please try again later.",
+      })
+    } finally {
+      console.log("putting cache called by FetchNextPage function")
+      MemoryCache.put(
+        cacheKey,
+        Date.now(),
+        RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS
+      )
+    }
   }
 
   try {
@@ -57,8 +80,7 @@ export async function GET(request: NextRequest) {
       message: "An error occurred. Please try again later.",
     })
   } finally {
-    // Update last submission time in the cache
-    const now = Date.now()
-    MemoryCache.put(cacheKey, now, RECIPIES_FETCH_TIMEOUT_MS) // Cache for 1 minute
+    console.log("putting cache called by search recipe form")
+    MemoryCache.put(cacheKey, Date.now(), RECIPIES_FETCH_TIMEOUT_MS) // Cache for 1 minute
   }
 }
