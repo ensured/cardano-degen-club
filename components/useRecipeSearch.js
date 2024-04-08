@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { FolderCheck, Trash2Icon } from "lucide-react"
+import { Trash2Icon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
+
+import { getNextPageData } from "./actions"
 
 const useRecipeSearch = () => {
   const router = useRouter()
@@ -38,38 +40,34 @@ const useRecipeSearch = () => {
     async (e) => {
       if (e?.target?.tagName === "FORM") {
         e.preventDefault()
-        setSearchResults({
-          hits: [],
-          count: 0,
-          nextPage: "",
-        })
+        // setSearchResults({
+        //   hits: [],
+        //   count: 0,
+        //   nextPage: "",
+        // })
       }
       setLoading(true)
       try {
-        const response = await fetch(fetchUrl)
-        if (response.status === 429) {
-          toast("Usage limits are exceeded, try again later.", {
-            type: "error",
-          })
+        const res = await fetch(`/api/search?q=${input}`)
+        const data = await res.json()
+        if (data.success === false) {
+          toast(data.message, { type: "error" })
           return
         }
-        const data = await response.json()
-        if (!input || input.length === 0 || input === "") return
 
         if (input !== lastInputSearched) {
-          // Reset search results only if the input has changed
-          setSearchResults({
-            hits: data.hits,
-            count: data.count,
-            nextPage: data._links.next?.href || "",
-          })
-          setLastInputSearched(input)
+          // Clear all results in state if input changes
+          setSearchResults((prevSearchResults) => ({
+            hits: data.data.hits,
+            count: data.data.count,
+            nextPage: data.data._links.next?.href || "",
+          }))
         } else {
           setSearchResults((prevSearchResults) => ({
             ...prevSearchResults,
-            hits: data.hits,
-            count: data.count,
-            nextPage: data._links.next?.href || "",
+            hits: data.data.hits,
+            count: data.data.count,
+            nextPage: data.data._links.next?.href || "",
           }))
         }
 
@@ -81,7 +79,7 @@ const useRecipeSearch = () => {
         setLoading(false)
       }
     },
-    [fetchUrl, input, lastInputSearched, router]
+    [input, lastInputSearched, router]
   )
 
   const inputChanged = input !== lastInputSearched && input.length > 0
@@ -91,11 +89,12 @@ const useRecipeSearch = () => {
     if (nextPage) {
       setLoadingMore(true)
       try {
-        const response = await fetch(nextPage)
-        if (!response.ok) {
-          throw new Error("Failed to fetch next page")
-        }
+        const response = await fetch(`/api/search?nextPage=${nextPage}`)
         const data = await response.json()
+        if (data.success === false) {
+          return
+        }
+
         setSearchResults((prevSearchResults) => ({
           ...prevSearchResults,
           hits: [...prevSearchResults.hits, ...data.hits],
@@ -103,7 +102,7 @@ const useRecipeSearch = () => {
           nextPage: data._links.next?.href || "",
         }))
       } catch (error) {
-        toast("Error fetching next page", {
+        toast(error.message, {
           type: "error",
         })
       } finally {
