@@ -72,24 +72,36 @@ const downloadFavoritesPDF = async (favorites) => {
     doc.setTextColor(0, 0, 0)
     doc.setFont("helvetica", "bold")
     doc.setFontSize(16)
-    const truncatedName = recipeName.substring(0, 40)
+
+    const maxNameLength = 100 // Maximum characters for recipe name
+    const truncatedName =
+      recipeName.length > maxNameLength
+        ? recipeName.substring(0, maxNameLength) + "..."
+        : recipeName
     const textLines = doc.splitTextToSize(truncatedName, 100)
-    doc.text(textLines, borderPadding + imageWidth + 10, yOffset + lineHeight)
+    const truncatedTextLines = textLines.slice(0, 2) // Take only the first two lines
+
+    doc.text(
+      truncatedTextLines,
+      borderPadding + imageWidth + 6,
+      yOffset + lineHeight
+    )
 
     // Style for link
     doc.setTextColor(0, 0, 255)
     doc.setFont("helvetica", "normal")
     doc.setFontSize(12)
 
-    const maxLinkLength = 60
+    const maxLinkLength = 60 // Maximum characters for link
     const truncatedLink =
       link.length > maxLinkLength
         ? link.substring(0, maxLinkLength) + "..."
         : link
+
     const linkTextWidth =
       (doc.getStringUnitWidth(truncatedLink) * doc.internal.getFontSize()) /
       doc.internal.scaleFactor // Calculate width of link text
-    const linkXOffset = (doc.internal.pageSize.width - linkTextWidth) / 2 // Center the link horizontally within the border
+    const linkXOffset = 40 // Center the link horizontally within the border
     doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
       url: link,
     })
@@ -168,24 +180,36 @@ const previewFavoritesPDF = async (favorites) => {
     doc.setTextColor(0, 0, 0)
     doc.setFont("helvetica", "bold")
     doc.setFontSize(16)
-    const truncatedName = recipeName.substring(0, 40)
+
+    const maxNameLength = 100 // Maximum characters for recipe name
+    const truncatedName =
+      recipeName.length > maxNameLength
+        ? recipeName.substring(0, maxNameLength) + "..."
+        : recipeName
     const textLines = doc.splitTextToSize(truncatedName, 100)
-    doc.text(textLines, borderPadding + imageWidth + 10, yOffset + lineHeight)
+    const truncatedTextLines = textLines.slice(0, 2) // Take only the first two lines
+
+    doc.text(
+      truncatedTextLines,
+      borderPadding + imageWidth + 6,
+      yOffset + lineHeight
+    )
 
     // Style for link
     doc.setTextColor(0, 0, 255)
     doc.setFont("helvetica", "normal")
     doc.setFontSize(12)
 
-    const maxLinkLength = 60
+    const maxLinkLength = 60 // Maximum characters for link
     const truncatedLink =
       link.length > maxLinkLength
         ? link.substring(0, maxLinkLength) + "..."
         : link
+
     const linkTextWidth =
       (doc.getStringUnitWidth(truncatedLink) * doc.internal.getFontSize()) /
       doc.internal.scaleFactor // Calculate width of link text
-    const linkXOffset = (doc.internal.pageSize.width - linkTextWidth) / 2 // Center the link horizontally within the border
+    const linkXOffset = 40 // Center the link horizontally within the border
     doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
       url: link,
     })

@@ -31,7 +31,8 @@ export const RecipeCard = ({
       >
         <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
           <CardContainer className="inter-var ">
-            <CardBody className="md:w-80 md:h-72 rounded-xl border border-black/[0.1] bg-gray-50 p-2 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
+            {/* eslint-disable-next-line tailwindcss/classnames-order */}
+            <CardBody className=" md:w-80 md:h-80 rounded-xl border border-black/[0.1] bg-gray-50 p-2 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
               {/* Title */}
               <div className="flex flex-col items-center justify-end">
                 <CardItem
@@ -45,8 +46,8 @@ export const RecipeCard = ({
 
                 {/* Image */}
                 <CardItem
-                  translateZ="100"
-                  className="flex w-28 justify-center md:w-44 "
+                  translateZ="130"
+                  className="flex w-28 justify-center md:w-44"
                 >
                   <Image
                     src={recipe.recipe.images.SMALL.url}

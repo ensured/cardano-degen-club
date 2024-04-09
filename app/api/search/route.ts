@@ -32,10 +32,9 @@ export async function GET(request: NextRequest) {
         lastSubmission &&
         now - lastSubmission < RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS
       ) {
-        // sleep for remaining time then continue
         const remainingTime =
           RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS - (now - lastSubmission)
-        console.log(`remaining tim: ${remainingTime + 1000}`)
+        console.log(`sleeping for remaining time: ${remainingTime + 1000}`)
         await new Promise((resolve) =>
           setTimeout(resolve, remainingTime + 1000)
         )
@@ -50,7 +49,6 @@ export async function GET(request: NextRequest) {
         message: "An error occurred. Please try again later.",
       })
     } finally {
-      console.log("putting cache called by FetchNextPage function")
       MemoryCache.put(
         cacheKey,
         Date.now(),
@@ -80,7 +78,6 @@ export async function GET(request: NextRequest) {
       message: "An error occurred. Please try again later.",
     })
   } finally {
-    console.log("putting cache called by search recipe form")
     MemoryCache.put(cacheKey, Date.now(), RECIPIES_FETCH_TIMEOUT_MS) // Cache for 1 minute
   }
 }

@@ -62,8 +62,8 @@ const SearchRecipes = () => {
       )}
       {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
-        <div className="animate-fade-in flex flex-col gap-2 p-4">
-          <div className="flex flex-row flex-wrap justify-center gap-2">
+        <div className="animate-fade-in mb-6 flex flex-col gap-2 p-4">
+          <div className="flex flex-row flex-wrap justify-center gap-2 ">
             {searchResults.hits.map((recipe, index) => (
               <RecipeCard
                 key={recipe.recipe.shareAs}
