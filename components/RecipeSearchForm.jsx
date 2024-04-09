@@ -17,7 +17,10 @@ const RecipeSearchForm = ({
   }
   return (
     <form
-      onSubmit={searchRecipes}
+      onSubmit={(e) => {
+        searchRecipes(e)
+        handleHideKeyboard()
+      }}
       className="mx-6 flex items-center justify-center gap-2 md:mx-20"
     >
       <Input
@@ -32,7 +35,6 @@ const RecipeSearchForm = ({
         type="submit"
         className="relative flex w-32 items-center justify-center"
         disabled={!inputChanged}
-        onClick={handleHideKeyboard}
       >
         <div className="flex items-center justify-center">
           {loading && (
