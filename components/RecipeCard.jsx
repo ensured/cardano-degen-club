@@ -37,9 +37,9 @@ export const RecipeCard = ({
               <div className="flex flex-col items-center justify-end">
                 <CardItem
                   translateZ="50"
-                  className="flex h-16 items-center justify-center p-2 font-bold tracking-tight text-neutral-600 dark:text-white md:h-20 "
+                  className="flex h-16 items-center justify-center p-2 font-bold tracking-tight text-neutral-600 dark:text-white md:h-24 "
                 >
-                  <div className="text-md line-clamp-3 md:text-xl">
+                  <div className="line-clamp-3 text-sm md:text-xl">
                     {extractRecipeName(recipe.recipe.shareAs)}
                   </div>
                 </CardItem>
