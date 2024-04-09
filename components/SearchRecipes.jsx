@@ -53,6 +53,7 @@ const SearchRecipes = () => {
         removeFromFavorites={removeFromFavorites}
         searchResults={searchResults}
         favorites={favorites}
+        loading={loading}
       />
       {/* loading spinner in the center of the page */}
       {loading && (

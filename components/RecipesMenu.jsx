@@ -9,13 +9,18 @@ import jsPDF from "jspdf"
 import { Download, File, Loader2, Trash2Icon } from "lucide-react"
 import toast from "react-hot-toast"
 
+import { Button } from "@/components/ui/button"
+
+import {
+  ConfirmDownloadAlertDialogForm,
+  ConfirmPreviewAlertDialog,
+} from "./ConfirmAlertDialogs"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
 import { downloadAndEmbedImage } from "./actions"
 import { Badge } from "./ui/badge"
-import { Button } from "./ui/button"
 
-const downloadFavoritesPDF = async (favorites) => {
+const downloadFavoritesPDF = async (favorites, fileName, addDate) => {
   if (!favorites || Object.keys(favorites).length === 0) {
     toast("No favorites found", {
       icon: "🙈",
@@ -99,9 +104,6 @@ const downloadFavoritesPDF = async (favorites) => {
         ? link.substring(0, maxLinkLength) + "..."
         : link
 
-    const linkTextWidth =
-      (doc.getStringUnitWidth(truncatedLink) * doc.internal.getFontSize()) /
-      doc.internal.scaleFactor // Calculate width of link text
     const linkXOffset = 40 // Center the link horizontally within the border
     doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
       url: link,
@@ -115,12 +117,29 @@ const downloadFavoritesPDF = async (favorites) => {
     }
   }
 
-  const date = new Date()
-  let formattedDateTime = date.toISOString()
-  const formattedDate = formattedDateTime.substring(0, 10)
-  const formattedTime = formattedDateTime.substring(11, 19)
-  const filename = `Favorites-[${formattedDate}-${formattedTime}].pdf`
-  doc.save(filename)
+  if (addDate) {
+    if (fileName.length > 0) {
+      const date = new Date()
+      let formattedDateTime = date.toISOString()
+      const formattedDate = formattedDateTime.substring(0, 10)
+      const formattedTime = formattedDateTime.substring(11, 19)
+      doc.save(`${fileName}-${formattedDate}-${formattedTime}`)
+    } else {
+      const newFileName = "Favorites"
+      const date = new Date()
+      let formattedDateTime = date.toISOString()
+      const formattedDate = formattedDateTime.substring(0, 10)
+      const formattedTime = formattedDateTime.substring(11, 19)
+      doc.save(`${newFileName}-${formattedDate}-${formattedTime}`)
+    }
+  } else {
+    if (fileName.length > 0) {
+      doc.save(`${fileName}.pdf`)
+    } else {
+      const newFileName = "Favorites"
+      doc.save(`${newFileName}.pdf`)
+    }
+  }
 }
 
 const previewFavoritesPDF = async (favorites) => {
@@ -227,16 +246,21 @@ const previewFavoritesPDF = async (favorites) => {
   return URL.createObjectURL(pdfBlob)
 }
 
-const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
+const RecipesMenu = ({
+  searchResults,
+  favorites,
+  removeFromFavorites,
+  loading,
+}) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [isLoadingPdf, setIsLoadingPdf] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = async (fileName, addDate) => {
     try {
       setIsLoadingPdf(true)
-      await downloadFavoritesPDF(favorites)
+      await downloadFavoritesPDF(favorites, fileName, addDate)
       toast("Your download is ready!", {
         icon: "🎉",
         duration: 5000,
@@ -293,40 +317,43 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
         <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
       )}
       <div className="grow-0"></div>
-      <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen}>
+      <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen} loading={loading}>
         {Object.keys(favorites).length > 0 ? (
           <div className="flex flex-col justify-center gap-2">
-            <Button
-              variant={"moon"}
-              onClick={handlePreviewPDF}
-              className="relative flex gap-2"
-              size={size?.width < 768 ? "sm" : "lg"}
+            <ConfirmPreviewAlertDialog
+              action={handlePreviewPDF}
+              loading={isLoadingPdfPreview}
             >
-              {isLoadingPdfPreview ? (
-                <Loader2 className="left-2 w-5 animate-spin md:w-8" />
-              ) : (
+              <Button
+                variant={"outline"}
+                className="relative flex gap-2"
+                size={size?.width < 768 ? "sm" : "lg"}
+              >
                 <File className="left-2 w-5 md:w-8" />
-              )}
 
-              <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
-                Preview PDF{" "}
-              </div>
-            </Button>
-            <Button
-              variant={"moon"}
-              onClick={handleDownloadPDF}
-              className="relative gap-2"
-              size={size?.width < 768 ? "sm" : "lg"}
+                <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
+                  Preview PDF{" "}
+                </div>
+              </Button>
+            </ConfirmPreviewAlertDialog>
+
+            <ConfirmDownloadAlertDialogForm
+              setIsLoadingPdf={setIsLoadingPdf}
+              favorites={favorites}
+              handleDownloadPDF={handleDownloadPDF}
+              loading={isLoadingPdf}
             >
-              {isLoadingPdf ? (
-                <Loader2 className="left-2 w-6 animate-spin md:w-10" />
-              ) : (
+              <Button
+                variant={"outline"}
+                className="relative gap-2"
+                size={size?.width < 768 ? "sm" : "lg"}
+              >
                 <Download className="left-2 w-6 md:w-10" />
-              )}
-              <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
-                Download PDF
-              </div>
-            </Button>
+                <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
+                  Download PDF
+                </div>
+              </Button>
+            </ConfirmDownloadAlertDialogForm>
           </div>
         ) : (
           <div className="flex justify-center ">

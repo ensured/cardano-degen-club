@@ -23,10 +23,12 @@ const FavoritesSheet = ({
   children,
   setOpen,
   isOpen,
+  loading,
 }: {
   children: ReactNode
   setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
   isOpen: boolean
+  loading: boolean
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
@@ -36,7 +38,11 @@ const FavoritesSheet = ({
     <div className="flex">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button className="flex gap-1" onClick={() => setOpen(!isOpen)}>
+          <Button
+            disabled={loading ? true : false}
+            className="flex gap-1"
+            onClick={() => setOpen(!isOpen)}
+          >
             <Star
               className="h-5 w-5"
               color={theme.theme === "light" ? "#FFD700" : "black"}
