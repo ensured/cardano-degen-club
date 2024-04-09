@@ -29,17 +29,17 @@ const ScrollTooltip = ({ currentCardIndex, totalCards }) => {
     <CSSTransition
       in={showTooltip}
       timeout={200}
-      classNames="zoom-tooltip"
+      classNames="zoom-tooltip pointer-events-none"
       unmountOnExit
       onExited={() => setTrigger(false)} // Reset trigger state after animation
       nodeRef={tooltipRef} // Add ref to the CSSTransition
     >
       <div
         ref={tooltipRef} // Add ref to the div
-        className="fixed inset-x-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-white shadow-inner shadow-sky-500/80"
+        className="pointer-events-none fixed inset-x-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-white shadow-inner shadow-sky-500/80"
       >
-        <div className="flex text-sm transition-opacity duration-500">
-          <div>{currentCardIndex}</div>/<div>{totalCards}</div>
+        <div className="pointer-events-noneflex text-sm transition-opacity duration-500">
+          {currentCardIndex}/{totalCards}
         </div>
       </div>
     </CSSTransition>
