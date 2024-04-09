@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { Loader2Icon } from "lucide-react"
 
 import { Button } from "./ui/button"
@@ -10,6 +11,10 @@ const RecipeSearchForm = ({
   inputChanged,
   loading,
 }) => {
+  const inputRef = useRef(null)
+  const handleHideKeyboard = () => {
+    inputRef.current.blur()
+  }
   return (
     <form
       onSubmit={searchRecipes}
@@ -19,8 +24,12 @@ const RecipeSearchForm = ({
         placeholder="search a food"
         type="text"
         name="searchTerm"
-        onChange={handleInputChange}
+        onChange={(e) => {
+          handleHideKeyboard()
+          handleInputChange(e)
+        }}
         value={input}
+        ref={inputRef}
       />
       <Button
         type="submit"
