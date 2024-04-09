@@ -35,13 +35,14 @@ const FavoritesSheet = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="flex">
+    <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button
             disabled={loading ? true : false}
             className="flex gap-1"
             onClick={() => setOpen(!isOpen)}
+            size={"sm"}
           >
             <Star
               className="h-5 w-5"

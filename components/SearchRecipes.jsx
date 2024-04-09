@@ -3,6 +3,8 @@
 import { Loader2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
 
+import { Button } from "@/components/ui/button"
+
 import { RecipeCard } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
 import RecipesMenu from "./RecipesMenu"
@@ -30,7 +32,7 @@ const SearchRecipes = () => {
   } = useRecipeSearch()
 
   return (
-    <div className="relative flex flex-col p-2">
+    <div className="w-full relative flex flex-col p-2">
       <div
         className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-sky-600"
         style={{ width: `${scrollProgress}%` }}
@@ -55,6 +57,7 @@ const SearchRecipes = () => {
         favorites={favorites}
         loading={loading}
       />
+
       {/* loading spinner in the center of the page */}
       {loading && (
         <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
@@ -63,8 +66,8 @@ const SearchRecipes = () => {
       )}
       {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
-        <div className="animate-fade-in mb-6 flex flex-col gap-2 p-4">
-          <div className="flex flex-row flex-wrap justify-center gap-4 ">
+        <div className="animate-fade-in mb-6 flex flex-col gap-2 pt-1">
+          <div className="flex flex-row flex-wrap justify-center gap-2 md:gap-4">
             {searchResults.hits.map((recipe, index) => (
               <RecipeCard
                 key={recipe.recipe.shareAs}
