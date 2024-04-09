@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 
 import { Button } from "./ui/button"
-import { Form } from "./ui/form"
 import { Input } from "./ui/input"
 
 export function ConfirmPreviewAlertDialog({
@@ -59,10 +58,12 @@ export function ConfirmPreviewAlertDialog({
 
 export function ConfirmDownloadAlertDialogForm({
   children,
-  setIsLoadingPdf,
-  favorites,
   handleDownloadPDF,
   loading,
+}: {
+  children: React.ReactNode
+  handleDownloadPDF: () => void
+  loading: boolean
 }) {
   const [fileName, setFileName] = useState("")
   const [isOpen, setIsOpen] = useState(false)

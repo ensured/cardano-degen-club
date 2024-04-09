@@ -338,8 +338,6 @@ const RecipesMenu = ({
             </ConfirmPreviewAlertDialog>
 
             <ConfirmDownloadAlertDialogForm
-              setIsLoadingPdf={setIsLoadingPdf}
-              favorites={favorites}
               handleDownloadPDF={handleDownloadPDF}
               loading={isLoadingPdf}
             >
