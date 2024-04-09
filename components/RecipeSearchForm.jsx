@@ -24,10 +24,7 @@ const RecipeSearchForm = ({
         placeholder="search a food"
         type="text"
         name="searchTerm"
-        onChange={(e) => {
-          handleHideKeyboard()
-          handleInputChange(e)
-        }}
+        onChange={handleInputChange}
         value={input}
         ref={inputRef}
       />
@@ -35,6 +32,7 @@ const RecipeSearchForm = ({
         type="submit"
         className="relative flex w-32 items-center justify-center"
         disabled={!inputChanged}
+        onClick={handleHideKeyboard}
       >
         <div className="flex items-center justify-center">
           {loading && (
