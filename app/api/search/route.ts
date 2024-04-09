@@ -2,8 +2,8 @@ import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import MemoryCache from "memory-cache"
 
-const RECIPIES_FETCH_TIMEOUT_MS = 1000
-const RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS = 300
+const RECIPIES_FETCH_TIMEOUT_MS = 4000
+const RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS = 200
 
 const getUserIP = async () => {
   const ip = headers().get("x-forwarded-for")
@@ -17,8 +17,11 @@ export async function GET(request: NextRequest) {
   const ip = forwardedFor ? forwardedFor.split(",")[0] : null
   const cacheKey = `rateLimit-${ip}`
 
-  const { searchParams } = new URL(request.url)
-  if (searchParams.get("nextPage")) {
+  const searchParams = request.nextUrl
+    ? new URL(request.url).searchParams
+    : null
+
+  if (searchParams && searchParams.get("nextPage")) {
     const NextPageUrl = `${searchParams.get(
       "nextPage"
     )}&app_key=${searchParams.get("app_key")}&_cont=${searchParams.get(

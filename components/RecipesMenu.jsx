@@ -4,6 +4,7 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
+import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
 import { Download, File, Loader2, Trash2Icon } from "lucide-react"
 import toast from "react-hot-toast"
@@ -276,6 +277,9 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
     setPdfPreviewUrl(null)
   }
 
+  const size = useWindowSize()
+  if (!size.width || !size.height) return null
+
   return (
     <div className="mx-6 flex h-12 items-center justify-between text-sm opacity-100 transition-opacity duration-100 md:mx-20">
       {searchResults.count > 0 && (
@@ -291,35 +295,37 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
       <div className="grow-0"></div>
       <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen}>
         {Object.keys(favorites).length > 0 ? (
-          <div className="flex flex-col justify-center gap-2 sm:flex-row">
+          <div className="flex flex-col justify-center gap-2">
             <Button
               variant={"moon"}
               onClick={handlePreviewPDF}
-              className="relative flex gap-2 p-2 "
-              size={"sm"}
+              className="relative flex gap-2"
+              size={size?.width < 768 ? "sm" : "lg"}
             >
-              <File className="left-2 w-5 md:w-6" />
+              {isLoadingPdfPreview ? (
+                <Loader2 className="left-2 w-5 animate-spin md:w-8" />
+              ) : (
+                <File className="left-2 w-5 md:w-8" />
+              )}
 
               <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
-                Preview favorites.pdf{" "}
+                Preview PDF{" "}
               </div>
-              {isLoadingPdfPreview && (
-                <Loader2 className="absolute right-0 w-6 animate-spin" />
-              )}
             </Button>
             <Button
               variant={"moon"}
               onClick={handleDownloadPDF}
-              className="relative gap-2 p-2 "
-              size={"sm"}
+              className="relative gap-2"
+              size={size?.width < 768 ? "sm" : "lg"}
             >
-              <Download className="left-2 w-5 md:w-6" />
-              <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
-                Download favorites.pdf
-              </div>
-              {isLoadingPdf && (
-                <Loader2 className="absolute right-0 w-6 animate-spin" />
+              {isLoadingPdf ? (
+                <Loader2 className="left-2 w-6 animate-spin md:w-10" />
+              ) : (
+                <Download className="left-2 w-6 md:w-10" />
               )}
+              <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
+                Download PDF
+              </div>
             </Button>
           </div>
         ) : (
@@ -349,7 +355,7 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                   />
                 )}
                 <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                  <span className="line-clamp-3 rounded-md decoration-moon hover:shadow-inner">
+                  <span className="line-clamp-3 rounded-md text-sm decoration-moon hover:shadow-inner md:text-base lg:text-lg">
                     {recipeName}
                   </span>
                   <button
@@ -359,7 +365,17 @@ const RecipesMenu = ({ searchResults, favorites, removeFromFavorites }) => {
                       removeFromFavorites(recipeName)
                     }}
                   >
-                    <Trash2Icon size={18} />
+                    <Trash2Icon
+                      size={
+                        size?.width < 480
+                          ? 20
+                          : size?.width < 640
+                          ? 22
+                          : size?.width < 900
+                          ? 23
+                          : 24
+                      }
+                    />
                     <Separator className="bg-red-900 text-red-500" />
                   </button>
                 </div>

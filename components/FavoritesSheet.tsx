@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from "react"
 import { Label } from "@radix-ui/react-label"
+import { useWindowSize } from "@uidotdev/usehooks"
 import { Bookmark, BookmarkPlus, Star, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
@@ -28,6 +29,9 @@ const FavoritesSheet = ({
   isOpen: boolean
 }) => {
   const theme = useTheme()
+  const size = useWindowSize()
+  if (!size.width || !size.height) return null
+
   return (
     <div className="flex">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
@@ -43,10 +47,10 @@ const FavoritesSheet = ({
         <SheetContent side={"right"}>
           <SheetHeader>
             <SheetTitle>
-              <div className="flex select-none items-center justify-center gap-1 p-2">
+              <div className="flex select-none items-center justify-center gap-2 p-2 text-2xl md:text-3xl">
                 Favorites{" "}
                 <StarIcon
-                  size={20}
+                  size={size?.width < 768 ? 26 : 36}
                   color={theme.theme === "light" ? "black" : "#FFD700"}
                 />
               </div>
