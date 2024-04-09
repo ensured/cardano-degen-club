@@ -268,8 +268,10 @@ const RecipesMenu = ({
           background: "#18181b",
         },
       })
+      return
     } catch (e) {
       console.error(e)
+      return
     } finally {
       setIsLoadingPdf(false)
     }

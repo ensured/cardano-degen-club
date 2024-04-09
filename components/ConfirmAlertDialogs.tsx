@@ -62,7 +62,7 @@ export function ConfirmDownloadAlertDialogForm({
   loading,
 }: {
   children: React.ReactNode
-  handleDownloadPDF: () => void
+  handleDownloadPDF: (fileName: string, isChecked: boolean) => void
   loading: boolean
 }) {
   const [fileName, setFileName] = useState("")
