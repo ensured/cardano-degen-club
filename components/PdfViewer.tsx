@@ -70,7 +70,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className={`absolute inset-x-0 top-28 z-40 mx-auto overflow-auto rounded-md shadow-md ${
+        className={`absolute inset-x-0 top-[6.2rem] z-40 mx-auto overflow-auto rounded-md shadow-md ${
           file ? "border-2 border-indigo-400/50 shadow-indigo-700" : ""
         }`}
       >
