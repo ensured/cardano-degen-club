@@ -25,8 +25,6 @@ const RecentCommitToastComponent = () => {
         return
       }
 
-      console.log(lastCommit !== commit, lastCommit, commit)
-
       if (lastCommit !== commit) {
         toast("New commit detected")
         setLastCommit(commit)

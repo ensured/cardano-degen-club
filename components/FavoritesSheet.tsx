@@ -45,7 +45,7 @@ const FavoritesSheet = ({
             size={"sm"}
           >
             <Star
-              className="h-5 w-5"
+              size={size?.width > 520 ? 22 : 18}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />
             Favorites

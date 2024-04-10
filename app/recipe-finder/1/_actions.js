@@ -2,7 +2,6 @@
 
 export async function getData(formData) {
   const q = formData.get("searchQuery")
-  console.log(q)
   const url = `https://api.edamam.com/api/recipes/v2?q=${q}&type=public&app_id=${process.env.APP_ID}&app_key=${process.env.APP_KEY}`
   const response = await fetch(url)
   const data = await response.json()

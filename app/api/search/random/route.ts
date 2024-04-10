@@ -14,7 +14,6 @@ export async function GET(req: NextRequest, res: NextResponse) {
   const data = await response.json()
 
   const food = data.hints[0].food.label // Return the label of the random food
-  console.log("server response: ", food)
   return NextResponse.json({
     food,
   })

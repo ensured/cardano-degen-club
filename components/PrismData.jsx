@@ -48,7 +48,6 @@ const PrismData = () => {
 
   const handleCopy = () => {
     const text = codeRef.current.textContent
-    console.log(text)
     navigator.clipboard.writeText(text).then(
       () => {
         toast.success("Copied to clipboard!", {

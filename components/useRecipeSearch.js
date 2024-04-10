@@ -40,7 +40,6 @@ const useRecipeSearch = () => {
       if (q) {
         const res = await fetch(`/api/search?q=${q}`)
         const data = await res.json()
-        console.log(data)
         if (data.success === false) {
           toast(data.message, { type: "error" })
           return
@@ -78,7 +77,6 @@ const useRecipeSearch = () => {
       try {
         const res = await fetch(`/api/search?q=${input}`)
         const data = await res.json()
-        console.log(data)
         if (data.success === false) {
           toast(data.message, { type: "error" })
           return
