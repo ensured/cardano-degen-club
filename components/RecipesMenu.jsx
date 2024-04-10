@@ -40,7 +40,7 @@ const RecipesMenu = ({
       setPdfPreviewUrl(previewUrl)
       setIsOpen(false) // add this back later
       toast("Your preview is ready!", {
-        icon: "",
+        icon: "🎉",
         position: "bottom-center",
       })
     } catch (e) {
