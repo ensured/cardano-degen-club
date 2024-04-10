@@ -323,19 +323,14 @@ const RecipesMenu = ({
 
         <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen} loading={loading}>
           {Object.keys(favorites).length > 0 ? (
-            <div className="gap-2">
+            <div className="flex justify-center gap-1">
               <ConfirmPreviewAlertDialog
                 action={handlePreviewPDF}
                 loading={isLoadingPdfPreview}
               >
-                <Button
-                  variant={"outline"}
-                  className="gap-2"
-                  size={size?.width < 768 ? "sm" : "lg"}
-                >
-                  <File className="left-2 w-5 md:w-8" />
-
-                  <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
+                <Button variant={"outline"} className="gap-1">
+                  <File className="left-2 w-4" />
+                  <div className="line-clamp-1 items-center text-sm">
                     Preview PDF{" "}
                   </div>
                 </Button>
@@ -345,13 +340,10 @@ const RecipesMenu = ({
                 handleDownloadPDF={handleDownloadPDF}
                 loading={isLoadingPdf}
               >
-                <Button
-                  variant={"outline"}
-                  className="relative gap-2"
-                  size={size?.width < 768 ? "sm" : "lg"}
-                >
-                  <Download className="left-2 w-6 md:w-10" />
-                  <div className="line-clamp-1 items-center text-sm md:text-lg lg:text-lg">
+                <Button variant={"outline"} className="gap-1">
+                  <Download className="left-2 w-4" />
+
+                  <div className="line-clamp-1 items-center text-sm">
                     Download PDF
                   </div>
                 </Button>
@@ -362,57 +354,53 @@ const RecipesMenu = ({
               Get started by favoriting something!
             </div>
           )}
-          <div className="flex h-[90%] flex-col overflow-auto rounded-md">
-            <div className="pb-[10vh] pt-2">
-              {Object.entries(favorites).map(
-                ([recipeName, { link, image }]) => (
-                  <Link
-                    target="_blank"
-                    href={link}
-                    key={recipeName}
-                    className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-900/70 hover:underline"
-                    style={{ textDecoration: "none" }}
+          <div className="flex max-h-[85%] flex-col overflow-auto rounded-md">
+            {Object.entries(favorites).map(([recipeName, { link, image }]) => (
+              <Link
+                target="_blank"
+                href={link}
+                key={recipeName}
+                className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-900/70 hover:underline"
+                style={{ textDecoration: "none" }}
+              >
+                {image && (
+                  <Image
+                    src={image}
+                    width={42}
+                    height={42}
+                    alt={recipeName}
+                    className="rounded-full"
+                    unoptimized
+                    priority
+                  />
+                )}
+                <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
+                  <span className="line-clamp-3 rounded-md text-sm decoration-moon hover:shadow-inner md:text-base lg:text-lg">
+                    {recipeName}
+                  </span>
+                  <button
+                    className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      removeFromFavorites(recipeName)
+                    }}
                   >
-                    {image && (
-                      <Image
-                        src={image}
-                        width={42}
-                        height={42}
-                        alt={recipeName}
-                        className="rounded-full"
-                        unoptimized
-                        priority
-                      />
-                    )}
-                    <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                      <span className="line-clamp-3 rounded-md text-sm decoration-moon hover:shadow-inner md:text-base lg:text-lg">
-                        {recipeName}
-                      </span>
-                      <button
-                        className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          removeFromFavorites(recipeName)
-                        }}
-                      >
-                        <Trash2Icon
-                          size={
-                            size?.width < 480
-                              ? 20
-                              : size?.width < 640
-                              ? 22
-                              : size?.width < 900
-                              ? 23
-                              : 24
-                          }
-                        />
-                        <Separator className="bg-red-900 text-red-500" />
-                      </button>
-                    </div>
-                  </Link>
-                )
-              )}
-            </div>
+                    <Trash2Icon
+                      size={
+                        size?.width < 480
+                          ? 20
+                          : size?.width < 640
+                          ? 22
+                          : size?.width < 900
+                          ? 23
+                          : 24
+                      }
+                    />
+                    <Separator className="bg-red-900 text-red-500" />
+                  </button>
+                </div>
+              </Link>
+            ))}
           </div>
         </FavoritesSheet>
       </div>

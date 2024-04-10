@@ -117,7 +117,7 @@ const RecipeSearchForm = ({
           <Button
             type="submit"
             className="relative flex w-28 items-center justify-center"
-            disabled={!inputChanged}
+            disabled={!inputChanged || loading}
             size={"sm"}
           >
             <div className="max-w-4 flex items-center justify-center">
@@ -137,7 +137,7 @@ const RecipeSearchForm = ({
           <Button
             type="submit"
             className="relative flex w-[6.8rem] items-center justify-center "
-            disabled={!inputChanged}
+            disabled={!inputChanged || loading}
           >
             <div className=" flex items-center justify-center">
               {/* {loading && (
@@ -148,6 +148,7 @@ const RecipeSearchForm = ({
           </Button>
           <Button
             className="gap-1"
+            disabled={loading}
             onClick={async (e) => {
               setLoading(true)
               e.preventDefault()
