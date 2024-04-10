@@ -41,11 +41,7 @@ const RecipesMenu = ({
       setIsOpen(false) // add this back later
       toast("Your preview is ready!", {
         icon: "",
-        position: "top-center",
-        duration: 1500,
-        style: {
-          background: "#2b2b2b",
-        },
+        position: "bottom-center",
       })
     } catch (e) {
       console.error(e)
@@ -63,10 +59,7 @@ const RecipesMenu = ({
       setProgress(1)
       toast("Your download is ready!", {
         icon: "🎉",
-        duration: 5000,
-        style: {
-          background: "#18181b",
-        },
+        position: "bottom-center",
       })
       return
     } catch (e) {
@@ -371,7 +364,7 @@ const RecipesMenu = ({
                 target="_blank"
                 href={link}
                 key={recipeName}
-                className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-900/70 hover:underline"
+                className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
                 style={{ textDecoration: "none" }}
               >
                 {image && (
@@ -386,7 +379,7 @@ const RecipesMenu = ({
                   />
                 )}
                 <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                  <span className="line-clamp-3 rounded-md text-sm decoration-moon hover:shadow-inner md:text-base lg:text-lg">
+                  <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
                     {recipeName}
                   </span>
                   <button
