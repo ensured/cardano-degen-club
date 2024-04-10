@@ -9,15 +9,26 @@ import {
   Loader2Icon,
 } from "lucide-react"
 
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+
+const tags = Array.from({ length: 50 }).map(
+  (_, i, a) => `v1.2.0-beta.${a.length - i}`
+)
 
 const RecipeSearchForm = ({
   searchRecipes,
   handleInputChange,
   input,
+  setInput,
   inputChanged,
   loading,
+  suggestions,
+  setSuggestions,
+  setSearchResults,
 }) => {
   const size = useWindowSize()
   const inputRef = useRef(null)
@@ -25,25 +36,62 @@ const RecipeSearchForm = ({
     inputRef.current.blur()
   }
 
-  const handleGetRandomFood = () => {}
+  const handleGetRandomFood = async () => {
+    const data = await fetch(`/api/search/random`).then((data) => data.json())
+    console.log(data)
+  }
   return (
     <form
       onSubmit={(e) => {
+        setSuggestions([])
         searchRecipes(e)
         handleHideKeyboard()
       }}
-      className={`flex items-center justify-center gap-2 px-4 ${
+      className={`flex justify-center gap-2 px-4 ${
         size?.width < 460 ? "flex-col" : "flex-row"
       }`}
     >
-      <Input
-        placeholder="search a food"
-        type="text"
-        name="searchTerm"
-        onChange={handleInputChange}
-        value={input}
-        ref={inputRef}
-      />
+      <div className="relative">
+        <Input
+          placeholder="search a food"
+          type="text"
+          name="searchTerm"
+          onChange={handleInputChange}
+          value={input}
+          ref={inputRef}
+        />
+        {suggestions.length > 0 && (
+          <div className="absolute left-0 top-10 z-50 bg-background">
+            <ScrollArea className="h-36 rounded-md border">
+              <div className="p-2">
+                {suggestions.map((suggestion) => {
+                  return (
+                    <div
+                      key={suggestion}
+                      onClick={(e) => {
+                        setSearchResults({
+                          hits: [],
+                          count: 0,
+                          nextPage: "",
+                        })
+                        setSuggestions([])
+                        handleHideKeyboard()
+                        setInput(suggestion)
+                        searchRecipes(e, suggestion)
+                      }}
+                      className="line-clamp-1 p-0.5 text-sm"
+                    >
+                      {suggestion}
+                      <Separator className="my-1" />
+                    </div>
+                  )
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+      </div>
+
       {size?.width < 460 ? (
         <div
           className={`flex justify-between gap-1 ${
@@ -55,14 +103,14 @@ const RecipeSearchForm = ({
           </Button>
           <Button
             type="submit"
-            className="relative flex w-32 items-center justify-center"
+            className="relative flex w-28 items-center justify-center"
             disabled={!inputChanged}
             size={"sm"}
           >
             <div className="max-w-4 flex items-center justify-center">
-              {loading && (
-                <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:right-3 md:h-5 md:w-5" />
-              )}
+              {/* {loading && (
+                <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
+              )} */}
               Search
             </div>
           </Button>
@@ -75,13 +123,13 @@ const RecipeSearchForm = ({
         >
           <Button
             type="submit"
-            className="relative flex w-32 items-center justify-center "
+            className="relative flex w-[6.8rem] items-center justify-center "
             disabled={!inputChanged}
           >
-            <div className="flex items-center justify-center">
-              {loading && (
-                <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:right-3 md:h-5 md:w-5" />
-              )}
+            <div className=" flex items-center justify-center">
+              {/* {loading && (
+                <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
+              )} */}
               Search
             </div>
           </Button>

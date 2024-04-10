@@ -10,7 +10,8 @@ import { getNextPageData } from "./actions"
 const useRecipeSearch = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false) // State to track loading more data
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [suggestions, setSuggestions] = useState(false)
   const [searchResults, setSearchResults] = useState({
     hits: [],
     count: 0,
@@ -18,9 +19,6 @@ const useRecipeSearch = () => {
   })
   const searchParams = useSearchParams()
   const [input, setInput] = useState(searchParams.get("q") || "")
-  const [fetchUrl, setFetchUrl] = useState(
-    `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.NEXT_PUBLIC_APP_ID}&app_key=${process.env.NEXT_PUBLIC_APP_KEY}`
-  )
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [lastInputSearched, setLastInputSearched] = useState("")
   const lastFoodItemRef = useRef()
@@ -37,7 +35,38 @@ const useRecipeSearch = () => {
   const [isMobile, setIsMobile] = useState(false)
 
   const searchRecipes = useCallback(
-    async (e) => {
+    async (e, q) => {
+      setLoading(true)
+      if (q) {
+        const res = await fetch(`/api/search?q=${q}`)
+        const data = await res.json()
+        console.log(data)
+        if (data.success === false) {
+          toast(data.message, { type: "error" })
+          return
+        }
+
+        if (q !== lastInputSearched) {
+          // Clear all results in state if input changes
+          setSearchResults((prevSearchResults) => ({
+            hits: data.data.hits,
+            count: data.data.count,
+            nextPage: data.data._links.next?.href || "",
+          }))
+          setLoading(false)
+          return
+        } else {
+          setSearchResults((prevSearchResults) => ({
+            ...prevSearchResults,
+            hits: data.data.hits,
+            count: data.data.count,
+            nextPage: data.data._links.next?.href || "",
+          }))
+          setLoading(false)
+          return
+        }
+      }
+
       if (e?.target?.tagName === "FORM") {
         e.preventDefault()
         setSearchResults({
@@ -46,7 +75,6 @@ const useRecipeSearch = () => {
           nextPage: "",
         })
       }
-      setLoading(true)
       try {
         const res = await fetch(`/api/search?q=${input}`)
         const data = await res.json()
@@ -194,13 +222,16 @@ const useRecipeSearch = () => {
     }
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const newInput = e.target.value
-    setFetchUrl((prevFetchUrl) =>
-      prevFetchUrl.replace(`q=${input}`, `q=${newInput}`)
-    )
     setInput(newInput)
     router.replace(`?q=${newInput}`)
+    if (newInput.length > 1) {
+      const { data } = await fetch(`/api/search/autocomplete?q=${newInput}`).then(res => res.json())
+      setSuggestions(data)
+    } else {
+      setSuggestions([])
+    }
   }
 
   const handleStarIconHover = (index) => () => {
@@ -251,7 +282,10 @@ const useRecipeSearch = () => {
     loadingMore,
     searchResults,
     input,
+    setInput,
     handleInputChange,
+    suggestions,
+    setSuggestions,
     lastFoodItemRef,
     favorites,
     setFavorites,
@@ -263,6 +297,7 @@ const useRecipeSearch = () => {
     scrollProgress,
     currentCardIndex,
     isMobile,
+    setSearchResults
   }
 }
 

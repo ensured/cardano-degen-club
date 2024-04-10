@@ -18,6 +18,7 @@ const SearchRecipes = () => {
     loadingMore,
     searchResults,
     input,
+    setInput,
     handleInputChange,
     lastFoodItemRef,
     favorites,
@@ -29,6 +30,9 @@ const SearchRecipes = () => {
     scrollProgress,
     currentCardIndex,
     isMobile,
+    suggestions,
+    setSuggestions,
+    setSearchResults,
   } = useRecipeSearch()
 
   return (
@@ -44,11 +48,15 @@ const SearchRecipes = () => {
 
       {/* Include the ScrollTooltip component */}
       <RecipeSearchForm
+        suggestions={suggestions}
+        setSuggestions={setSuggestions}
         searchRecipes={searchRecipes}
         handleInputChange={handleInputChange}
         inputChanged={inputChanged}
         input={input}
+        setInput={setInput}
         loading={loading}
+        setSearchResults={setSearchResults}
       />
       {/* results count + interactive favorites sheet*/}
       <RecipesMenu
