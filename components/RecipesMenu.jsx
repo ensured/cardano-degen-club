@@ -60,7 +60,6 @@ const RecipesMenu = ({
 
     try {
       await downloadFavoritesPDF(favorites, fileName, addDate)
-      setProgress(1)
       toast("Your download is ready!", {
         icon: "🎉",
         position: "bottom-center",
@@ -327,11 +326,7 @@ const RecipesMenu = ({
           <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
         )}
 
-        <FavoritesSheet
-          setOpen={setIsOpen}
-          isOpen={isLoadingPdfPreview || isLoadingPdf ? true : isOpen}
-          loading={loading}
-        >
+        <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen} loading={loading}>
           {Object.keys(favorites).length > 0 ? (
             <div className="mb-3 mt-4 flex justify-center gap-1">
               <ConfirmPreviewAlertDialog

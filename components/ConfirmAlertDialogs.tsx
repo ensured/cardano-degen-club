@@ -40,22 +40,32 @@ export function ConfirmPreviewAlertDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <div className="flex w-full flex-col items-center gap-20 pt-4">
-            <DialogTitle>Are you sure?</DialogTitle>
+          <div className="flex flex-col items-center justify-center p-4">
+            <div className="mb-4">
+              <DialogTitle>Are you sure?</DialogTitle>
+            </div>
             <div className="relative w-full">
-              <Button onClick={action} className="flex w-full" size={"sm"}>
-                <div className="flex flex-row items-center  justify-end gap-1 ">
+              <Button
+                onClick={() => {
+                  action()
+                  setIsConfirmPreviewDialogOpen(false)
+                }}
+                className="w-full"
+                size={"sm"}
+              >
+                <div className="relative flex items-center justify-center gap-1">
                   Continue
-                  {loading ? (
-                    <Loader2 className="left-2 w-5 animate-spin md:w-8" />
-                  ) : (
-                    <File className="left-2 w-5 md:w-8" />
+                  {loading && (
+                    <Loader2 className="absolute right-[4.20rem] w-5 animate-spin md:w-8" />
                   )}
                 </div>
               </Button>
-              <div className="absolute top-8 w-full py-3">
-                {loading && <ProgressDemo progress={progress} />}
-              </div>
+              {loading && (
+                <div className="absolute top-full w-full py-1 text-green">
+                  <ProgressDemo progress={progress as number} />
+                  <DialogDescription>{progress.toFixed(0)}%</DialogDescription>
+                </div>
+              )}
             </div>
           </div>
         </DialogHeader>
@@ -101,50 +111,58 @@ export function ConfirmDownloadAlertDialogForm({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <div className="flex w-full items-center justify-center">
-            <Input
-              onChange={(e) => {
-                setFileName(e.target.value)
-              }}
-              type="text"
-              placeholder="filename"
-              value={fileName}
-              className="w-60 font-serif"
-            />
-            <div className="pl-1 font-serif text-sm font-bold">.pdf</div>
-          </div>
-          <div className="mb-4 flex w-full items-center justify-center gap-2">
-            <Switch
-              id="airplane-mode"
-              defaultChecked={true}
-              checked={isChecked}
-              onCheckedChange={onSwitchChange}
-            />
-            <Label htmlFor="airplane-mode" className=" font-serif">
-              Append date and time to filename?
-            </Label>
-          </div>
-          <div className="relative w-full">
-            <Button
-              onClick={(e) => {
-                e.preventDefault()
-                handleDownloadPDF(fileName, isChecked)
-              }}
-              className="flex w-full"
-              size={"sm"}
-            >
-              <div className="flex flex-row items-center justify-center gap-1">
-                {loading ? (
-                  <Loader2 className="left-2 w-5 animate-spin md:w-8" />
-                ) : (
-                  <Download className="left-2 w-5 md:w-8" />
+          <div className="flex flex-col items-center justify-center p-4">
+            <div className="mb-4 flex items-center">
+              <Input
+                onChange={(e) => {
+                  setFileName(e.target.value)
+                }}
+                type="text"
+                placeholder="Filename"
+                value={fileName}
+                className="w-60 rounded-md border p-2"
+              />
+              <div className="ml-2 text-sm font-bold">.pdf</div>
+            </div>
+            <div className="mb-4 flex items-center">
+              <Switch
+                id="airplane-mode"
+                defaultChecked={true}
+                checked={isChecked}
+                onCheckedChange={onSwitchChange}
+                className="mr-2"
+              />
+              <Label htmlFor="airplane-mode" className="text-sm font-bold">
+                Append date and time to filename?
+              </Label>
+            </div>
+            <div className="relative w-full">
+              <Button
+                onClick={() => {
+                  handleDownloadPDF(fileName, isChecked)
+                  setIsConfirmDownloadFileDialogOpen(false)
+                }}
+                className="w-full"
+                size={"sm"}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  {loading ? (
+                    <Loader2 className="w-5 animate-spin md:w-8" />
+                  ) : (
+                    <Download className="w-5 md:w-8" />
+                  )}
+                  Download
+                </div>
+                {loading && (
+                  <div className="absolute top-full w-full py-1 text-green">
+                    <ProgressDemo progress={progress as number} />
+                    <DialogDescription>
+                      {progress.toFixed(0)}%
+                    </DialogDescription>
+                  </div>
                 )}
-                Download
-              </div>
-              <div className="absolute top-8 w-full py-3">
-                {loading && <ProgressDemo progress={progress as number} />}
-              </div>
-            </Button>
+              </Button>
+            </div>
           </div>
         </DialogHeader>
         <DialogFooter>
