@@ -102,6 +102,7 @@ const RecipeSearchForm = ({
           <Button
             className="gap-1"
             size={"sm"}
+            disabled={loading}
             onClick={async (e) => {
               e.preventDefault()
               const food = await handleGetRandomFood()
