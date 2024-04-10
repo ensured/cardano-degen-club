@@ -57,7 +57,7 @@ const FullTitleToolTip = ({ children, title }) => {
     <TooltipProvider skipDelayDuration={0} delayDuration={0}>
       <Tooltip>
         <TooltipTrigger ref={tooltipRef}>{children}</TooltipTrigger>
-        <TooltipContent side={side}>
+        <TooltipContent side={side} className="select-none">
           <p>{title}</p>
         </TooltipContent>
       </Tooltip>

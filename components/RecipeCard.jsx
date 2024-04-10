@@ -39,7 +39,7 @@ export const RecipeCard = ({
                   translateZ="50"
                   className="flex h-16 items-center justify-center p-2 font-bold tracking-tight text-neutral-600 dark:text-white md:h-24 "
                 >
-                  <div className="line-clamp-3 text-sm md:text-xl">
+                  <div className="line-clamp-3 select-none text-sm md:text-xl">
                     {extractRecipeName(recipe.recipe.shareAs)}
                   </div>
                 </CardItem>
@@ -47,7 +47,7 @@ export const RecipeCard = ({
                 {/* Image */}
                 <CardItem
                   translateZ={isMobile ? "60" : "120"}
-                  className="flex w-28 justify-center md:w-44"
+                  className="flex w-28 select-none justify-center md:w-44 "
                 >
                   <Image
                     src={recipe.recipe.images.SMALL.url}
