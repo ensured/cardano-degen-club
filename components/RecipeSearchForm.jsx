@@ -108,7 +108,6 @@ const RecipeSearchForm = ({
               setSuggestions([])
               handleHideKeyboard()
               setInput(food)
-
               searchRecipes(e, food)
             }}
           >
