@@ -46,7 +46,7 @@ export const RecipeCard = ({
 
                 {/* Image */}
                 <CardItem
-                  translateZ={isMobile ? "60" : "120"}
+                  translateZ={"100"}
                   className="flex w-28 select-none justify-center md:w-44 "
                 >
                   <Image

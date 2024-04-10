@@ -30,6 +30,10 @@ const RecipesMenu = ({
   const [isLoadingPdf, setIsLoadingPdf] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
+  const [isConfirmPreviewDialogOpen, setIsConfirmPreviewDialogOpen] =
+    useState(false)
+  const [isConfirmDownloadFileDialogOpen, setIsConfirmDownloadFileDialogOpen] =
+    useState(false)
   const [progress, setProgress] = useState(0)
 
   const handlePreviewPDF = async () => {
@@ -334,7 +338,10 @@ const RecipesMenu = ({
                 progress={progress}
                 action={handlePreviewPDF}
                 loading={isLoadingPdfPreview}
-                isLoadingPdfPreview={isLoadingPdfPreview}
+                isConfirmPreviewDialogOpen={
+                  isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
+                }
+                setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
               >
                 <Button variant={"outline"} className="gap-1">
                   <File className="left-2 w-4" />
@@ -348,6 +355,12 @@ const RecipesMenu = ({
                 progress={progress}
                 handleDownloadPDF={handleDownloadPDF}
                 loading={isLoadingPdf}
+                isConfirmDownloadFileDialogOpen={
+                  isLoadingPdf ? true : isConfirmDownloadFileDialogOpen
+                }
+                setIsConfirmDownloadFileDialogOpen={
+                  setIsConfirmDownloadFileDialogOpen
+                }
               >
                 <Button variant={"outline"} className="gap-1">
                   <Download className="left-2 w-4" />

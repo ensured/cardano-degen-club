@@ -22,22 +22,26 @@ export function ConfirmPreviewAlertDialog({
   action,
   loading,
   progress,
+  isConfirmPreviewDialogOpen,
+  setIsConfirmPreviewDialogOpen,
 }: {
   children: React.ReactNode
   action: () => void
   loading: boolean
-  progress: Number
+  progress: number
+  isConfirmPreviewDialogOpen: boolean
+  setIsConfirmPreviewDialogOpen: (isOpen: boolean) => void
 }) {
   return (
-    <Dialog>
+    <Dialog
+      open={isConfirmPreviewDialogOpen}
+      onOpenChange={setIsConfirmPreviewDialogOpen}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Are you sure?</DialogTitle>
-          <DialogDescription>
-            This will generate a new pdf for you to view.
-          </DialogDescription>
-          <DialogDescription>
+          <div className="flex w-full flex-col items-center gap-20 pt-4">
+            <DialogTitle>Are you sure?</DialogTitle>
             <div className="relative w-full">
               <Button onClick={action} className="flex w-full" size={"sm"}>
                 <div className="flex flex-row items-center  justify-end gap-1 ">
@@ -50,10 +54,10 @@ export function ConfirmPreviewAlertDialog({
                 </div>
               </Button>
               <div className="absolute top-8 w-full py-3">
-                {loading && <ProgressDemo progress={progress as number} />}
+                {loading && <ProgressDemo progress={progress} />}
               </div>
             </div>
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         <DialogFooter>
@@ -71,76 +75,76 @@ export function ConfirmDownloadAlertDialogForm({
   handleDownloadPDF,
   loading,
   progress,
+  isConfirmDownloadFileDialogOpen,
+  setIsConfirmDownloadFileDialogOpen,
 }: {
   children: React.ReactNode
   handleDownloadPDF: (fileName: string, isChecked: boolean) => void
   loading: boolean
   progress: number
+  isConfirmDownloadFileDialogOpen: boolean
+  setIsConfirmDownloadFileDialogOpen: (isOpen: boolean) => void
 }) {
   const [fileName, setFileName] = useState("")
-  const [isOpen, setIsOpen] = useState(false)
-
   const [isChecked, setIsChecked] = useState(true)
-
-  const onOpenChange = () => {
-    setIsOpen(!isOpen)
-  }
 
   const onSwitchChange = () => {
     setIsChecked(!isChecked)
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={true}>
+    <Dialog
+      open={isConfirmDownloadFileDialogOpen}
+      onOpenChange={setIsConfirmDownloadFileDialogOpen}
+      modal={true}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <div className="container flex flex-col gap-3">
-            <div className="flex items-center justify-center">
-              <Input
-                onChange={(e) => {
-                  setFileName(e.target.value)
-                }}
-                type="text"
-                placeholder="filename"
-                value={fileName}
-                className="w-60 font-serif"
-              />
-              <div className="pl-1 font-serif text-sm font-bold">.pdf</div>
-            </div>
-            <div className="mb-4 flex w-full items-center justify-center gap-2">
-              <Switch
-                id="airplane-mode"
-                defaultChecked={true}
-                checked={isChecked}
-                onCheckedChange={onSwitchChange}
-              />
-              <Label htmlFor="airplane-mode" className=" font-serif">
-                Append date and time to filename?
-              </Label>
-            </div>
-            <div className="relative w-full">
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  handleDownloadPDF(fileName, isChecked)
-                }}
-                className="flex w-full"
-                size={"sm"}
-              >
-                <div className="flex flex-row items-center justify-center gap-1">
-                  {loading ? (
-                    <Loader2 className="left-2 w-5 animate-spin md:w-8" />
-                  ) : (
-                    <Download className="left-2 w-5 md:w-8" />
-                  )}
-                  Download
-                </div>
-                <div className="absolute top-8 w-full py-3">
-                  {loading && <ProgressDemo progress={progress as number} />}
-                </div>
-              </Button>
-            </div>
+          <div className="flex w-full items-center justify-center">
+            <Input
+              onChange={(e) => {
+                setFileName(e.target.value)
+              }}
+              type="text"
+              placeholder="filename"
+              value={fileName}
+              className="w-60 font-serif"
+            />
+            <div className="pl-1 font-serif text-sm font-bold">.pdf</div>
+          </div>
+          <div className="mb-4 flex w-full items-center justify-center gap-2">
+            <Switch
+              id="airplane-mode"
+              defaultChecked={true}
+              checked={isChecked}
+              onCheckedChange={onSwitchChange}
+            />
+            <Label htmlFor="airplane-mode" className=" font-serif">
+              Append date and time to filename?
+            </Label>
+          </div>
+          <div className="relative w-full">
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                handleDownloadPDF(fileName, isChecked)
+              }}
+              className="flex w-full"
+              size={"sm"}
+            >
+              <div className="flex flex-row items-center justify-center gap-1">
+                {loading ? (
+                  <Loader2 className="left-2 w-5 animate-spin md:w-8" />
+                ) : (
+                  <Download className="left-2 w-5 md:w-8" />
+                )}
+                Download
+              </div>
+              <div className="absolute top-8 w-full py-3">
+                {loading && <ProgressDemo progress={progress as number} />}
+              </div>
+            </Button>
           </div>
         </DialogHeader>
         <DialogFooter>
