@@ -38,33 +38,47 @@ const useRecipeSearch = () => {
     async (e, q) => {
       setLoading(true)
       if (q) {
-        const res = await fetch(`/api/search?q=${q}`)
-        const data = await res.json()
-        if (data.success === false) {
-          toast(data.message, { type: "error" })
-          return
-        }
+        try {
+          const res = await fetch(`/api/search?q=${q}`)
+          const data = await res.json()
+          if (data.success === false) {
+            toast(data.message, { type: "error" })
+            return
+          }
 
-        if (q !== lastInputSearched) {
-          // Clear all results in state if input changes
-          setSearchResults((prevSearchResults) => ({
-            hits: data.data.hits,
-            count: data.data.count,
-            nextPage: data.data._links.next?.href || "",
-          }))
+          if (q !== lastInputSearched) {
+            // Clear all results in state if input changes
+            setSearchResults((prevSearchResults) => ({
+              hits: data.data.hits,
+              count: data.data.count,
+              nextPage: data.data._links.next?.href || "",
+            }))
+
+            setLoading(false)
+            return
+          } else {
+            setSearchResults((prevSearchResults) => ({
+              ...prevSearchResults,
+              hits: data.data.hits,
+              count: data.data.count,
+              nextPage: data.data._links.next?.href || "",
+            }))
+            setLoading(false)
+            return
+          }
+        } catch (error) {
+          console.log(error)
+          toast(error.message, {
+            type: "error",
+          })
+        } finally {
           setLoading(false)
-          return
-        } else {
-          setSearchResults((prevSearchResults) => ({
-            ...prevSearchResults,
-            hits: data.data.hits,
-            count: data.data.count,
-            nextPage: data.data._links.next?.href || "",
-          }))
-          setLoading(false)
-          return
+          router.replace(`?q=${q}`)
+          setLastInputSearched(q)
         }
       }
+
+
 
       if (e?.target?.tagName === "FORM") {
         e.preventDefault()
@@ -74,6 +88,7 @@ const useRecipeSearch = () => {
           nextPage: "",
         })
       }
+
       try {
         const res = await fetch(`/api/search?q=${input}`)
         const data = await res.json()
@@ -98,12 +113,13 @@ const useRecipeSearch = () => {
           }))
         }
 
-        router.replace(`?q=${input}`)
-        setLastInputSearched(input)
+
       } catch (err) {
         console.log(err)
       } finally {
         setLoading(false)
+        router.replace(`?q=${input}`)
+        setLastInputSearched(input)
       }
     },
     [input, lastInputSearched, router]
