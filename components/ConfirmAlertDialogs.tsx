@@ -34,7 +34,6 @@ export function ConfirmPreviewAlertDialog({
           <DialogDescription>
             This will generate a new pdf for you to view.
             <div className="font-bold italic">
-              {" "}
               It might take a minute to process all of the images.
             </div>
           </DialogDescription>
@@ -83,32 +82,29 @@ export function ConfirmDownloadAlertDialogForm({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogDescription className="italic">
-            It might take a minute to process all of the images.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <div className="container flex w-full flex-col gap-2">
-            <Input
-              onChange={(e) => {
-                setFileName(e.target.value)
-              }}
-              type="text"
-              placeholder="filename"
-              value={fileName}
-            />
-
-            <div className="flex items-center justify-between gap-x-1 ">
-              <Label htmlFor="airplane-mode" className="w-full">
-                Append date and time to filename?
-              </Label>
-
+          <div className="container flex flex-col gap-3">
+            <div className="flex items-center justify-center">
+              <Input
+                onChange={(e) => {
+                  setFileName(e.target.value)
+                }}
+                type="text"
+                placeholder="filename"
+                value={fileName}
+                className="w-60 font-serif"
+              />
+              <div className="pl-1 font-serif text-sm font-bold">.pdf</div>
+            </div>
+            <div className="mb-4 flex w-full items-center justify-center gap-2">
               <Switch
                 id="airplane-mode"
                 defaultChecked={true}
                 checked={isChecked}
                 onCheckedChange={onSwitchChange}
               />
+              <Label htmlFor="airplane-mode" className=" font-serif">
+                Append date and time to filename?
+              </Label>
             </div>
             <Button
               onClick={(e) => {
@@ -126,6 +122,12 @@ export function ConfirmDownloadAlertDialogForm({
               </div>
             </Button>
           </div>
+        </DialogHeader>
+
+        <DialogFooter>
+          <DialogDescription className="flex justify-center p-2 font-serif text-xs italic">
+            It might take a minute to process all of the images.
+          </DialogDescription>
         </DialogFooter>
       </DialogContent>
     </Dialog>
