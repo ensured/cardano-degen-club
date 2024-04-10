@@ -104,7 +104,8 @@ const RecipeSearchForm = ({
             size={"sm"}
             onClick={async (e) => {
               e.preventDefault()
-              const food = await handleGetRandomFood().then((res) => res.json())
+              const food = await handleGetRandomFood()
+              console.log("frontend: ", food)
               setSuggestions([])
               handleHideKeyboard()
               setInput(food)
