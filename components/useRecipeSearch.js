@@ -279,6 +279,7 @@ const useRecipeSearch = () => {
   return {
     handleStarIconHover,
     loading,
+    setLoading,
     loadingMore,
     searchResults,
     input,

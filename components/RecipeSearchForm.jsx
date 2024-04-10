@@ -26,6 +26,7 @@ const RecipeSearchForm = ({
   setInput,
   inputChanged,
   loading,
+  setLoading,
   suggestions,
   setSuggestions,
   setSearchResults,
@@ -38,7 +39,7 @@ const RecipeSearchForm = ({
 
   const handleGetRandomFood = async () => {
     const data = await fetch(`/api/search/random`).then((data) => data.json())
-    console.log(data)
+    return data.food
   }
   return (
     <form
@@ -98,7 +99,19 @@ const RecipeSearchForm = ({
             size?.width < 460 ? "w-full" : ""
           }`}
         >
-          <Button className="gap-1" size={"sm"} onClick={handleGetRandomFood}>
+          <Button
+            className="gap-1"
+            size={"sm"}
+            onClick={async (e) => {
+              e.preventDefault()
+              const food = await handleGetRandomFood().then((res) => res.json())
+              setSuggestions([])
+              handleHideKeyboard()
+              setInput(food)
+
+              searchRecipes(e, food)
+            }}
+          >
             Random <DicesIcon size={size?.width < 460 ? 16 : 20} />
           </Button>
           <Button
@@ -133,7 +146,23 @@ const RecipeSearchForm = ({
               Search
             </div>
           </Button>
-          <Button className="gap-1" onClick={handleGetRandomFood}>
+          <Button
+            className="gap-1"
+            onClick={async (e) => {
+              setLoading(true)
+              e.preventDefault()
+              setSuggestions([])
+              handleHideKeyboard()
+              setSearchResults({
+                hits: [],
+                count: 0,
+                nextPage: "",
+              })
+              const food = await handleGetRandomFood()
+              setInput(food)
+              searchRecipes(e, food)
+            }}
+          >
             Random <DicesIcon size={size?.width < 460 ? 16 : 20} />
           </Button>
         </div>

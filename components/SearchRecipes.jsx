@@ -15,8 +15,10 @@ const SearchRecipes = () => {
   const {
     handleStarIconHover,
     loading,
+    setLoading,
     loadingMore,
     searchResults,
+    setSearchResults,
     input,
     setInput,
     handleInputChange,
@@ -32,7 +34,6 @@ const SearchRecipes = () => {
     isMobile,
     suggestions,
     setSuggestions,
-    setSearchResults,
   } = useRecipeSearch()
 
   return (
@@ -56,6 +57,7 @@ const SearchRecipes = () => {
         input={input}
         setInput={setInput}
         loading={loading}
+        setLoading={setLoading}
         setSearchResults={setSearchResults}
       />
       {/* results count + interactive favorites sheet*/}
