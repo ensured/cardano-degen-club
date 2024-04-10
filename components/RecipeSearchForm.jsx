@@ -28,17 +28,32 @@ const RecipeSearchForm = ({
     inputRef.current.blur()
   }
 
-  const handleGetRandomFood = async () => {
+  const handleGetRandomFood = async (e) => {
+    setLoading(true)
+    e.preventDefault()
+    setSuggestions([])
+    handleHideKeyboard()
+    setSearchResults({
+      hits: [],
+      count: 0,
+      nextPage: "",
+    })
     const data = await fetch(`/api/search/random`).then((data) => data.json())
+    const food = data.food
+    router.replace(`/recipe-finder?q=${data.food}`)
+    setInput(food)
+    searchRecipes(e, food)
     return data.food
   }
+  const handleFormSubmit = (e) => {
+    setSuggestions([])
+    searchRecipes(e)
+    handleHideKeyboard()
+  }
+
   return (
     <form
-      onSubmit={(e) => {
-        setSuggestions([])
-        searchRecipes(e)
-        handleHideKeyboard()
-      }}
+      onSubmit={handleFormSubmit}
       className={`flex justify-center gap-2 px-4 ${
         size?.width < 460 ? "flex-col" : "flex-row"
       }`}
@@ -104,22 +119,7 @@ const RecipeSearchForm = ({
         <Button
           className="gap-1"
           disabled={loading}
-          onClick={async (e) => {
-            setLoading(true)
-            e.preventDefault()
-            setSuggestions([])
-            handleHideKeyboard()
-            setSearchResults({
-              hits: [],
-              count: 0,
-              nextPage: "",
-            })
-            const food = await handleGetRandomFood()
-            router.replace(`/recipe-finder?q=${food}`)
-
-            setInput(food)
-            searchRecipes(e, food)
-          }}
+          onClick={handleGetRandomFood}
         >
           Random <DicesIcon size={size?.width < 460 ? 16 : 20} />
         </Button>
