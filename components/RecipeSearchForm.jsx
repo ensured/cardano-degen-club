@@ -1,13 +1,7 @@
 import { useRef } from "react"
+import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
-import {
-  Dice1,
-  Dice2,
-  Dice4,
-  Dice6Icon,
-  DicesIcon,
-  Loader2Icon,
-} from "lucide-react"
+import { DicesIcon } from "lucide-react"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -31,6 +25,7 @@ const RecipeSearchForm = ({
   setSuggestions,
   setSearchResults,
 }) => {
+  const router = useRouter()
   const size = useWindowSize()
   const inputRef = useRef(null)
   const handleHideKeyboard = () => {
@@ -93,81 +88,46 @@ const RecipeSearchForm = ({
         )}
       </div>
 
-      {size?.width < 460 ? (
-        <div
-          className={`flex justify-between gap-1 ${
-            size?.width < 460 ? "w-full" : ""
-          }`}
+      <div
+        className={`flex justify-between gap-1 ${
+          size?.width < 460 ? "w-full" : ""
+        }`}
+      >
+        <Button
+          type="submit"
+          className="relative flex w-[6.8rem] items-center justify-center "
+          disabled={!inputChanged || loading}
         >
-          <Button
-            className="gap-1"
-            size={"sm"}
-            disabled={loading}
-            onClick={async (e) => {
-              e.preventDefault()
-              const food = await handleGetRandomFood()
-              setSuggestions([])
-              handleHideKeyboard()
-              setInput(food)
-              searchRecipes(e, food)
-            }}
-          >
-            Random <DicesIcon size={size?.width < 460 ? 16 : 20} />
-          </Button>
-          <Button
-            type="submit"
-            className="relative flex w-28 items-center justify-center"
-            disabled={!inputChanged || loading}
-            size={"sm"}
-          >
-            <div className="max-w-4 flex items-center justify-center">
-              {/* {loading && (
+          <div className=" flex items-center justify-center">
+            {/* {loading && (
                 <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
               )} */}
-              Search
-            </div>
-          </Button>
-        </div>
-      ) : (
-        <div
-          className={`flex justify-between gap-1 ${
-            size?.width < 460 ? "w-full" : ""
-          }`}
+            Search
+          </div>
+        </Button>
+        <Button
+          className="gap-1"
+          disabled={loading}
+          onClick={async (e) => {
+            setLoading(true)
+            e.preventDefault()
+            setSuggestions([])
+            handleHideKeyboard()
+            setSearchResults({
+              hits: [],
+              count: 0,
+              nextPage: "",
+            })
+            const food = await handleGetRandomFood()
+            router.replace(`/recipe-finder?q=${food}`)
+
+            setInput(food)
+            searchRecipes(e, food)
+          }}
         >
-          <Button
-            type="submit"
-            className="relative flex w-[6.8rem] items-center justify-center "
-            disabled={!inputChanged || loading}
-          >
-            <div className=" flex items-center justify-center">
-              {/* {loading && (
-                <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
-              )} */}
-              Search
-            </div>
-          </Button>
-          <Button
-            className="gap-1"
-            disabled={loading}
-            onClick={async (e) => {
-              setLoading(true)
-              e.preventDefault()
-              setSuggestions([])
-              handleHideKeyboard()
-              setSearchResults({
-                hits: [],
-                count: 0,
-                nextPage: "",
-              })
-              const food = await handleGetRandomFood()
-              setInput(food)
-              searchRecipes(e, food)
-            }}
-          >
-            Random <DicesIcon size={size?.width < 460 ? 16 : 20} />
-          </Button>
-        </div>
-      )}
+          Random <DicesIcon size={size?.width < 460 ? 16 : 20} />
+        </Button>
+      </div>
     </form>
   )
 }
