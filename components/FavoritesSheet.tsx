@@ -40,7 +40,7 @@ const FavoritesSheet = ({
         <SheetTrigger asChild>
           <Button
             disabled={loading ? true : false}
-            className="flex gap-1"
+            className="flex select-none gap-1"
             onClick={() => setOpen(!isOpen)}
             size={"sm"}
           >

@@ -106,7 +106,7 @@ const RecipeSearchForm = ({
       >
         <Button
           type="submit"
-          className="relative flex w-[6.8rem] items-center justify-center "
+          className="relative flex w-[6.8rem] select-none items-center justify-center"
           disabled={!inputChanged || loading}
         >
           <div className=" flex items-center justify-center">
@@ -117,7 +117,7 @@ const RecipeSearchForm = ({
           </div>
         </Button>
         <Button
-          className="gap-1"
+          className="select-none gap-1"
           disabled={loading}
           onClick={handleGetRandomFood}
         >

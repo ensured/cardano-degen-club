@@ -55,7 +55,7 @@ const downloadFavoritesPDF = async (favorites, fileName, addDate) => {
     // Embed image if available
     if (image) {
       try {
-        const imgData = await downloadAndEmbedImage(image)
+        const imgData = await downloadAndEmbedImage
         if (imgData) {
           // Add image at current yOffset
           doc.addImage(
@@ -310,7 +310,7 @@ const RecipesMenu = ({
     <div className="mx-4 flex h-12 items-center justify-between text-sm opacity-100 transition-opacity duration-100">
       <div className="flex w-full justify-center gap-1">
         {searchResults.count > 0 ? (
-          <Badge variant={"outline"} className=" w-[171px]">
+          <Badge variant={"outline"} className=" w-[171px] select-none">
             Found <b>{searchResults.count}</b> results
           </Badge>
         ) : (
