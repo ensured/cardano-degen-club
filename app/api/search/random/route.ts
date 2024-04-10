@@ -6,6 +6,7 @@ const getRandomFoodItem = async () => {
   return foodItems[index]
 }
 
+export const dynamic = "force-dynamic"
 export async function GET(req: NextRequest, res: NextResponse) {
   const randomFood = await getRandomFoodItem()
   const response = await fetch(
