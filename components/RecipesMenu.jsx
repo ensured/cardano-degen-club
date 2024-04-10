@@ -323,13 +323,18 @@ const RecipesMenu = ({
           <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
         )}
 
-        <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen} loading={loading}>
+        <FavoritesSheet
+          setOpen={setIsOpen}
+          isOpen={isLoadingPdfPreview || isLoadingPdf ? true : isOpen}
+          loading={loading}
+        >
           {Object.keys(favorites).length > 0 ? (
             <div className="mb-3 mt-4 flex justify-center gap-1">
               <ConfirmPreviewAlertDialog
                 progress={progress}
                 action={handlePreviewPDF}
                 loading={isLoadingPdfPreview}
+                isLoadingPdfPreview={isLoadingPdfPreview}
               >
                 <Button variant={"outline"} className="gap-1">
                   <File className="left-2 w-4" />

@@ -24,16 +24,20 @@ const FavoritesSheet = ({
   setOpen,
   isOpen,
   loading,
+  isLoadingPdfPreview,
 }: {
   children: ReactNode
   setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
   isOpen: boolean
   loading: boolean
+  isLoadingPdfPreview: boolean
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
   if (!size.width || !size.height) return null
-
+  //  isLoadingPdfPreview === false || isLoadingPdf === false
+  //               ? false
+  //               : true
   return (
     <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
