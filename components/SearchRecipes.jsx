@@ -94,7 +94,7 @@ const SearchRecipes = () => {
             ))}
           </div>
 
-          <div className="mb-4">
+          <div className="mb-[2.2rem]">
             {loadingMore && (
               <div className="p0 relative -my-1 flex flex-col items-center justify-center">
                 <div className="absolute -bottom-14 animate-spin">

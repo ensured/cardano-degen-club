@@ -64,7 +64,9 @@ const RecipeSearchForm = ({
           onChange={handleInputChange}
           value={input}
           ref={inputRef}
-          className="rounded-b-none"
+          className={`${
+            inputChanged && input.length > 1 ? "rounded-b-none border-b-0" : ""
+          }`}
         />
         {suggestions.length > 0 && (
           <div className="absolute left-0 top-10 z-50 bg-background">
