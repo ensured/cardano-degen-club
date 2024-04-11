@@ -65,7 +65,9 @@ const RecipeSearchForm = ({
           value={input}
           ref={inputRef}
           className={`${
-            inputChanged && input.length > 1 ? "rounded-b-none border-b-0" : ""
+            suggestions && suggestions.length > 0 && input.length > 1
+              ? "rounded-b-none border-b-0"
+              : ""
           }`}
         />
         {suggestions.length > 0 && (
