@@ -75,6 +75,7 @@ const useRecipeSearch = () => {
           setLoading(false)
           router.replace(`?q=${q}`)
           setLastInputSearched(q)
+          setSuggestions([])
         }
       }
 
@@ -120,6 +121,7 @@ const useRecipeSearch = () => {
         setLoading(false)
         router.replace(`?q=${input}`)
         setLastInputSearched(input)
+        setSuggestions([])
       }
     },
     [input, lastInputSearched, router]

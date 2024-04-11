@@ -31,7 +31,6 @@ const RecipeSearchForm = ({
   const handleGetRandomFood = async (e) => {
     setLoading(true)
     e.preventDefault()
-    setSuggestions([])
     handleHideKeyboard()
     setSearchResults({
       hits: [],
@@ -46,7 +45,6 @@ const RecipeSearchForm = ({
     return data.food
   }
   const handleFormSubmit = (e) => {
-    setSuggestions([])
     searchRecipes(e)
     handleHideKeyboard()
   }
@@ -69,7 +67,7 @@ const RecipeSearchForm = ({
         />
         {suggestions.length > 0 && (
           <div className="absolute left-0 top-10 z-50 bg-background">
-            <ScrollArea className="h-36 rounded-md border">
+            <ScrollArea className="h-24 rounded-md border">
               <div className="p-2">
                 {suggestions.map((suggestion) => {
                   return (
@@ -81,15 +79,14 @@ const RecipeSearchForm = ({
                           count: 0,
                           nextPage: "",
                         })
-                        setSuggestions([])
                         handleHideKeyboard()
                         setInput(suggestion)
                         searchRecipes(e, suggestion)
                       }}
-                      className="line-clamp-1 p-0.5 text-sm"
+                      className="line-clamp-1 rounded-md px-12 text-sm hover:cursor-pointer hover:bg-secondary"
                     >
                       {suggestion}
-                      <Separator className="my-1" />
+                      <Separator className="" />
                     </div>
                   )
                 })}
