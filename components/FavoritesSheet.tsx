@@ -1,19 +1,14 @@
 "use client"
 
-import { ReactNode, useState } from "react"
-import { Label } from "@radix-ui/react-label"
+import { ReactNode } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Bookmark, BookmarkPlus, Star, StarIcon } from "lucide-react"
+import { StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "./ui/button"
-import { Input } from "./ui/input"
 import {
   Sheet,
-  SheetClose,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -56,7 +51,7 @@ const FavoritesSheet = ({
             onClick={() => setOpen(!isOpen)}
             size={"sm"}
           >
-            <Star
+            <StarIcon
               size={size?.width < 768 ? 20 : 24}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />

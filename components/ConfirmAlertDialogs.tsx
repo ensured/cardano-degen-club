@@ -1,6 +1,5 @@
-import { useState } from "react"
 import { motion } from "framer-motion"
-import { Download, File, Loader2 } from "lucide-react"
+import { FileText, Loader2 } from "lucide-react"
 
 import {
   Dialog,
@@ -39,11 +38,25 @@ export function ConfirmPreviewAlertDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <div className="flex flex-col items-center justify-center p-4">
-            <DialogDescription className="flex w-full justify-center p-2 pb-7 font-serif text-xs italic">
-              It might take a minute to process all of the images.
+          <div className="flex flex-col items-center justify-center px-8">
+            <DialogDescription className="flex h-12 w-full justify-center p-2 font-serif text-xs italic">
+              {loading ? (
+                <motion.div
+                  className="w-full "
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.12 }}
+                >
+                  <ProgressDemo progress={progress as number} />
+                  <DialogDescription className="flex justify-center">
+                    {progress.toFixed(0)}%
+                  </DialogDescription>
+                </motion.div>
+              ) : (
+                "Are you sure?"
+              )}
             </DialogDescription>
-            <div className="relative w-full">
+            <div className="relative w-full pb-5">
               <Button
                 className="w-full"
                 size={"sm"}
@@ -56,23 +69,10 @@ export function ConfirmPreviewAlertDialog({
                   {loading ? (
                     <Loader2 className="w-5 animate-spin md:w-8" />
                   ) : (
-                    <File className="w-5 md:w-8" />
+                    <FileText className="w-5 md:w-8" />
                   )}
                   Preview
                 </div>
-                {loading && (
-                  <motion.div
-                    className="absolute top-full w-full py-1"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.12 }}
-                  >
-                    <ProgressDemo progress={progress as number} />
-                    <DialogDescription className="flex justify-center">
-                      {progress.toFixed(0)}%
-                    </DialogDescription>
-                  </motion.div>
-                )}
               </Button>
             </div>
           </div>

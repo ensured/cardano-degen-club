@@ -4,7 +4,6 @@ import { useWindowSize } from "@uidotdev/usehooks"
 import { DicesIcon } from "lucide-react"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -87,7 +86,7 @@ const RecipeSearchForm = ({
                         setInput(suggestion)
                         searchRecipes(e, suggestion)
                       }}
-                      className="line-clamp-1 border-b hover:underline min-w-[12rem] pl-1.5 text-sm hover:cursor-pointer "
+                      className="line-clamp-1 min-w-[12rem] border-b pl-1.5 text-sm hover:cursor-pointer hover:underline "
                     >
                       {suggestion}
                     </div>

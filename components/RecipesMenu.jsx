@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { File, Trash2Icon } from "lucide-react"
+import { FileText, Trash2Icon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -195,7 +195,7 @@ const RecipesMenu = ({
                   setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
                 >
                   <Button variant={"outline"} className="gap-2">
-                    <File className="left-2" />
+                    <FileText className="left-2" />
                     <div className="line-clamp-1 items-center text-lg">
                       Preview PDF{" "}
                     </div>
