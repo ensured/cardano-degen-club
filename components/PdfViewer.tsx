@@ -1,12 +1,15 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useResizeObserver } from "@wojtekmaj/react-hooks"
+import { jsPDF } from "jspdf"
 import { Document, Page, pdfjs } from "react-pdf"
 
 import "./PdfViewer.css"
 import "react-pdf/dist/esm/Page/AnnotationLayer.css"
 import "react-pdf/dist/esm/Page/TextLayer.css"
+import { ExitIcon } from "@radix-ui/react-icons"
+import { Download, DownloadIcon, SidebarClose } from "lucide-react"
 import type { PDFDocumentProxy } from "pdfjs-dist"
 import { File } from "react-pdf/dist/cjs/shared/types"
 
@@ -64,6 +67,40 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
     setNumPages(nextNumPages)
   }
 
+  // Function to handle download using jsPDF
+  function handleDownload() {
+    const year = new Date().getFullYear()
+    const month = new Date().getMonth()
+    const day = new Date().getDate()
+    const hour = new Date().getHours()
+    const minutes = new Date().getMinutes()
+    const seconds = new Date().getSeconds()
+    const date = `${year}-${month + 1}-${day}-${hour}-${minutes}-${seconds}`
+    if (file && numPages !== undefined) {
+      const doc = new jsPDF()
+      // Loop through each page and add it to the PDF document
+      for (let i = 1; i <= numPages; i++) {
+        const canvas = document.getElementById(
+          `page_canvas_${i}`
+        ) as HTMLCanvasElement
+        const imageData = canvas.toDataURL("image/jpeg")
+        doc.addImage(
+          imageData,
+          "JPEG",
+          0,
+          0,
+          doc.internal.pageSize.getWidth(),
+          doc.internal.pageSize.getHeight()
+        )
+        if (i !== numPages) {
+          doc.addPage()
+        }
+      }
+      // Save the PDF file
+      doc.save(`favorites-${date}.pdf`)
+    }
+  }
+
   return (
     <div>
       <label htmlFor="file"></label>{" "}
@@ -71,36 +108,34 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <div
         ref={setContainerRef}
         className={`absolute inset-x-0 top-[6.2rem] z-40 mx-auto overflow-auto rounded-md shadow-md ${
-          file ? "border-2 border-indigo-400/50 shadow-indigo-700" : ""
+          file
+            ? "border border-indigo-400/50 p-2 shadow-indigo-700 dark:bg-zinc-100"
+            : ""
         }`}
       >
         {!file ||
           (file !== null && (
-            <Button
-              variant={"moon"}
-              className="absolute right-0 z-50 h-8 w-8 rounded-md p-1 text-sm" // Adjust padding and font size here
-              onClick={() => {
-                if (file) {
-                  setFile(null)
-                }
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="feather feather-x"
+            <>
+              <Button
+                variant={"default"}
+                className="absolute -top-0 left-4 z-50 h-[1.6rem] w-auto rounded-md border lg:h-14"
+                onClick={handleDownload} // Call the handleDownload function
               >
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-                <line x1="6" y1="18" x2="18" y2="6"></line>
-              </svg>
-            </Button>
+                <DownloadIcon size={16} />
+                <span className=" ml-2 p-4 text-xs md:text-xl">Download</span>
+              </Button>
+              <Button
+                variant={"default"}
+                className="absolute -top-0 right-4 z-50 h-[1.6rem] w-auto rounded-md border lg:h-14 "
+                onClick={() => {
+                  if (file) {
+                    setFile(null)
+                  }
+                }}
+              >
+                <ExitIcon />
+              </Button>
+            </>
           ))}
         <Document
           file={file}
@@ -109,13 +144,19 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
           options={options}
           className={"rounded-md"}
         >
-          {Array.from(new Array(numPages), (el, index) => (
-            <Page
-              key={`page_${index + 1}`}
-              pageNumber={index + 1}
-              width={containerWidth}
-            />
-          ))}
+          {numPages !== undefined &&
+            Array.from(new Array(numPages), (el, index) => (
+              <Page
+                key={`page_${index + 1}`}
+                pageNumber={index + 1}
+                width={containerWidth}
+                canvasRef={(el) => {
+                  if (el) {
+                    el.id = `page_canvas_${index + 1}`
+                  }
+                }}
+              />
+            ))}
         </Document>
       </div>
     </div>
