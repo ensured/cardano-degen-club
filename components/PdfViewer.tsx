@@ -97,7 +97,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
         }
       }
       // Save the PDF file
-      doc.save(`favorites-${date}.pdf`)
+      doc.save(`Recipes-(Favorites)--[${date}].pdf`)
     }
   }
 
@@ -107,9 +107,9 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className={`absolute inset-x-0 top-[6.2rem] z-40 mx-auto overflow-auto rounded-md shadow-md ${
+        className={` absolute inset-x-0 top-[6.2rem] z-40 mx-auto overflow-auto rounded-md shadow-md ${
           file
-            ? "border border-indigo-400/50 p-2 shadow-indigo-700 dark:bg-zinc-100"
+            ? "border border-indigo-400/50 shadow-indigo-700 dark:bg-zinc-100"
             : ""
         }`}
       >
@@ -118,15 +118,15 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
             <>
               <Button
                 variant={"default"}
-                className="absolute -top-0 left-4 z-50 h-[1.6rem] w-auto rounded-md border lg:h-14"
+                className=" absolute -top-0 left-4 z-50 h-[1.6rem] w-auto rounded-md border dark:hover:bg-zinc-200  hover:border-slate-500 lg:h-14"
                 onClick={handleDownload} // Call the handleDownload function
               >
                 <DownloadIcon size={16} />
-                <span className=" ml-2 p-4 text-xs md:text-xl">Download</span>
+                <span className=" ml-2 p-4 text-sm md:text-xl">Download</span>
               </Button>
               <Button
                 variant={"default"}
-                className="absolute -top-0 right-4 z-50 h-[1.6rem] w-auto rounded-md border lg:h-14 "
+                className="absolute dark:hover:bg-zinc-200  hover:border-slate-500   -top-0 right-4 z-50 h-[1.6rem] rounded-md border lg:h-[2.6rem]"
                 onClick={() => {
                   if (file) {
                     setFile(null)

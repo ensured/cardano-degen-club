@@ -15,6 +15,7 @@ module.exports = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
+        'xxs': '240px',
         xs: "325px",
         ...defaultTheme.screens,
       },

@@ -37,7 +37,7 @@ const SearchRecipes = () => {
   } = useRecipeSearch()
 
   return (
-    <div className="w-full relative flex flex-col p-2">
+    <div className="relative flex w-full flex-col p-2">
       <div
         className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-sky-600"
         style={{ width: `${scrollProgress}%` }}
