@@ -18,6 +18,7 @@ const RecipeSearchForm = ({
   loading,
   setLoading,
   suggestions,
+  setSuggestions,
   setSearchResults,
 }) => {
   const router = useRouter()
@@ -73,6 +74,7 @@ const RecipeSearchForm = ({
                     <div
                       key={suggestion}
                       onClick={(e) => {
+                        setSuggestions([])
                         setSearchResults({
                           hits: [],
                           count: 0,

@@ -72,10 +72,10 @@ const useRecipeSearch = () => {
             type: "error",
           })
         } finally {
+          setSuggestions([])
           setLoading(false)
           router.replace(`?q=${q}`)
           setLastInputSearched(q)
-          setSuggestions([])
         }
       }
 
@@ -118,10 +118,10 @@ const useRecipeSearch = () => {
       } catch (err) {
         console.log(err)
       } finally {
+        setSuggestions([])
         setLoading(false)
         router.replace(`?q=${input}`)
         setLastInputSearched(input)
-        setSuggestions([])
       }
     },
     [input, lastInputSearched, router]
