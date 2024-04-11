@@ -109,7 +109,7 @@ const RecipeSearchForm = ({
           className="relative flex w-[6.8rem] select-none items-center justify-center"
           disabled={!inputChanged || loading}
         >
-          <div className=" flex items-center justify-center">
+          <div className=" flex items-center justify-center text-base md:text-lg">
             {/* {loading && (
                 <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
               )} */}
@@ -117,11 +117,11 @@ const RecipeSearchForm = ({
           </div>
         </Button>
         <Button
-          className="select-none gap-1"
+          className="select-none gap-1 text-base md:text-lg"
           disabled={loading}
           onClick={handleGetRandomFood}
         >
-          Random <DicesIcon size={size?.width < 460 ? 16 : 20} />
+          Random <DicesIcon size={size?.width < 768 ? 20 : 24} />
         </Button>
       </div>
     </form>

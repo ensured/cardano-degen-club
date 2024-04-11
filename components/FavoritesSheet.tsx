@@ -44,12 +44,12 @@ const FavoritesSheet = ({
         <SheetTrigger asChild>
           <Button
             disabled={loading ? true : false}
-            className="flex select-none gap-1"
+            className="flex select-none gap-1 text-base md:text-lg"
             onClick={() => setOpen(!isOpen)}
             size={"sm"}
           >
             <Star
-              size={size?.width > 520 ? 22 : 18}
+              size={size?.width < 768 ? 20 : 24}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />
             Favorites
@@ -61,7 +61,7 @@ const FavoritesSheet = ({
               <div className="flex select-none items-center justify-center gap-2 p-2 text-2xl md:text-3xl">
                 Favorites{" "}
                 <StarIcon
-                  size={size?.width < 768 ? 26 : 36}
+                  size={size?.width < 768 ? 24 : 33}
                   color={theme.theme === "light" ? "black" : "#FFD700"}
                 />
               </div>

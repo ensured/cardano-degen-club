@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Download, Loader2 } from "lucide-react"
+import { Download, File, Loader2 } from "lucide-react"
 
 import {
   Dialog,
@@ -30,13 +30,6 @@ export function ConfirmPreviewAlertDialog({
   isConfirmPreviewDialogOpen: boolean
   setIsConfirmPreviewDialogOpen: (isOpen: boolean) => void
 }) {
-  const [fileName, setFileName] = useState("")
-  // const [isChecked, setIsChecked] = useState(true)
-
-  // const onSwitchChange = () => {
-  //   setIsChecked(!isChecked)
-  // }
-
   return (
     <Dialog
       open={isConfirmPreviewDialogOpen}
@@ -47,6 +40,9 @@ export function ConfirmPreviewAlertDialog({
       <DialogContent>
         <DialogHeader>
           <div className="flex flex-col items-center justify-center p-4">
+            <DialogDescription className="flex w-full justify-center p-2 pb-7 font-serif text-xs italic">
+              It might take a minute to process all of the images.
+            </DialogDescription>
             <div className="relative w-full">
               <Button
                 className="w-full"
@@ -60,9 +56,9 @@ export function ConfirmPreviewAlertDialog({
                   {loading ? (
                     <Loader2 className="w-5 animate-spin md:w-8" />
                   ) : (
-                    <Download className="w-5 md:w-8" />
+                    <File className="w-5 md:w-8" />
                   )}
-                  Download
+                  Preview
                 </div>
                 {loading && (
                   <motion.div
@@ -81,11 +77,6 @@ export function ConfirmPreviewAlertDialog({
             </div>
           </div>
         </DialogHeader>
-        <DialogFooter>
-          <DialogDescription className="flex w-full justify-center p-2 font-serif text-xs italic">
-            It might take a minute to process all of the images.
-          </DialogDescription>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
