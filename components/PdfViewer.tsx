@@ -31,6 +31,7 @@ const options = {
 const resizeObserverOptions = {}
 
 type PDFFile = string | File | null
+
 async function processBatch(
   batchIndex: number,
   batchSize: number,
@@ -44,15 +45,14 @@ async function processBatch(
   for (let i = startPage; i <= endPage; i++) {
     const canvas = document.getElementById(`page_canvas_${i}`)
     if (canvas instanceof HTMLCanvasElement) {
-      // Check if canvas is not null
-      // doc.addImage(
-      //   canvas,
-      //   "canvas",
-      //   0,
-      //   0,
-      //   doc.internal.pageSize.getWidth(),
-      //   doc.internal.pageSize.getHeight()
-      // )
+      doc.addImage(
+        canvas,
+        "canvas",
+        0,
+        0,
+        doc.internal.pageSize.getWidth(),
+        doc.internal.pageSize.getHeight()
+      )
     } else {
       console.error(`Canvas not found for page ${i}`)
     }
@@ -109,7 +109,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   }
 
   // Function to handle download using jsPDF
-  function handleDownload() {
+  async function handleDownload() {
     const year = new Date().getFullYear()
     const month = new Date().getMonth() + 1 // Adjust for zero-based indexing
     const day = new Date().getDate()
@@ -122,17 +122,23 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       const doc = new jsPDF()
       const batchSize = 5
       const totalBatches = Math.ceil(numPages / batchSize)
+      console.log(totalBatches)
       const promises = []
       for (let i = 0; i < totalBatches; i++) {
         promises.push(processBatch(i, batchSize, numPages, doc, totalBatches))
       }
 
-      Promise.all(promises).then(() => {
+      try {
+        await Promise.all(promises)
         doc.save(`Recipes-(Favorites)--[${date}].pdf`)
-      })
+      } catch (error) {
+        console.error("Error processing batches:", error)
+      }
     }
   }
+
   if (!size.width || !size.height) return null
+
   return (
     <div>
       <label htmlFor="file"></label>{" "}

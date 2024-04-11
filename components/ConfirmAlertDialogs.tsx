@@ -56,7 +56,8 @@ export function ConfirmPreviewAlertDialog({
                 "Are you sure?"
               )}
             </DialogDescription>
-            <div className="relative w-full pb-5">
+
+            <DialogDescription className="relative w-full pb-5">
               <Button
                 className="w-full"
                 size={"sm"}
@@ -74,7 +75,7 @@ export function ConfirmPreviewAlertDialog({
                   Preview
                 </div>
               </Button>
-            </div>
+            </DialogDescription>
           </div>
         </DialogHeader>
       </DialogContent>
