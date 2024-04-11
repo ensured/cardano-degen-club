@@ -50,7 +50,6 @@ const SearchRecipes = () => {
       {/* Include the ScrollTooltip component */}
       <RecipeSearchForm
         suggestions={suggestions}
-        setSuggestions={setSuggestions}
         searchRecipes={searchRecipes}
         handleInputChange={handleInputChange}
         inputChanged={inputChanged}

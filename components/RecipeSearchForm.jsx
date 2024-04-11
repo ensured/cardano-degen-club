@@ -18,7 +18,6 @@ const RecipeSearchForm = ({
   loading,
   setLoading,
   suggestions,
-  setSuggestions,
   setSearchResults,
 }) => {
   const router = useRouter()
