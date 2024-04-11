@@ -312,20 +312,20 @@ const RecipesMenu = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="flex h-12 w-full items-center p-2 text-sm opacity-100 transition-opacity duration-100">
+    <div className="flex h-12 w-full items-center px-4 text-sm opacity-100 transition-opacity duration-100">
       <div className="flex w-full justify-center gap-2">
-        {searchResults.count > 0 ? (
-          <Badge variant={"outline"} className=" select-none">
-            Found <b>{searchResults.count}</b> results
-          </Badge>
-        ) : (
-          <Badge variant={"outline"} className="invisible"></Badge>
-        )}
-        <div className={`flex justify-end`}>
-          {pdfPreviewUrl && (
-            <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
+        <div className="w-[320px]">
+          {searchResults.count > 0 ? (
+            <Badge variant={"outline"} className=" select-none ">
+              Found <b>{searchResults.count}</b> results
+            </Badge>
+          ) : (
+            <Badge variant={"outline"} className=" invisible"></Badge>
           )}
         </div>
+        {pdfPreviewUrl && (
+          <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
+        )}
         <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen} loading={loading}>
           {Object.keys(favorites).length > 0 ? (
             <div className="mb-3 mt-4 flex justify-center gap-1">

@@ -39,7 +39,7 @@ const FavoritesSheet = ({
   //               ? false
   //               : true
   return (
-    <div className="flex justify-center gap-x-2">
+    <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button

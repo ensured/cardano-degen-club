@@ -110,7 +110,16 @@ const marketplaces = [
   },
 ]
 
+const blockChainExplorer = [
+  {
+    name: "A blockchain explorer like you've never seen before. EUXTO",
+    twitter: "https://twitter.com/oravecpeter",
+    url: "https://eutxo.org/",
+  }
+]
+
 const chartsAnalytics = [
+
   {
     twitter: "https://twitter.com/EdinburghUni",
     name: "Edinburgh Decentralization Index (EDI)",
@@ -381,6 +390,7 @@ const allLinks = {
   Aggregators,
   stablecoins,
   privacy,
+  blockChainExplorer,
   syntheticProtocols,
   oracles,
   memecoins,
