@@ -139,25 +139,24 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <div
         ref={setContainerRef}
         className={` absolute inset-x-0 top-[6.2rem] z-40 mx-auto overflow-auto rounded-md shadow-md ${
-          file
-            ? "border border-indigo-400/50 shadow-indigo-700 dark:bg-zinc-100"
-            : ""
+          file ? "border p-6 rounded-sm bg-background" : ""
         }`}
       >
         {!file ||
           (file !== null && (
-            <>
+            <div className="w-full flex flex-row justify-between px-2 py-1 items-center">
               <Button
-                variant={"default"}
-                className=" absolute sm:top-1 top-0 md:top-2 left-4 z-50 h-[1.6rem] w-auto rounded-md border dark:hover:bg-zinc-200  hover:border-slate-500 lg:h-14"
-                onClick={handleDownload} // Call the handleDownload function
+                onClick={handleDownload}
+                // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
+                className="border-opacity-50 border-[0.1px] border-black " // Adding shadow-bottom class to place the shadow at the bottom
               >
                 <DownloadIcon size={size.width < 520 ? 18 : 24} />
                 <span className=" ml-2 p-4 text-sm md:text-xl">Download</span>
               </Button>
               <Button
                 variant={"default"}
-                className="absolute dark:hover:bg-zinc-200  hover:border-slate-500  right-0 top-0 md:top-2 p-1 z-50 h-[2.8rem] w-[3rem] rounded-md border lg:h-[3.2rem] lg:lg:w-[3.2rem]"
+                // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
+                className="border-opacity-50 border-[0.1px] border-black"
                 onClick={() => {
                   if (file) {
                     setFile(null)
@@ -166,18 +165,19 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
               >
                 <ExitIcon className="w-6 h-6" />
               </Button>
-            </>
+            </div>
           ))}
         <Document
           file={file}
           noData={""}
           onLoadSuccess={onDocumentLoadSuccess}
           options={options}
-          className={"rounded-md"}
+          className={"rounded-sm"}
         >
           {numPages !== undefined &&
             Array.from(new Array(numPages), (el, index) => (
               <Page
+                className={"rounded-sm"}
                 key={`page_${index + 1}`}
                 pageNumber={index + 1}
                 width={containerWidth}

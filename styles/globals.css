@@ -122,7 +122,9 @@
 ::-webkit-scrollbar-corner {
   display: none;
 }
-
+.react-pdf__Page__textContent {
+  border-radius: 6px;
+}
 @keyframes fadeIn {
   from {
     opacity: 0;
