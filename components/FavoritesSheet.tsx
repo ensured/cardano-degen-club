@@ -19,17 +19,25 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 
+type Favorites = {
+  [recipeName: string]: {
+    link: string
+    image: string // Assuming image is a URL or similar
+  }
+}
 const FavoritesSheet = ({
   children,
   setOpen,
   isOpen,
   loading,
+  favorites,
   isLoadingPdfPreview,
 }: {
   children: ReactNode
   setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
   isOpen: boolean
   loading: boolean
+  favorites: Favorites
   isLoadingPdfPreview: boolean
 }) => {
   const theme = useTheme()
@@ -52,18 +60,32 @@ const FavoritesSheet = ({
               size={size?.width < 768 ? 20 : 24}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />
+            <b>
+              {Object.keys(favorites).length === 0
+                ? " "
+                : Object.keys(favorites).length}
+            </b>
             Favorites
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>
           <SheetHeader>
             <SheetTitle>
-              <div className="flex select-none items-center justify-center gap-2 p-2 text-2xl md:text-3xl">
-                Favorites{" "}
+              <div className="flex select-none items-center justify-center gap-2 text-2xl md:text-3xl ">
                 <StarIcon
                   size={size?.width < 768 ? 24 : 33}
                   color={theme.theme === "light" ? "black" : "#FFD700"}
                 />
+                <div className="flex gap-2">
+                  Favorites
+                  <span>
+                    (
+                    {Object.keys(favorites).length === 0
+                      ? " "
+                      : Object.keys(favorites).length}
+                    )
+                  </span>
+                </div>
               </div>
             </SheetTitle>
           </SheetHeader>

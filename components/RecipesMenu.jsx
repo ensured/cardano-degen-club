@@ -176,29 +176,39 @@ const RecipesMenu = ({
         {pdfPreviewUrl && (
           <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
         )}
-        <FavoritesSheet setOpen={setIsOpen} isOpen={isOpen} loading={loading}>
+        <FavoritesSheet
+          setOpen={setIsOpen}
+          isOpen={isOpen}
+          loading={loading}
+          favorites={favorites}
+        >
           {Object.keys(favorites).length > 0 ? (
-            <div className="mb-3 mt-4 flex justify-center gap-1">
-              <ConfirmPreviewAlertDialog
-                progress={progress}
-                handlePreviewPDF={handlePreviewPDF}
-                loading={isLoadingPdfPreview}
-                isConfirmPreviewDialogOpen={
-                  isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
-                }
-                setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
-              >
-                <Button variant={"outline"} className="gap-2">
-                  <File className="left-2" />
-                  <div className="line-clamp-1 items-center text-lg">
-                    Preview PDF{" "}
-                  </div>
-                </Button>
-              </ConfirmPreviewAlertDialog>
-            </div>
+            <>
+              <div className="mb-3 mt-4 flex justify-center gap-1">
+                <ConfirmPreviewAlertDialog
+                  progress={progress}
+                  handlePreviewPDF={handlePreviewPDF}
+                  loading={isLoadingPdfPreview}
+                  isConfirmPreviewDialogOpen={
+                    isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
+                  }
+                  setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
+                >
+                  <Button variant={"outline"} className="gap-2">
+                    <File className="left-2" />
+                    <div className="line-clamp-1 items-center text-lg">
+                      Preview PDF{" "}
+                    </div>
+                  </Button>
+                </ConfirmPreviewAlertDialog>
+              </div>
+            </>
           ) : (
-            <div className="flex justify-center ">
-              Get started by favoriting something!
+            <div className="flex justify-center">
+              <span className="sm:text-md text-xs md:mx-2 md:text-lg">
+                You have <b>{Object.keys(favorites).length}</b> recipes
+                favorited. Get started by favoriting something!
+              </span>
             </div>
           )}
           <div className="flex max-h-[85%] flex-col overflow-auto rounded-md">
