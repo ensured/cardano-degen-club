@@ -180,7 +180,11 @@ const lendingBorrowing = [
   },
 ]
 
-const yieldAggregators = [
+const Aggregators = [
+  {
+    name: "@AdaMarkets",
+    url: "https://ada.markets/",
+  },
   {
     name: "@OptimFi",
     url: "https://optimfi.com/",
@@ -374,7 +378,7 @@ const allLinks = {
   marketplaces,
   chartsAnalytics,
   lendingBorrowing,
-  yieldAggregators,
+  Aggregators,
   stablecoins,
   privacy,
   syntheticProtocols,
