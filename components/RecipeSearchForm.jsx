@@ -64,10 +64,11 @@ const RecipeSearchForm = ({
           onChange={handleInputChange}
           value={input}
           ref={inputRef}
+          className="rounded-b-none"
         />
         {suggestions.length > 0 && (
           <div className="absolute left-0 top-10 z-50 bg-background">
-            <ScrollArea className="h-24 rounded-md border">
+            <ScrollArea className="h-24 rounded-b-md border">
               <div className="p-2">
                 {suggestions.map((suggestion) => {
                   return (
@@ -84,10 +85,9 @@ const RecipeSearchForm = ({
                         setInput(suggestion)
                         searchRecipes(e, suggestion)
                       }}
-                      className="line-clamp-1 rounded-md px-12 text-sm hover:cursor-pointer hover:bg-secondary"
+                      className="line-clamp-1 border-b hover:underline min-w-[12rem] pl-1.5 text-sm hover:cursor-pointer "
                     >
                       {suggestion}
-                      <Separator className="" />
                     </div>
                   )
                 })}
