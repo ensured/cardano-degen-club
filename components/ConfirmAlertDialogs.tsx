@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { Download, File, Loader2 } from "lucide-react"
 
 import {
@@ -61,10 +62,17 @@ export function ConfirmPreviewAlertDialog({
                 </div>
               </Button>
               {loading && (
-                <div className="absolute top-full w-full py-1 text-green">
+                <motion.div
+                  className="absolute top-full w-full py-1 "
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.12 }}
+                >
                   <ProgressDemo progress={progress as number} />
-                  <DialogDescription>{progress.toFixed(0)}%</DialogDescription>
-                </div>
+                  <DialogDescription className="flex justify-center">
+                    {progress.toFixed(0)}%
+                  </DialogDescription>
+                </motion.div>
               )}
             </div>
           </div>
@@ -112,57 +120,63 @@ export function ConfirmDownloadAlertDialogForm({
       <DialogContent>
         <DialogHeader>
           <div className="flex flex-col items-center justify-center p-4">
-            <div className="mb-4 flex items-center">
-              <Input
-                onChange={(e) => {
-                  setFileName(e.target.value)
-                }}
-                type="text"
-                placeholder="Filename"
-                value={fileName}
-                className="w-60 rounded-md border p-2"
-              />
-              <div className="ml-2 text-sm font-bold">.pdf</div>
-            </div>
-            <div className="mb-4 flex items-center">
-              <Switch
-                id="airplane-mode"
-                defaultChecked={true}
-                checked={isChecked}
-                onCheckedChange={onSwitchChange}
-                className="mr-2"
-              />
-              <Label htmlFor="airplane-mode" className="text-sm font-bold">
-                Append date and time to filename?
-              </Label>
-            </div>
-            <div className="relative w-full">
-              <Button
-                onClick={() => {
-                  handleDownloadPDF(fileName, isChecked)
-                  setIsConfirmDownloadFileDialogOpen(false)
-                }}
-                className="w-full"
-                size={"sm"}
-              >
-                <div className="flex items-center justify-center gap-1">
-                  {loading ? (
-                    <Loader2 className="w-5 animate-spin md:w-8" />
-                  ) : (
-                    <Download className="w-5 md:w-8" />
-                  )}
-                  Download
-                </div>
-                {loading && (
-                  <div className="absolute top-full w-full py-1 text-green">
-                    <ProgressDemo progress={progress as number} />
-                    <DialogDescription>
-                      {progress.toFixed(0)}%
-                    </DialogDescription>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleDownloadPDF(fileName, isChecked)
+                setIsConfirmDownloadFileDialogOpen(false)
+              }}
+            >
+              <div className="mb-2 flex items-center justify-center">
+                <Input
+                  onChange={(e) => {
+                    setFileName(e.target.value)
+                  }}
+                  type="text"
+                  placeholder="Filename"
+                  value={fileName}
+                  className="w-60 rounded-md border p-2"
+                />
+                <div className="ml-2 text-sm font-bold">.pdf</div>
+              </div>
+              <div className="mb-4 flex items-center">
+                <Switch
+                  id="airplane-mode"
+                  defaultChecked={true}
+                  checked={isChecked}
+                  onCheckedChange={onSwitchChange}
+                  className="mr-2"
+                />
+                <Label htmlFor="airplane-mode" className="text-sm font-bold">
+                  Append date to filename
+                </Label>
+              </div>
+              <div className="relative w-full">
+                <Button className="w-full" size={"sm"}>
+                  <div className="flex items-center justify-center gap-1">
+                    {loading ? (
+                      <Loader2 className="w-5 animate-spin md:w-8" />
+                    ) : (
+                      <Download className="w-5 md:w-8" />
+                    )}
+                    Download
                   </div>
-                )}
-              </Button>
-            </div>
+                  {loading && (
+                    <motion.div
+                      className="absolute top-full w-full py-1"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.12 }}
+                    >
+                      <ProgressDemo progress={progress as number} />
+                      <DialogDescription className="flex justify-center">
+                        {progress.toFixed(0)}%
+                      </DialogDescription>
+                    </motion.div>
+                  )}
+                </Button>
+              </div>
+            </form>
           </div>
         </DialogHeader>
         <DialogFooter>
