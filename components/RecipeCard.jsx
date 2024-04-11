@@ -67,7 +67,7 @@ export const RecipeCard = ({
           onMouseEnter={handleStarIconHover(index)}
           onMouseLeave={handleStarIconHover(null)}
           color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-          className={`absolute bottom-0  right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-14 md:w-14 ${
+          className={`absolute bottom-0  right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-[3.2rem] md:w-[3.2rem] ${
             isMobile ? "" : "hover:scale-125 hover:animate-pulse"
           }`}
           fill={
