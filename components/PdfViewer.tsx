@@ -1,4 +1,5 @@
 /* eslint-disable tailwindcss/classnames-order */
+
 "use client"
 
 import React, { useCallback, useEffect, useState } from "react"
@@ -11,7 +12,7 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css"
 import "react-pdf/dist/esm/Page/TextLayer.css"
 import { ExitIcon } from "@radix-ui/react-icons"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Download, DownloadIcon, SidebarClose } from "lucide-react"
+import { Download, DownloadIcon, SidebarClose, X } from "lucide-react"
 import type { PDFDocumentProxy } from "pdfjs-dist"
 import { File } from "react-pdf/dist/cjs/shared/types"
 
@@ -138,32 +139,33 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className={` absolute inset-x-0 top-[6.2rem] z-40 mx-auto overflow-auto rounded-md shadow-md ${
-          file ? "border p-6 rounded-sm bg-background" : ""
+        className={` absolute inset-x-0 top-[6.2rem] z-40 overflow-auto mx-2 shadow-md ${
+          file ? "border p-5 rounded-sm bg-background" : ""
         }`}
       >
         {!file ||
           (file !== null && (
-            <div className="w-full flex flex-row justify-between px-2 py-1 items-center">
+            <div className="w-full flex flex-row justify-between items-center flex-wrap mb-2">
               <Button
                 onClick={handleDownload}
-                // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
-                className="border-opacity-50 border-[0.1px] border-black " // Adding shadow-bottom class to place the shadow at the bottom
+                className="rounded-sm p-2  md:p-8"
               >
-                <DownloadIcon size={size.width < 520 ? 18 : 24} />
-                <span className=" ml-2 p-4 text-sm md:text-xl">Download</span>
+                <DownloadIcon
+                  size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
+                />
+                <span className="ml-2 text-md md:text-3xl xl:md:text-3xl font-serif font-semibold">
+                  Download
+                </span>
               </Button>
               <Button
-                variant={"default"}
-                // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
-                className="border-opacity-50 border-[0.1px] border-black"
+                className="rounded-sm p-2 md:p-8"
                 onClick={() => {
                   if (file) {
                     setFile(null)
                   }
                 }}
               >
-                <ExitIcon className="w-6 h-6" />
+                <X size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36} />
               </Button>
             </div>
           ))}
