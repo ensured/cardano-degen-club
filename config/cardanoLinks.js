@@ -112,7 +112,7 @@ const marketplaces = [
 
 const blockChainExplorer = [
   {
-    name: "A blockchain explorer like you've never seen before. EUXTO",
+    name: "A blockchain explorer like you've never seen before.",
     twitter: "https://twitter.com/oravecpeter",
     url: "https://eutxo.org/",
   }

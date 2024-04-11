@@ -316,11 +316,11 @@ const RecipesMenu = ({
       <div className="flex w-full justify-center gap-2">
         <div className="w-[320px]">
           {searchResults.count > 0 ? (
-            <Badge variant={"outline"} className=" select-none ">
+            <Badge variant={"outline"} className="select-none p-2">
               Found <b>{searchResults.count}</b> results
             </Badge>
           ) : (
-            <Badge variant={"outline"} className=" invisible"></Badge>
+            <Badge variant={"outline"} className="invisible"></Badge>
           )}
         </div>
         {pdfPreviewUrl && (

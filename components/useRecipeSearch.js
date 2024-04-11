@@ -5,8 +5,6 @@ import toast from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
 
-import { getNextPageData } from "./actions"
-
 const useRecipeSearch = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
