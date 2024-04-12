@@ -6,7 +6,6 @@ export const dynamic = "force-dynamic"
 export async function GET(req: NextRequest, res: NextResponse) {
   const index = Math.floor(Math.random() * foodItems.length)
   const randomFood = foodItems[index]
-  console.log(randomFood)
   const response = await fetch(
     `https://api.edamam.com/api/food-database/v2/parser?ingr=${randomFood}&app_id=${process.env.FOOD_API_APP_ID}&app_key=${process.env.FOOD_API_APP_KEY}`
   )

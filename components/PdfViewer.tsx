@@ -1,5 +1,4 @@
 /* eslint-disable tailwindcss/classnames-order */
-
 "use client"
 
 import React, { useCallback, useEffect, useState } from "react"
@@ -10,9 +9,8 @@ import { Document, Page, pdfjs } from "react-pdf"
 import "./PdfViewer.css"
 import "react-pdf/dist/esm/Page/AnnotationLayer.css"
 import "react-pdf/dist/esm/Page/TextLayer.css"
-import { ExitIcon } from "@radix-ui/react-icons"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Download, DownloadIcon, SidebarClose, X } from "lucide-react"
+import { DownloadIcon, X } from "lucide-react"
 import type { PDFDocumentProxy } from "pdfjs-dist"
 import { File } from "react-pdf/dist/cjs/shared/types"
 
@@ -146,15 +144,15 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <div
         ref={setContainerRef}
         className={` absolute inset-x-0 top-[6.2rem] z-40 overflow-auto mx-2 shadow-md ${
-          file ? "border p-5 rounded-sm bg-background" : ""
+          file ? "border p-2 rounded-sm bg-background" : ""
         }`}
       >
         {!file ||
           (file !== null && (
-            <div className="w-full flex flex-row justify-between items-center flex-wrap mb-2">
+            <div className="w-full flex flex-row justify-between items-center flex-wrap mb-2 pb-1">
               <Button
                 onClick={handleDownload}
-                className="rounded-sm p-2  md:p-8"
+                className="rounded-sm p-2 md:p-8 hover:shadow-md  hover:shadow-green hover:rounded-sm"
               >
                 <DownloadIcon
                   size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
@@ -163,8 +161,9 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
                   Download
                 </span>
               </Button>
+
               <Button
-                className="rounded-sm p-2 md:p-8"
+                className="rounded-sm p-2 md:p-8 hover:shadow-md  hover:shadow-red-700 hover:rounded-sm"
                 onClick={() => {
                   if (file) {
                     setFile(null)
@@ -180,7 +179,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
           noData={""}
           onLoadSuccess={onDocumentLoadSuccess}
           options={options}
-          className={"rounded-sm"}
+          className={""}
         >
           {numPages !== undefined &&
             Array.from(new Array(numPages), (el, index) => (

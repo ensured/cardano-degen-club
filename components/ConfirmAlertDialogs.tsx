@@ -37,47 +37,45 @@ export function ConfirmPreviewAlertDialog({
     >
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
-        <DialogHeader>
-          <div className="flex flex-col items-center justify-center px-8">
-            <DialogDescription className="flex h-12 w-full justify-center p-2 font-serif text-xs italic">
-              {loading ? (
-                <motion.div
-                  className="w-full "
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.12 }}
-                >
-                  <ProgressDemo progress={progress as number} />
-                  <DialogDescription className="flex justify-center">
-                    {progress.toFixed(0)}%
-                  </DialogDescription>
-                </motion.div>
-              ) : (
-                "Are you sure?"
-              )}
-            </DialogDescription>
-
-            <DialogDescription className="relative w-full pb-5">
-              <Button
-                className="w-full"
-                size={"sm"}
-                onClick={() => {
-                  handlePreviewPDF()
-                  setIsConfirmPreviewDialogOpen(false)
-                }}
+        <div className="flex flex-col items-center justify-center px-8">
+          <DialogDescription className="flex h-12 w-full justify-center p-2 font-serif text-xs italic">
+            {loading ? (
+              <motion.div
+                className="w-full "
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.12 }}
               >
-                <div className="flex items-center justify-center gap-1">
-                  {loading ? (
-                    <Loader2 className="w-5 animate-spin md:w-8" />
-                  ) : (
-                    <FileText className="w-5 md:w-8" />
-                  )}
-                  Preview
-                </div>
-              </Button>
-            </DialogDescription>
-          </div>
-        </DialogHeader>
+                <ProgressDemo progress={progress as number} />
+                <DialogDescription className="flex justify-center">
+                  {progress.toFixed(0)}%
+                </DialogDescription>
+              </motion.div>
+            ) : (
+              "Are you sure?"
+            )}
+          </DialogDescription>
+
+          <DialogDescription className="relative w-full pb-5">
+            <Button
+              className="w-full"
+              size={"sm"}
+              onClick={() => {
+                handlePreviewPDF()
+                setIsConfirmPreviewDialogOpen(false)
+              }}
+            >
+              <div className="flex items-center justify-center gap-1">
+                {loading ? (
+                  <Loader2 className="w-5 animate-spin md:w-8" />
+                ) : (
+                  <FileText className="w-5 md:w-8" />
+                )}
+                Preview
+              </div>
+            </Button>
+          </DialogDescription>
+        </div>
       </DialogContent>
     </Dialog>
   )
