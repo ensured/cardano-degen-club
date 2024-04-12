@@ -52,7 +52,7 @@ const FavoritesSheet = ({
             size={"sm"}
           >
             <StarIcon
-              size={size?.width < 768 ? 20 : 24}
+              size={size?.width < 768 ? 19 : 22}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />
             Favorites
@@ -66,15 +66,13 @@ const FavoritesSheet = ({
                   size={size?.width < 768 ? 24 : 33}
                   color={theme.theme === "light" ? "black" : "#FFD700"}
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-1 ">
                   Favorites
-                  <span>
-                    (
+                  <div className="mt-1 text-xs font-bold md:text-sm">
                     {Object.keys(favorites).length === 0
-                      ? " "
-                      : Object.keys(favorites).length}
-                    )
-                  </span>
+                      ? ""
+                      : `(${Object.keys(favorites).length})`}
+                  </div>
                 </div>
               </div>
             </SheetTitle>

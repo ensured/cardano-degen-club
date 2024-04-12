@@ -1,7 +1,7 @@
 /* eslint-disable tailwindcss/classnames-order */
 "use client"
 
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useResizeObserver } from "@wojtekmaj/react-hooks"
 import { jsPDF } from "jspdf"
 import { Document, Page, pdfjs } from "react-pdf"
@@ -14,7 +14,11 @@ import { DownloadIcon, X } from "lucide-react"
 import type { PDFDocumentProxy } from "pdfjs-dist"
 import { File } from "react-pdf/dist/cjs/shared/types"
 
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+
 import { Button } from "./ui/button"
+import { Input } from "./ui/input"
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
@@ -71,6 +75,28 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   const [numPages, setNumPages] = useState<number>()
   const [containerRef, setContainerRef] = useState<HTMLElement | null>(null)
   const [containerWidth, setContainerWidth] = useState<number>()
+  const [filename, setFilename] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [isSwitchChecked, setIsSwitchChecked] = useState(true)
+
+  const moveCursor = useCallback(async () => {
+    if (inputRef.current) {
+      const inputLength = filename.length
+      const pdfIndex = filename.lastIndexOf(".pdf")
+
+      if (pdfIndex !== -1) {
+        const cursorPosition = Math.min(
+          inputRef.current.selectionStart ?? inputLength,
+          pdfIndex
+        )
+        inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
+      }
+    }
+  }, [filename])
+
+  useEffect(() => {
+    moveCursor()
+  }, [filename, moveCursor])
 
   const size = useWindowSize()
 
@@ -97,13 +123,19 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       }
     } catch (e) {
       console.error(e)
+    } finally {
+      inputRef.current?.focus()
     }
   }
 
-  function onDocumentLoadSuccess({
+  async function onDocumentLoadSuccess({
     numPages: nextNumPages,
-  }: PDFDocumentProxy): void {
+  }: PDFDocumentProxy): Promise<void> {
     setNumPages(nextNumPages)
+    setTimeout(() => {
+      inputRef.current?.focus()
+      moveCursor()
+    }, 200)
   }
 
   // Function to handle download using jsPDF
@@ -118,7 +150,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
 
     if (file && numPages !== undefined) {
       const doc = new jsPDF()
-      const batchSize = 5
+      const batchSize = 10
       const totalBatches = Math.ceil(numPages / batchSize)
       console.log(totalBatches)
       const promises = []
@@ -128,11 +160,41 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
 
       try {
         await Promise.all(promises)
-        doc.save(`Recipes-(Favorites)--[${date}].pdf`)
+        if (filename) {
+          if (isSwitchChecked) {
+            doc.save(`${filename.replace(".pdf", "")}--[${date}].pdf`)
+          } else {
+            doc.save(`${filename.replace(".pdf", "")}.pdf`)
+          }
+        } else {
+          if (isSwitchChecked) {
+            doc.save(`Recipes-(Favorites)--[${date}].pdf`)
+          } else {
+            doc.save(`Recipes-(Favorites).pdf`)
+          }
+        }
       } catch (error) {
         console.error("Error processing batches:", error)
       }
     }
+  }
+  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const { value } = event.target
+    const newValue = value.replace(/\.pdf$/, "") + ".pdf"
+
+    // Calculate the cursor position to be before the ".pdf" extension
+    const cursorPosition = newValue.lastIndexOf(".pdf")
+
+    setFilename(newValue)
+
+    // Set the cursor position
+    if (inputRef.current) {
+      inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
+    }
+  }
+
+  const handleSwitch = () => {
+    setIsSwitchChecked(!isSwitchChecked)
   }
 
   if (!size.width || !size.height) return null
@@ -150,25 +212,52 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
         {!file ||
           (file !== null && (
             <div className="w-full flex flex-row justify-between items-center flex-wrap mb-2 pb-1">
-              <Button variant={"moon"} onClick={handleDownload}>
-                <DownloadIcon
-                  size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
-                />
-                <span className="ml-2 text-md md:text-3xl xl:md:text-3xl font-serif font-semibold">
-                  Download
-                </span>
-              </Button>
+              <div className="flex gap-2 flex-wrap w-full">
+                <div className="w-full flex justify-center gap-2">
+                  <Label htmlFor="airplane-mode">
+                    <div className="flex flex-col w-full items-center space-x-2">
+                      <Switch
+                        defaultChecked={isSwitchChecked}
+                        onChange={handleSwitch}
+                        id="airplane-mode"
+                      />
+                      <span className="text-center w-18">Append datetime?</span>
+                    </div>
+                  </Label>
+                  <Input
+                    type="text"
+                    placeholder="filename"
+                    value={filename}
+                    onChange={handleInputChange}
+                    ref={inputRef}
+                    className="w-40 mr-14 "
+                  />
+                </div>
 
-              <Button
-                variant={"destructive"}
-                onClick={() => {
-                  if (file) {
-                    setFile(null)
-                  }
-                }}
-              >
-                <X size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36} />
-              </Button>
+                <div className="flex w-full justify-center items-center">
+                  <Button variant={"moon"} onClick={handleDownload}>
+                    <DownloadIcon
+                      size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
+                    />
+                    <span className="ml-2 text-md md:text-3xl xl:md:text-3xl font-serif font-semibold">
+                      Download
+                    </span>
+                  </Button>
+                  <Button
+                    variant={"destructive"}
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      if (file) {
+                        setFile(null)
+                      }
+                    }}
+                  >
+                    <X
+                      size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
+                    />
+                  </Button>
+                </div>
+              </div>
             </div>
           ))}
         <Document

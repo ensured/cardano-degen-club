@@ -286,15 +286,14 @@ const useRecipeSearch = () => {
           icon: <Trash2Icon color="#e74c3c" />,
         })
         return
-      } else {
-        // Add to favorites
-        const newFavorites = {
-          ...favorites,
-          [recipeName]: { link: recipeLink, image: recipeImage }, // Store both link and image
-        }
-        setFavorites(newFavorites)
-        localStorage.setItem("favorites", JSON.stringify(newFavorites))
       }
+      // Add to favorites
+      const newFavorites = {
+        ...favorites,
+        [recipeName]: { link: recipeLink, image: recipeImage }, // Store both link and image
+      }
+      setFavorites(newFavorites)
+      localStorage.setItem("favorites", JSON.stringify(newFavorites))
     }
   }
 
