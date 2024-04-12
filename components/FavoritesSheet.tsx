@@ -55,11 +55,6 @@ const FavoritesSheet = ({
               size={size?.width < 768 ? 20 : 24}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />
-            <b>
-              {Object.keys(favorites).length === 0
-                ? " "
-                : Object.keys(favorites).length}
-            </b>
             Favorites
           </Button>
         </SheetTrigger>

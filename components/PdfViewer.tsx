@@ -143,17 +143,14 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className={` absolute inset-x-0 top-[6.2rem] z-40 overflow-auto mx-2 shadow-md ${
+        className={` absolute inset-x-0 top-[6.26rem] z-40 overflow-auto mx-2 shadow-md ${
           file ? "border p-2 rounded-sm bg-background" : ""
         }`}
       >
         {!file ||
           (file !== null && (
             <div className="w-full flex flex-row justify-between items-center flex-wrap mb-2 pb-1">
-              <Button
-                onClick={handleDownload}
-                className="rounded-sm p-2 md:p-8 hover:shadow-md  hover:shadow-green hover:rounded-sm"
-              >
+              <Button variant={"moon"} onClick={handleDownload}>
                 <DownloadIcon
                   size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
                 />
@@ -163,7 +160,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
               </Button>
 
               <Button
-                className="rounded-sm p-2 md:p-8 hover:shadow-md  hover:shadow-red-700 hover:rounded-sm"
+                variant={"destructive"}
                 onClick={() => {
                   if (file) {
                     setFile(null)

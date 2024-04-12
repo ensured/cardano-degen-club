@@ -162,9 +162,9 @@ const RecipesMenu = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="flex h-12 w-full items-center px-4 text-sm opacity-100 transition-opacity duration-100">
-      <div className="flex w-full justify-center gap-4">
-        <div className="w-[20.45rem]">
+    <div className="flex h-12 w-full items-center px-4 text-sm opacity-100 transition-opacity duration-100 ">
+      <div className="flex w-full justify-center gap-2">
+        <div className="w-[20.355rem]">
           {searchResults.count > 0 ? (
             <Badge variant={"outline"} className="select-none p-2">
               Found <b>{searchResults.count}</b> results
