@@ -128,9 +128,9 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
     }
   }
 
-  async function onDocumentLoadSuccess({
+  function onDocumentLoadSuccess({
     numPages: nextNumPages,
-  }: PDFDocumentProxy): Promise<void> {
+  }: PDFDocumentProxy): void {
     setNumPages(nextNumPages)
     setTimeout(() => {
       inputRef.current?.focus()
@@ -140,19 +140,11 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
 
   // Function to handle download using jsPDF
   async function handleDownload() {
-    const year = new Date().getFullYear()
-    const month = new Date().getMonth() + 1 // Adjust for zero-based indexing
-    const day = new Date().getDate()
-    const hour = new Date().getHours().toString().padStart(2, "0")
-    const minutes = new Date().getMinutes().toString().padStart(2, "0")
-    const seconds = new Date().getSeconds().toString().padStart(2, "0")
-    const date = `${year}-${month}-${day}-${hour}-${minutes}-${seconds}`
-
     if (file && numPages !== undefined) {
       const doc = new jsPDF()
       const batchSize = 10
       const totalBatches = Math.ceil(numPages / batchSize)
-      console.log(totalBatches)
+
       const promises = []
       for (let i = 0; i < totalBatches; i++) {
         promises.push(processBatch(i, batchSize, numPages, doc, totalBatches))
@@ -160,24 +152,28 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
 
       try {
         await Promise.all(promises)
-        if (filename) {
-          if (isSwitchChecked) {
-            doc.save(`${filename.replace(".pdf", "")}--[${date}].pdf`)
-          } else {
-            doc.save(`${filename.replace(".pdf", "")}.pdf`)
-          }
-        } else {
-          if (isSwitchChecked) {
-            doc.save(`Recipes-(Favorites)--[${date}].pdf`)
-          } else {
-            doc.save(`Recipes-(Favorites).pdf`)
-          }
+        console.log("Filename:", filename)
+        console.log("Switch checked:", isSwitchChecked)
+
+        let finalFilename = "Recipes-(Favorites)"
+        if (filename && filename.endsWith(".pdf")) {
+          finalFilename = filename.slice(0, -4) // Remove ".pdf" extension
         }
+
+        if (isSwitchChecked) {
+          const date = new Date().toISOString().replace(/:/g, "-").slice(0, -5) // Format date
+          finalFilename += `--[${date}]`
+        }
+
+        finalFilename += ".pdf"
+
+        doc.save(finalFilename)
       } catch (error) {
         console.error("Error processing batches:", error)
       }
     }
   }
+
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { value } = event.target
     const newValue = value.replace(/\.pdf$/, "") + ".pdf"
@@ -217,8 +213,8 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
                   <Label htmlFor="airplane-mode">
                     <div className="flex flex-col w-full items-center space-x-2">
                       <Switch
-                        defaultChecked={isSwitchChecked}
-                        onChange={handleSwitch}
+                        checked={isSwitchChecked}
+                        onCheckedChange={handleSwitch}
                         id="airplane-mode"
                       />
                       <span className="text-center w-18">Append datetime?</span>
