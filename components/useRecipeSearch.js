@@ -280,13 +280,21 @@ const useRecipeSearch = () => {
       setFavorites(newFavorites)
       localStorage.setItem("favorites", JSON.stringify(newFavorites))
     } else {
-      // Add to favorites
-      const newFavorites = {
-        ...favorites,
-        [recipeName]: { link: recipeLink, image: recipeImage }, // Store both link and image
+      // check if there are more than 100 favorites.
+      if (Object.keys(favorites).length >= 100) {
+        toast("You have reached the maximum number of favorites", {
+          icon: <Trash2Icon color="#e74c3c" />,
+        })
+        return
+      } else {
+        // Add to favorites
+        const newFavorites = {
+          ...favorites,
+          [recipeName]: { link: recipeLink, image: recipeImage }, // Store both link and image
+        }
+        setFavorites(newFavorites)
+        localStorage.setItem("favorites", JSON.stringify(newFavorites))
       }
-      setFavorites(newFavorites)
-      localStorage.setItem("favorites", JSON.stringify(newFavorites))
     }
   }
 
