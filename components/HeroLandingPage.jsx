@@ -58,7 +58,7 @@ export default function HeroLandingPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.2 }}
-              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
+              className="rounded-lg border border-sky-300 bg-slate-200 px-8 py-12 shadow-lg transition-all hover:cursor-pointer hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
             >
               <Link
                 href="/cardano-links"
@@ -77,7 +77,7 @@ export default function HeroLandingPage() {
                   Explore the new global financial operating system
                 </Button>
               </Link>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="flex justify-center text-sm text-gray-600 dark:text-gray-400">
                 Dive into our curated collection of Cardano resources and start
                 your journey today.
               </p>
