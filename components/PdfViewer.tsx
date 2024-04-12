@@ -77,7 +77,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   const [containerWidth, setContainerWidth] = useState<number>()
   const [filename, setFilename] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
-  const [isSwitchChecked, setIsSwitchChecked] = useState(true)
+  const [isSwitchChecked, setIsSwitchChecked] = useState(false)
 
   const moveCursor = useCallback(async () => {
     if (inputRef.current) {
