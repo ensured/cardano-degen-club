@@ -310,6 +310,7 @@ const useRecipeSearch = () => {
           recipeName,
           recipeImage,
         })
+        console.log(preSignedImageUrl)
 
         // Update favorites with the actual data
         setFavorites((prevFavorites) => ({
