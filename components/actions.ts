@@ -229,22 +229,26 @@ export async function addFavorite({ recipeName, recipeImage }: Favorite) {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
   const userEmail = await getUser().then((user) => user?.email)
-  const imageResponse = await fetch(recipeImage)
-  const imageBlob = await imageResponse.blob()
-  const key = `favorites/images/${userEmail}/${recipeName}.jpg`
+  try {
+    const imageResponse = await fetch(recipeImage)
+    const imageBlob = await imageResponse.blob()
+    const key = `favorites/images/${userEmail}/${recipeName}.jpg`
 
-  const params = {
-    Bucket: process.env.S3_BUCKET_NAME_RECIPES,
-    Key: key,
-    Body: Buffer.from(await imageBlob.arrayBuffer()),
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+      Key: key,
+      Body: Buffer.from(await imageBlob.arrayBuffer()),
+    }
+
+    const putObjectCommand = new PutObjectCommand(params)
+    const putObjectResponse = await s3Client.send(putObjectCommand)
+    // console.log(putObjectResponse)
+
+    const preSignedImageUrl = await generatePreSignedUrl(key)
+    return { preSignedImageUrl }
+  } catch (err) {
+    console.error("Error adding favorite:", err)
   }
-
-  const putObjectCommand = new PutObjectCommand(params)
-  const putObjectResponse = await s3Client.send(putObjectCommand)
-  // console.log(putObjectResponse)
-
-  const preSignedImageUrl = await generatePreSignedUrl(key)
-  return { preSignedImageUrl }
 }
 
 export async function removeFavorite(recipeName: string) {
