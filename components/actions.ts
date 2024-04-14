@@ -2,12 +2,21 @@
 
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import MemoryCache from "memory-cache"
 import { z } from "zod"
 
-import { FeedbackFormSchema, RecipeFetchUrlSchema } from "@/lib/schema"
+import { FeedbackFormSchema } from "@/lib/schema"
 
-import { PutObjectCommand, s3Client } from "../lib/s3"
+import {
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  getSignedUrl,
+  s3Client,
+} from "../lib/s3"
 
 type Inputs = z.infer<typeof FeedbackFormSchema>
 
@@ -23,6 +32,31 @@ function getCurrentShorthandDateTime() {
   )}:${padded(currentDate.getMinutes())}:${padded(currentDate.getSeconds())}`
 }
 
+async function generatePreSignedUrl(key: string) {
+  const expiresIn = 3600 // Expires in 1 hour (adjust as needed)
+
+  const preSignedUrlParams = {
+    Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+    Key: key,
+    Expires: expiresIn,
+  }
+
+  try {
+    const getPreSignedUrlCommand = new GetObjectCommand(preSignedUrlParams)
+    const preSignedImageUrl = await getSignedUrl(
+      s3Client,
+      getPreSignedUrlCommand,
+      {
+        expiresIn: expiresIn,
+      }
+    )
+    return preSignedImageUrl
+  } catch (error) {
+    console.error("Error generating pre-signed URL:", error)
+    // Handle error gracefully
+    return null
+  }
+}
 export async function submitFeedback(data: Inputs) {
   const result = FeedbackFormSchema.safeParse(data)
 
@@ -75,7 +109,6 @@ export async function submitFeedback(data: Inputs) {
         Key: `feedback/${data.name}-${date}.json`,
         Body: jsonData,
       }
-
       const res = await s3Client.send(new PutObjectCommand(params))
       revalidatePath("/protected")
       return {
@@ -100,7 +133,139 @@ export async function submitFeedback(data: Inputs) {
   }
 }
 
-export const downloadAndEmbedImage = async (url: string) => {
+type Favorite = {
+  recipeName: string
+  recipeImage: string
+}
+
+export async function getFavoriteImages() {
+  const { getUser, isAuthenticated } = getKindeServerSession()
+  if (!isAuthenticated()) return
+
+  const userEmail = await getUser().then((user) => user?.email)
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+    Prefix: `favorites/images/${userEmail}/`,
+  }
+
+  try {
+    const listObjectsV2Command = new ListObjectsV2Command(params)
+    const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
+    const keys = listObjectsV2Response.Contents?.map((object) => object.Key)
+
+    if (!keys || keys.length === 0) {
+      return [] // No objects found, return empty array
+    }
+
+    // Generate pre-signed URLs for all keys in parallel
+    const preSignedUrls = await Promise.all(
+      keys.map(async (key) => {
+        try {
+          if (!key) return null
+          const preSignedUrl = await generatePreSignedUrl(key)
+          return preSignedUrl
+        } catch (error) {
+          console.error(
+            `Error generating pre-signed URL for key ${key}:`,
+            error
+          )
+          return null // Return null for failed URLs
+        }
+      })
+    )
+
+    const validUrls = preSignedUrls.filter((url) => url !== null)
+    const fileNames = keys.map((key) =>
+      key?.split("/").pop()?.replace(".jpg", "")
+    )
+
+    const keyUrlPairs = [
+      ...fileNames.map((fileName, index) => ({
+        recipeName: fileName,
+        url: validUrls[index],
+      })),
+    ]
+
+    return keyUrlPairs
+  } catch (error) {
+    console.error("Error fetching favorite images:", error)
+    return [] // Return empty array in case of error
+  }
+}
+
+export async function deleteAllFavorites() {
+  const { getUser, isAuthenticated } = getKindeServerSession()
+  if (!isAuthenticated()) return
+  const userEmail = await getUser().then((user) => user?.email)
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+    Prefix: `favorites/images/${userEmail}/`,
+  }
+  try {
+    const listObjectsV2Command = new ListObjectsV2Command(params)
+    const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
+
+    const keys = listObjectsV2Response.Contents?.map((object) => object.Key)
+    console.log(keys)
+    if (!keys || keys.length === 0) {
+      return [] // No objects found, return empty array
+    }
+    const objectsToDelete = keys.map((key) => ({ Key: key }))
+
+    const deleteObjectsCommand = new DeleteObjectsCommand({
+      Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+      Delete: { Objects: objectsToDelete },
+    })
+
+    const deleteObjectsResponse = await s3Client.send(deleteObjectsCommand)
+    return deleteObjectsResponse
+  } catch (err) {
+    console.error("Error fetching favorite images:", err)
+    return [] // Return empty array in case of error
+  }
+}
+
+export async function addFavorite({ recipeName, recipeImage }: Favorite) {
+  const { getUser, isAuthenticated } = getKindeServerSession()
+  if (!isAuthenticated()) return
+  const userEmail = await getUser().then((user) => user?.email)
+  const imageResponse = await fetch(recipeImage)
+  const imageBlob = await imageResponse.blob()
+  const key = `favorites/images/${userEmail}/${recipeName}.jpg`
+
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+    Key: key,
+    Body: Buffer.from(await imageBlob.arrayBuffer()),
+  }
+
+  const putObjectCommand = new PutObjectCommand(params)
+  const putObjectResponse = await s3Client.send(putObjectCommand)
+  // console.log(putObjectResponse)
+
+  const preSignedImageUrl = await generatePreSignedUrl(key)
+  return { preSignedImageUrl }
+}
+
+export async function removeFavorite(recipeName: string) {
+  const { getUser, isAuthenticated } = getKindeServerSession()
+  if (!isAuthenticated()) return
+  const userEmail = await getUser().then((user) => user?.email)
+  const key = `favorites/images/${userEmail}/${recipeName}.jpg`
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+    Key: key,
+  }
+  const deleteObjectCommand = new DeleteObjectCommand(params)
+  const deleteObjectResponse = await s3Client.send(deleteObjectCommand)
+  return
+}
+
+export async function getPreSignedUrl(key: string) {
+  return await generatePreSignedUrl(key)
+}
+
+export const imgUrlToBase64 = async (url: string) => {
   try {
     const response = await fetch(url)
     const imageBuffer = await response.arrayBuffer() // Use arrayBuffer instead of buffer

@@ -4,7 +4,7 @@ const nextConfig = {
     config,
     { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
   ) => {
-    config.resolve.alias.canvas = false;
+    config.resolve.alias.canvas = false
     // Important: return the modified config
     return config
   },
@@ -24,6 +24,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
         port: "",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },

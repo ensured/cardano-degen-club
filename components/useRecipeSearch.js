@@ -5,6 +5,8 @@ import toast from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
 
+import { addFavorite, removeFavorite } from "./actions"
+
 const useRecipeSearch = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -27,6 +29,7 @@ const useRecipeSearch = () => {
       return {}
     }
   })
+
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
@@ -77,8 +80,6 @@ const useRecipeSearch = () => {
         }
       }
 
-
-
       if (e?.target?.tagName === "FORM") {
         e.preventDefault()
         setSearchResults({
@@ -111,8 +112,6 @@ const useRecipeSearch = () => {
             nextPage: data.data._links.next?.href || "",
           }))
         }
-
-
       } catch (err) {
         console.log(err)
       } finally {
@@ -171,20 +170,17 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    // Perform initial search only if q searchParam exists and input is not empty
-    try {
-      if (isInitialLoad && searchParams.get("q")) {
-        searchRecipes()
-        setIsInitialLoad(false)
-      }
-    } catch (e) {
-      console.log(e)
-    } finally {
+    console.log(
+      "useEffect called with dependencies: [searchParams, searchRecipes, isInitialLoad, input]"
+    )
+    if (isInitialLoad && searchParams.get("q")) {
+      searchRecipes()
       setIsInitialLoad(false)
     }
   }, [searchParams, searchRecipes, isInitialLoad, input])
 
   useEffect(() => {
+    console.log("useEffect called with dependencies: [searchResults]")
     const onScroll = () => {
       const scrollTop = document.documentElement.scrollTop
       const scrollHeight =
@@ -209,6 +205,9 @@ const useRecipeSearch = () => {
   }, [searchResults])
 
   useEffect(() => {
+    console.log(
+      "IntersectionObserver useEffect called with dependencies: [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore]"
+    )
     // Intersection Observer for the last food item
     const observer = new IntersectionObserver(
       (entries) => {
@@ -241,7 +240,9 @@ const useRecipeSearch = () => {
     setInput(newInput)
     router.replace(`?q=${newInput}`)
     if (newInput.length > 1) {
-      const { data } = await fetch(`/api/search/autocomplete?q=${newInput}`).then(res => res.json())
+      const { data } = await fetch(
+        `/api/search/autocomplete?q=${newInput}`
+      ).then((res) => res.json())
       setSuggestions(data)
     } else {
       setSuggestions([])
@@ -252,51 +253,89 @@ const useRecipeSearch = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
-  const removeFromFavorites = (recipeName) => {
+  const removeFromFavorites = async (recipeName) => {
     const newFavorites = { ...favorites }
     delete newFavorites[recipeName]
     setFavorites(newFavorites)
     localStorage.setItem("favorites", JSON.stringify(newFavorites))
+    await removeFavorite(recipeName) // server action
     toast("Removed from favorites", {
       icon: <Trash2Icon color="#e74c3c" />,
     })
   }
 
-  const handleStarIconClick = (index) => (e) => {
+  const handleStarIconClick = (index) => async (e) => {
     e.preventDefault()
 
     const recipe = searchResults.hits[index].recipe
     const recipeName = extractRecipeName(recipe.shareAs)
-    const recipeLink = recipe.shareAs
-    const recipeImage = recipe.image // Get the image URL from the recipe object
+    const recipeImage = recipe.image
 
-    // Check if recipe is already favorited
     const isFavorited = favorites[recipeName] !== undefined
 
     if (isFavorited) {
-      // Remove from favorites
+      // Remove from favorites optimistically
       const newFavorites = { ...favorites }
       delete newFavorites[recipeName]
       setFavorites(newFavorites)
       localStorage.setItem("favorites", JSON.stringify(newFavorites))
+      await removeFavorite(recipeName) // server action
     } else {
-      // check if there are more than 100 favorites.
-      if (Object.keys(favorites).length >= 100) {
-        toast("You have reached the maximum number of favorites", {
-          icon: <Trash2Icon color="#e74c3c" />,
-        })
+      if (Object.keys(favorites).length >= 200) {
+        toast(
+          "You have reached the maximum number of favorites. Download them to a pdf so you remove them here.",
+          {
+            icon: <Trash2Icon color="#e74c3c" />,
+          }
+        )
         return
       }
-      // Add to favorites
-      const newFavorites = {
-        ...favorites,
-        [recipeName]: { link: recipeLink, image: recipeImage }, // Store both link and image
+
+      try {
+        // Optimistically add to favorites
+        setFavorites((prevFavorites) => ({
+          ...prevFavorites,
+          [recipeName]: { link: recipe.shareAs, image: recipeImage },
+        }))
+        localStorage.setItem(
+          "favorites",
+          JSON.stringify({
+            ...favorites,
+            [recipeName]: { link: recipe.shareAs, image: recipeImage },
+          })
+        )
+
+        // Add to favorites asynchronously
+        const { preSignedImageUrl } = await addFavorite({
+          recipeName,
+          recipeImage,
+        })
+
+        // Update favorites with the actual data
+        setFavorites((prevFavorites) => ({
+          ...prevFavorites,
+          [recipeName]: { link: recipe.shareAs, image: preSignedImageUrl },
+        }))
+        localStorage.setItem(
+          "favorites",
+          JSON.stringify({
+            ...favorites,
+            [recipeName]: { link: recipe.shareAs, image: preSignedImageUrl },
+          })
+        )
+      } catch (error) {
+        console.error("Error adding favorite:", error)
+        // Handle error
+        toast("Failed to add to favorites", { type: "error" })
+        // Revert the optimistic update if the asynchronous operation fails
+        setFavorites((prevFavorites) => {
+          const { [recipeName]: value, ...newFavorites } = prevFavorites
+          return newFavorites
+        })
+        localStorage.setItem("favorites", JSON.stringify({ ...favorites }))
       }
-      setFavorites(newFavorites)
-      localStorage.setItem("favorites", JSON.stringify(newFavorites))
     }
   }
-
   return {
     handleStarIconHover,
     loading,
@@ -319,7 +358,7 @@ const useRecipeSearch = () => {
     scrollProgress,
     currentCardIndex,
     isMobile,
-    setSearchResults
+    setSearchResults,
   }
 }
 

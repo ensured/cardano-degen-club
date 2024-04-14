@@ -1,17 +1,20 @@
 "use client"
 
+import { useRef } from "react"
+import Image from "next/image"
+import Link from "next/link"
+// import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/server"
 import { Loader2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
-
-import { Button } from "@/components/ui/button"
 
 import { RecipeCard } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
 import RecipesMenu from "./RecipesMenu"
 import ScrollTooltip from "./ScrollToolTip"
+import { Button } from "./ui/button"
 import useRecipeSearch from "./useRecipeSearch"
 
-const SearchRecipes = () => {
+const SearchRecipes = ({ isAuthenticated, userInfo }) => {
   const {
     handleStarIconHover,
     loading,
@@ -24,6 +27,7 @@ const SearchRecipes = () => {
     handleInputChange,
     lastFoodItemRef,
     favorites,
+    setFavorites,
     inputChanged,
     searchRecipes,
     hoveredRecipeIndex,
@@ -36,12 +40,37 @@ const SearchRecipes = () => {
     setSuggestions,
   } = useRecipeSearch()
 
+  const logoutLinkRef = useRef(null)
+
   return (
     <div className="relative flex w-full flex-col p-2 ">
       <div
         className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-sky-600"
         style={{ width: `${scrollProgress}%` }}
       ></div>
+
+      {/* display user image in a button (circle) */}
+      {isAuthenticated && (
+        <div className="relative">
+          <div className="top-50 group fixed right-36 top-4 z-50 flex flex-col-reverse items-center justify-center">
+            <Link
+              href={"/api/auth/logout"}
+              ref={logoutLinkRef}
+              className="flex rounded-full bg-black p-2 opacity-0 transition-opacity group-hover:opacity-100 hover:cursor-pointer"
+            >
+              <Button>Logout</Button>
+            </Link>
+            <Image
+              className="rounded-full "
+              src={userInfo.picture}
+              alt="user image"
+              width={33}
+              height={33}
+            />
+          </div>
+        </div>
+      )}
+
       <ScrollTooltip
         currentCardIndex={currentCardIndex}
         totalCards={searchResults.hits.length}
@@ -62,9 +91,12 @@ const SearchRecipes = () => {
       />
       {/* results count + interactive favorites sheet*/}
       <RecipesMenu
+        userInfo={userInfo}
+        isAuthenticated={isAuthenticated}
         removeFromFavorites={removeFromFavorites}
         searchResults={searchResults}
         favorites={favorites}
+        setFavorites={setFavorites}
         loading={loading}
       />
 

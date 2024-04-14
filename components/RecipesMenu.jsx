@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { FileText, Trash2Icon } from "lucide-react"
+import { FileText, Trash2Icon, TrashIcon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -14,14 +14,17 @@ import { Button } from "@/components/ui/button"
 import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
-import { downloadAndEmbedImage } from "./actions"
+import { deleteAllFavorites, getPreSignedUrl, imgUrlToBase64 } from "./actions"
 import { Badge } from "./ui/badge"
 
 const RecipesMenu = ({
   searchResults,
   favorites,
+  setFavorites,
   removeFromFavorites,
   loading,
+  userInfo,
+  isAuthenticated,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
@@ -51,13 +54,14 @@ const RecipesMenu = ({
   const previewFavoritesPDF = async (favorites) => {
     if (!favorites || Object.keys(favorites).length === 0) {
       toast("No favorites found", {
-        icon: "🙈",
+        icon: "",
         style: {
           background: "#18181b",
         },
       })
       return
     }
+
     const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
     let yOffset = 10
     const lineHeight = 10 // Adjust line height as needed
@@ -67,7 +71,27 @@ const RecipesMenu = ({
     const borderPadding = 2 // Adjust padding for the border
     const borderWidth = 0.5 // Adjust width of the border
     let currentPosition = 0
+
+    // Generate pre-signed URLs for all favorites in advance
+    const preSignedUrls = []
     for (const [recipeName, { link, image }] of Object.entries(favorites)) {
+      const key = `favorites/images/${userInfo.email}/${recipeName}.jpg`
+      preSignedUrls.push(await getPreSignedUrl(key))
+    }
+
+    const images = []
+    for (let i = 0; i < preSignedUrls.length; i++) {
+      console.log(preSignedUrls[i])
+      const imageBase64 = await imgUrlToBase64(preSignedUrls[i])
+      images.push(imageBase64)
+      setProgress(((i + 1) / preSignedUrls.length) * 100)
+    }
+
+    for (let i = 0; i < Object.keys(favorites).length; i++) {
+      const imageBase64 = images[i]
+      const recipeName = Object.keys(favorites)[i]
+      const link = favorites[recipeName].link
+
       // Draw border
       doc.setLineWidth(borderWidth)
       doc.roundedRect(
@@ -81,27 +105,23 @@ const RecipesMenu = ({
       )
 
       // Embed image if available
-      if (image) {
+      if (imageBase64) {
         currentPosition++
-        try {
-          const imgData = await downloadAndEmbedImage(image)
-          if (imgData) {
-            setProgress((currentPosition / Object.keys(favorites).length) * 100)
 
-            // Add image at current yOffset
-            doc.addImage(
-              imgData,
-              "JPEG",
-              borderPadding + borderWidth + 2,
-              yOffset + borderPadding,
-              imageWidth,
-              imageHeight
-            ) // Adjust width and height as needed, considering the border
-          } else {
-            console.error(`Failed to embed image for ${recipeName}`)
-          }
-        } catch (error) {
-          console.error(`Error embedding image for ${recipeName}:`, error)
+        if (imageBase64) {
+          setProgress((currentPosition / Object.keys(favorites).length) * 100)
+
+          // Add image at current yOffset
+          doc.addImage(
+            imageBase64,
+            "JPEG",
+            borderPadding + borderWidth + 2,
+            yOffset + borderPadding,
+            imageWidth,
+            imageHeight
+          ) // Adjust width and height as needed, considering the border
+        } else {
+          console.error(`Failed to embed image`)
         }
       }
 
@@ -154,10 +174,6 @@ const RecipesMenu = ({
     return URL.createObjectURL(pdfBlob)
   }
 
-  const handleClosePreview = () => {
-    setPdfPreviewUrl(null)
-  }
-
   const size = useWindowSize()
   if (!size.width || !size.height) return null
 
@@ -173,14 +189,16 @@ const RecipesMenu = ({
             <Badge variant={"outline"} className="invisible"></Badge>
           )}
         </div>
-        {pdfPreviewUrl && (
-          <PDFViewer inputFile={pdfPreviewUrl} onClose={handleClosePreview} />
-        )}
+
+        {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
+
         <FavoritesSheet
+          setFavorites={setFavorites}
           setOpen={setIsOpen}
           isOpen={isOpen}
           loading={loading}
           favorites={favorites}
+          setFav
         >
           {Object.keys(favorites).length > 0 ? (
             <>
@@ -258,6 +276,20 @@ const RecipesMenu = ({
                 </div>
               </Link>
             ))}
+            {Object.keys(favorites).length > 0 && (
+              <Button
+                onClick={async () => {
+                  const res = await deleteAllFavorites()
+                  toast.success(`Removed ${res.Deleted.length} recipes!`)
+                  setFavorites({})
+                }}
+                variant={"destructive"}
+                className="fixed bottom-2 right-6 gap-2 text-sm md:text-lg"
+              >
+                Remove all
+                <TrashIcon size={size.height < 600 ? 16 : 22} />
+              </Button>
+            )}
           </div>
         </FavoritesSheet>
       </div>

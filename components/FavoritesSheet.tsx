@@ -5,6 +5,10 @@ import { useWindowSize } from "@uidotdev/usehooks"
 import { StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
+import { isS3UrlExpired } from "@/lib/helper"
+import { extractRecipeName } from "@/lib/utils"
+
+import { getFavoriteImages } from "./actions"
 import { Button } from "./ui/button"
 import {
   Sheet,
@@ -26,6 +30,7 @@ const FavoritesSheet = ({
   isOpen,
   loading,
   favorites,
+  setFavorites,
   isLoadingPdfPreview,
 }: {
   children: ReactNode
@@ -33,14 +38,13 @@ const FavoritesSheet = ({
   isOpen: boolean
   loading: boolean
   favorites: Favorites
+  setFavorites: (setFavorites: Favorites) => void
   isLoadingPdfPreview: boolean
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
   if (!size.width || !size.height) return null
-  //  isLoadingPdfPreview === false || isLoadingPdf === false
-  //               ? false
-  //               : true
+
   return (
     <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
@@ -48,7 +52,43 @@ const FavoritesSheet = ({
           <Button
             disabled={loading ? true : false}
             className="flex select-none gap-1 text-base md:text-lg"
-            onClick={() => setOpen(!isOpen)}
+            onClick={async () => {
+              setOpen(!isOpen)
+
+              const images = await getFavoriteImages()
+
+              // const checkForStaleImages = await checkForStaleImages()
+              // first check if the images are expired?
+
+              // if (await isS3UrlExpired(images[0].url)) {
+              //   console.log("The image URL is expired.")
+              // } else {
+              //   console.log("The image URL is still valid.")
+              // }
+
+              // check if images is empty array
+              if (!images) return
+
+              const updatedFavorites = { ...favorites }
+
+              images.forEach((image) => {
+                const recipeName = image.recipeName
+
+                // Check if the recipeName exists in favorites
+                // @ts-ignore
+                if (updatedFavorites[recipeName]) {
+                  // Update only the image property, keeping the existing link unchanged
+                  // @ts-ignore
+                  updatedFavorites[recipeName].image = image.url
+                }
+              })
+
+              setFavorites(updatedFavorites)
+              localStorage.setItem(
+                "favorites",
+                JSON.stringify(updatedFavorites)
+              )
+            }}
             size={"sm"}
           >
             <StarIcon
