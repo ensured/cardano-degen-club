@@ -68,7 +68,6 @@ const useRecipeSearch = () => {
             return
           }
         } catch (error) {
-          console.log(error)
           toast(error.message, {
             type: "error",
           })
@@ -170,9 +169,6 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    console.log(
-      "useEffect called with dependencies: [searchParams, searchRecipes, isInitialLoad, input]"
-    )
     if (isInitialLoad && searchParams.get("q")) {
       searchRecipes()
       setIsInitialLoad(false)
@@ -180,7 +176,6 @@ const useRecipeSearch = () => {
   }, [searchParams, searchRecipes, isInitialLoad, input])
 
   useEffect(() => {
-    console.log("useEffect called with dependencies: [searchResults]")
     const onScroll = () => {
       const scrollTop = document.documentElement.scrollTop
       const scrollHeight =
@@ -205,9 +200,6 @@ const useRecipeSearch = () => {
   }, [searchResults])
 
   useEffect(() => {
-    console.log(
-      "IntersectionObserver useEffect called with dependencies: [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore]"
-    )
     // Intersection Observer for the last food item
     const observer = new IntersectionObserver(
       (entries) => {
@@ -310,7 +302,6 @@ const useRecipeSearch = () => {
           recipeName,
           recipeImage,
         })
-        console.log(preSignedImageUrl)
 
         // Update favorites with the actual data
         setFavorites((prevFavorites) => ({

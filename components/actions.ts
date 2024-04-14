@@ -206,7 +206,6 @@ export async function deleteAllFavorites() {
     const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
 
     const keys = listObjectsV2Response.Contents?.map((object) => object.Key)
-    console.log(keys)
     if (!keys || keys.length === 0) {
       return [] // No objects found, return empty array
     }
