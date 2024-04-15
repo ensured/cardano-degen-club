@@ -135,8 +135,8 @@ export async function submitFeedback(data: Inputs) {
 }
 
 type Favorite = {
-  recipeName: string
-  recipeImage: string
+  name: string
+  url: string
   link: string
 }
 
@@ -172,13 +172,13 @@ export async function getFavorites() {
 
           // Extract metadata
           const metadata = headObjectResponse.Metadata
-          const recipeName = metadata?.name
+          const name = metadata?.name
           const link = metadata?.link
 
           // Generate pre-signed URL
           const preSignedUrl = await generatePreSignedUrl(key)
 
-          return { recipeName, link, url: preSignedUrl }
+          return { name, link, url: preSignedUrl }
         } catch (error) {
           console.error(`Error fetching metadata for key ${key}:`, error)
           return null // Return null for failed metadata retrieval
@@ -229,7 +229,7 @@ export async function deleteAllFavorites() {
   }
 }
 
-export async function addFavorite({ recipeName, recipeImage, link }: Favorite) {
+export async function addFavorite({ name, url, link }: Favorite) {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
 
@@ -251,9 +251,9 @@ export async function addFavorite({ recipeName, recipeImage, link }: Favorite) {
     }
 
     // Fetch the image and upload it
-    const imageResponse = await fetch(recipeImage)
+    const imageResponse = await fetch(url)
     const imageBlob = await imageResponse.blob()
-    const key = `favorites/images/${userEmail}/${recipeName}.jpg`
+    const key = `favorites/images/${userEmail}/${name}.jpg`
 
     const params = {
       Bucket: process.env.S3_BUCKET_NAME_RECIPES,
@@ -261,7 +261,7 @@ export async function addFavorite({ recipeName, recipeImage, link }: Favorite) {
       Body: Buffer.from(await imageBlob.arrayBuffer()),
       Metadata: {
         email: userEmail,
-        name: recipeName,
+        name: name,
         link: link,
       },
     }

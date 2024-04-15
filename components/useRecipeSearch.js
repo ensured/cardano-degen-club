@@ -284,8 +284,8 @@ const useRecipeSearch = () => {
 
         // Add to favorites asynchronously
         const { preSignedImageUrl } = await addFavorite({
-          recipeName,
-          recipeImage,
+          name: recipeName,
+          url: recipeImage,
           link: recipe.shareAs,
         })
 

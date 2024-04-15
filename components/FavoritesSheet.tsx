@@ -19,9 +19,9 @@ import {
 } from "./ui/sheet"
 
 type Favorites = {
-  [recipeName: string]: {
+  [name: string]: {
     link: string
-    image: string // Assuming image is a URL or similar
+    url: string // Assuming image is a URL or similar
   }
 }
 
@@ -59,12 +59,20 @@ const FavoritesSheet = ({
               const res = await getFavorites()
 
               if (!res) return
-
-              const updatedFavorites = {}
+              const updatedFavorites: Favorites = {}
               res.forEach((favorite) => {
-                updatedFavorites[favorite.recipeName] = favorite
+                if (
+                  !favorite ||
+                  !favorite.name ||
+                  !favorite.url ||
+                  !favorite.link
+                )
+                  return // Check if name is defined
+                updatedFavorites[favorite.name] = {
+                  link: favorite.link,
+                  url: favorite.url,
+                }
               })
-
               setFavorites(updatedFavorites)
             }}
             size={"sm"}
