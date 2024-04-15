@@ -32,9 +32,9 @@ const LoginPopup = ({
         />
       </PopoverTrigger>
       <PopoverContent className="w-auto border-none p-0 outline-none">
-        <Button variant={"ghost"}>
-          <Link href={"/api/auth/logout"}>Logout</Link>
-        </Button>
+        <Link className={buttonVariants()} href={"/api/auth/logout"}>
+          Logout
+        </Link>
       </PopoverContent>
     </Popover>
   )
