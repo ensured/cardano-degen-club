@@ -10,9 +10,17 @@ import Comments from "@/components/Comments"
 export const metadata = {
   title: "admin",
 }
+// interface UserType {
+//   picture: null | string;
+//   family_name: string;
+//   given_name: string;
+//   email: string;
+//   id: string;
+// }
+
 const page = async () => {
   const { getUser, isAuthenticated } = getKindeServerSession()
-  const user = getUser()
+  const user = await getUser().then((user) => user)
   if (isAuthenticated) {
     if (user?.email === "finalemail417@gmail.com") {
       return <Comments />

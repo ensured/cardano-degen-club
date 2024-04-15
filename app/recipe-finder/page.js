@@ -1,9 +1,13 @@
+import Image from "next/image"
+import Link from "next/link"
 import {
   LoginLink,
   LogoutLink,
   RegisterLink,
   getKindeServerSession,
 } from "@kinde-oss/kinde-auth-nextjs/server"
+
+import { Button } from "@/components/ui/button"
 
 import SearchRecipes from "../../components/SearchRecipes"
 
@@ -29,6 +33,7 @@ const page = async () => {
       </div>
     )
   }
+
   console.log(user.email)
   const userInfo = {
     id: user.id,
@@ -39,9 +44,6 @@ const page = async () => {
 
   return (
     <>
-      <div className="w-full md:text-sm text-xs flex justify-center p-0.5">
-        logged in as {user.email} {isAuthenticated() ? "✅" : "❌"}
-      </div>
       <SearchRecipes isAuthenticated={isAuthenticated()} userInfo={userInfo} />
     </>
   )
