@@ -12,6 +12,7 @@ import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 
 import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
+import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
 import { deleteAllFavorites, getPreSignedUrl, imgUrlToBase64 } from "./actions"
@@ -229,7 +230,7 @@ const RecipesMenu = ({
               </span>
             </div>
           )}
-          <div className="flex max-h-[85%] flex-col overflow-auto rounded-md">
+          <div className="flex max-h-[69%] flex-col overflow-auto rounded-md">
             {Object.entries(favorites).map(([recipeName, { link, image }]) => (
               <Link
                 target="_blank"
@@ -276,22 +277,22 @@ const RecipesMenu = ({
                 </div>
               </Link>
             ))}
-            {Object.keys(favorites).length > 0 && (
-              <Button
-                onClick={async () => {
-                  const res = await deleteAllFavorites()
-                  toast.success(`Removed ${res.Deleted.length} recipes!`)
-                  setFavorites({})
-                  localStorage.removeItem("favorites")
-                }}
-                variant={"destructive"}
-                className="fixed bottom-2 right-6 gap-2 text-sm md:text-lg"
-              >
-                Remove all
-                <TrashIcon size={size.height < 600 ? 16 : 22} />
-              </Button>
-            )}
           </div>
+
+          {Object.keys(favorites).length > 0 && (
+            <div className="pt-1">
+              <DeleteAllAlert setFavorites={setFavorites}>
+                <Button
+                  variant={"destructive"}
+                  className="flex w-full gap-2 text-sm md:text-lg"
+                >
+                  {" "}
+                  Remove all
+                  <TrashIcon size={size.height < 600 ? 16 : 22} />
+                </Button>
+              </DeleteAllAlert>
+            </div>
+          )}
         </FavoritesSheet>
       </div>
     </div>
