@@ -8,6 +8,7 @@ import {
 } from "@kinde-oss/kinde-auth-nextjs/server"
 import { User } from "lucide-react"
 
+import LoginPopup from "./LoginPopup"
 import LoginToolTip from "./LoginToolTip"
 import { Button } from "./ui/button"
 
@@ -29,19 +30,9 @@ const UserButton = async () => {
 
   return (
     <div className="group relative z-50 flex shrink-0 flex-col-reverse items-center justify-center">
-      <Link
-        href={"/api/auth/logout"}
-        className="fixed top-14 flex opacity-0 transition-opacity group-hover:opacity-100 hover:cursor-pointer "
-      >
-        <Button>Logout</Button>
-      </Link>
-      <Image
-        className="rounded-full"
-        src={user.picture}
-        alt="user image"
-        width={33}
-        height={33}
-      />
+      <LoginPopup userImg={user.picture}>
+        <Button variant={"ghost"}>Login</Button>
+      </LoginPopup>
     </div>
   )
 }
