@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { StarIcon } from "lucide-react"
+import { useTheme } from "next-themes"
 
 import { extractRecipeName } from "@/lib/utils"
 
@@ -19,6 +20,8 @@ export const RecipeCard = ({
   handleStarIconHover,
   isMobile,
 }) => {
+  const { theme } = useTheme()
+
   return (
     <Link
       target="_blank"
@@ -66,13 +69,21 @@ export const RecipeCard = ({
         <StarIcon
           onMouseEnter={handleStarIconHover(index)}
           onMouseLeave={handleStarIconHover(null)}
-          color={hoveredRecipeIndex === index ? "#FFA726" : "#FFD700"}
-          className={`absolute bottom-0  right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-[3.2rem] md:w-[3.2rem] ${
-            isMobile ? "" : "hover:scale-125 hover:animate-pulse"
+          color={
+            theme === "light"
+              ? hoveredRecipeIndex === index
+                ? "#FFD700" // Gold color when hovered
+                : "#A9A9A9" // Dark gray when not hovered
+              : hoveredRecipeIndex === index
+              ? "#FFFF00" // Bright yellow when hovered
+              : "#696969" // Lighter gray when not hovered
+          }
+          className={`absolute bottom-0 right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-[3.2rem] md:w-[3.2rem] ${
+            isMobile ? "" : "hover:scale-125"
           }`}
           fill={
             favorites[extractRecipeName(recipe.recipe.shareAs)]
-              ? "#FFA726"
+              ? "#FFA726" // Orange fill when it's a favorite
               : "none"
           }
           onClick={handleStarIconClick(index)}

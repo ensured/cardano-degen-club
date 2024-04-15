@@ -57,7 +57,11 @@ const FullTitleToolTip = ({ children, title }) => {
     <TooltipProvider skipDelayDuration={0} delayDuration={0}>
       <Tooltip>
         <TooltipTrigger ref={tooltipRef}>{children}</TooltipTrigger>
-        <TooltipContent side={side} className="select-none">
+        <TooltipContent
+          side={side}
+          className="select-none"
+          onClick={(e) => e.preventDefault()}
+        >
           <p>{title}</p>
         </TooltipContent>
       </Tooltip>
