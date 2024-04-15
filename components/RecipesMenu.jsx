@@ -282,6 +282,7 @@ const RecipesMenu = ({
                   const res = await deleteAllFavorites()
                   toast.success(`Removed ${res.Deleted.length} recipes!`)
                   setFavorites({})
+                  localStorage.removeItem("favorites")
                 }}
                 variant={"destructive"}
                 className="fixed bottom-2 right-6 gap-2 text-sm md:text-lg"
