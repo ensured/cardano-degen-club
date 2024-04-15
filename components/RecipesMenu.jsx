@@ -18,6 +18,17 @@ import PDFViewer from "./PdfViewer"
 import { deleteAllFavorites, getPreSignedUrl, imgUrlToBase64 } from "./actions"
 import { Badge } from "./ui/badge"
 
+const preSignedUrlCache = new Map()
+async function getPreSignedUrlMemoized(key) {
+  if (preSignedUrlCache.has(key)) {
+    return preSignedUrlCache.get(key)
+  }
+
+  const preSignedUrl = await getPreSignedUrl(key)
+  preSignedUrlCache.set(key, preSignedUrl)
+  return preSignedUrl
+}
+
 const RecipesMenu = ({
   searchResults,
   favorites,
@@ -74,25 +85,18 @@ const RecipesMenu = ({
     let currentPosition = 0
 
     // Generate pre-signed URLs for all favorites in advance
-    const preSignedUrls = []
-    for (const [recipeName, { link, image }] of Object.entries(favorites)) {
-      const key = `favorites/images/${userInfo.email}/${recipeName}.jpg`
-      preSignedUrls.push(await getPreSignedUrl(key))
-    }
+    const preSignedUrlsAndImages = await Promise.all(
+      Object.entries(favorites).map(async ([recipeName, { link, image }]) => {
+        const key = `favorites/images/${userInfo.email}/${recipeName}.jpg`
+        const preSignedUrl = await getPreSignedUrlMemoized(key)
+        const imageBase64 = await imgUrlToBase64(preSignedUrl)
+        currentPosition++
+        setProgress((currentPosition / Object.keys(favorites).length) * 100)
+        return { recipeName, imageBase64, link }
+      })
+    )
 
-    const images = []
-    for (let i = 0; i < preSignedUrls.length; i++) {
-      console.log(preSignedUrls[i])
-      const imageBase64 = await imgUrlToBase64(preSignedUrls[i])
-      images.push(imageBase64)
-      setProgress(((i + 1) / preSignedUrls.length) * 100)
-    }
-
-    for (let i = 0; i < Object.keys(favorites).length; i++) {
-      const imageBase64 = images[i]
-      const recipeName = Object.keys(favorites)[i]
-      const link = favorites[recipeName].link
-
+    for (const { recipeName, imageBase64, link } of preSignedUrlsAndImages) {
       // Draw border
       doc.setLineWidth(borderWidth)
       doc.roundedRect(
@@ -110,8 +114,6 @@ const RecipesMenu = ({
         currentPosition++
 
         if (imageBase64) {
-          setProgress((currentPosition / Object.keys(favorites).length) * 100)
-
           // Add image at current yOffset
           doc.addImage(
             imageBase64,
