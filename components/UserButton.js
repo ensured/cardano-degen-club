@@ -8,7 +8,7 @@ import {
 } from "@kinde-oss/kinde-auth-nextjs/server"
 import { User } from "lucide-react"
 
-import LoginPopup from "./LoginPopup"
+import { LoginPopup, LogoutPopup } from "./LoginPopup"
 import LoginToolTip from "./LoginToolTip"
 import { Button } from "./ui/button"
 
@@ -18,13 +18,11 @@ const UserButton = async () => {
 
   if (!user) {
     return (
-      <LoginToolTip>
-        <Button variant={"ghost"} size={"icon"}>
-          <LoginLink>
-            <User />
-          </LoginLink>
-        </Button>
-      </LoginToolTip>
+      <div className="group relative z-50 flex shrink-0 flex-col-reverse items-center justify-center">
+        <LogoutPopup>
+          <Button variant={"ghost"}>Login</Button>
+        </LogoutPopup>
+      </div>
     )
   }
 
