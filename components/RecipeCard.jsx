@@ -72,19 +72,22 @@ export const RecipeCard = ({
           color={
             theme === "light"
               ? hoveredRecipeIndex === index
-                ? "#FFD700" // Gold color when hovered
-                : "#A9A9A9" // Dark gray when not hovered
+                ? "#000000"
+                : "#18181b"
               : hoveredRecipeIndex === index
-              ? "#FFFF00" // Bright yellow when hovered
-              : "#696969" // Lighter gray when not hovered
+              ? "#FFFF00" // Bright yellow
+              : "#FFD700" // Golden yellow
           }
-          className={`absolute bottom-0 right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-[3.2rem] md:w-[3.2rem] ${
+          className={`${
             isMobile ? "" : "hover:scale-125"
-          }`}
+          } absolute bottom-0 right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-[3.2rem] md:w-[3.2rem] 
+          `}
           fill={
             favorites[extractRecipeName(recipe.recipe.shareAs)]
-              ? "#FFA726" // Orange fill when it's a favorite
-              : "none"
+              ? "#FFD700" // Orange fill when it's a favorite
+              : theme === "light"
+              ? "#33333320"
+              : "#222222"
           }
           onClick={handleStarIconClick(index)}
         />
