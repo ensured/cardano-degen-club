@@ -12,6 +12,7 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   getSignedUrl,
@@ -136,9 +137,10 @@ export async function submitFeedback(data: Inputs) {
 type Favorite = {
   recipeName: string
   recipeImage: string
+  link: string
 }
 
-export async function getFavoriteImages() {
+export async function getFavorites() {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
 
@@ -151,42 +153,45 @@ export async function getFavoriteImages() {
   try {
     const listObjectsV2Command = new ListObjectsV2Command(params)
     const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
-    const keys = listObjectsV2Response.Contents?.map((object) => object.Key)
+    const objects = listObjectsV2Response.Contents || []
 
-    if (!keys || keys.length === 0) {
+    if (objects.length === 0) {
       return [] // No objects found, return empty array
     }
 
-    // Generate pre-signed URLs for all keys in parallel
-    const preSignedUrls = await Promise.all(
-      keys.map(async (key) => {
+    // Fetch metadata and generate pre-signed URLs for all objects in parallel
+    const metadataAndUrls = await Promise.all(
+      objects.map(async (object) => {
+        const key = object.Key
         try {
-          if (!key) return null
+          const headObjectCommand = new HeadObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+            Key: key,
+          })
+          const headObjectResponse = await s3Client.send(headObjectCommand)
+
+          // Extract metadata
+          const metadata = headObjectResponse.Metadata
+          const recipeName = metadata?.name
+          const link = metadata?.link
+
+          // Generate pre-signed URL
           const preSignedUrl = await generatePreSignedUrl(key)
-          return preSignedUrl
+
+          return { recipeName, link, url: preSignedUrl }
         } catch (error) {
-          console.error(
-            `Error generating pre-signed URL for key ${key}:`,
-            error
-          )
-          return null // Return null for failed URLs
+          console.error(`Error fetching metadata for key ${key}:`, error)
+          return null // Return null for failed metadata retrieval
         }
       })
     )
 
-    const validUrls = preSignedUrls.filter((url) => url !== null)
-    const fileNames = keys.map((key) =>
-      key?.split("/").pop()?.replace(".jpg", "")
+    // Filter out null entries (failed metadata retrieval)
+    const validMetadataAndUrls = metadataAndUrls.filter(
+      (entry) => entry !== null
     )
 
-    const keyUrlPairs = [
-      ...fileNames.map((fileName, index) => ({
-        recipeName: fileName,
-        url: validUrls[index],
-      })),
-    ]
-
-    return keyUrlPairs
+    return validMetadataAndUrls
   } catch (error) {
     console.error("Error fetching favorite images:", error)
     return [] // Return empty array in case of error
@@ -224,7 +229,7 @@ export async function deleteAllFavorites() {
   }
 }
 
-export async function addFavorite({ recipeName, recipeImage }: Favorite) {
+export async function addFavorite({ recipeName, recipeImage, link }: Favorite) {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
 
@@ -238,7 +243,6 @@ export async function addFavorite({ recipeName, recipeImage }: Favorite) {
     })
     const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
     const totalImages = listObjectsV2Response.Contents?.length || 0
-    console.log(totalImages)
     if (totalImages >= 100) {
       return {
         error:
@@ -255,6 +259,11 @@ export async function addFavorite({ recipeName, recipeImage }: Favorite) {
       Bucket: process.env.S3_BUCKET_NAME_RECIPES,
       Key: key,
       Body: Buffer.from(await imageBlob.arrayBuffer()),
+      Metadata: {
+        email: userEmail,
+        name: recipeName,
+        link: link,
+      },
     }
 
     const putObjectCommand = new PutObjectCommand(params)

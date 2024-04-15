@@ -22,13 +22,7 @@ const useRecipeSearch = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [lastInputSearched, setLastInputSearched] = useState("")
   const lastFoodItemRef = useRef()
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("favorites")) || {}
-    } catch (error) {
-      return {}
-    }
-  })
+  const [favorites, setFavorites] = useState({})
 
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
   const [scrollProgress, setScrollProgress] = useState(0)
@@ -249,7 +243,6 @@ const useRecipeSearch = () => {
     const newFavorites = { ...favorites }
     delete newFavorites[recipeName]
     setFavorites(newFavorites)
-    localStorage.setItem("favorites", JSON.stringify(newFavorites))
     await removeFavorite(recipeName) // server action
     toast("Removed from favorites", {
       icon: <Trash2Icon color="#e74c3c" />,
@@ -270,7 +263,6 @@ const useRecipeSearch = () => {
       const newFavorites = { ...favorites }
       delete newFavorites[recipeName]
       setFavorites(newFavorites)
-      localStorage.setItem("favorites", JSON.stringify(newFavorites))
       await removeFavorite(recipeName) // server action
     } else {
       if (Object.keys(favorites).length >= 200) {
@@ -289,44 +281,27 @@ const useRecipeSearch = () => {
           ...prevFavorites,
           [recipeName]: { link: recipe.shareAs, image: recipeImage },
         }))
-        localStorage.setItem(
-          "favorites",
-          JSON.stringify({
-            ...favorites,
-            [recipeName]: { link: recipe.shareAs, image: recipeImage },
-          })
-        )
 
         // Add to favorites asynchronously
-        const preSignedImageUrl = await addFavorite({
+        const { preSignedImageUrl } = await addFavorite({
           recipeName,
           recipeImage,
+          link: recipe.shareAs,
         })
+
         if (preSignedImageUrl.error) {
           toast(preSignedImageUrl.error, { type: "error" })
           setFavorites((prevFavorites) => {
             const { [recipeName]: value, ...newFavorites } = prevFavorites
             return newFavorites
           })
-          localStorage.setItem("favorites", JSON.stringify({ ...favorites }))
           return
         }
-
         // Update favorites with the actual data
         setFavorites((prevFavorites) => ({
           ...prevFavorites,
-          [recipeName]: { link: recipe.shareAs, image: { preSignedImageUrl } },
+          [recipeName]: { link: recipe.shareAs, image: preSignedImageUrl },
         }))
-        localStorage.setItem(
-          "favorites",
-          JSON.stringify({
-            ...favorites,
-            [recipeName]: {
-              link: recipe.shareAs,
-              image: { preSignedImageUrl },
-            },
-          })
-        )
       } catch (error) {
         console.error("Error adding favorite:", error)
         // Handle error
@@ -336,7 +311,6 @@ const useRecipeSearch = () => {
           const { [recipeName]: value, ...newFavorites } = prevFavorites
           return newFavorites
         })
-        localStorage.setItem("favorites", JSON.stringify({ ...favorites }))
       }
     }
   }

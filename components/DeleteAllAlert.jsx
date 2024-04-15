@@ -34,7 +34,6 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
               const res = await deleteAllFavorites()
               toast.success(`Removed ${res.Deleted.length} recipes!`)
               setFavorites({})
-              localStorage.removeItem("favorites")
             }}
           >
             Continue

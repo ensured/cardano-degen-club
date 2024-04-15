@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode } from "react"
+import { ReactNode, useState } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -8,7 +8,7 @@ import { useTheme } from "next-themes"
 import { isS3UrlExpired } from "@/lib/helper"
 import { extractRecipeName } from "@/lib/utils"
 
-import { getFavoriteImages } from "./actions"
+import { getFavorites } from "./actions"
 import { Button } from "./ui/button"
 import {
   Sheet,
@@ -22,8 +22,10 @@ type Favorites = {
   [recipeName: string]: {
     link: string
     image: string // Assuming image is a URL or similar
+    link: string
   }
 }
+
 const FavoritesSheet = ({
   children,
   setOpen,
@@ -55,39 +57,16 @@ const FavoritesSheet = ({
             onClick={async () => {
               setOpen(!isOpen)
 
-              const images = await getFavoriteImages()
+              const res = await getFavorites()
 
-              // const checkForStaleImages = await checkForStaleImages()
-              // first check if the images are expired?
+              if (!res) return
 
-              // if (await isS3UrlExpired(images[0].url)) {
-              //   console.log("The image URL is expired.")
-              // } else {
-              //   console.log("The image URL is still valid.")
-              // }
-
-              // check if images is empty array
-              if (!images) return
-
-              const updatedFavorites = { ...favorites }
-
-              images.forEach((image) => {
-                const recipeName = image.recipeName
-
-                // Check if the recipeName exists in favorites
-                // @ts-ignore
-                if (updatedFavorites[recipeName]) {
-                  // Update only the image property, keeping the existing link unchanged
-                  // @ts-ignore
-                  updatedFavorites[recipeName].image = image.url
-                }
+              const updatedFavorites = {}
+              res.forEach((favorite) => {
+                updatedFavorites[favorite.recipeName] = favorite
               })
 
               setFavorites(updatedFavorites)
-              localStorage.setItem(
-                "favorites",
-                JSON.stringify(updatedFavorites)
-              )
             }}
             size={"sm"}
           >

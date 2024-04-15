@@ -233,7 +233,7 @@ const RecipesMenu = ({
             </div>
           )}
           <div className="flex max-h-[69%] flex-col overflow-auto rounded-md">
-            {Object.entries(favorites).map(([recipeName, { link, image }]) => (
+            {Object.entries(favorites).map(([recipeName, { link, url }]) => (
               <Link
                 target="_blank"
                 href={link}
@@ -241,9 +241,9 @@ const RecipesMenu = ({
                 className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
                 style={{ textDecoration: "none" }}
               >
-                {image && (
+                {url && (
                   <Image
-                    src={image}
+                    src={url}
                     width={42}
                     height={42}
                     alt={recipeName}
