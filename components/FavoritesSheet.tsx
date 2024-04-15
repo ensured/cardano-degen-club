@@ -22,7 +22,6 @@ type Favorites = {
   [recipeName: string]: {
     link: string
     image: string // Assuming image is a URL or similar
-    link: string
   }
 }
 
