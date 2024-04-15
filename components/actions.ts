@@ -163,6 +163,7 @@ export async function getFavorites() {
     const metadataAndUrls = await Promise.all(
       objects.map(async (object) => {
         const key = object.Key
+        if (!key) return
         try {
           const headObjectCommand = new HeadObjectCommand({
             Bucket: process.env.S3_BUCKET_NAME_RECIPES,
@@ -234,6 +235,10 @@ export async function addFavorite({ name, url, link }: Favorite) {
   if (!isAuthenticated()) return
 
   const userEmail = await getUser().then((user) => user?.email)
+
+  if (!userEmail) {
+    return { error: "User email not found" }
+  }
 
   try {
     // Check the total number of images in the favorites folder
