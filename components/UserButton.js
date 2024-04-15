@@ -17,8 +17,8 @@ const UserButton = async () => {
   if (!user) {
     return (
       <LoginLink>
-        <Button variant={"outline"} className="flex flex-row gap-1">
-          <User className="h-4 w-4" />
+        <Button variant={"ghost"} size={"icon"}>
+          <User />
         </Button>
       </LoginLink>
     )
