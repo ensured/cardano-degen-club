@@ -304,7 +304,6 @@ const useRecipeSearch = () => {
         })
         if (preSignedImageUrl.error) {
           toast(preSignedImageUrl.error, { type: "error" })
-          // Revert the optimistic update if the asynchronous operation fails
           setFavorites((prevFavorites) => {
             const { [recipeName]: value, ...newFavorites } = prevFavorites
             return newFavorites

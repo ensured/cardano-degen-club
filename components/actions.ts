@@ -240,7 +240,6 @@ export async function addFavorite({ recipeName, recipeImage }: Favorite) {
     const totalImages = listObjectsV2Response.Contents?.length || 0
     console.log(totalImages)
     if (totalImages >= 100) {
-      console.log("Maximum limit of 100 favorites reached. Cannot add more.")
       return {
         error:
           "Maximum limit of 100 favorites reached. Remove some to add more",
