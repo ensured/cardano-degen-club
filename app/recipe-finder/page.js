@@ -16,18 +16,20 @@ export const metadata = {
 }
 const page = async () => {
   const { isAuthenticated, getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = await getUser().then((user) => user)
 
   if (!user || !isAuthenticated()) {
     return (
       <div className="flex w-full justify-center text-center">
         <div className=" flex flex-col gap-2 p-2">
           Please login or register to view this page.
-          <div className="flex justify-center gap-2 p-2">
-            <LoginLink className="rounded-md bg-teal-600 p-2">Login</LoginLink>
-            <RegisterLink className="rounded-md bg-teal-600 p-2">
-              Register
-            </RegisterLink>
+          <div className="flex justify-center gap-3 p-1">
+            <Button variant={"outline"}>
+              <LoginLink>Login</LoginLink>
+            </Button>
+            <Button variant={"outline"}>
+              <RegisterLink>Register</RegisterLink>
+            </Button>
           </div>
         </div>
       </div>
