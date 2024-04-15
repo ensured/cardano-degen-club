@@ -19,7 +19,6 @@ const UserButton = async () => {
       <LoginLink>
         <Button variant={"outline"} className="flex flex-row gap-1">
           <User className="h-4 w-4" />
-          Login{" "}
         </Button>
       </LoginLink>
     )
