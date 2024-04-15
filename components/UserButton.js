@@ -18,11 +18,11 @@ const UserButton = async () => {
   if (!user) {
     return (
       <LoginToolTip>
-        <LoginLink>
-          <Button variant={"ghost"} size={"icon"}>
+        <Button variant={"ghost"} size={"icon"}>
+          <LoginLink>
             <User />
-          </Button>
-        </LoginLink>
+          </LoginLink>
+        </Button>
       </LoginToolTip>
     )
   }
