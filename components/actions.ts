@@ -227,8 +227,27 @@ export async function deleteAllFavorites() {
 export async function addFavorite({ recipeName, recipeImage }: Favorite) {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
+
   const userEmail = await getUser().then((user) => user?.email)
+
   try {
+    // Check the total number of images in the favorites folder
+    const listObjectsV2Command = new ListObjectsV2Command({
+      Bucket: process.env.S3_BUCKET_NAME_RECIPES,
+      Prefix: `favorites/images/${userEmail}/`,
+    })
+    const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
+    const totalImages = listObjectsV2Response.Contents?.length || 0
+    console.log(totalImages)
+    if (totalImages >= 100) {
+      console.log("Maximum limit of 100 favorites reached. Cannot add more.")
+      return {
+        error:
+          "Maximum limit of 100 favorites reached. Remove some to add more",
+      }
+    }
+
+    // Fetch the image and upload it
     const imageResponse = await fetch(recipeImage)
     const imageBlob = await imageResponse.blob()
     const key = `favorites/images/${userEmail}/${recipeName}.jpg`
@@ -241,12 +260,14 @@ export async function addFavorite({ recipeName, recipeImage }: Favorite) {
 
     const putObjectCommand = new PutObjectCommand(params)
     const putObjectResponse = await s3Client.send(putObjectCommand)
-    // console.log(putObjectResponse)
 
+    // Generate pre-signed URL for the uploaded image
     const preSignedImageUrl = await generatePreSignedUrl(key)
+
     return { preSignedImageUrl }
   } catch (err) {
     console.error("Error adding favorite:", err)
+    return { error: "Failed to add favorite." }
   }
 }
 

@@ -298,21 +298,34 @@ const useRecipeSearch = () => {
         )
 
         // Add to favorites asynchronously
-        const { preSignedImageUrl } = await addFavorite({
+        const preSignedImageUrl = await addFavorite({
           recipeName,
           recipeImage,
         })
+        if (preSignedImageUrl.error) {
+          toast(preSignedImageUrl.error, { type: "error" })
+          // Revert the optimistic update if the asynchronous operation fails
+          setFavorites((prevFavorites) => {
+            const { [recipeName]: value, ...newFavorites } = prevFavorites
+            return newFavorites
+          })
+          localStorage.setItem("favorites", JSON.stringify({ ...favorites }))
+          return
+        }
 
         // Update favorites with the actual data
         setFavorites((prevFavorites) => ({
           ...prevFavorites,
-          [recipeName]: { link: recipe.shareAs, image: preSignedImageUrl },
+          [recipeName]: { link: recipe.shareAs, image: { preSignedImageUrl } },
         }))
         localStorage.setItem(
           "favorites",
           JSON.stringify({
             ...favorites,
-            [recipeName]: { link: recipe.shareAs, image: preSignedImageUrl },
+            [recipeName]: {
+              link: recipe.shareAs,
+              image: { preSignedImageUrl },
+            },
           })
         )
       } catch (error) {
