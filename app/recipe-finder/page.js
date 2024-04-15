@@ -34,7 +34,6 @@ const page = async () => {
     )
   }
 
-  console.log(user.email)
   const userInfo = {
     id: user.id,
     name: user.given_name,
