@@ -14,7 +14,7 @@ const ScrollToTopButton = () => {
       const documentHeight = document.documentElement.scrollHeight
       const scrollableDistance = documentHeight - windowHeight
       setIsVisible(scrolled > 500) // Show button when scrolled down
-      setIsNearBottom(scrolled > scrollableDistance - 100) // Check if near bottom
+      setIsNearBottom(scrolled > scrollableDistance - 40) // Check if near bottom
     }
 
     // Listen for scroll events
