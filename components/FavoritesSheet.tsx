@@ -2,7 +2,7 @@
 
 import { ReactNode, useState } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { StarIcon } from "lucide-react"
+import { Loader2, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { isS3UrlExpired } from "@/lib/helper"
@@ -32,7 +32,8 @@ const FavoritesSheet = ({
   loading,
   favorites,
   setFavorites,
-  isLoadingPdfPreview,
+  isSheetDataLoading,
+  setIsSheetDataLoading,
 }: {
   children: ReactNode
   setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
@@ -40,7 +41,8 @@ const FavoritesSheet = ({
   loading: boolean
   favorites: Favorites
   setFavorites: (setFavorites: Favorites) => void
-  isLoadingPdfPreview: boolean
+  isSheetDataLoading: boolean
+  setIsSheetDataLoading: (setIsSheetDataLoading: boolean) => void
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
@@ -54,6 +56,7 @@ const FavoritesSheet = ({
             disabled={loading ? true : false}
             className="flex select-none gap-1 text-base md:text-lg"
             onClick={async () => {
+              setIsSheetDataLoading(true)
               setOpen(!isOpen)
 
               const res = await getFavorites()
@@ -67,13 +70,14 @@ const FavoritesSheet = ({
                   !favorite.url ||
                   !favorite.link
                 )
-                  return // Check if name is defined
+                  return
                 updatedFavorites[favorite.name] = {
                   link: favorite.link,
                   url: favorite.url,
                 }
               })
               setFavorites(updatedFavorites)
+              setIsSheetDataLoading(false)
             }}
             size={"sm"}
           >

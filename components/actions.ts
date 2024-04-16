@@ -300,10 +300,6 @@ export async function removeFavorite(recipeName: string) {
   return
 }
 
-export async function getPreSignedUrl(key: string) {
-  return await generatePreSignedUrl(key)
-}
-
 export const imgUrlToBase64 = async (url: string) => {
   try {
     const response = await fetch(url)

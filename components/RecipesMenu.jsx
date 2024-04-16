@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { FileText, Trash2Icon, TrashIcon } from "lucide-react"
+import { FileText, Loader2, Trash2Icon, TrashIcon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -44,6 +44,7 @@ const RecipesMenu = ({
   const [isConfirmPreviewDialogOpen, setIsConfirmPreviewDialogOpen] =
     useState(false)
   const [progress, setProgress] = useState(0)
+  const [isSheetDataLoading, setIsSheetDataLoading] = useState(false)
 
   const handlePreviewPDF = async () => {
     setProgress(0)
@@ -62,7 +63,6 @@ const RecipesMenu = ({
       setIsLoadingPdfPreview(false)
     }
   }
-
   const previewFavoritesPDF = async (favorites) => {
     if (!favorites || Object.keys(favorites).length === 0) {
       toast("No favorites found", {
@@ -84,94 +84,95 @@ const RecipesMenu = ({
     const borderWidth = 0.5 // Adjust width of the border
     let currentPosition = 0
 
-    // Generate pre-signed URLs for all favorites in advance
-    const preSignedUrlsAndImages = await Promise.all(
-      Object.entries(favorites).map(async ([recipeName, { link, image }]) => {
-        const key = `favorites/images/${userInfo.email}/${recipeName}.jpg`
-        const preSignedUrl = await getPreSignedUrlMemoized(key)
-        const imageBase64 = await imgUrlToBase64(preSignedUrl)
-        currentPosition++
-        setProgress((currentPosition / Object.keys(favorites).length) * 100)
-        return { recipeName, imageBase64, link }
-      })
-    )
+    try {
+      const imageLoadingPromises = Object.entries(favorites).map(
+        async ([recipeName, { link, url }]) => {
+          const imageBase64 = await imgUrlToBase64(url)
+          currentPosition++
+          const progress =
+            (currentPosition / Object.keys(favorites).length) * 100
+          setProgress(progress)
 
-    for (const { recipeName, imageBase64, link } of preSignedUrlsAndImages) {
-      // Draw border
-      doc.setLineWidth(borderWidth)
-      doc.roundedRect(
-        borderPadding, // x-coordinate of the top-left corner
-        yOffset, // y-coordinate of the top-left corner
-        doc.internal.pageSize.width - 2 * borderPadding, // width of the rectangle
-        imageHeight + 2 * borderPadding, // height of the rectangle
-        3, // radius of the rounded corners (adjust as needed)
-        3, // radius of the rounded corners (adjust as needed)
-        "S" // draw "stroke" (border)
-      )
+          // Draw border
+          doc.setLineWidth(borderWidth)
+          doc.roundedRect(
+            borderPadding, // x-coordinate of the top-left corner
+            yOffset, // y-coordinate of the top-left corner
+            doc.internal.pageSize.width - 2 * borderPadding, // width of the rectangle
+            imageHeight + 2 * borderPadding, // height of the rectangle
+            3, // radius of the rounded corners (adjust as needed)
+            3, // radius of the rounded corners (adjust as needed)
+            "S" // draw "stroke" (border)
+          )
 
-      // Embed image if available
-      if (imageBase64) {
-        currentPosition++
+          // Embed image if available
+          if (imageBase64) {
+            // Add image at current yOffset
+            doc.addImage(
+              imageBase64,
+              "JPEG",
+              borderPadding + borderWidth + 2,
+              yOffset + borderPadding,
+              imageWidth,
+              imageHeight
+            ) // Adjust width and height as needed, considering the border
+          } else {
+            console.error(`Failed to embed image`)
+          }
 
-        if (imageBase64) {
-          // Add image at current yOffset
-          doc.addImage(
-            imageBase64,
-            "JPEG",
-            borderPadding + borderWidth + 2,
-            yOffset + borderPadding,
-            imageWidth,
-            imageHeight
-          ) // Adjust width and height as needed, considering the border
-        } else {
-          console.error(`Failed to embed image`)
+          // Style for recipe name
+          doc.setTextColor(0, 0, 0)
+          doc.setFont("helvetica", "bold")
+          doc.setFontSize(16)
+
+          const maxNameLength = 100 // Maximum characters for recipe name
+          const truncatedName =
+            recipeName.length > maxNameLength
+              ? recipeName.substring(0, maxNameLength) + "..."
+              : recipeName
+          const textLines = doc.splitTextToSize(truncatedName, 100)
+          const truncatedTextLines = textLines.slice(0, 2) // Take only the first two lines
+
+          doc.text(
+            truncatedTextLines,
+            borderPadding + imageWidth + 6,
+            yOffset + lineHeight
+          )
+
+          // Style for link
+          doc.setTextColor(0, 0, 255)
+          doc.setFont("helvetica", "normal")
+          doc.setFontSize(12)
+
+          const maxLinkLength = 60 // Maximum characters for link
+          const truncatedLink =
+            link.length > maxLinkLength
+              ? link.substring(0, maxLinkLength) + "..."
+              : link
+
+          const linkXOffset = 40 // Center the link horizontally within the border
+          doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
+            url: link,
+          })
+
+          yOffset +=
+            imageHeight + 2 * borderPadding + lineHeight + borderPadding // Adjust yOffset to move to the next content with border and padding
+
+          if (yOffset > pageHeight - 20) {
+            doc.addPage()
+            yOffset = 10
+          }
         }
-      }
-
-      // Style for recipe name
-      doc.setTextColor(0, 0, 0)
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(16)
-
-      const maxNameLength = 100 // Maximum characters for recipe name
-      const truncatedName =
-        recipeName.length > maxNameLength
-          ? recipeName.substring(0, maxNameLength) + "..."
-          : recipeName
-      const textLines = doc.splitTextToSize(truncatedName, 100)
-      const truncatedTextLines = textLines.slice(0, 2) // Take only the first two lines
-
-      doc.text(
-        truncatedTextLines,
-        borderPadding + imageWidth + 6,
-        yOffset + lineHeight
       )
 
-      // Style for link
-      doc.setTextColor(0, 0, 255)
-      doc.setFont("helvetica", "normal")
-      doc.setFontSize(12)
+      await Promise.all(imageLoadingPromises)
 
-      const maxLinkLength = 60 // Maximum characters for link
-      const truncatedLink =
-        link.length > maxLinkLength
-          ? link.substring(0, maxLinkLength) + "..."
-          : link
-
-      const linkXOffset = 40 // Center the link horizontally within the border
-      doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
-        url: link,
-      })
-
-      yOffset += imageHeight + 2 * borderPadding + lineHeight + borderPadding // Adjust yOffset to move to the next content with border and padding
-
-      if (yOffset > pageHeight - 20) {
-        doc.addPage()
-        yOffset = 10
-      }
+      const pdfBlob = doc.output("blob")
+      return URL.createObjectURL(pdfBlob)
+    } catch (error) {
+      console.error("Error generating PDF:", error)
+      // Handle error
     }
-    const pdfBlob = doc.output("blob")
-    return URL.createObjectURL(pdfBlob)
   }
 
   const size = useWindowSize()
@@ -198,7 +199,8 @@ const RecipesMenu = ({
           isOpen={isOpen}
           loading={loading}
           favorites={favorites}
-          setFav
+          isSheetDataLoading={isSheetDataLoading}
+          setIsSheetDataLoading={setIsSheetDataLoading}
         >
           {Object.keys(favorites).length > 0 ? (
             <>
@@ -229,53 +231,59 @@ const RecipesMenu = ({
               </span>
             </div>
           )}
-          <div className="flex max-h-[69%] flex-col overflow-auto rounded-md">
-            {Object.entries(favorites).map(([recipeName, { link, url }]) => (
-              <Link
-                target="_blank"
-                href={link}
-                key={recipeName}
-                className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
-                style={{ textDecoration: "none" }}
-              >
-                {url && (
-                  <Image
-                    src={url}
-                    width={42}
-                    height={42}
-                    alt={recipeName}
-                    className="rounded-full"
-                    unoptimized
-                    priority
-                  />
-                )}
-                <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                  <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
-                    {recipeName}
-                  </span>
-                  <button
-                    className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      removeFromFavorites(recipeName)
-                    }}
-                  >
-                    <Trash2Icon
-                      size={
-                        size?.width < 480
-                          ? 20
-                          : size?.width < 640
-                          ? 22
-                          : size?.width < 900
-                          ? 23
-                          : 24
-                      }
+          <div className="h-[69%] overflow-auto rounded-md">
+            {isSheetDataLoading ? (
+              <div className="flex h-[69vh] w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin md:h-12 md:w-12" />
+              </div>
+            ) : (
+              Object.entries(favorites).map(([recipeName, { link, url }]) => (
+                <Link
+                  target="_blank"
+                  href={link}
+                  key={recipeName}
+                  className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
+                  style={{ textDecoration: "none" }}
+                >
+                  {url && (
+                    <Image
+                      src={url}
+                      width={42}
+                      height={42}
+                      alt={recipeName}
+                      className="rounded-full"
+                      unoptimized
+                      priority
                     />
-                    <Separator className="bg-red-900 text-red-500" />
-                  </button>
-                </div>
-              </Link>
-            ))}
+                  )}
+                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
+                    <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
+                      {recipeName}
+                    </span>
+                    <button
+                      className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        removeFromFavorites(recipeName)
+                      }}
+                    >
+                      <Trash2Icon
+                        size={
+                          size?.width < 480
+                            ? 20
+                            : size?.width < 640
+                            ? 22
+                            : size?.width < 900
+                            ? 23
+                            : 24
+                        }
+                      />
+                      <Separator className="bg-red-900 text-red-500" />
+                    </button>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
 
           {Object.keys(favorites).length > 0 && (
