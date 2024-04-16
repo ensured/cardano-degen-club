@@ -24,12 +24,12 @@ const page = async () => {
         <div className=" flex flex-col gap-2 p-2">
           Please login or register to view this page.
           <div className="flex justify-center gap-3 p-1">
-            <Button variant={"outline"}>
-              <LoginLink>Login</LoginLink>
-            </Button>
-            <Button variant={"outline"}>
-              <RegisterLink>Register</RegisterLink>
-            </Button>
+            <LoginLink><Button variant={"outline"}>Login</Button></LoginLink>
+            <RegisterLink>
+              <Button variant={"outline"}>
+                Register
+              </Button>
+            </RegisterLink>
           </div>
         </div>
       </div>

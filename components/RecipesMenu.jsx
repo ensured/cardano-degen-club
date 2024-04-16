@@ -158,9 +158,6 @@ const RecipesMenu = ({
           ? link.substring(0, maxLinkLength) + "..."
           : link
 
-      const linkTextWidth =
-        (doc.getStringUnitWidth(truncatedLink) * doc.internal.getFontSize()) /
-        doc.internal.scaleFactor // Calculate width of link text
       const linkXOffset = 40 // Center the link horizontally within the border
       doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
         url: link,

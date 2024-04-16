@@ -5,6 +5,7 @@ import { DicesIcon } from "lucide-react"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 
+import { foodItems } from "../lib/foods"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
@@ -36,12 +37,11 @@ const RecipeSearchForm = ({
       count: 0,
       nextPage: "",
     })
-    const data = await fetch(`/api/search/random`).then((data) => data.json())
-    const food = data.food
-    router.replace(`/recipe-finder?q=${data.food}`)
-    setInput(food)
-    searchRecipes(e, food)
-    return data.food
+    const randomIndex = Math.floor(Math.random() * foodItems.length)
+    const randomFoodItem = foodItems[randomIndex]
+    router.replace(`/recipe-finder?q=${randomFoodItem}`)
+    setInput(randomFoodItem)
+    searchRecipes(e, randomFoodItem)
   }
   const handleFormSubmit = (e) => {
     searchRecipes(e)
