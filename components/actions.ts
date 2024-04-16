@@ -249,10 +249,8 @@ export async function addFavorite({ name, url, link }: Favorite) {
     const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
     const totalImages = listObjectsV2Response.Contents?.length || 0
     if (totalImages >= 100) {
-      console.log("server: max limit of 100 favs reached.")
       return {
-        success: true,
-        message:
+        error:
           "Maximum limit of 100 favorites reached. Remove some to add more",
       }
     }
@@ -298,6 +296,10 @@ export async function removeFavorite(recipeName: string) {
   const deleteObjectCommand = new DeleteObjectCommand(params)
   const deleteObjectResponse = await s3Client.send(deleteObjectCommand)
   return
+}
+
+export async function getPreSignedUrl(key: string) {
+  return await generatePreSignedUrl(key)
 }
 
 export const imgUrlToBase64 = async (url: string) => {
