@@ -249,8 +249,10 @@ export async function addFavorite({ name, url, link }: Favorite) {
     const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
     const totalImages = listObjectsV2Response.Contents?.length || 0
     if (totalImages >= 100) {
+      console.log("server: max limit of 100 favs reached.")
       return {
-        error:
+        success: true,
+        message:
           "Maximum limit of 100 favorites reached. Remove some to add more",
       }
     }

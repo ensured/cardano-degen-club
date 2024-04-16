@@ -250,70 +250,71 @@ const useRecipeSearch = () => {
   }
 
   const handleStarIconClick = (index) => async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const recipe = searchResults.hits[index].recipe
-    const recipeName = extractRecipeName(recipe.shareAs)
-    const recipeImage = recipe.image
+    const recipe = searchResults.hits[index].recipe;
+    const recipeName = extractRecipeName(recipe.shareAs);
+    const recipeImage = recipe.image;
 
-    const isFavorited = favorites[recipeName] !== undefined
+    const isFavorited = favorites[recipeName] !== undefined;
 
     if (isFavorited) {
       // Remove from favorites optimistically
-      const newFavorites = { ...favorites }
-      delete newFavorites[recipeName]
-      setFavorites(newFavorites)
-      await removeFavorite(recipeName) // server action
+      const newFavorites = { ...favorites };
+      delete newFavorites[recipeName];
+      setFavorites(newFavorites);
+      await removeFavorite(recipeName); // server action
     } else {
-      if (Object.keys(favorites).length >= 200) {
-        toast(
-          "You have reached the maximum number of favorites. Download them to a pdf so you remove them here.",
-          {
-            icon: <Trash2Icon color="#e74c3c" />,
-          }
-        )
-        return
-      }
-
       try {
         // Optimistically add to favorites
         setFavorites((prevFavorites) => ({
           ...prevFavorites,
           [recipeName]: { link: recipe.shareAs, image: recipeImage },
-        }))
+        }));
 
         // Add to favorites asynchronously
-        const { preSignedImageUrl } = await addFavorite({
+        const response = await addFavorite({
           name: recipeName,
           url: recipeImage,
           link: recipe.shareAs,
-        })
+        });
 
-        if (preSignedImageUrl.error) {
-          toast(preSignedImageUrl.error, { type: "error" })
+        if (response.error) {
+          toast(response.error, { type: "error" });
+          // Revert the optimistic update if the asynchronous operation fails
           setFavorites((prevFavorites) => {
-            const { [recipeName]: value, ...newFavorites } = prevFavorites
-            return newFavorites
-          })
-          return
+            const { [recipeName]: value, ...newFavorites } = prevFavorites;
+            return newFavorites;
+          });
+        } else if (response.success) {
+          // Display the message to the user
+          toast(response.message, { type: "error", duration: 3000 });
+          setFavorites((prevFavorites) => {
+            const { [recipeName]: value, ...newFavorites } = prevFavorites;
+            return newFavorites;
+          });
+        } else {
+          // Update favorites with the actual data
+          setFavorites((prevFavorites) => ({
+            ...prevFavorites,
+            [recipeName]: { link: recipe.shareAs, image: response.preSignedImageUrl },
+          }));
         }
-        // Update favorites with the actual data
-        setFavorites((prevFavorites) => ({
-          ...prevFavorites,
-          [recipeName]: { link: recipe.shareAs, image: preSignedImageUrl },
-        }))
       } catch (error) {
-        console.error("Error adding favorite:", error)
-        // Handle error
-        toast("Failed to add to favorites", { type: "error" })
+        console.error("Error adding favorite:", error);
+        toast(error.message, {
+          type: "error",
+        })
         // Revert the optimistic update if the asynchronous operation fails
         setFavorites((prevFavorites) => {
-          const { [recipeName]: value, ...newFavorites } = prevFavorites
-          return newFavorites
-        })
+          const { [recipeName]: value, ...newFavorites } = prevFavorites;
+          return newFavorites;
+        });
       }
     }
-  }
+  };
+
+
   return {
     handleStarIconHover,
     loading,
