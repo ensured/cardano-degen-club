@@ -26,15 +26,15 @@ const useRecipeSearch = () => {
   const [lastInputSearched, setLastInputSearched] = useState("")
   const lastFoodItemRef = useRef()
   const [favorites, setFavorites] = useState({})
-
+  const [isRecipeDataLoading, setIsRecipeDataLoading] = useState(true)
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
   const fetchFavorites = async () => {
+    setIsRecipeDataLoading(true)
     try {
-      setLoading(true);
       const res = await getFavorites();
 
       if (!res) return;
@@ -51,17 +51,19 @@ const useRecipeSearch = () => {
         };
       });
       setFavorites(updatedFavorites);
-      setLoading(false);
     } catch (error) {
       console.error("Error fetching favorites:", error);
       toast.error(error.message);
+    } finally {
+      setIsRecipeDataLoading(false)
+
     }
   };
 
 
   useEffect(() => {
     const getFavs = async () => {
-      const res = await fetchFavorites()
+      await fetchFavorites()
     }
     getFavs()
   }, [])
@@ -406,6 +408,7 @@ const useRecipeSearch = () => {
     currentCardIndex,
     isMobile,
     setSearchResults,
+    isRecipeDataLoading
   }
 }
 

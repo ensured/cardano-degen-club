@@ -37,6 +37,7 @@ const RecipesMenu = ({
   loading,
   userInfo,
   isAuthenticated,
+  isRecipeDataLoading,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
@@ -44,7 +45,6 @@ const RecipesMenu = ({
   const [isConfirmPreviewDialogOpen, setIsConfirmPreviewDialogOpen] =
     useState(false)
   const [progress, setProgress] = useState(0)
-  const [isSheetDataLoading, setIsSheetDataLoading] = useState(false)
 
   const handlePreviewPDF = async () => {
     setProgress(0)
@@ -199,8 +199,6 @@ const RecipesMenu = ({
           isOpen={isOpen}
           loading={loading}
           favorites={favorites}
-          isSheetDataLoading={isSheetDataLoading}
-          setIsSheetDataLoading={setIsSheetDataLoading}
         >
           {Object.keys(favorites).length > 0 ? (
             <>
@@ -214,7 +212,11 @@ const RecipesMenu = ({
                   }
                   setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
                 >
-                  <Button variant={"outline"} className="gap-2">
+                  <Button
+                    variant={"outline"}
+                    className="gap-2"
+                    disabled={loading ? true : false}
+                  >
                     <FileText className="left-2" />
                     <div className="line-clamp-1 items-center text-lg">
                       Preview PDF{" "}
@@ -223,16 +225,32 @@ const RecipesMenu = ({
                 </ConfirmPreviewAlertDialog>
               </div>
             </>
+          ) : null}
+
+          {isRecipeDataLoading ? (
+            <div className="flex justify-center">
+              <span className="sm:text-md text-xs md:mx-2 md:text-lg">
+                Loading recipes...
+              </span>
+            </div>
           ) : (
             <div className="flex justify-center">
               <span className="sm:text-md text-xs md:mx-2 md:text-lg">
                 You have <b>{Object.keys(favorites).length}</b> recipes
-                favorited. Get started by favoriting something!
+                favorited.
               </span>
+              {isRecipeDataLoading ? (
+                <span className="sm:text-md text-xs md:mx-2 md:text-lg">
+                  Loading recipes...
+                </span>
+              ) : (
+                <span className="sm:text-md text-xs md:mx-2 md:text-lg"></span>
+              )}
             </div>
           )}
+
           <div className="h-[69%] overflow-auto rounded-md">
-            {isSheetDataLoading ? (
+            {isRecipeDataLoading ? (
               <div className="flex h-[69vh] w-full items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin md:h-12 md:w-12" />
               </div>

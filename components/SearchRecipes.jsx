@@ -38,6 +38,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
     isMobile,
     suggestions,
     setSuggestions,
+    isRecipeDataLoading,
   } = useRecipeSearch()
 
   return (
@@ -74,14 +75,16 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         favorites={favorites}
         setFavorites={setFavorites}
         loading={loading}
+        isRecipeDataLoading={isRecipeDataLoading}
       />
 
       {/* loading spinner in the center of the page */}
-      {loading && (
-        <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
-          <Loader2Icon className="h-16 w-16 animate-spin" />
-        </div>
-      )}
+      {loading ||
+        (isRecipeDataLoading && (
+          <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
+            <Loader2Icon className="h-16 w-16 animate-spin" />
+          </div>
+        ))}
       {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
         <div className="animate-fade-in mb-6 flex flex-col gap-2 pt-1">

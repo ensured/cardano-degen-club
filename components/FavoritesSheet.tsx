@@ -42,10 +42,7 @@ const FavoritesSheet = ({
     <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button
-            disabled={loading ? true : false}
-            className="select-none gap-1 text-base md:text-lg"
-          >
+          <Button className="select-none gap-1 text-base md:text-lg">
             <StarIcon
               size={size?.width < 768 ? 19 : 22}
               color={theme.theme === "light" ? "#FFD700" : "black"}
