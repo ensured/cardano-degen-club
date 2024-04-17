@@ -199,7 +199,7 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    const shouldSearch = isInitialLoad && searchParams.get("q").length > 0;
+    const shouldSearch = isInitialLoad && searchParams.get("q");
     if (shouldSearch) {
       searchRecipes();
       setIsInitialLoad(false);
