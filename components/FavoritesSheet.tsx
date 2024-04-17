@@ -1,14 +1,10 @@
 "use client"
 
-import { ReactNode, useState } from "react"
+import { ReactNode } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Loader2, StarIcon } from "lucide-react"
+import { StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import { isS3UrlExpired } from "@/lib/helper"
-import { extractRecipeName } from "@/lib/utils"
-
-import { getFavorites } from "./actions"
 import { Button } from "./ui/button"
 import {
   Sheet,

@@ -337,8 +337,6 @@ const useRecipeSearch = () => {
               link: recipe.shareAs,
             },
           }))
-          console.log(favorites)
-          console.log(recipe.shareAs)
         }
       } catch (error) {
         console.error("Error adding favorite:", error)

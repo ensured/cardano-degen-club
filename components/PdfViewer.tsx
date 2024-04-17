@@ -152,9 +152,6 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
 
       try {
         await Promise.all(promises)
-        console.log("Filename:", filename)
-        console.log("Switch checked:", isSwitchChecked)
-
         let finalFilename = "Recipes-(Favorites)"
         if (filename && filename.endsWith(".pdf")) {
           finalFilename = filename.slice(0, -4) // Remove ".pdf" extension
