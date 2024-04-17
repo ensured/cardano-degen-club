@@ -38,7 +38,10 @@ const useRecipeSearch = () => {
       const updatedFavorites = {}
       res.forEach((favorite) => {
         if (!favorite || !favorite.name || !favorite.url || !favorite.link)
-          return
+          return {
+            error: "Invalid favorite data",
+          }
+
         updatedFavorites[favorite.name] = {
           link: favorite.link,
           url: favorite.url,
@@ -298,7 +301,10 @@ const useRecipeSearch = () => {
         // Optimistically add to favorites
         setFavorites((prevFavorites) => ({
           ...prevFavorites,
-          [recipeName]: { link: recipe.shareAs, image: recipeImage },
+          [recipeName]: {
+            url: recipeImage,
+            link: recipe.shareAs,
+          },
         }))
 
         // Add to favorites asynchronously
@@ -327,10 +333,12 @@ const useRecipeSearch = () => {
           setFavorites((prevFavorites) => ({
             ...prevFavorites,
             [recipeName]: {
+              url: response.preSignedImageUrl,
               link: recipe.shareAs,
-              image: response.preSignedImageUrl,
             },
           }))
+          console.log(favorites)
+          console.log(recipe.shareAs)
         }
       } catch (error) {
         console.error("Error adding favorite:", error)

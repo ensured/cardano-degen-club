@@ -39,7 +39,7 @@ const RecipesMenu = ({
   isAuthenticated,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
   const [isOpen, setIsOpen] = useState(false)
   const [isConfirmPreviewDialogOpen, setIsConfirmPreviewDialogOpen] =
     useState(false)

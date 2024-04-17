@@ -54,32 +54,7 @@ const FavoritesSheet = ({
         <SheetTrigger asChild>
           <Button
             disabled={loading ? true : false}
-            className="flex select-none gap-1 text-base md:text-lg"
-            onClick={async () => {
-              setIsSheetDataLoading(true)
-              setOpen(!isOpen)
-
-              const res = await getFavorites()
-
-              if (!res) return
-              const updatedFavorites: Favorites = {}
-              res.forEach((favorite) => {
-                if (
-                  !favorite ||
-                  !favorite.name ||
-                  !favorite.url ||
-                  !favorite.link
-                )
-                  return
-                updatedFavorites[favorite.name] = {
-                  link: favorite.link,
-                  url: favorite.url,
-                }
-              })
-              setFavorites(updatedFavorites)
-              setIsSheetDataLoading(false)
-            }}
-            size={"sm"}
+            className="select-none gap-1 text-base md:text-lg"
           >
             <StarIcon
               size={size?.width < 768 ? 19 : 22}
