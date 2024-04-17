@@ -60,6 +60,7 @@ export function ConfirmPreviewAlertDialog({
             <Button
               className="w-full"
               size={"sm"}
+              disabled={loading ? true : false}
               onClick={() => {
                 handlePreviewPDF()
                 setIsConfirmPreviewDialogOpen(false)
