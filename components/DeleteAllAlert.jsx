@@ -1,4 +1,4 @@
-import { CheckCircleIcon, Loader2 } from "lucide-react"
+import { CheckCircle2Icon, CheckCircleIcon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
 import {
@@ -55,16 +55,12 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                   {
                     className: "bg-slate-500/80",
                     loading: {
-                      iconTheme: {
-                        primaryColor: "currentColor",
-                        secondaryColor: "currentColor",
-                      },
+                      icon: <Loader2 className="animate-spin text-zinc-950" />,
                     },
                     success: {
-                      iconTheme: {
-                        primary: "text-zinc-950",
-                        secondary: "text-zinc-50",
-                      },
+                      icon: (
+                        <CheckCircle2Icon className=" animate-fadeIn text-zinc-50" />
+                      ),
                     },
                   }
                 )
