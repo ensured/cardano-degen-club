@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Trash2Icon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
@@ -31,28 +30,30 @@ const useRecipeSearch = () => {
 
   const fetchFavorites = async () => {
     try {
-      setLoading(true)
-      const res = await getFavorites()
+      setLoading(true);
+      const res = await getFavorites();
 
-      if (!res) return
-      const updatedFavorites = {}
+      if (!res) return;
+      const updatedFavorites = {};
       res.forEach((favorite) => {
-        if (!favorite || !favorite.name || !favorite.url || !favorite.link)
-          return {
-            error: "Invalid favorite data",
-          }
-
-        updatedFavorites[favorite.name] = {
-          link: favorite.link,
-          url: favorite.url,
+        if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
+          toast.error("Invalid favorite data");
+          return;
         }
-      })
-      setFavorites(updatedFavorites)
-      setLoading(false)
+
+        updatedFavorites[favorite.link] = {
+          name: favorite.name,
+          url: favorite.url,
+        };
+      });
+      setFavorites(updatedFavorites);
+      setLoading(false);
     } catch (error) {
-      toast.error(error.message)
+      console.error("Error fetching favorites:", error);
+      toast.error(error.message);
     }
-  }
+  };
+
 
   useEffect(() => {
     const getFavs = async () => {
@@ -271,86 +272,92 @@ const useRecipeSearch = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
-  const removeFromFavorites = async (recipeName) => {
-    const newFavorites = { ...favorites }
-    delete newFavorites[recipeName]
-    setFavorites(newFavorites)
-    await removeFavorite(recipeName) // server action
-    toast("Removed from favorites", {
-      icon: <Trash2Icon color="#e74c3c" />,
-    })
-  }
+  const removeFromFavorites = async (recipeLink) => {
+    try {
+      const newFavorites = { ...favorites };
+      delete newFavorites[recipeLink];
+      setFavorites(newFavorites);
+      await removeFavorite(recipeLink); // server action
+      toast.success("Removed from favorites");
+    } catch (error) {
+      console.error("Error removing from favorites:", error);
+      toast.error(error.message);
+    }
+  };
+
 
   const handleStarIconClick = (index) => async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const recipe = searchResults.hits[index].recipe
-    const recipeName = extractRecipeName(recipe.shareAs)
-    const recipeImage = recipe.image
+    const recipe = searchResults.hits[index].recipe;
+    const recipeName = extractRecipeName(recipe.shareAs);
+    const recipeImage = recipe.image;
+    const recipeLink = recipe.shareAs;
 
-    const isFavorited = favorites[recipeName] !== undefined
+    const isFavorited = favorites[recipeLink] !== undefined;
 
     if (isFavorited) {
       // Remove from favorites optimistically
-      const newFavorites = { ...favorites }
-      delete newFavorites[recipeName]
-      setFavorites(newFavorites)
-      await removeFavorite(recipeName) // server action
+      const newFavorites = { ...favorites };
+      delete newFavorites[recipeLink];
+      setFavorites(newFavorites);
+      await removeFavorite(recipeLink); // server action
     } else {
       try {
         // Optimistically add to favorites
         setFavorites((prevFavorites) => ({
           ...prevFavorites,
-          [recipeName]: {
+          [recipeLink]: {
+            name: recipeName,
             url: recipeImage,
-            link: recipe.shareAs,
           },
-        }))
+        }));
 
         // Add to favorites asynchronously
         const response = await addFavorite({
           name: recipeName,
           url: recipeImage,
-          link: recipe.shareAs,
-        })
+          link: recipeLink,
+        });
 
         if (response.error) {
-          toast(response.error, { type: "error" })
+          toast(response.error, { type: "error" });
           // Revert the optimistic update if the asynchronous operation fails
           setFavorites((prevFavorites) => {
-            const { [recipeName]: value, ...newFavorites } = prevFavorites
-            return newFavorites
-          })
+            const { [recipeLink]: value, ...newFavorites } = prevFavorites;
+            return newFavorites;
+          });
         } else if (response.success) {
           // Display the message to the user
-          toast(response.message, { type: "error", duration: 3000 })
+          toast(response.message, { type: "error", duration: 3000 });
           setFavorites((prevFavorites) => {
-            const { [recipeName]: value, ...newFavorites } = prevFavorites
-            return newFavorites
-          })
+            const { [recipeLink]: value, ...newFavorites } = prevFavorites;
+            return newFavorites;
+          });
         } else {
           // Update favorites with the actual data
           setFavorites((prevFavorites) => ({
             ...prevFavorites,
-            [recipeName]: {
+            [recipeLink]: {
+              name: recipeName,
               url: response.preSignedImageUrl,
-              link: recipe.shareAs,
             },
-          }))
+          }));
         }
       } catch (error) {
-        console.error("Error adding favorite:", error)
+        console.error("Error adding favorite:", error);
         toast(error.message, {
           type: "error",
-        })
+        });
         // Revert the optimistic update if the asynchronous operation fails
         setFavorites((prevFavorites) => {
-          const { [recipeName]: value, ...newFavorites } = prevFavorites
-          return newFavorites
-        })
+          const { [recipeLink]: value, ...newFavorites } = prevFavorites;
+          return newFavorites;
+        });
       }
     }
-  }
+  };
+
 
   return {
     handleStarIconHover,

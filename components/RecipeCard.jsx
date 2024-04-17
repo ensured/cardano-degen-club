@@ -80,10 +80,10 @@ export const RecipeCard = ({
           }
           className={`${
             isMobile ? "" : "hover:scale-125"
-          } absolute bottom-0 right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-[3.2rem] md:w-[3.2rem] 
+          } absolute bottom-0 right-0 m-[-0.269rem] h-10 w-10 cursor-pointer select-none rounded-md p-2 transition-all duration-200 md:h-[3.2rem] md:w-[3.2rem]
           `}
           fill={
-            favorites[extractRecipeName(recipe.recipe.shareAs)]
+            favorites[recipe.recipe.shareAs]
               ? "#FFD700" // Orange fill when it's a favorite
               : theme === "light"
               ? "#33333320"

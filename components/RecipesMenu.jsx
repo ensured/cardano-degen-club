@@ -237,11 +237,11 @@ const RecipesMenu = ({
                 <Loader2 className="h-8 w-8 animate-spin md:h-12 md:w-12" />
               </div>
             ) : (
-              Object.entries(favorites).map(([recipeName, { link, url }]) => (
+              Object.entries(favorites).map(([link, { name, url }]) => (
                 <Link
                   target="_blank"
                   href={link}
-                  key={recipeName}
+                  key={link}
                   className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
                   style={{ textDecoration: "none" }}
                 >
@@ -250,7 +250,7 @@ const RecipesMenu = ({
                       src={url}
                       width={42}
                       height={42}
-                      alt={recipeName}
+                      alt={name}
                       className="rounded-full"
                       unoptimized
                       priority
@@ -258,13 +258,13 @@ const RecipesMenu = ({
                   )}
                   <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
                     <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
-                      {recipeName}
+                      {name}
                     </span>
                     <button
                       className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
                       onClick={(e) => {
                         e.preventDefault()
-                        removeFromFavorites(recipeName)
+                        removeFromFavorites(link)
                       }}
                     >
                       <Trash2Icon

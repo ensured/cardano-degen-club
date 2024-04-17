@@ -27,18 +27,12 @@ const FavoritesSheet = ({
   isOpen,
   loading,
   favorites,
-  setFavorites,
-  isSheetDataLoading,
-  setIsSheetDataLoading,
 }: {
   children: ReactNode
   setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
   isOpen: boolean
   loading: boolean
   favorites: Favorites
-  setFavorites: (setFavorites: Favorites) => void
-  isSheetDataLoading: boolean
-  setIsSheetDataLoading: (setIsSheetDataLoading: boolean) => void
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
