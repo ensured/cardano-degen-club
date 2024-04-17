@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import toast from "react-hot-toast"
+import toast, { useToaster } from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
 
@@ -27,6 +27,8 @@ const useRecipeSearch = () => {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+
+  const { toasts, handlers } = useToaster();
 
   const fetchFavorites = async () => {
     try {
@@ -284,7 +286,6 @@ const useRecipeSearch = () => {
         error: (error) => "Couldn't remove favorite",
         duration: 2000,
         id: "delete-recipe",
-
       });
     } catch (error) {
       console.error("Error removing from favorites:", error);

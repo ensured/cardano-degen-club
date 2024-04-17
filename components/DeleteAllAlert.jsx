@@ -38,7 +38,8 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                   loading: "Removing",
                   success: (data) => (
                     <div>
-                      Removed <b>{data.Deleted.length}</b> recipes!
+                      Removed <b>{data.Deleted.length}</b>{" "}
+                      {data.Deleted.length > 1 ? "recipes" : "recipe"}
                     </div>
                   ),
                   error: (error) => <div>{error}</div>,
