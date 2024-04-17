@@ -22,14 +22,16 @@ const LoginPopup = ({
 }) => {
   return (
     <Popover>
-      <PopoverTrigger>
-        <Image
-          className="cursor-pointer rounded-full"
-          src={userImg}
-          alt="user image"
-          width={33}
-          height={33}
-        />
+      <PopoverTrigger asChild>
+        <Button variant={"ghost"} size={"icon"}>
+          <Image
+            className="cursor-pointer rounded-full"
+            src={userImg}
+            alt="user image"
+            width={33}
+            height={33}
+          />
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto border-none p-0 outline-none">
         <Link className={buttonVariants()} href={"/api/auth/logout"}>

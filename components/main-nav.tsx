@@ -1,7 +1,6 @@
 import Link from "next/link"
 
 import { siteConfig } from "@/config/site"
-import Dropdown from "@/components/Dropdown"
 import { Icons } from "@/components/icons"
 
 export function MainNav() {
@@ -11,7 +10,6 @@ export function MainNav() {
         <Icons.ada className=" h-6 w-6" />
         <span className="font-bold">{siteConfig.name}</span>
       </Link>
-      <Dropdown />
     </div>
   )
 }

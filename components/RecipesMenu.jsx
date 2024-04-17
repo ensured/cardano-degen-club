@@ -83,10 +83,10 @@ const RecipesMenu = ({
     const borderPadding = 2 // Adjust padding for the border
     const borderWidth = 0.5 // Adjust width of the border
     let currentPosition = 0
-
+    console.log(favorites)
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
-        async ([recipeName, { link, url }]) => {
+        async ([link, { name, url }]) => {
           const imageBase64 = await imgUrlToBase64(url)
           currentPosition++
           const progress =
@@ -127,9 +127,9 @@ const RecipesMenu = ({
 
           const maxNameLength = 100 // Maximum characters for recipe name
           const truncatedName =
-            recipeName.length > maxNameLength
-              ? recipeName.substring(0, maxNameLength) + "..."
-              : recipeName
+            link.length > maxNameLength
+              ? link.substring(0, maxNameLength) + "..."
+              : link
           const textLines = doc.splitTextToSize(truncatedName, 100)
           const truncatedTextLines = textLines.slice(0, 2) // Take only the first two lines
 

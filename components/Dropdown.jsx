@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { ChevronDown } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -23,9 +24,9 @@ const Dropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"ghost"} size={"sm"}>
+        <Button variant={"ghost"} size={"icon"}>
           {" "}
-          Projects
+          <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

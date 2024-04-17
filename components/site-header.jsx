@@ -12,6 +12,7 @@ import { Icons } from "@/components/icons"
 import { MainNav } from "@/components/main-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 
+import Dropdown from "./Dropdown"
 import UserButton from "./UserButton"
 
 export function SiteHeader() {
@@ -19,8 +20,11 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full overflow-x-auto border-b bg-background">
       <div className="flex h-16 w-full items-center px-2 md:px-4">
         <MainNav />
+
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <nav className="flex items-center space-x-1">
+          <nav className="flex items-center gap-2">
+            <Dropdown />
+
             <UserButton />
             <ThemeToggle />
           </nav>
