@@ -35,7 +35,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
               try {
                 const res = deleteAllFavorites()
                 toast.promise(res, {
-                  loading: "Removed",
+                  loading: "Removing",
                   success: (data) => (
                     <div>
                       Removed <b>{data.Deleted.length}</b> recipes!
@@ -43,6 +43,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                   ),
                   error: (error) => <div>{error}</div>,
                   duration: 2000,
+                  id: "delete-all",
                 })
               } catch (error) {
                 console.error("Error removing favorites:", error)
