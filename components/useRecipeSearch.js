@@ -5,6 +5,10 @@ import toast, { useToaster } from "react-hot-toast"
 import { extractRecipeName } from "@/lib/utils"
 
 import { addFavorite, getFavorites, removeFavorite } from "./actions"
+import { CheckCircle2, Loader2, Loader2Icon } from "lucide-react"
+import { CheckCircleIcon } from "lucide-react"
+import { CheckCircle } from "lucide-react"
+import { CheckCircle2Icon } from "lucide-react"
 
 const useRecipeSearch = () => {
   const router = useRouter()
@@ -280,12 +284,23 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeLink];
       setFavorites(newFavorites);
       const removeFav = removeFavorite(recipeLink); // server action
+
       toast.promise(removeFav, {
         loading: "Removing",
-        success: (data) => "Removed!",
+        success: (data) => <div className="text-zinc-50">Removed!</div>,
         error: (error) => "Couldn't remove favorite",
-        duration: 2000,
         id: "delete-recipe",
+        style: {
+          minWidth: "250px",
+        },
+      }, {
+        className: "bg-slate-500/80",
+        loading: {
+          icon: <Loader2 className="animate-spin text-zinc-950" />
+        },
+        success: {
+          icon: <CheckCircle2Icon className="animate-fadeIn text-zinc-50" />
+        }
       });
     } catch (error) {
       console.error("Error removing from favorites:", error);

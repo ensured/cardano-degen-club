@@ -83,6 +83,16 @@ module.exports = {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       keyframes: {
+        "fadeIn": {
+          '0%': {
+            opacity: 0,
+            transform: "scale(0)",
+          },
+          '100%': {
+            opacity: 1,
+            transform: "scale(2)"
+          }
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -95,7 +105,9 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        fadeIn: 'fadeIn 0.3s ease-in-out',
       },
+
     },
   },
   plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],

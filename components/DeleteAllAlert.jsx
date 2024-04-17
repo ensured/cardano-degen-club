@@ -1,3 +1,4 @@
+import { CheckCircleIcon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
 import {
@@ -34,18 +35,39 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
               setFavorites({})
               try {
                 const res = deleteAllFavorites()
-                toast.promise(res, {
-                  loading: "Removing",
-                  success: (data) => (
-                    <div>
-                      Removed <b>{data.Deleted.length}</b>{" "}
-                      {data.Deleted.length > 1 ? "recipes" : "recipe"}
-                    </div>
-                  ),
-                  error: (error) => <div>{error}</div>,
-                  duration: 2000,
-                  id: "delete-all",
-                })
+                toast.promise(
+                  res,
+                  {
+                    loading: "Removing",
+                    success: (data) => (
+                      <div className="text-zinc-50">
+                        {" "}
+                        Removed <b>{data.Deleted.length}</b>{" "}
+                        {data.Deleted.length > 1 ? "recipes" : "recipe"}
+                      </div>
+                    ),
+                    error: (error) => "Couldn't remove favorites",
+                    id: "delete-recipe",
+                    style: {
+                      minWidth: "250px",
+                    },
+                  },
+                  {
+                    className: "bg-slate-500/80",
+                    loading: {
+                      iconTheme: {
+                        primaryColor: "currentColor",
+                        secondaryColor: "currentColor",
+                      },
+                    },
+                    success: {
+                      iconTheme: {
+                        primary: "text-zinc-950",
+                        secondary: "text-zinc-50",
+                      },
+                    },
+                  }
+                )
               } catch (error) {
                 console.error("Error removing favorites:", error)
                 toast.error(

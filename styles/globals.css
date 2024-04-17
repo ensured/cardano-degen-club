@@ -202,3 +202,30 @@
   transform: scale(0);
   transition: transform 200ms ease-in-out;
 }
+
+.toast-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.toast-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 200ms, transform 200ms;
+}
+
+.toast-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.toast-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 200ms, transform 200ms;
+}
+/* Your component's CSS file or global styles */
+.toast {
+  @apply toast-enter toast-enter-active toast-exit toast-exit-active;
+  /* Add additional styles here if needed */
+}
