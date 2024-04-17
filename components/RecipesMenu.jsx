@@ -127,9 +127,9 @@ const RecipesMenu = ({
 
           const maxNameLength = 100 // Maximum characters for recipe name
           const truncatedName =
-            link.length > maxNameLength
-              ? link.substring(0, maxNameLength) + "..."
-              : link
+            name.length > maxNameLength
+              ? name.substring(0, maxNameLength) + "..."
+              : name
           const textLines = doc.splitTextToSize(truncatedName, 100)
           const truncatedTextLines = textLines.slice(0, 2) // Take only the first two lines
 
