@@ -31,9 +31,16 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={async () => {
-              const res = await deleteAllFavorites()
-              toast.success(`Removed ${res.Deleted.length} recipes!`)
               setFavorites({})
+              try {
+                const res = await deleteAllFavorites()
+                toast.success(`Removed ${res.Deleted.length} recipes!`)
+              } catch (error) {
+                console.error("Error deleting favorites:", error)
+                toast.error(
+                  "Failed to delete favorites. Please try again later."
+                )
+              }
             }}
           >
             Continue

@@ -15,7 +15,7 @@ import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
-import { deleteAllFavorites, getPreSignedUrl, imgUrlToBase64 } from "./actions"
+import { getPreSignedUrl, imgUrlToBase64 } from "./actions"
 import { Badge } from "./ui/badge"
 
 const preSignedUrlCache = new Map()

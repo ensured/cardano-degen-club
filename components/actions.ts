@@ -201,20 +201,25 @@ export async function getFavorites() {
 
 export async function deleteAllFavorites() {
   const { getUser, isAuthenticated } = getKindeServerSession()
-  if (!isAuthenticated()) return
+  if (!isAuthenticated()) throw new Error("User not authenticated")
+
   const userEmail = await getUser().then((user) => user?.email)
+  if (!userEmail) throw new Error("User email not found")
+
   const params = {
     Bucket: process.env.S3_BUCKET_NAME_RECIPES,
     Prefix: `favorites/images/${userEmail}/`,
   }
+
   try {
     const listObjectsV2Command = new ListObjectsV2Command(params)
     const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
 
     const keys = listObjectsV2Response.Contents?.map((object) => object.Key)
     if (!keys || keys.length === 0) {
-      return [] // No objects found, return empty array
+      return { Deleted: [] } // No objects found, return empty array
     }
+
     const objectsToDelete = keys.map((key) => ({ Key: key }))
 
     const deleteObjectsCommand = new DeleteObjectsCommand({
@@ -225,8 +230,8 @@ export async function deleteAllFavorites() {
     const deleteObjectsResponse = await s3Client.send(deleteObjectsCommand)
     return deleteObjectsResponse
   } catch (err) {
-    console.error("Error fetching favorite images:", err)
-    return [] // Return empty array in case of error
+    console.error("Error deleting favorite images:", err)
+    throw new Error("Failed to delete favorite images")
   }
 }
 
