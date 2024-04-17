@@ -32,8 +32,6 @@ const useRecipeSearch = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
-  const { toasts, handlers } = useToaster();
-
   const fetchFavorites = async () => {
     try {
       setLoading(true);
@@ -150,7 +148,6 @@ const useRecipeSearch = () => {
         setSuggestions([])
         setLoading(false)
         router.replace(`?q=${input}`)
-        setLastInputSearched(input)
       }
     },
     [input, lastInputSearched, router]
@@ -202,11 +199,14 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    if (isInitialLoad && searchParams.get("q")) {
-      searchRecipes()
-      setIsInitialLoad(false)
+    const shouldSearch = isInitialLoad && searchParams.get("q").length > 0;
+    if (shouldSearch) {
+      searchRecipes();
+      setIsInitialLoad(false);
+      setLastInputSearched(input)
     }
-  }, [searchParams, searchRecipes, isInitialLoad, input])
+    setIsInitialLoad(false);
+  }, [searchParams, searchRecipes, isInitialLoad, input, lastInputSearched]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -264,15 +264,19 @@ const useRecipeSearch = () => {
     const newInput = e.target.value
     setInput(newInput)
     router.replace(`?q=${newInput}`)
-    if (newInput.length > 1) {
-      const { data } = await fetch(
-        `/api/search/autocomplete?q=${newInput}`
-      ).then((res) => res.json())
-      setSuggestions(data)
-    } else {
-      setSuggestions([])
+    // Check if the length of the input is greater than or equal to a certain threshold before triggering the search
+    if (newInput.length >= 3) {
+      if (newInput.length > 1) {
+        const { data } = await fetch(
+          `/api/search/autocomplete?q=${newInput}`
+        ).then((res) => res.json())
+        setSuggestions(data)
+      } else {
+        setSuggestions([])
+      }
     }
   }
+
 
   const handleStarIconHover = (index) => () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
@@ -287,19 +291,16 @@ const useRecipeSearch = () => {
 
       toast.promise(removeFav, {
         loading: "Removing",
-        success: (data) => <div className="text-zinc-50">Removed!</div>,
+        success: (data) => <div className="text-white">Removed!</div>,
         error: (error) => "Couldn't remove favorite",
         id: "delete-recipe",
-        style: {
-          minWidth: "250px",
-        },
       }, {
         className: "bg-slate-500/80",
         loading: {
           icon: <Loader2 className="animate-spin text-zinc-950" />
         },
         success: {
-          icon: <CheckCircle2Icon className="animate-fadeIn text-zinc-50" />
+          icon: <CheckCircle2Icon className="animate-fadeIn text-white" />
         }
       });
     } catch (error) {

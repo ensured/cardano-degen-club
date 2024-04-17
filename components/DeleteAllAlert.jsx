@@ -40,7 +40,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                   {
                     loading: "Removing",
                     success: (data) => (
-                      <div className="text-zinc-50">
+                      <div className="text-white">
                         {" "}
                         Removed <b>{data.Deleted.length}</b>{" "}
                         {data.Deleted.length > 1 ? "recipes" : "recipe"}
@@ -48,18 +48,15 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                     ),
                     error: (error) => "Couldn't remove favorites",
                     id: "delete-recipe",
-                    style: {
-                      minWidth: "250px",
-                    },
                   },
                   {
-                    className: "bg-slate-500/80",
+                    className: "bg-slate-500/80 min-w-[200px]",
                     loading: {
                       icon: <Loader2 className="animate-spin text-zinc-950" />,
                     },
                     success: {
                       icon: (
-                        <CheckCircle2Icon className=" animate-fadeIn text-zinc-50" />
+                        <CheckCircle2Icon className="animate-fadeIn text-white" />
                       ),
                     },
                   }
