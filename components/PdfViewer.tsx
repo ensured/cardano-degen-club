@@ -258,7 +258,6 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
           noData={""}
           onLoadSuccess={onDocumentLoadSuccess}
           options={options}
-          className={""}
         >
           {numPages !== undefined &&
             Array.from(new Array(numPages), (el, index) => (

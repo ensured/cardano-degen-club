@@ -277,8 +277,15 @@ const useRecipeSearch = () => {
       const newFavorites = { ...favorites };
       delete newFavorites[recipeLink];
       setFavorites(newFavorites);
-      await removeFavorite(recipeLink); // server action
-      toast.success("Removed from favorites");
+      const removeFav = removeFavorite(recipeLink); // server action
+      toast.promise(removeFav, {
+        loading: "Removing",
+        success: (data) => "Removed!",
+        error: (error) => "Couldn't remove favorite",
+        duration: 2000,
+        id: "delete-recipe",
+
+      });
     } catch (error) {
       console.error("Error removing from favorites:", error);
       toast.error(error.message);

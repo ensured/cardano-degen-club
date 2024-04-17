@@ -33,10 +33,19 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
             onClick={async () => {
               setFavorites({})
               try {
-                const res = await deleteAllFavorites()
-                toast.success(`Removed ${res.Deleted.length} recipes!`)
+                const res = deleteAllFavorites()
+                toast.promise(res, {
+                  loading: "Removed",
+                  success: (data) => (
+                    <div>
+                      Removed <b>{data.Deleted.length}</b> recipes!
+                    </div>
+                  ),
+                  error: (error) => <div>{error}</div>,
+                  duration: 2000,
+                })
               } catch (error) {
-                console.error("Error deleting favorites:", error)
+                console.error("Error removing favorites:", error)
                 toast.error(
                   "Failed to delete favorites. Please try again later."
                 )
