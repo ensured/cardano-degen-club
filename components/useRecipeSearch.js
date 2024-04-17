@@ -32,6 +32,7 @@ const useRecipeSearch = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
+
   const fetchFavorites = async () => {
     setIsRecipeDataLoading(true)
     try {
@@ -73,7 +74,11 @@ const useRecipeSearch = () => {
       setLoading(true)
       if (q) {
         try {
+          setIsRecipeDataLoading(true)
+
           const res = await fetch(`/api/search?q=${q}`)
+          console.log("random search done.")
+
           const data = await res.json()
           if (data.success === false) {
             toast(data.message, { type: "error" })
@@ -109,6 +114,7 @@ const useRecipeSearch = () => {
           setLoading(false)
           router.replace(`?q=${q}`)
           setLastInputSearched(q)
+          setIsRecipeDataLoading(false)
         }
       }
 

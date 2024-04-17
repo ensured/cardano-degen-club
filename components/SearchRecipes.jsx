@@ -65,6 +65,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         loading={loading}
         setLoading={setLoading}
         setSearchResults={setSearchResults}
+        isRecipeDataLoading={isRecipeDataLoading}
       />
       {/* results count + interactive favorites sheet*/}
       <RecipesMenu

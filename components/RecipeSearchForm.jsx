@@ -20,6 +20,7 @@ const RecipeSearchForm = ({
   suggestions,
   setSuggestions,
   setSearchResults,
+  isRecipeDataLoading,
 }) => {
   const router = useRouter()
   const size = useWindowSize()
@@ -29,20 +30,30 @@ const RecipeSearchForm = ({
   }
 
   const handleGetRandomFood = async (e) => {
-    setLoading(true)
-    e.preventDefault()
-    handleHideKeyboard()
-    setSearchResults({
-      hits: [],
-      count: 0,
-      nextPage: "",
-    })
-    const randomIndex = Math.floor(Math.random() * foodItems.length)
-    const randomFoodItem = foodItems[randomIndex]
-    router.replace(`/recipe-finder?q=${randomFoodItem}`)
-    setInput(randomFoodItem)
-    searchRecipes(e, randomFoodItem)
+    try {
+      setLoading(true)
+
+      e.preventDefault()
+      handleHideKeyboard()
+      setSearchResults({
+        hits: [],
+        count: 0,
+        nextPage: "",
+      })
+      const randomIndex = Math.floor(Math.random() * foodItems.length)
+      const randomFoodItem = foodItems[randomIndex]
+      router.replace(`/recipe-finder?q=${randomFoodItem}`)
+      setInput(randomFoodItem)
+      searchRecipes(e, randomFoodItem)
+    } catch (error) {
+      toast(error.message, {
+        type: "error",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
+
   const handleFormSubmit = (e) => {
     searchRecipes(e)
     handleHideKeyboard()
@@ -106,7 +117,7 @@ const RecipeSearchForm = ({
         <Button
           type="submit"
           className="relative flex w-[6.8rem] select-none items-center justify-center"
-          disabled={!inputChanged || loading}
+          disabled={!inputChanged || loading || isRecipeDataLoading}
         >
           <div className=" flex items-center justify-center text-base md:text-lg">
             {/* {loading && (
