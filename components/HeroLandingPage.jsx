@@ -54,16 +54,16 @@ export default function HeroLandingPage() {
                 safeguarding against inflation.
               </p>
             </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-              className="rounded-lg border border-sky-300 bg-slate-200 px-8 py-12 shadow-lg transition-all hover:cursor-pointer hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+            <Link
+              href="/cardano-links"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
             >
-              <Link
-                href="/cardano-links"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-lg border border-sky-300 bg-slate-200 px-8 py-12 shadow-lg transition-all hover:cursor-pointer hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
               >
                 <Button
                   variant="link"
@@ -76,12 +76,12 @@ export default function HeroLandingPage() {
                   )}
                   Explore the new global financial operating system
                 </Button>
-              </Link>
-              <p className="flex justify-center text-sm text-gray-600 dark:text-gray-400">
-                Dive into our curated collection of Cardano resources and start
-                your journey today.
-              </p>
-            </motion.div>
+                <p className="flex justify-center text-sm text-gray-600 dark:text-gray-400">
+                  Dive into our curated collection of Cardano resources and
+                  start your journey today.
+                </p>
+              </motion.div>
+            </Link>
           </div>
         </div>
         <motion.div

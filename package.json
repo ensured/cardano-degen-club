@@ -16,6 +16,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
     "@aws-sdk/s3-request-presigner": "^3.554.0",
+    "@firebase/messaging": "^0.12.8",
     "@hookform/resolvers": "^3.3.4",
     "@kinde-oss/kinde-auth-nextjs": "^2.2.3",
     "@octokit/core": "^5.0.1",
@@ -46,7 +47,7 @@
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
     "express-rate-limit": "^7.2.0",
-    "firebase": "^10.6.0",
+    "firebase": "^10.11.0",
     "framer-motion": "^11.0.24",
     "jspdf": "^2.5.1",
     "lodash": "^4.17.21",
