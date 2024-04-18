@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import toast, { useToaster } from "react-hot-toast"
+import toast from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
 
 import { addFavorite, getFavorites, removeFavorite } from "./actions"
-import { CheckCircle2, Loader2, Loader2Icon } from "lucide-react"
-import { CheckCircleIcon } from "lucide-react"
-import { CheckCircle } from "lucide-react"
+import { Loader2 } from "lucide-react"
+
 import { CheckCircle2Icon } from "lucide-react"
 
 const useRecipeSearch = () => {
