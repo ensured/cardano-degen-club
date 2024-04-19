@@ -114,7 +114,7 @@ export async function submitFeedback(data: Inputs) {
       revalidatePath("/protected")
       return {
         success: true,
-        message: `Feedback submitted successfully! status: ${res.$metadata.httpStatusCode}`,
+        message: `Thanks for your feedback! 🙏`,
       }
     } catch (error) {
       console.error(error)

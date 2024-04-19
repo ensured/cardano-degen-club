@@ -18,13 +18,11 @@ import UserButton from "./UserButton"
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full overflow-x-auto border-b bg-background">
-      <div className="flex h-16 w-full items-center px-2 md:px-4">
+      <div className="flex h-16 w-full items-center px-4 md:px-4 m-1 gap-2">
         <MainNav />
-
+        <Dropdown />
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center gap-2">
-            <Dropdown />
-
             <UserButton />
             <ThemeToggle />
           </nav>

@@ -13,21 +13,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-import { useMediaQuery } from "../lib/use-media-query"
 // Import the server action
 import { submitFeedback } from "./actions"
 
@@ -39,7 +27,7 @@ const MIN_NAME_LENGTH = 2
 export default function FeedBackDrawer() {
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
-  // const isDesktop = useMediaQuery("(min-width: 768px)")
+
   const {
     register,
     handleSubmit,
@@ -89,8 +77,8 @@ export default function FeedBackDrawer() {
             <DialogTitle>Leave feedback</DialogTitle>
             {/* eslint-disable-next-line react/no-unescaped-entities */}
             <DialogDescription>
-              If there&lsquo;s anything you want me to add, modify, change let
-              me know! Your feedback is important to me.
+              We&lsquo;d love to hear what went well or how we can improve the
+              product experience.
             </DialogDescription>
           </DialogHeader>
           <form
@@ -135,9 +123,9 @@ export default function FeedBackDrawer() {
                 {errors.feedback.message}
               </div>
             )}
-            <Button type="submit">
+            <Button>
               <div className="flex flex-row gap-3">
-                <div>Submit Feedback</div>
+                <div>Submit</div>
                 <div>
                   {loading && (
                     <div className="h-5 w-5 animate-spin rounded-full border-t-4 border-dotted border-slate-50"></div>
