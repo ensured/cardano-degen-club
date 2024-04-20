@@ -181,7 +181,7 @@ const RecipesMenu = ({
   return (
     <div className="flex h-12 w-full items-center px-4 text-sm opacity-100 transition-opacity duration-100 ">
       <div className="flex w-full justify-center gap-2">
-        <div className="w-[20.355rem]">
+        <div className="w-[22.42rem]">
           {searchResults.count > 0 ? (
             <Badge variant={"outline"} className="select-none p-2">
               Found <b>{searchResults.count}</b> results
@@ -201,30 +201,28 @@ const RecipesMenu = ({
           favorites={favorites}
         >
           {Object.keys(favorites).length > 0 ? (
-            <>
-              <div className="mb-3 mt-4 flex justify-center gap-1">
-                <ConfirmPreviewAlertDialog
-                  progress={progress}
-                  handlePreviewPDF={handlePreviewPDF}
-                  loading={isLoadingPdfPreview}
-                  isConfirmPreviewDialogOpen={
-                    isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
-                  }
-                  setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
+            <div className="mb-3 mt-4 flex justify-center gap-1">
+              <ConfirmPreviewAlertDialog
+                progress={progress}
+                handlePreviewPDF={handlePreviewPDF}
+                loading={isLoadingPdfPreview}
+                isConfirmPreviewDialogOpen={
+                  isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
+                }
+                setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
+              >
+                <Button
+                  variant={"outline"}
+                  className="gap-2"
+                  disabled={loading ? true : false}
                 >
-                  <Button
-                    variant={"outline"}
-                    className="gap-2"
-                    disabled={loading ? true : false}
-                  >
-                    <FileText className="left-2" />
-                    <div className="line-clamp-1 items-center text-lg">
-                      Preview PDF{" "}
-                    </div>
-                  </Button>
-                </ConfirmPreviewAlertDialog>
-              </div>
-            </>
+                  <FileText className="left-2" />
+                  <div className="line-clamp-1 items-center text-lg">
+                    Preview PDF{" "}
+                  </div>
+                </Button>
+              </ConfirmPreviewAlertDialog>
+            </div>
           ) : null}
 
           {isRecipeDataLoading ? (

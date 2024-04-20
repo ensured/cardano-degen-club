@@ -11,7 +11,7 @@ import { RecipeCard } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
 import RecipesMenu from "./RecipesMenu"
 import ScrollTooltip from "./ScrollToolTip"
-import { Button } from "./ui/button"
+import { CardTitle } from "./ui/card"
 import useRecipeSearch from "./useRecipeSearch"
 
 const SearchRecipes = ({ isAuthenticated, userInfo }) => {
@@ -52,6 +52,10 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         currentCardIndex={currentCardIndex}
         totalCards={searchResults.hits.length}
       />
+
+      <div className="flex w-full items-center justify-center py-4">
+        <CardTitle>Recipe Vault</CardTitle>
+      </div>
 
       {/* Include the ScrollTooltip component */}
       <RecipeSearchForm

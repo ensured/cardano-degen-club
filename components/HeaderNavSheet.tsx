@@ -109,9 +109,16 @@ export function HeaderNavSheet() {
           <Link
             href="/recipe-finder"
             onClick={handleOpenChange}
-            className="py-1 text-lg"
+            className="flex flex-row items-center gap-2 py-1 text-lg"
           >
-            Recipe Finder 🍔
+            <Image
+              src={"/RecipeVaultLogo.jpg"}
+              height={33}
+              width={33}
+              className="rounded-md"
+              alt="FlavorSavor logo"
+            />
+            Recipe Vault
           </Link>
           <Link
             href="/port-checker"

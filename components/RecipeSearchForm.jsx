@@ -1,4 +1,5 @@
 import { useRef } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { DicesIcon } from "lucide-react"
@@ -67,17 +68,28 @@ const RecipeSearchForm = ({
       }`}
     >
       <div className="relative">
-        <Input
-          placeholder="search a food"
-          type="text"
-          name="searchTerm"
-          onChange={handleInputChange}
-          value={input}
-          ref={inputRef}
-          className={`${
-            suggestions.length > 0 ? "rounded-b-none border-b-0" : ""
-          }`}
-        />
+        <div className="flex flex-row-reverse gap-1">
+          <Input
+            placeholder="search a food"
+            type="text"
+            name="searchTerm"
+            onChange={handleInputChange}
+            value={input}
+            ref={inputRef}
+            className={`${
+              suggestions.length > 0 ? "rounded-b-none border-b-0" : ""
+            }`}
+          />
+          {/* header */}
+          <Image
+            src={"/RecipeVaultLogo.jpg"}
+            height={40}
+            width={40}
+            className="rounded-md"
+            alt="Recipe Vault logo"
+          />
+        </div>
+
         {suggestions.length > 0 && (
           <div className="absolute left-0 top-10 z-50 bg-background">
             <ScrollArea className="h-24 rounded-b-md border">
