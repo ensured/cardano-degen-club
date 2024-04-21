@@ -1,5 +1,4 @@
 import { useRef } from "react"
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { DicesIcon } from "lucide-react"
@@ -63,75 +62,27 @@ const RecipeSearchForm = ({
   return (
     <form
       onSubmit={handleFormSubmit}
-      className={`flex justify-center gap-2 px-4 ${
-        size?.width < 460 ? "flex-col" : "flex-row"
-      }`}
+      className={`mx-4 mb-1 md:container md:mx-auto`}
     >
-      <div className="relative">
-        <div className="flex flex-row-reverse gap-1">
-          <Input
-            placeholder="search a food"
-            type="text"
-            name="searchTerm"
-            onChange={handleInputChange}
-            value={input}
-            ref={inputRef}
-            className={`${
-              suggestions.length > 0 ? "rounded-b-none border-b-0" : ""
-            }`}
-          />
-          {/* header */}
-          <Image
-            src={"/RecipeVaultLogo.jpg"}
-            height={40}
-            width={40}
-            className="rounded-md"
-            alt="Recipe Vault logo"
-          />
-        </div>
-
-        {suggestions.length > 0 && (
-          <div className="absolute left-0 top-10 z-50 bg-background">
-            <ScrollArea className="h-24 rounded-b-md border">
-              <div className="p-2">
-                {suggestions.map((suggestion) => {
-                  return (
-                    <div
-                      key={suggestion}
-                      onClick={(e) => {
-                        setSuggestions([])
-                        setSearchResults({
-                          hits: [],
-                          count: 0,
-                          nextPage: "",
-                        })
-                        handleHideKeyboard()
-                        setInput(suggestion)
-                        searchRecipes(e, suggestion)
-                      }}
-                      className="line-clamp-1 min-w-[12rem] border-b pl-1.5 text-sm hover:cursor-pointer hover:underline "
-                    >
-                      {suggestion}
-                    </div>
-                  )
-                })}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
-      </div>
-
-      <div
-        className={`flex justify-between gap-1 ${
-          size?.width < 460 ? "w-full" : ""
-        }`}
-      >
+      <div className="flex flex-row flex-wrap justify-between  gap-2 md:flex-nowrap md:justify-center">
+        {" "}
+        <Input
+          placeholder="search a food"
+          type="text"
+          name="searchTerm"
+          onChange={handleInputChange}
+          value={input}
+          ref={inputRef}
+          className={`${
+            suggestions.length > 0 ? "rounded-b-none border-b-0 " : ""
+          } w-full`}
+        />
         <Button
           type="submit"
           className="relative flex w-[6.8rem] select-none items-center justify-center"
           disabled={!inputChanged || loading || isRecipeDataLoading}
         >
-          <div className=" flex items-center justify-center text-base md:text-lg">
+          <div className="flex items-center justify-center text-base md:text-lg">
             {/* {loading && (
                 <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
               )} */}
@@ -146,6 +97,35 @@ const RecipeSearchForm = ({
           Random <DicesIcon size={size?.width < 768 ? 20 : 24} />
         </Button>
       </div>
+      {suggestions.length > 0 && (
+        <div className="absolute left-0 top-10 z-50 bg-background">
+          <ScrollArea className="h-24 rounded-b-md border">
+            <div className="p-2">
+              {suggestions.map((suggestion) => {
+                return (
+                  <div
+                    key={suggestion}
+                    onClick={(e) => {
+                      setSuggestions([])
+                      setSearchResults({
+                        hits: [],
+                        count: 0,
+                        nextPage: "",
+                      })
+                      handleHideKeyboard()
+                      setInput(suggestion)
+                      searchRecipes(e, suggestion)
+                    }}
+                    className="line-clamp-1 min-w-[12rem] border-b pl-1.5 text-sm hover:cursor-pointer hover:underline "
+                  >
+                    {suggestion}
+                  </div>
+                )
+              })}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
     </form>
   )
 }

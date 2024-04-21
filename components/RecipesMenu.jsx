@@ -179,145 +179,126 @@ const RecipesMenu = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="flex h-12 w-full items-center px-4 text-sm opacity-100 transition-opacity duration-100 ">
-      <div className="flex w-full justify-center gap-2">
-        <div className="w-[22.42rem]">
-          {searchResults.count > 0 ? (
-            <Badge variant={"outline"} className="select-none p-2">
-              Found <b>{searchResults.count}</b> results
-            </Badge>
+    <div className="mx-4 flex flex-row flex-wrap justify-between gap-2 md:container">
+      {searchResults.count > 0 ? (
+        <Badge variant={"outline"} className="text-sm sm:text-base">
+          Found {searchResults.count}
+          {searchResults.count === 1 ? " recipe" : " recipes"}
+        </Badge>
+      ) : (
+        <Badge variant={"outline"} className="invisible"></Badge>
+      )}
+
+      {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
+      <FavoritesSheet
+        setFavorites={setFavorites}
+        setOpen={setIsOpen}
+        isOpen={isOpen}
+        loading={loading}
+        favorites={favorites}
+      >
+        {Object.keys(favorites).length > 0 ? (
+          <div className="my-1 flex w-full justify-center">
+            <ConfirmPreviewAlertDialog
+              progress={progress}
+              handlePreviewPDF={handlePreviewPDF}
+              loading={isLoadingPdfPreview}
+              isConfirmPreviewDialogOpen={
+                isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
+              }
+              setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
+            >
+              <Button
+                variant={"outline"}
+                className="gap-2"
+                disabled={loading ? true : false}
+              >
+                <FileText className="left-2" />
+                <div className="line-clamp-1 items-center text-lg">
+                  Preview PDF{" "}
+                </div>
+              </Button>
+            </ConfirmPreviewAlertDialog>
+          </div>
+        ) : (
+          <div className="flex justify-center p-0.5">
+            <span>
+              You have <b> {Object.keys(favorites).length} </b> recipes
+              favorited. Get started by favoriting something!
+            </span>
+          </div>
+        )}
+
+        <div className="h-[69%] overflow-auto rounded-md">
+          {isRecipeDataLoading ? (
+            <div className="flex h-[69vh] w-full items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin md:h-12 md:w-12" />
+            </div>
           ) : (
-            <Badge variant={"outline"} className="invisible"></Badge>
+            Object.entries(favorites).map(([link, { name, url }]) => (
+              <Link
+                target="_blank"
+                href={link}
+                key={link}
+                className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
+                style={{ textDecoration: "none" }}
+              >
+                {url && (
+                  <Image
+                    src={url}
+                    width={42}
+                    height={42}
+                    alt={name}
+                    className="rounded-full"
+                    unoptimized
+                    priority
+                  />
+                )}
+                <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
+                  <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
+                    {name}
+                  </span>
+                  <button
+                    className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      removeFromFavorites(link)
+                    }}
+                  >
+                    <Trash2Icon
+                      size={
+                        size?.width < 480
+                          ? 20
+                          : size?.width < 640
+                          ? 22
+                          : size?.width < 900
+                          ? 23
+                          : 24
+                      }
+                    />
+                    <Separator className="bg-red-900 text-red-500" />
+                  </button>
+                </div>
+              </Link>
+            ))
           )}
         </div>
 
-        {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
-
-        <FavoritesSheet
-          setFavorites={setFavorites}
-          setOpen={setIsOpen}
-          isOpen={isOpen}
-          loading={loading}
-          favorites={favorites}
-        >
-          {Object.keys(favorites).length > 0 ? (
-            <div className="mb-3 mt-4 flex justify-center gap-1">
-              <ConfirmPreviewAlertDialog
-                progress={progress}
-                handlePreviewPDF={handlePreviewPDF}
-                loading={isLoadingPdfPreview}
-                isConfirmPreviewDialogOpen={
-                  isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
-                }
-                setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
+        {Object.keys(favorites).length > 0 && (
+          <div className="pt-1">
+            <DeleteAllAlert setFavorites={setFavorites}>
+              <Button
+                variant={"destructive"}
+                className="flex w-full gap-2 text-sm md:text-lg"
               >
-                <Button
-                  variant={"outline"}
-                  className="gap-2"
-                  disabled={loading ? true : false}
-                >
-                  <FileText className="left-2" />
-                  <div className="line-clamp-1 items-center text-lg">
-                    Preview PDF{" "}
-                  </div>
-                </Button>
-              </ConfirmPreviewAlertDialog>
-            </div>
-          ) : null}
-
-          {isRecipeDataLoading ? (
-            <div className="flex justify-center">
-              <span className="sm:text-md text-xs md:mx-2 md:text-lg">
-                Loading recipes...
-              </span>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <span className="sm:text-md text-xs md:mx-2 md:text-lg">
-                You have <b>{Object.keys(favorites).length}</b> recipes
-                favorited.
-              </span>
-              {isRecipeDataLoading ? (
-                <span className="sm:text-md text-xs md:mx-2 md:text-lg">
-                  Loading recipes...
-                </span>
-              ) : (
-                <span className="sm:text-md text-xs md:mx-2 md:text-lg"></span>
-              )}
-            </div>
-          )}
-
-          <div className="h-[69%] overflow-auto rounded-md">
-            {isRecipeDataLoading ? (
-              <div className="flex h-[69vh] w-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin md:h-12 md:w-12" />
-              </div>
-            ) : (
-              Object.entries(favorites).map(([link, { name, url }]) => (
-                <Link
-                  target="_blank"
-                  href={link}
-                  key={link}
-                  className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
-                  style={{ textDecoration: "none" }}
-                >
-                  {url && (
-                    <Image
-                      src={url}
-                      width={42}
-                      height={42}
-                      alt={name}
-                      className="rounded-full"
-                      unoptimized
-                      priority
-                    />
-                  )}
-                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                    <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
-                      {name}
-                    </span>
-                    <button
-                      className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        removeFromFavorites(link)
-                      }}
-                    >
-                      <Trash2Icon
-                        size={
-                          size?.width < 480
-                            ? 20
-                            : size?.width < 640
-                            ? 22
-                            : size?.width < 900
-                            ? 23
-                            : 24
-                        }
-                      />
-                      <Separator className="bg-red-900 text-red-500" />
-                    </button>
-                  </div>
-                </Link>
-              ))
-            )}
+                {" "}
+                Remove all
+                <TrashIcon size={size.height < 600 ? 16 : 22} />
+              </Button>
+            </DeleteAllAlert>
           </div>
-
-          {Object.keys(favorites).length > 0 && (
-            <div className="pt-1">
-              <DeleteAllAlert setFavorites={setFavorites}>
-                <Button
-                  variant={"destructive"}
-                  className="flex w-full gap-2 text-sm md:text-lg"
-                >
-                  {" "}
-                  Remove all
-                  <TrashIcon size={size.height < 600 ? 16 : 22} />
-                </Button>
-              </DeleteAllAlert>
-            </div>
-          )}
-        </FavoritesSheet>
-      </div>
+        )}
+      </FavoritesSheet>
     </div>
   )
 }
