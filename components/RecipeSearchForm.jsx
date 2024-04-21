@@ -82,7 +82,7 @@ const RecipeSearchForm = ({
             }`}
           />
           {suggestions.length > 0 && input && (
-            <div className="absolute top-10 z-10 w-full bg-secondary">
+            <div className="absolute top-10 z-10 w-full rounded-b-md bg-secondary">
               <ScrollArea className=" rounded-b-md border">
                 <div className="px-1.5">
                   {suggestions.map((suggestion) => {
