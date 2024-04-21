@@ -196,6 +196,7 @@ const RecipesMenu = ({
         isOpen={isOpen}
         loading={loading}
         favorites={favorites}
+        isRecipeDataLoading={isRecipeDataLoading}
       >
         {Object.keys(favorites).length > 0 ? (
           <div className="my-1 flex w-full justify-center">
@@ -231,7 +232,7 @@ const RecipesMenu = ({
 
         <div className="h-[69%] overflow-auto rounded-md">
           {isRecipeDataLoading ? (
-            <div className="flex h-[69vh] w-full items-center justify-center">
+            <div className="flex w-full items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin md:h-12 md:w-12" />
             </div>
           ) : (

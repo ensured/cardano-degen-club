@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { StarIcon } from "lucide-react"
+import { Loader2, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "./ui/button"
@@ -27,12 +27,14 @@ const FavoritesSheet = ({
   isOpen,
   loading,
   favorites,
+  isRecipeDataLoading,
 }: {
   children: ReactNode
   setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
   isOpen: boolean
   loading: boolean
   favorites: Favorites
+  isRecipeDataLoading: boolean
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
@@ -42,12 +44,15 @@ const FavoritesSheet = ({
     <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button className="select-none gap-1 text-base md:text-lg">
+          <Button
+            className="relative select-none gap-1 text-base md:text-lg"
+            disabled={isRecipeDataLoading}
+          >
             <StarIcon
               size={size?.width < 768 ? 19 : 22}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />
-            Favorites
+            Favorites{" "}
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>

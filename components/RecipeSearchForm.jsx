@@ -91,7 +91,7 @@ const RecipeSearchForm = ({
         </Button>
         <Button
           className="select-none gap-1 text-base md:text-lg"
-          disabled={loading}
+          disabled={loading || isRecipeDataLoading}
           onClick={handleGetRandomFood}
         >
           Random <DicesIcon size={size?.width < 768 ? 20 : 24} />
