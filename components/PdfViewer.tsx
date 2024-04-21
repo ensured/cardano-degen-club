@@ -198,8 +198,8 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className={` absolute inset-x-0 top-[6.26rem] z-40 overflow-auto mx-2 shadow-md ${
-          file ? "border p-2 rounded-sm bg-background" : ""
+        className={`absolute inset-x-0 top-2 z-40 overflow-auto mx-2 shadow-md ${
+          file ? "border py-2 rounded-sm bg-background" : ""
         }`}
       >
         {!file ||
