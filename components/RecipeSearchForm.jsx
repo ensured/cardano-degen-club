@@ -78,7 +78,7 @@ const RecipeSearchForm = ({
             className={`relative ${
               suggestions.length > 0 && input.length > 0
                 ? "rounded-b-none border-b-0 "
-                : "rounded-b border-b-2 border-b-zinc-500/20"
+                : ""
             }`}
           />
           {suggestions.length > 0 && input && (
