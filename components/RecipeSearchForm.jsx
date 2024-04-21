@@ -55,6 +55,7 @@ const RecipeSearchForm = ({
   }
 
   const handleFormSubmit = (e) => {
+    setSuggestions([])
     searchRecipes(e)
     handleHideKeyboard()
   }
