@@ -300,7 +300,7 @@ export async function removeFavorite(recipeName: string) {
   }
   const deleteObjectCommand = new DeleteObjectCommand(params)
   const deleteObjectResponse = await s3Client.send(deleteObjectCommand)
-  return
+  return deleteObjectResponse
 }
 
 export async function getPreSignedUrl(key: string) {

@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { extractRecipeName } from "@/lib/utils"
 
 import { addFavorite, getFavorites, removeFavorite } from "./actions"
-import { Loader2 } from "lucide-react"
-
-import { CheckCircle2Icon } from "lucide-react"
 
 const useRecipeSearch = () => {
   const router = useRouter()
@@ -31,35 +29,32 @@ const useRecipeSearch = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
-
   const fetchFavorites = async () => {
     setIsRecipeDataLoading(true)
     try {
-      const res = await getFavorites();
+      const res = await getFavorites()
 
-      if (!res) return;
-      const updatedFavorites = {};
+      if (!res) return
+      const updatedFavorites = {}
       res.forEach((favorite) => {
         if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
-          toast.error("Invalid favorite data");
-          return;
+          toast.error("Invalid favorite data")
+          return
         }
 
         updatedFavorites[favorite.link] = {
           name: favorite.name,
           url: favorite.url,
-        };
-      });
-      setFavorites(updatedFavorites);
+        }
+      })
+      setFavorites(updatedFavorites)
     } catch (error) {
-      console.error("Error fetching favorites:", error);
-      toast.error(error.message);
+      console.error("Error fetching favorites:", error)
+      toast.error(error.message)
     } finally {
       setIsRecipeDataLoading(false)
-
     }
-  };
-
+  }
 
   useEffect(() => {
     const getFavs = async () => {
@@ -206,14 +201,14 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    const shouldSearch = isInitialLoad && searchParams.get("q");
+    const shouldSearch = isInitialLoad && searchParams.get("q")
     if (shouldSearch) {
-      searchRecipes();
-      setIsInitialLoad(false);
+      searchRecipes()
+      setIsInitialLoad(false)
       setLastInputSearched(input)
     }
-    setIsInitialLoad(false);
-  }, [searchParams, searchRecipes, isInitialLoad, input, lastInputSearched]);
+    setIsInitialLoad(false)
+  }, [searchParams, searchRecipes, isInitialLoad, input, lastInputSearched])
 
   useEffect(() => {
     const onScroll = () => {
@@ -284,55 +279,59 @@ const useRecipeSearch = () => {
     }
   }
 
-
   const handleStarIconHover = (index) => () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
-  const removeFromFavorites = async (recipeLink) => {
+  const removeFromFavorites = async (recipeLink, name) => {
     try {
-      const newFavorites = { ...favorites };
-      delete newFavorites[recipeLink];
-      setFavorites(newFavorites);
-      const removeFav = removeFavorite(recipeLink); // server action
+      const newFavorites = { ...favorites }
+      console.log(newFavorites[recipeLink])
+      delete newFavorites[recipeLink]
+      setFavorites(newFavorites)
+      const removeFav = removeFavorite(name) // server action
+      console.log(await removeFav)
 
-      toast.promise(removeFav, {
-        loading: "Removing",
-        success: (data) => <div className="text-white">Removed!</div>,
-        error: (error) => "Couldn't remove favorite",
-        id: "delete-recipe",
-      }, {
-        className: "bg-slate-500/80",
-        loading: {
-          icon: <Loader2 className="animate-spin text-zinc-950" />
+      toast.promise(
+        removeFav,
+        {
+          loading: "Removing",
+          success: (data) => <div className="text-white">Removed!</div>,
+          error: (error) => "Couldn't remove favorite",
+          id: "delete-recipe",
         },
-        success: {
-          icon: <CheckCircle2Icon className="animate-fadeIn text-white" />
+        {
+          className: "bg-slate-500/80",
+          loading: {
+            icon: <Loader2 className="animate-spin text-zinc-950" />,
+          },
+          success: {
+            icon: <CheckCircle2Icon className="animate-fadeIn text-white" />,
+          },
         }
-      });
+      )
     } catch (error) {
-      console.error("Error removing from favorites:", error);
-      toast.error(error.message);
+      console.error("Error removing from favorites:", error)
+      toast.error(error.message)
     }
-  };
-
+  }
 
   const handleStarIconClick = (index) => async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const recipe = searchResults.hits[index].recipe;
-    const recipeName = extractRecipeName(recipe.shareAs);
-    const recipeImage = recipe.image;
-    const recipeLink = recipe.shareAs;
+    const recipe = searchResults.hits[index].recipe
+    const recipeName = extractRecipeName(recipe.shareAs)
+    const recipeImage = recipe.image
+    const recipeLink = recipe.shareAs
 
-    const isFavorited = favorites[recipeLink] !== undefined;
+    const isFavorited = favorites[recipeLink] !== undefined
 
     if (isFavorited) {
       // Remove from favorites optimistically
-      const newFavorites = { ...favorites };
-      delete newFavorites[recipeLink];
-      setFavorites(newFavorites);
-      await removeFavorite(recipeLink); // server action
+      const newFavorites = { ...favorites }
+      delete newFavorites[recipeLink]
+      setFavorites(newFavorites)
+      await removeFavorite(recipeLink) // server action
     } else {
       try {
         // Optimistically add to favorites
@@ -342,29 +341,29 @@ const useRecipeSearch = () => {
             name: recipeName,
             url: recipeImage,
           },
-        }));
+        }))
 
         // Add to favorites asynchronously
         const response = await addFavorite({
           name: recipeName,
           url: recipeImage,
           link: recipeLink,
-        });
+        })
 
         if (response.error) {
-          toast(response.error, { type: "error" });
+          toast(response.error, { type: "error" })
           // Revert the optimistic update if the asynchronous operation fails
           setFavorites((prevFavorites) => {
-            const { [recipeLink]: value, ...newFavorites } = prevFavorites;
-            return newFavorites;
-          });
+            const { [recipeLink]: value, ...newFavorites } = prevFavorites
+            return newFavorites
+          })
         } else if (response.success) {
           // Display the message to the user
-          toast(response.message, { type: "error", duration: 3000 });
+          toast(response.message, { type: "error", duration: 3000 })
           setFavorites((prevFavorites) => {
-            const { [recipeLink]: value, ...newFavorites } = prevFavorites;
-            return newFavorites;
-          });
+            const { [recipeLink]: value, ...newFavorites } = prevFavorites
+            return newFavorites
+          })
         } else {
           // Update favorites with the actual data
           setFavorites((prevFavorites) => ({
@@ -373,22 +372,21 @@ const useRecipeSearch = () => {
               name: recipeName,
               url: response.preSignedImageUrl,
             },
-          }));
+          }))
         }
       } catch (error) {
-        console.error("Error adding favorite:", error);
+        console.error("Error adding favorite:", error)
         toast(error.message, {
           type: "error",
-        });
+        })
         // Revert the optimistic update if the asynchronous operation fails
         setFavorites((prevFavorites) => {
-          const { [recipeLink]: value, ...newFavorites } = prevFavorites;
-          return newFavorites;
-        });
+          const { [recipeLink]: value, ...newFavorites } = prevFavorites
+          return newFavorites
+        })
       }
     }
-  };
-
+  }
 
   return {
     handleStarIconHover,
@@ -413,7 +411,7 @@ const useRecipeSearch = () => {
     currentCardIndex,
     isMobile,
     setSearchResults,
-    isRecipeDataLoading
+    isRecipeDataLoading,
   }
 }
 
