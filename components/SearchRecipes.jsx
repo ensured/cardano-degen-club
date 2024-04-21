@@ -53,8 +53,18 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         totalCards={searchResults.hits.length}
       />
 
-      <div className="flex w-full items-center justify-center py-4">
-        <CardTitle>Recipe Vault</CardTitle>
+      <div className="my-1 flex items-center justify-center rounded-md py-2">
+        <CardTitle className="flex flex-row items-center justify-center gap-2">
+          {" "}
+          <Image
+            src={"/RecipeVaultLogo.jpg"}
+            height={38}
+            width={38}
+            className="rounded-md"
+            alt="FlavorSavor logo"
+          />
+          Recipe Vault
+        </CardTitle>
       </div>
 
       {/* Include the ScrollTooltip component */}
