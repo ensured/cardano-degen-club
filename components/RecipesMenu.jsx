@@ -190,6 +190,7 @@ const RecipesMenu = ({
       )}
 
       {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
+
       <FavoritesSheet
         setFavorites={setFavorites}
         setOpen={setIsOpen}
@@ -231,58 +232,52 @@ const RecipesMenu = ({
         )}
 
         <div className="h-[69%] overflow-auto rounded-md">
-          {isRecipeDataLoading ? (
-            <div className="flex w-full items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin md:h-12 md:w-12" />
-            </div>
-          ) : (
-            Object.entries(favorites).map(([link, { name, url }]) => (
-              <Link
-                target="_blank"
-                href={link}
-                key={link}
-                className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
-                style={{ textDecoration: "none" }}
-              >
-                {url && (
-                  <Image
-                    src={url}
-                    width={42}
-                    height={42}
-                    alt={name}
-                    className="rounded-full"
-                    unoptimized
-                    priority
+          {Object.entries(favorites).map(([link, { name, url }]) => (
+            <Link
+              target="_blank"
+              href={link}
+              key={link}
+              className="flex items-center justify-between gap-2 border-t px-1 py-2 transition duration-150 ease-in-out hover:bg-zinc-300/40 hover:underline dark:hover:bg-zinc-900/70"
+              style={{ textDecoration: "none" }}
+            >
+              {url && (
+                <Image
+                  src={url}
+                  width={42}
+                  height={42}
+                  alt={name}
+                  className="rounded-full"
+                  unoptimized
+                  priority
+                />
+              )}
+              <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
+                <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
+                  {name}
+                </span>
+                <button
+                  className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    removeFromFavorites(link)
+                  }}
+                >
+                  <Trash2Icon
+                    size={
+                      size?.width < 480
+                        ? 20
+                        : size?.width < 640
+                        ? 22
+                        : size?.width < 900
+                        ? 23
+                        : 24
+                    }
                   />
-                )}
-                <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 hover:text-moon">
-                  <span className="line-clamp-3 rounded-md text-sm decoration-moon md:text-base lg:text-lg">
-                    {name}
-                  </span>
-                  <button
-                    className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      removeFromFavorites(link)
-                    }}
-                  >
-                    <Trash2Icon
-                      size={
-                        size?.width < 480
-                          ? 20
-                          : size?.width < 640
-                          ? 22
-                          : size?.width < 900
-                          ? 23
-                          : 24
-                      }
-                    />
-                    <Separator className="bg-red-900 text-red-500" />
-                  </button>
-                </div>
-              </Link>
-            ))
-          )}
+                  <Separator className="bg-red-900 text-red-500" />
+                </button>
+              </div>
+            </Link>
+          ))}
         </div>
 
         {Object.keys(favorites).length > 0 && (

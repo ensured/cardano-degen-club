@@ -37,12 +37,12 @@ export const RecipeCard = ({
             {/* eslint-disable-next-line tailwindcss/classnames-order */}
             <CardBody className="md:w-72 md:h-72 h-[12.1rem] rounded-xl border border-black/[0.1] bg-gray-50 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
               {/* Title */}
-              <div className="flex flex-col items-center justify-end">
+              <div className="flex flex-col items-center">
                 <CardItem
                   translateZ="50"
-                  className="flex h-16 items-center justify-center p-2 font-bold tracking-tight text-neutral-600 dark:text-white md:h-24 "
+                  className="flex h-16 w-full items-center justify-center p-2 font-bold tracking-tight text-neutral-600 dark:text-white md:h-24 "
                 >
-                  <div className="line-clamp-3 select-none text-sm md:text-xl">
+                  <div className="line-clamp-3 select-none text-ellipsis text-sm md:text-xl">
                     {extractRecipeName(recipe.recipe.shareAs)}
                   </div>
                 </CardItem>
