@@ -1,8 +1,11 @@
+/* eslint-disable tailwindcss/classnames-order */
 /* eslint-disable react/no-unescaped-entities */
 "use client"
 
 import { useState } from "react"
+import { Chivo } from "next/font/google"
 import Link from "next/link"
+import { DividerHorizontalIcon } from "@radix-ui/react-icons"
 import { motion } from "framer-motion"
 import {
   CornerLeftDown,
@@ -10,9 +13,12 @@ import {
   ExternalLink,
   HardDrive,
   HardDriveIcon,
+  Heading1,
   ScalingIcon,
+  Users,
 } from "lucide-react"
 
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -27,47 +33,57 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+import { Icons } from "./icons"
+
+const chivo = Chivo({
+  subsets: ["latin"],
+  display: "swap",
+})
 export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <div className="dark:bg-slate-800">
+    <div className="bg-gray-100 dark:bg-slate-800">
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className=" bg-gray-100 pt-16 opacity-0 dark:bg-gray-800 "
+        transition={{ duration: 1 }}
+        className=" bg-gray-100 pt-10 opacity-0 dark:bg-gray-800 "
       >
-        <div className="container mx-auto px-4 pb-16 md:px-6">
+        <div className="md:container mx-auto px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-2"
-            >
-              <h1 className="mx-auto max-w-lg text-3xl font-bold tracking-tight  text-zinc-900 dark:text-slate-50 sm:text-4xl md:text-5xl lg:text-6xl">
-                Discover Cardano
-              </h1>
-              <p className=" text-md text-gray-600 dark:text-gray-400 md:text-lg lg:text-lg">
+            <motion.div className="space-y-2">
+              <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:pb-8 pb-3 ">
+                <Link href={"https://cardano.org/"}>
+                  <Icons.ada className="h-20 w-20 text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:h-24 md:w-24 transition-all " />
+                </Link>
+                <div
+                  className={cn(
+                    "flex flex-col select-none max-w-lg text-xl font-bold tracking-tight text-[rgb(255,118,118)] sm:text-2xl md:text-3xl lg:text-4xl ",
+                    chivo.className
+                  )}
+                >
+                  <h1>A history of impossible,</h1>
+                  <h1>made possible</h1>
+                </div>
+              </div>
+
+              <p className="text-md text-gray-600 dark:text-gray-400 md:text-lg lg:text-lg select-none">
                 Unlock the potential of the future internet while also
                 safeguarding against inflation.
               </p>
             </motion.div>
             <Link
               href="/cardano-links"
+              className="select-none"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.2 }}
-                className="rounded-lg border border-sky-300 bg-slate-200 px-8 py-12 shadow-lg transition-all hover:cursor-pointer hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
-              >
+              <motion.div className="mx-2 rounded-lg border border-sky-300 bg-slate-200 px-8 py-12 shadow-lg transition-all hover:cursor-pointer hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+                {" "}
                 <Button
                   variant="link"
-                  className="relative h-auto text-xl text-sky-500 dark:text-slate-50 md:text-2xl"
+                  className="relative h-auto text-xl text-sky-500 dark:text-slate-50 md:text-2xl "
                 >
                   {isHovered && (
                     <span className="absolute -right-4">
@@ -78,10 +94,44 @@ export default function HeroLandingPage() {
                 </Button>
                 <p className="flex justify-center text-sm text-gray-600 dark:text-gray-400">
                   Dive into our curated collection of Cardano resources and
-                  start your journey today.
+                  start your journey today
                 </p>
               </motion.div>
             </Link>
+
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 p-2">
+              <motion.div className="max-w-[483px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+                Cardano restores trust to global systems - creating, through
+                science, a more secure, transparent, and sustainable foundation
+                for individuals to transact and exchange, systems to govern, and
+                enterprises to grow.{" "}
+              </motion.div>
+              <motion.div className="max-w-[483px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+                Cardano brings a new standard in technology - open and inclusive
+                - to challenge the old and activate a new age of sustainable,
+                globally-distributed innovation.
+              </motion.div>
+            </div>
+            <div className="grid grid-cols-1 gap-2 p-2">
+              <motion.div className="flex flex-col gap-4 max-w-[973px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+                <div className="text-2xl md:text-3xl">
+                  <u>Unparalleled Security</u> - And The Makings Of A Trustless
+                  World
+                </div>
+                Cardano makes it possible for any actors that do not know each
+                other - and have no reason to trust one another - to interact
+                and transact, securely. It's a platform for building trust where
+                none might naturally exist, opening up whole new markets and
+                opportunities. Through Ouroboros, Cardano is provably secure
+                against bad actors and Sybil attacks. Every transaction,
+                interaction, and exchange is immutably and transparently
+                recovered, and securely validated using multi-signature and a
+                pioneering extended UTXO model.{" "}
+                <Link href="https://roadmap.cardano.org/">
+                  <Button>Visit the roadmap</Button>
+                </Link>
+              </motion.div>
+            </div>
           </div>
         </div>
         <motion.div
@@ -99,7 +149,7 @@ export default function HeroLandingPage() {
       </motion.section>
 
       <section className="bg-gray-100 py-12 dark:bg-gray-800">
-        <div className="container">
+        <div className="md:container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -108,7 +158,7 @@ export default function HeroLandingPage() {
           >
             Key Features
           </motion.div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -143,7 +193,7 @@ export default function HeroLandingPage() {
                 decentralization between different popular blockchains{" "}
                 <Link
                   href="http://blockchainlab.inf.ed.ac.uk/edi-dashboard/#/consensus"
-                  className=" text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-500"
+                  className=" text-zinc-950 underline dark:text-zinc-100 dark:hover:text-zinc-200 hover:text-zinc-600"
                   target="_blank"
                 >
                   click here
@@ -192,7 +242,7 @@ export default function HeroLandingPage() {
                 transition={{ duration: 0.2, delay: 0.2 }}
                 className="flex items-center justify-center"
               >
-                <DialogTrigger className="cursor-pointer rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:bg-slate-300 dark:bg-background hover:dark:bg-slate-500">
+                <DialogTrigger className="cursor-pointer rounded-lg h-full border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:bg-slate-300 dark:bg-background hover:dark:bg-slate-500">
                   <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                     <div className="flex flex-row items-center gap-2">
                       <ScalingIcon /> Scalability
@@ -204,6 +254,31 @@ export default function HeroLandingPage() {
                     applications.
                   </p>
                 </DialogTrigger>
+              </motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background hover:bg-slate-300  hover:dark:bg-slate-500"
+              >
+                <Link
+                  href="https://roadmap.cardano.org/en/voltaire/"
+                  target="_blank"
+                >
+                  <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
+                    <h3 className="flex items-center gap-2 text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
+                      <Users /> Governance{" "}
+                    </h3>
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    The Voltaire era of Cardano will provide the final pieces
+                    required for the Cardano network to become a self-sustaining
+                    system. With the introduction of a voting and treasury
+                    system, network participants will be able to use their stake
+                    and voting rights to influence the future development of the
+                    network.
+                  </p>
+                </Link>
               </motion.div>
 
               <DialogContent className="h-full w-full overflow-y-auto">
