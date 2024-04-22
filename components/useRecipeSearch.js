@@ -283,13 +283,22 @@ const useRecipeSearch = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
+  function extractRecipeId(url) {
+    const startIndex = url.indexOf("recipe/") + "recipe/".length
+    const endIndex = url.indexOf("/", startIndex)
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error("Invalid URL format")
+    }
+    return url.substring(startIndex, endIndex)
+  }
+
   const removeFromFavorites = async (recipeLink, name) => {
     try {
       const newFavorites = { ...favorites }
       console.log(newFavorites[recipeLink])
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
-      const removeFav = removeFavorite(name) // server action
+      const removeFav = removeFavorite(extractRecipeId(recipeLink)) // server action
       console.log(await removeFav)
 
       toast.promise(
@@ -331,7 +340,8 @@ const useRecipeSearch = () => {
       const newFavorites = { ...favorites }
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
-      await removeFavorite(recipeLink) // server action
+      console.log(recipeLink)
+      await removeFavorite(extractRecipeId(recipeLink)) // server action
     } else {
       try {
         // Optimistically add to favorites

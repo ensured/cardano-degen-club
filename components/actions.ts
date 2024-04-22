@@ -235,6 +235,15 @@ export async function deleteAllFavorites() {
   }
 }
 
+function extractRecipeId(url: string) {
+  const startIndex = url.indexOf("recipe/") + "recipe/".length
+  const endIndex = url.indexOf("/", startIndex)
+  if (startIndex === -1 || endIndex === -1) {
+    throw new Error("Invalid URL format")
+  }
+  return url.substring(startIndex, endIndex)
+}
+
 export async function addFavorite({ name, url, link }: Favorite) {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
@@ -263,7 +272,7 @@ export async function addFavorite({ name, url, link }: Favorite) {
     // Fetch the image and upload it
     const imageResponse = await fetch(url)
     const imageBlob = await imageResponse.blob()
-    const key = `favorites/images/${userEmail}/${name}.jpg`
+    const key = `favorites/images/${userEmail}/${extractRecipeId(link)}.jpg`
 
     const params = {
       Bucket: process.env.S3_BUCKET_NAME_RECIPES,
