@@ -299,7 +299,6 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
       const removeFav = removeFavorite(extractRecipeId(recipeLink)) // server action
-      console.log(await removeFav)
 
       toast.promise(
         removeFav,
