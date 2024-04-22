@@ -10,57 +10,26 @@ import {
 } from "@/components/ui/tooltip"
 
 const FullTitleToolTip = ({ children, title }) => {
-  const [side, setSide] = useState("top")
-  const tooltipRef = useRef(null)
+  const [isOpen, setIsOpen] = useState(false)
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const handleResize = () => {
-        calculateSide()
-      }
+  const handleCloseToolTip = () => {
+    setIsOpen(false)
+  }
 
-      const handleScroll = () => {
-        calculateSide()
-      }
-
-      const calculateSide = () => {
-        if (tooltipRef.current) {
-          const cardRect = tooltipRef.current.getBoundingClientRect()
-          const distanceFromTop = cardRect.top
-          const isCloseToTop = distanceFromTop < 50
-
-          if (isCloseToTop) {
-            setSide("bottom")
-          } else {
-            const cardMidPoint = cardRect.top + cardRect.height / 2
-            const windowMidPoint = window.innerHeight / 2
-
-            const newSide = cardMidPoint < windowMidPoint ? "bottom" : "top"
-            setSide(newSide)
-          }
-        }
-      }
-
-      calculateSide()
-
-      window.addEventListener("resize", handleResize)
-      window.addEventListener("scroll", handleScroll)
-
-      return () => {
-        window.removeEventListener("resize", handleResize)
-        window.removeEventListener("scroll", handleScroll)
-      }
-    }
-  }, [title])
+  const handleOpenChange = () => {
+    setIsOpen(!isOpen)
+  }
 
   return (
-    <TooltipProvider skipDelayDuration={0} delayDuration={0}>
-      <Tooltip>
-        <TooltipTrigger ref={tooltipRef}>{children}</TooltipTrigger>
+    <TooltipProvider delayDuration={100}>
+      <Tooltip open={isOpen} onOpenChange={handleOpenChange}>
+        <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent
-          side={side}
           className="select-none"
-          onClick={(e) => e.preventDefault()}
+          onClick={(e) => {
+            e.preventDefault()
+            handleCloseToolTip()
+          }}
         >
           <p>{title}</p>
         </TooltipContent>
