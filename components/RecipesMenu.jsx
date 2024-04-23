@@ -281,7 +281,7 @@ const RecipesMenu = ({
               </Link>
             ))}
             {Object.keys(favorites).length > 0 && (
-              <div className="absolute bottom-0 right-24 p-1.5">
+              <div className="absolute bottom-0 right-16 p-1.5">
                 <DeleteAllAlert setFavorites={setFavorites}>
                   <Button
                     variant={"destructive"}
