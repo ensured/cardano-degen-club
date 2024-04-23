@@ -265,11 +265,11 @@ export default function HeroLandingPage() {
                   href="https://roadmap.cardano.org/en/voltaire/"
                   target="_blank"
                 >
-                  <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
-                    <h3 className="flex items-center gap-2 text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
+                  <div className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
+                    <div className="flex items-center gap-2 text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                       <Users /> Governance{" "}
-                    </h3>
-                  </h3>
+                    </div>
+                  </div>
                   <p className="text-gray-600 dark:text-gray-400">
                     The Voltaire era of Cardano will provide the final pieces
                     required for the Cardano network to become a self-sustaining

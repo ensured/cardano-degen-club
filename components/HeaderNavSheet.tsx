@@ -3,38 +3,13 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronDown, Menu } from "lucide-react"
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Separator } from "@/components/ui/separator"
+import { Menu } from "lucide-react"
 
 import { SheetClose, SheetContent } from "./SheetContent"
 import { ThemeToggle } from "./theme-toggle"
 import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { Label } from "./ui/label"
 import { SelectSeparator } from "./ui/select"
-import {
-  Sheet,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet"
+import { Sheet, SheetTrigger } from "./ui/sheet"
 
 export function HeaderNavSheet() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -108,15 +83,8 @@ export function HeaderNavSheet() {
           <Link
             href="/recipe-fren"
             onClick={handleOpenChange}
-            className="flex flex-row items-center gap-2 py-1 text-lg"
+            className="py-1 text-lg"
           >
-            <Image
-              src={"/RecipeVaultLogo.jpg"}
-              height={33}
-              width={33}
-              className="rounded-md"
-              alt="FlavorSavor logo"
-            />
             Recipe Fren
           </Link>
           <Link

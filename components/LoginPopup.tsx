@@ -30,6 +30,7 @@ const LoginPopup = ({
             alt="user image"
             width={33}
             height={33}
+            priority
           />
         </Button>
       </PopoverTrigger>

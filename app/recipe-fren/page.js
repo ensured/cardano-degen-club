@@ -8,7 +8,7 @@ import {
 } from "@kinde-oss/kinde-auth-nextjs/server"
 
 import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 import SearchRecipes from "../../components/SearchRecipes"
 

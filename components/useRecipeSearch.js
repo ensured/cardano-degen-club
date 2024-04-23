@@ -263,17 +263,16 @@ const useRecipeSearch = () => {
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
   const handleInputChange = async (e) => {
-    setInput(e.target.value)
+    const newInput = e.target.value
+    setInput(newInput)
     router.replace(`?q=${newInput}`)
-    if (newInput.length >= 3) {
-      if (newInput.length > 1) {
-        const { data } = await fetch(
-          `/api/search/autocomplete?q=${newInput}`
-        ).then((res) => res.json())
-        setSuggestions(data)
-      } else {
-        setSuggestions([])
-      }
+    if (newInput.length > 1) {
+      const { data } = await fetch(
+        `/api/search/autocomplete?q=${newInput}`
+      ).then((res) => res.json())
+      setSuggestions(data)
+    } else if (newInput.length === 0) {
+      setSuggestions([])
     }
   }
 

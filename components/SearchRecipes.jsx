@@ -54,17 +54,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
       />
 
       <div className="my-1 flex items-center justify-center rounded-md py-2">
-        <CardTitle className="flex flex-row items-center justify-center gap-2">
-          {" "}
-          <Image
-            src={"/RecipeVaultLogo.jpg"}
-            height={38}
-            width={38}
-            className="rounded-md"
-            alt="FlavorSavor logo"
-          />
-          Recipe Fren
-        </CardTitle>
+        <CardTitle className="text-xl md:text-2xl">Recipe Fren</CardTitle>
       </div>
 
       {/* Include the ScrollTooltip component */}
@@ -134,7 +124,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
       <Toaster
         toastOptions={{
           className: "dark:bg-zinc-950 dark:text-slate-100",
-          duration: 1000,
+          duration: 1100,
           position: "bottom-center",
           success: {
             style: {
