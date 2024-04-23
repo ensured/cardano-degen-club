@@ -263,10 +263,8 @@ const useRecipeSearch = () => {
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
   const handleInputChange = async (e) => {
-    const newInput = e.target.value
-    setInput(newInput)
+    setInput(e.target.value)
     router.replace(`?q=${newInput}`)
-    // Check if the length of the input is greater than or equal to a certain threshold before triggering the search
     if (newInput.length >= 3) {
       if (newInput.length > 1) {
         const { data } = await fetch(

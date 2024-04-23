@@ -63,7 +63,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
             className="rounded-md"
             alt="FlavorSavor logo"
           />
-          Recipe Vault
+          Recipe Fren
         </CardTitle>
       </div>
 

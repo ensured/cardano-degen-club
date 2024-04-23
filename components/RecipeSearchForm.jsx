@@ -42,9 +42,9 @@ const RecipeSearchForm = ({
       })
       const randomIndex = Math.floor(Math.random() * foodItems.length)
       const randomFoodItem = foodItems[randomIndex]
-      router.replace(`/recipe-finder?q=${randomFoodItem}`)
       setInput(randomFoodItem)
       searchRecipes(e, randomFoodItem)
+      router.replace(`/recipe-fren?q=${randomFoodItem}`)
     } catch (error) {
       toast(error.message, {
         type: "error",

@@ -106,7 +106,7 @@ export function HeaderNavSheet() {
 
           <div className="py-2 text-2xl font-semibold text-sky-500">Misc</div>
           <Link
-            href="/recipe-finder"
+            href="/recipe-fren"
             onClick={handleOpenChange}
             className="flex flex-row items-center gap-2 py-1 text-lg"
           >
@@ -117,7 +117,7 @@ export function HeaderNavSheet() {
               className="rounded-md"
               alt="FlavorSavor logo"
             />
-            Recipe Vault
+            Recipe Fren
           </Link>
           <Link
             href="/port-checker"
