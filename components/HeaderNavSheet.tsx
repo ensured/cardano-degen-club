@@ -51,12 +51,11 @@ export function HeaderNavSheet() {
         </Button>
       </SheetTrigger>
       <SheetContent>
-        <div className="py-1">
-          <div className="absolute left-4 top-[0.84rem]">
+        <div className="py-2">
+          <div className="absolute left-4 top-4">
             <ThemeToggle />
           </div>
         </div>
-
         <div className="relative mt-6 flex h-full flex-col gap-1 overflow-auto pb-4">
           <SelectSeparator />
           <div className="py-2 text-2xl font-semibold text-sky-500">Crypto</div>

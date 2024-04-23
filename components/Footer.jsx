@@ -9,11 +9,10 @@ import { buttonVariants } from "./ui/button"
 const Footer = () => {
   return (
     <footer className="bg-sky-200/70 shadow dark:bg-zinc-900">
-      <div className="flex w-full items-center justify-center gap-10 p-3 md:gap-12 ">
-        {/* <div className=" text-sm text-gray-500 hover:underline dark:text-gray-400">
-          © 2024 - cardanodegen.shop
-        </div> */}
-        <FeedBackDrawer />
+      <div className="mx-auto flex w-full flex-wrap items-center justify-around gap-1 p-2 md:container">
+        <div className="text-sm text-gray-500 hover:underline dark:text-gray-400">
+          © 2024 cardanodegen.shop
+        </div>
 
         <div className="flex overflow-auto">
           <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
@@ -43,6 +42,8 @@ const Footer = () => {
             </div>
           </Link>
         </div>
+
+        <FeedBackDrawer />
       </div>
     </footer>
   )

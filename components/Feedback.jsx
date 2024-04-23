@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useWindowSize } from "@uidotdev/usehooks"
+import { MessageCircleIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -27,7 +29,7 @@ const MIN_NAME_LENGTH = 2
 export default function FeedBackDrawer() {
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
-
+  const { width } = useWindowSize()
   const {
     register,
     handleSubmit,
@@ -65,11 +67,18 @@ export default function FeedBackDrawer() {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button
-            aria-controls="feedback-dialog"
-            className="min-w-24 bg-zinc-100 text-zinc-600 hover:bg-sky-300 hover:text-primary dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-slate-800"
-          >
-            Leave feedback
+          <Button aria-controls="feedback-dialog" size={"sm"}>
+            {width > 412 ? (
+              <div className="flex gap-2">
+                Feedback
+                <MessageCircleIcon className="h-5 w-5" />
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                Feedback
+                <MessageCircleIcon className="h-5 w-5" />
+              </div>
+            )}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
