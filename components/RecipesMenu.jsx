@@ -232,7 +232,7 @@ const RecipesMenu = ({
           </div>
         )}
 
-        <div className="animate-fade-in h-[calc(100vh-160px)] overflow-auto rounded-md">
+        <div className="animate-fade-in h-[calc(100vh-220px)] overflow-auto rounded-md">
           <div className="  flex flex-col flex-wrap">
             {Object.entries(favorites).map(([link, { name, url }]) => (
               <Link
