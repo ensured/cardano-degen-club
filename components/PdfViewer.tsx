@@ -198,23 +198,23 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
       <input onChange={onFileChange} type="file" hidden />
       <div
         ref={setContainerRef}
-        className={`absolute inset-x-0 top-2 z-40 overflow-auto mx-2 shadow-md ${
+        className={`absolute inset-x-0 top-0 z-40 shadow-md ${
           file ? "border py-2 rounded-sm bg-background" : ""
         }`}
       >
         {!file ||
           (file !== null && (
-            <div className="w-full flex flex-row justify-between items-center flex-wrap mb-2 pb-1">
+            <div className="flex flex-row justify-between items-center flex-wrap mb-2 pb-1">
               <div className="flex gap-2 flex-wrap w-full">
                 <div className="w-full flex justify-center gap-2">
-                  <Label htmlFor="airplane-mode">
+                  <Label htmlFor="append-datetime-switch">
                     <div className="flex flex-col w-full items-center space-x-2">
                       <Switch
                         checked={isSwitchChecked}
                         onCheckedChange={handleSwitch}
-                        id="airplane-mode"
+                        id="append-datetime-switch"
                       />
-                      <span className="text-center w-18">Append datetime?</span>
+                      <span className="text-center ">Append datetime?</span>
                     </div>
                   </Label>
                   <Input
