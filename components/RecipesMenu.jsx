@@ -7,6 +7,7 @@ import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
 import { FileText, Loader2, Trash2Icon, TrashIcon } from "lucide-react"
+import { useTheme } from "next-themes"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -45,6 +46,7 @@ const RecipesMenu = ({
   const [isConfirmPreviewDialogOpen, setIsConfirmPreviewDialogOpen] =
     useState(false)
   const [progress, setProgress] = useState(0)
+  const { theme } = useTheme()
 
   const handlePreviewPDF = async () => {
     setProgress(0)
@@ -53,10 +55,13 @@ const RecipesMenu = ({
       const previewUrl = await previewFavoritesPDF(favorites)
       setPdfPreviewUrl(previewUrl) // this opens the pdf into view
       setIsOpen(false)
-      toast("Your preview is ready!", {
-        icon: "🎉",
-        position: "bottom-center",
-      })
+      toast.custom((t) => (
+        <div
+          className={`rounded-full bg-background px-6 py-4 text-primary shadow-md`}
+        >
+          👋 Preview is ready
+        </div>
+      ))
     } catch (e) {
       console.error(e)
     } finally {
