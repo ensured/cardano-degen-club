@@ -11,7 +11,6 @@ const Page = () => {
     state: "",
     zip: "",
   })
-
   useEffect(() => {
     function getLocation() {
       if (navigator.geolocation) {
@@ -61,18 +60,15 @@ const Page = () => {
 
   return (
     <div>
-      <div>
-        {weather && (
-          <div className="mx-12 mt-6 flex flex-col items-center justify-center rounded-sm border border-dashed border-green bg-slate-200/40 p-6 shadow-lg dark:bg-slate-900/30 dark:shadow-slate-800">
-            <h1>Latitude: {weather.lat}</h1>
-            <h1>Longitude: {weather.lon}</h1>
-            <h1>City: {weather.city}</h1>
-            <h1>State: {weather.state}</h1>
-            <h1>Zip Code: {weather.zip}</h1>
-          </div>
-        )}
-      </div>
-      {/* <ProfileForm /> */}
+      {weather && (
+        <div className="mx-12 mt-6 flex flex-col items-center justify-center rounded-sm border border-dashed border-green bg-slate-200/40 p-6 shadow-lg dark:bg-slate-900/30 dark:shadow-slate-800">
+          <h1>Latitude: {weather.lat}</h1>
+          <h1>Longitude: {weather.lon}</h1>
+          <h1>City: {weather.city}</h1>
+          <h1>State: {weather.state}</h1>
+          <h1>Zip Code: {weather.zip}</h1>
+        </div>
+      )}
     </div>
   )
 }

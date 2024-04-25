@@ -10,13 +10,6 @@ import Comments from "@/components/Comments"
 export const metadata = {
   title: "admin",
 }
-// interface UserType {
-//   picture: null | string;
-//   family_name: string;
-//   given_name: string;
-//   email: string;
-//   id: string;
-// }
 
 const page = async () => {
   const { getUser, isAuthenticated } = getKindeServerSession()
