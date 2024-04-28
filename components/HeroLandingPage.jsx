@@ -17,6 +17,7 @@ import {
   ScalingIcon,
   Users,
 } from "lucide-react"
+import { useInView } from "react-intersection-observer"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -41,13 +42,30 @@ const chivo = Chivo({
 })
 export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
+  const [feature1Ref, feature1InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+
+  const [feature2Ref, feature2InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+  const [feature3Ref, feature3InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+  const [feature4Ref, feature4InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
 
   return (
     <div className="bg-gray-100 dark:bg-slate-800">
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 0.5 }}
         className=" bg-gray-100 pt-10 opacity-0 dark:bg-gray-800 "
       >
         <div className="md:container mx-auto px-6">
@@ -161,8 +179,9 @@ export default function HeroLandingPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              animate={feature1InView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.2 }}
+              ref={feature1Ref}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
@@ -203,8 +222,9 @@ export default function HeroLandingPage() {
             {/* Feature 2 */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              animate={feature2InView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.2, delay: 0.2 }}
+              ref={feature2Ref}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
               <h3 className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
@@ -238,8 +258,9 @@ export default function HeroLandingPage() {
             <Dialog>
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={feature3InView ? { opacity: 1, scale: 1 } : {}}
                 transition={{ duration: 0.2, delay: 0.2 }}
+                ref={feature3Ref}
                 className="flex items-center justify-center"
               >
                 <DialogTrigger className="cursor-pointer rounded-lg h-full border-2 border-sky-300 bg-slate-200 p-6 shadow-lg hover:bg-slate-300 dark:bg-background hover:dark:bg-slate-500">
@@ -257,8 +278,9 @@ export default function HeroLandingPage() {
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
+                animate={feature4InView ? { opacity: 1, scale: 1 } : {}}
                 transition={{ duration: 0.2 }}
+                ref={feature4Ref}
                 className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background hover:bg-slate-300  hover:dark:bg-slate-500"
               >
                 <Link

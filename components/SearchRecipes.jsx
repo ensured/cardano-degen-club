@@ -42,7 +42,9 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
   } = useRecipeSearch()
 
   return (
-    <div className="relative flex w-full flex-col p-2 ">
+    <div className="relative flex w-full flex-col p-2">
+      {/* Background Image component */}
+
       <div
         className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-sky-600"
         style={{ width: `${scrollProgress}%` }}
@@ -71,7 +73,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         setSearchResults={setSearchResults}
         isRecipeDataLoading={isRecipeDataLoading}
       />
-      {/* results count + interactive favorites sheet*/}
+      {/* results count + interactive favorites sheet */}
       <RecipesMenu
         userInfo={userInfo}
         isAuthenticated={isAuthenticated}
@@ -82,6 +84,15 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         loading={loading}
         isRecipeDataLoading={isRecipeDataLoading}
       />
+      <div className="fixed inset-x-0 top-0 -z-20 h-full w-full overflow-hidden">
+        <Image
+          src={"/recipe-fren-bg.jpg"}
+          alt="recipe background"
+          fill
+          className=" object-cover"
+          sizes="100vw"
+        />
+      </div>
 
       {/* loading spinner in the center of the page */}
       {loading ||

@@ -8,12 +8,8 @@ import { buttonVariants } from "./ui/button"
 
 const Footer = () => {
   return (
-    <footer className="bg-sky-200/70 shadow dark:bg-zinc-900">
+    <footer className="bg-white shadow dark:bg-zinc-900">
       <div className="mx-auto flex w-full flex-wrap items-center justify-evenly gap-1 p-2 md:container">
-        <div className="text-sm text-gray-500 hover:underline dark:text-gray-400">
-          © 2024 cardanodegen.shop
-        </div>
-
         <div className="flex overflow-auto">
           <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
             <div
@@ -42,7 +38,9 @@ const Footer = () => {
             </div>
           </Link>
         </div>
-
+        <div className=" text-center text-xs font-medium text-zinc-800 hover:underline dark:text-gray-400 sm:text-sm">
+          © 2024 cardanodegen.shop
+        </div>
         <FeedBackDrawer />
       </div>
     </footer>
