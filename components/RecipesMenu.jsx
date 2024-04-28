@@ -184,7 +184,7 @@ const RecipesMenu = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="relative flex h-full flex-row flex-wrap justify-between gap-2 px-4 md:container">
+    <div className="pt-1 relative flex h-full flex-row flex-wrap justify-between gap-2 px-4 md:container">
       {searchResults.count > 0 ? (
         <Badge variant={"outline"} className="text-sm sm:text-base">
           Found {searchResults.count}

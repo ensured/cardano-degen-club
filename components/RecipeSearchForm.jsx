@@ -98,11 +98,8 @@ const RecipeSearchForm = ({
   }
 
   return (
-    <form
-      onSubmit={handleFormSubmit}
-      className={`mx-4 mb-1 md:container md:mx-auto`}
-    >
-      <div className=" flex flex-row flex-wrap justify-between gap-2 md:flex-nowrap md:justify-center">
+    <form onSubmit={handleFormSubmit} className={`mx-4 md:container`}>
+      <div className="flex flex-row flex-wrap justify-between items-center gap-1 md:flex-nowrap md:justify-center">
         {" "}
         <div className="relative w-full">
           <Input
@@ -112,7 +109,8 @@ const RecipeSearchForm = ({
             onChange={handleInputChange}
             value={input}
             ref={inputRef}
-            className={`relative ${
+            size={"sm"}
+            className={`relative h-[2.25rem] ${
               suggestions.length > 0 && input.length > 0
                 ? "rounded-b-none border-b-0 "
                 : ""
@@ -144,10 +142,11 @@ const RecipeSearchForm = ({
         </div>
         <Button
           type="submit"
-          className=" flex w-[6.8rem] select-none items-center justify-center"
+          className="flex w-[6.8rem] select-none items-center justify-center"
           disabled={!inputChanged || loading || isRecipeDataLoading}
+          size={"sm"}
         >
-          <div className="flex items-center justify-center text-base md:text-lg gap-1">
+          <div className="flex items-center justify-center gap-1 text-base md:text-lg">
             {/* {loading && (
                 <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
               )} */}
@@ -159,6 +158,7 @@ const RecipeSearchForm = ({
           className="select-none gap-1 text-base md:text-lg"
           disabled={loading || isRecipeDataLoading}
           onClick={handleGetRandomFood}
+          size={"sm"}
         >
           Random <DicesIcon size={size?.width < 768 ? 20 : 24} />
         </Button>

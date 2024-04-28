@@ -47,12 +47,13 @@ const FavoritesSheet = ({
           <Button
             className="relative select-none gap-1 text-base md:text-lg"
             disabled={isRecipeDataLoading}
+            size={"sm"}
           >
+            Favorites
             <StarIcon
               size={size?.width < 768 ? 19 : 22}
               color={theme.theme === "light" ? "#FFD700" : "black"}
             />
-            Favorites{" "}
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>

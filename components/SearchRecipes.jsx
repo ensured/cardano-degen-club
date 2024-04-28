@@ -56,7 +56,9 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
       />
 
       <div className="my-1 flex items-center justify-center rounded-md py-2">
-        <CardTitle className="text-xl md:text-2xl">Recipe Fren</CardTitle>
+        <CardTitle className="text-xl text-slate-50 md:text-2xl">
+          Recipe Fren
+        </CardTitle>
       </div>
 
       {/* Include the ScrollTooltip component */}
