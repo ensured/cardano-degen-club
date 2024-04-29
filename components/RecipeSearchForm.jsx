@@ -99,7 +99,7 @@ const RecipeSearchForm = ({
 
   return (
     <form onSubmit={handleFormSubmit} className={`mx-4 md:container`}>
-      <div className="flex flex-row flex-wrap justify-between items-center gap-1 md:flex-nowrap md:justify-center">
+      <div className="flex flex-row flex-wrap items-center justify-between gap-1 md:flex-nowrap md:justify-center">
         {" "}
         <div className="relative w-full">
           <Input

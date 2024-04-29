@@ -60,12 +60,31 @@ export default function HeroLandingPage() {
     threshold: 0.5, // Adjust as needed
   })
 
+  const [keyFeaturesRef, keyFeaturesInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+
+  const [title1Ref, title1InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+
+  const [title2Ref, title2InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+  const [title3Ref, title3InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+
   return (
     <div className="bg-gray-100 dark:bg-slate-800">
       <motion.section
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        initial={{ opacity: 0, y: 50, scale: 0.5 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
         className=" bg-gray-100 pt-10 opacity-0 dark:bg-gray-800 "
       >
         <div className="md:container mx-auto px-6">
@@ -97,7 +116,7 @@ export default function HeroLandingPage() {
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              <motion.div className="mx-2 rounded-lg border border-sky-300 bg-slate-200 px-8 py-12 shadow-lg transition-all hover:cursor-pointer hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+              <motion.div className="container rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
                 {" "}
                 <Button
                   variant="link"
@@ -118,20 +137,38 @@ export default function HeroLandingPage() {
             </Link>
 
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 p-2">
-              <motion.div className="max-w-[483px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+              <motion.div
+                className="max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={title1InView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                ref={title1Ref}
+              >
                 Cardano restores trust to global systems - creating, through
                 science, a more secure, transparent, and sustainable foundation
                 for individuals to transact and exchange, systems to govern, and
                 enterprises to grow.{" "}
               </motion.div>
-              <motion.div className="max-w-[483px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+              <motion.div
+                className="container max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={title2InView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                ref={title2Ref}
+              >
                 Cardano brings a new standard in technology - open and inclusive
                 - to challenge the old and activate a new age of sustainable,
                 globally-distributed innovation.
               </motion.div>
             </div>
             <div className="grid grid-cols-1 gap-2 p-2">
-              <motion.div className="flex flex-col gap-4 max-w-[973px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
+              <motion.div
+                className="flex flex-col max-w-[960px] gap-4 rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={title3InView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                ref={title3Ref}
+              >
                 <div className="text-2xl md:text-3xl">
                   <u>Unparalleled Security</u> - And The Makings Of A Trustless
                   World
@@ -155,13 +192,13 @@ export default function HeroLandingPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
           className="h-16 bg-gradient-to-b from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
           className="h-16 bg-gradient-to-t from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
@@ -170,8 +207,9 @@ export default function HeroLandingPage() {
         <div className="md:container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
+            animate={keyFeaturesInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.6, ease: "easeInOut" }}
+            ref={keyFeaturesRef}
             className="h-20 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl "
           >
             Key Features
@@ -180,7 +218,7 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={feature1InView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
               ref={feature1Ref}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
@@ -223,7 +261,7 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={feature2InView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.2, delay: 0.2 }}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
               ref={feature2Ref}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
@@ -276,38 +314,11 @@ export default function HeroLandingPage() {
                   </p>
                 </DialogTrigger>
               </motion.div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={feature4InView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.2 }}
-                ref={feature4Ref}
-                className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background hover:bg-slate-300  hover:dark:bg-slate-500"
-              >
-                <Link
-                  href="https://roadmap.cardano.org/en/voltaire/"
-                  target="_blank"
-                >
-                  <div className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
-                    <div className="flex items-center gap-2 text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
-                      <Users /> Governance{" "}
-                    </div>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    The Voltaire era of Cardano will provide the final pieces
-                    required for the Cardano network to become a self-sustaining
-                    system. With the introduction of a voting and treasury
-                    system, network participants will be able to use their stake
-                    and voting rights to influence the future development of the
-                    network.
-                  </p>
-                </Link>
-              </motion.div>
-
               <DialogContent className="h-full w-full overflow-y-auto">
                 <motion.div
-                  initial={{ opacity: 1, scale: 0.5 }}
+                  initial={{ opacity: 1, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
                   <h3 className="text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
                     <div className="flex items-center gap-4">
@@ -396,13 +407,40 @@ export default function HeroLandingPage() {
                 </motion.div>
               </DialogContent>
             </Dialog>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={feature4InView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              ref={feature4Ref}
+              className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background hover:bg-slate-300  hover:dark:bg-slate-500"
+            >
+              <Link
+                href="https://roadmap.cardano.org/en/voltaire/"
+                target="_blank"
+              >
+                <div className="mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50">
+                  <div className="flex items-center gap-2 text-md mb-2 text-xl font-semibold text-zinc-900 dark:text-slate-50 md:text-3xl">
+                    <Users /> Governance{" "}
+                  </div>
+                </div>
+                <p className="text-gray-600 dark:text-gray-400">
+                  The Voltaire era of Cardano will provide the final pieces
+                  required for the Cardano network to become a self-sustaining
+                  system. With the introduction of a voting and treasury system,
+                  network participants will be able to use their stake and
+                  voting rights to influence the future development of the
+                  network.
+                </p>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </section>
       <motion.div
         initial={{ opacity: 1, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
         className="h-24 bg-gradient-to-b from-gray-100 to-gray-200 shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
       ></motion.div>
     </div>

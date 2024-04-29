@@ -7,7 +7,6 @@ import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
 import { FileText, Loader2, Trash2Icon, TrashIcon } from "lucide-react"
-import { useTheme } from "next-themes"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -19,16 +18,16 @@ import PDFViewer from "./PdfViewer"
 import { getPreSignedUrl, imgUrlToBase64 } from "./actions"
 import { Badge } from "./ui/badge"
 
-const preSignedUrlCache = new Map()
-async function getPreSignedUrlMemoized(key) {
-  if (preSignedUrlCache.has(key)) {
-    return preSignedUrlCache.get(key)
-  }
+// const preSignedUrlCache = new Map()
+// async function getPreSignedUrlMemoized(key) {
+//   if (preSignedUrlCache.has(key)) {
+//     return preSignedUrlCache.get(key)
+//   }
 
-  const preSignedUrl = await getPreSignedUrl(key)
-  preSignedUrlCache.set(key, preSignedUrl)
-  return preSignedUrl
-}
+//   const preSignedUrl = await getPreSignedUrl(key)
+//   preSignedUrlCache.set(key, preSignedUrl)
+//   return preSignedUrl
+// }
 
 const RecipesMenu = ({
   searchResults,
@@ -46,7 +45,6 @@ const RecipesMenu = ({
   const [isConfirmPreviewDialogOpen, setIsConfirmPreviewDialogOpen] =
     useState(false)
   const [progress, setProgress] = useState(0)
-  const { theme } = useTheme()
 
   const handlePreviewPDF = async () => {
     setProgress(0)
@@ -184,9 +182,9 @@ const RecipesMenu = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="pt-1 relative flex h-full flex-row flex-wrap justify-between gap-2 px-4 md:container">
+    <div className="relative flex h-full flex-row flex-wrap justify-between gap-2 px-4 pt-1 md:container">
       {searchResults.count > 0 ? (
-        <Badge variant={"outline"} className="text-sm sm:text-base">
+        <Badge variant={""} className=" text-sm sm:text-base">
           Found {searchResults.count}
           {searchResults.count === 1 ? " recipe" : " recipes"}
         </Badge>

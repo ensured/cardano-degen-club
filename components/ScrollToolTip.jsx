@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react"
 import { CSSTransition } from "react-transition-group"
 
-const ScrollTooltip = ({ currentCardIndex, totalCards }) => {
+const ScrollTooltip = ({ currentCardIndex, totalCards, totalResults }) => {
   const [showTooltip, setShowTooltip] = useState(false)
-  const [trigger, setTrigger] = useState(false)
   const tooltipRef = useRef(null)
 
   useEffect(() => {
@@ -13,7 +12,6 @@ const ScrollTooltip = ({ currentCardIndex, totalCards }) => {
     } else {
       setShowTooltip(false)
     }
-    setTrigger(true) // Trigger CSS transition
     const handleScroll = () => {
       const isScrolled = window.scrollY > MIN_VISIBILITY_THRESHOLD
       setShowTooltip(isScrolled)
@@ -23,24 +21,18 @@ const ScrollTooltip = ({ currentCardIndex, totalCards }) => {
     return () => {
       window.removeEventListener("scroll", handleScroll)
     }
-  }, [totalCards]) // Re-run effect whenever totalCards changes
+  }, [totalCards])
 
   return (
     <CSSTransition
       in={showTooltip}
-      timeout={200}
+      timeout={50}
       classNames="zoom-tooltip pointer-events-none"
       unmountOnExit
-      onExited={() => setTrigger(false)} // Reset trigger state after animation
-      nodeRef={tooltipRef} // Add ref to the CSSTransition
+      nodeRef={tooltipRef}
     >
-      <div
-        ref={tooltipRef} // Add ref to the div
-        className="pointer-events-none fixed inset-x-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-white shadow-inner shadow-sky-500/80"
-      >
-        <div className="pointer-events-noneflex text-sm transition-opacity duration-500">
-          {currentCardIndex}/{totalCards}
-        </div>
+      <div className="fixed inset-x-2 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-xs text-white shadow-inner shadow-sky-500/80">
+        {currentCardIndex}/{totalCards} {/* /{totalResults} */}
       </div>
     </CSSTransition>
   )

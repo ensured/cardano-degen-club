@@ -46,14 +46,16 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
       {/* Background Image component */}
 
       <div
-        className="fixed left-0 top-0 z-10 h-1 rounded-lg bg-sky-600"
+        className="fixed left-0 top-0 z-10 h-0.5 rounded-r-lg bg-gradient-to-r from-indigo-300 to-indigo-800"
         style={{ width: `${scrollProgress}%` }}
       ></div>
 
-      <ScrollTooltip
+      {/* Include the ScrollTooltip component */}
+      {/* <ScrollTooltip
         currentCardIndex={currentCardIndex}
         totalCards={searchResults.hits.length}
-      />
+        totalResults={searchResults.count}
+      /> */}
 
       <div className="my-1 flex items-center justify-center rounded-md py-2">
         <CardTitle className="text-xl text-slate-50 md:text-2xl">
@@ -61,7 +63,6 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         </CardTitle>
       </div>
 
-      {/* Include the ScrollTooltip component */}
       <RecipeSearchForm
         setSuggestions={setSuggestions}
         suggestions={suggestions}
