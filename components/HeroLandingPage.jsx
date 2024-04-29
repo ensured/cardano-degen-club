@@ -8,6 +8,7 @@ import Link from "next/link"
 import { DividerHorizontalIcon } from "@radix-ui/react-icons"
 import { motion } from "framer-motion"
 import {
+  ArrowRight,
   CornerLeftDown,
   Drumstick,
   ExternalLink,
@@ -82,21 +83,21 @@ export default function HeroLandingPage() {
   return (
     <div className="bg-gray-100 dark:bg-slate-800">
       <motion.section
-        initial={{ opacity: 0, y: 50, scale: 0.5 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
+        initial={{ opacity: 0, y: 0, scale: 0.45 }}
+        animate={{ opacity: 1, y: 35, scale: 1 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
         className=" bg-gray-100 pt-10 opacity-0 dark:bg-gray-800 "
       >
         <div className="md:container mx-auto px-6">
           <div className="flex flex-col items-center space-y-4 text-center">
             <motion.div className="space-y-2">
-              <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:pb-8 pb-3 ">
+              <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:pb-8">
                 <Link href={"https://cardano.org/"}>
                   <Icons.ada className="h-20 w-20 text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:h-24 md:w-24 transition-all " />
                 </Link>
                 <div
                   className={cn(
-                    "flex flex-col select-none max-w-lg text-xl font-bold tracking-tight text-[rgb(255,118,118)] sm:text-2xl md:text-3xl lg:text-4xl ",
+                    "flex flex-col select-none max-w-lg text-3xl font-bold tracking-tight text-[rgb(255,118,118)] sm:text-4xl md:text-5xl lg:text-5xl ",
                     chivo.className
                   )}
                 >
@@ -105,10 +106,10 @@ export default function HeroLandingPage() {
                 </div>
               </div>
 
-              <p className="text-md text-gray-600 dark:text-gray-400 md:text-lg lg:text-lg select-none">
+              <div className="p-4 text-lg md:text-2xl flex flex-col justify-center items-center max-w-[520px] mx-auto">
                 Unlock the potential of the future internet while also
                 safeguarding against inflation.
-              </p>
+              </div>
             </motion.div>
             <Link
               href="/cardano-links"
@@ -116,32 +117,28 @@ export default function HeroLandingPage() {
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              <motion.div className="container rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary">
-                {" "}
-                <Button
-                  variant="link"
-                  className="relative h-auto text-xl text-sky-500 dark:text-slate-50 md:text-2xl "
-                >
+              <motion.div className="max-w-[600px] p-6">
+                <div className="relative left-2 mr-6 ">
                   {isHovered && (
-                    <span className="absolute -right-4">
-                      <ExternalLink />
+                    <span className="animate-fadeIn absolute -right-8 top-2">
+                      <ArrowRight />
                     </span>
-                  )}
-                  Explore the new global financial operating system
-                </Button>
-                <p className="flex justify-center text-sm text-gray-600 dark:text-gray-400">
-                  Dive into our curated collection of Cardano resources and
-                  start your journey today
-                </p>
+                  )}{" "}
+                  <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black "></span>
+                  <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] px-3 py-1 text-base font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(235,103,103)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+                    Explore the new global financial operating system by diving
+                    into our curated collection of Cardano resources.
+                  </span>
+                </div>
               </motion.div>
             </Link>
 
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 p-2">
               <motion.div
                 className="max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={title1InView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
+                initial={{ opacity: 0 }}
+                animate={title1InView ? { opacity: 1 } : {}}
+                transition={{ duration: 1, ease: "easeInOut" }}
                 ref={title1Ref}
               >
                 Cardano restores trust to global systems - creating, through
@@ -151,9 +148,9 @@ export default function HeroLandingPage() {
               </motion.div>
               <motion.div
                 className="container max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={title2InView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
+                initial={{ opacity: 0 }}
+                animate={title2InView ? { opacity: 1 } : {}}
+                transition={{ duration: 1, ease: "easeInOut" }}
                 ref={title2Ref}
               >
                 Cardano brings a new standard in technology - open and inclusive
@@ -164,9 +161,9 @@ export default function HeroLandingPage() {
             <div className="grid grid-cols-1 gap-2 p-2">
               <motion.div
                 className="flex flex-col max-w-[960px] gap-4 rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={title3InView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
+                initial={{ opacity: 0 }}
+                animate={title3InView ? { opacity: 1 } : {}}
+                transition={{ duration: 1, ease: "easeInOut" }}
                 ref={title3Ref}
               >
                 <div className="text-2xl md:text-3xl">
@@ -192,13 +189,13 @@ export default function HeroLandingPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
           className="h-16 bg-gradient-to-b from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
           className="h-16 bg-gradient-to-t from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
@@ -208,7 +205,7 @@ export default function HeroLandingPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
             animate={keyFeaturesInView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.6, ease: "easeInOut" }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
             ref={keyFeaturesRef}
             className="h-20 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl "
           >
@@ -218,7 +215,7 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={feature1InView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
               ref={feature1Ref}
               className="rounded-lg border-2 border-sky-300 bg-slate-200 p-6 shadow-lg dark:bg-background"
             >
