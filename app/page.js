@@ -1,3 +1,5 @@
+import { DividerVerticalIcon } from "@radix-ui/react-icons"
+
 import HeroLandingPage from "../components/HeroLandingPage"
 
 export const metadata = {
@@ -5,9 +7,5 @@ export const metadata = {
 }
 
 export default function IndexPage() {
-  return (
-    <div className="overflow-x-clip">
-      <HeroLandingPage />
-    </div>
-  )
+  return <HeroLandingPage />
 }

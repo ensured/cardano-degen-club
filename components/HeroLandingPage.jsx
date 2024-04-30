@@ -35,6 +35,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+import Particlez from "./Particlez"
 import { Icons } from "./icons"
 
 const chivo = Chivo({
@@ -82,6 +83,9 @@ export default function HeroLandingPage() {
 
   return (
     <div className="bg-gray-100 dark:bg-slate-800">
+      <div className="absolute z-10 opacity-20 right-0 top-0 w-48 px-4 py-2">
+        <Particlez />
+      </div>
       <motion.section
         initial={{ opacity: 0, y: 0, scale: 0.45 }}
         animate={{ opacity: 1, y: 35, scale: 1 }}
@@ -89,7 +93,7 @@ export default function HeroLandingPage() {
         className=" bg-gray-100 pt-10 opacity-0 dark:bg-gray-800 "
       >
         <div className="md:container mx-auto px-6">
-          <div className="flex flex-col items-center space-y-4 text-center">
+          <div className="flex flex-col items-center space-y-4 text-center select-none">
             <motion.div className="space-y-2">
               <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:pb-8">
                 <Link href={"https://cardano.org/"}>
@@ -133,7 +137,7 @@ export default function HeroLandingPage() {
               </motion.div>
             </Link>
 
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 p-2">
+            <div className="select-none grid grid-cols-1 gap-2 md:grid-cols-2 p-2">
               <motion.div
                 className="max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
                 initial={{ opacity: 0 }}
@@ -147,7 +151,7 @@ export default function HeroLandingPage() {
                 enterprises to grow.{" "}
               </motion.div>
               <motion.div
-                className="container max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+                className="select-none container max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
                 initial={{ opacity: 0 }}
                 animate={title2InView ? { opacity: 1 } : {}}
                 transition={{ duration: 1, ease: "easeInOut" }}
@@ -160,7 +164,7 @@ export default function HeroLandingPage() {
             </div>
             <div className="grid grid-cols-1 gap-2 p-2">
               <motion.div
-                className="flex flex-col max-w-[960px] gap-4 rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+                className="select-none flex flex-col max-w-[960px] gap-4 rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
                 initial={{ opacity: 0 }}
                 animate={title3InView ? { opacity: 1 } : {}}
                 transition={{ duration: 1, ease: "easeInOut" }}
@@ -199,8 +203,7 @@ export default function HeroLandingPage() {
           className="h-16 bg-gradient-to-t from-gray-100  to-white shadow-xl shadow-secondary dark:from-gray-800 dark:to-background dark:shadow-none"
         ></motion.div>
       </motion.section>
-
-      <section className="bg-gray-100 py-12 dark:bg-gray-800">
+      <section className="bg-gray-100 py-12 dark:bg-gray-800 select-none">
         <div className="md:container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.7 }}
