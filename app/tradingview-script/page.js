@@ -2,6 +2,7 @@ import PrismData from "@/components/PrismData"
 import Tabz from "@/components/Tabz"
 
 import "./prism.css"
+import Link from "next/link"
 
 export const metadata = {
   title: "TradingView Script",
@@ -15,7 +16,15 @@ const Page = () => {
       </p>
 
       <div className="mb-2">
-        <p>1. Open TradingView chart </p>
+        <p>
+          1. Open{" "}
+          <Link
+            href="https://www.tradingview.com/chart/?symbol=COINBASE%3AADAUSD"
+            className="text-zinc-800 underline dark:hover:text-zinc-200"
+          >
+            TradingView chart
+          </Link>
+        </p>
         <p> 2. Open browser console (F12)</p>
       </div>
       <div className="mb-2">
