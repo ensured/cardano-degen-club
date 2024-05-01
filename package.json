@@ -49,6 +49,7 @@
     "buffer": "^6.0.3",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
+    "debounce": "^2.0.0",
     "express-rate-limit": "^7.2.0",
     "firebase": "^10.11.0",
     "framer-motion": "^11.0.24",
