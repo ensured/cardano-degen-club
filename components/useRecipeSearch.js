@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import debounce from "debounce"
 import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
@@ -58,7 +59,9 @@ const useRecipeSearch = () => {
 
   useEffect(() => {
     const getFavs = async () => {
+      console.log("Client: getting favorites")
       await fetchFavorites()
+      console.log("Client: got favorites")
     }
     getFavs()
   }, [])
@@ -262,18 +265,23 @@ const useRecipeSearch = () => {
     }
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
-  const handleInputChange = async (e) => {
+  const handleInputChange = (e) => {
     const newInput = e.target.value
     setInput(newInput)
-    router.replace(`?q=${newInput}`)
-    if (newInput.length > 1) {
-      const { data } = await fetch(
-        `/api/search/autocomplete?q=${newInput}`
-      ).then((res) => res.json())
-      setSuggestions(data)
-    } else if (newInput.length === 0) {
-      setSuggestions([])
-    }
+
+    // Debounced search using useDebounce hook
+    const debouncedSearch = debounce(async (value) => {
+      if (value.length > 1) {
+        const { data } = await fetch(
+          `/api/search/autocomplete?q=${value}`
+        ).then((res) => res.json())
+        setSuggestions(data)
+      } else if (value.length === 0) {
+        setSuggestions([])
+      }
+    }, 400) // Adjust delay (in milliseconds) as needed
+
+    debouncedSearch(newInput) // Call debounced search with newInput
   }
 
   const handleStarIconHover = (index) => () => {

@@ -1,11 +1,7 @@
-import { Loader2 } from "lucide-react"
+import CustomLoader2 from "@/components/CustomLoader2"
 
 const Loading = () => {
-  return (
-    <div className="relative flex h-[86vh] flex-row items-center justify-center gap-2 ">
-      <Loader2 className="animate-spin" />
-    </div>
-  )
+  return <CustomLoader2 />
 }
 
 export default Loading

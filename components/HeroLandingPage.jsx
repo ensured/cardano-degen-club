@@ -121,7 +121,7 @@ export default function HeroLandingPage() {
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
             >
-              <motion.div className="max-w-[600px] p-6">
+              <motion.div className="max-w-[600px] p-6 mb-12">
                 <div className="relative left-2 mr-6 ">
                   {isHovered && (
                     <span className="animate-fadeIn absolute -right-8 top-2">
