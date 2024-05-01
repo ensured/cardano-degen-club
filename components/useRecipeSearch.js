@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import debounce from "debounce"
+import _debounce from "lodash/debounce"
 import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
@@ -265,23 +266,25 @@ const useRecipeSearch = () => {
     }
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
-  const handleInputChange = (e) => {
+  const handleAutoCompleteDebounced = useCallback(
+    _debounce(async (newInput) => {
+      const { data } = await fetch(
+        `/api/search/autocomplete?q=${newInput}`
+      ).then((res) => res.json())
+      setSuggestions(data)
+    }, 300), // Debounce with 300ms delay
+    [] // Empty dependency array since there are no dependencies
+  )
+
+  const handleInputChange = async (e) => {
     const newInput = e.target.value
     setInput(newInput)
-
-    // Debounced search using useDebounce hook
-    const debouncedSearch = debounce(async (value) => {
-      if (value.length > 1) {
-        const { data } = await fetch(
-          `/api/search/autocomplete?q=${value}`
-        ).then((res) => res.json())
-        setSuggestions(data)
-      } else if (value.length === 0) {
-        setSuggestions([])
-      }
-    }, 400) // Adjust delay (in milliseconds) as needed
-
-    debouncedSearch(newInput) // Call debounced search with newInput
+    router.replace(`?q=${newInput}`)
+    if (newInput.length > 1) {
+      await handleAutoCompleteDebounced(newInput) // Call the debounced function
+    } else if (newInput.length === 0) {
+      setSuggestions([])
+    }
   }
 
   const handleStarIconHover = (index) => () => {
