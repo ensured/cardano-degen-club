@@ -272,7 +272,7 @@ const useRecipeSearch = () => {
         `/api/search/autocomplete?q=${newInput}`
       ).then((res) => res.json())
       setSuggestions(data)
-    }, 300), // Debounce with 300ms delay
+    }, 150), // Debounce with 100ms delay
     [] // Empty dependency array since there are no dependencies
   )
 
