@@ -1,11 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { Menu } from "lucide-react"
 
-import { SheetClose, SheetContent } from "./SheetContent"
+import { SheetContent } from "./SheetContent"
 import { ThemeToggle } from "./theme-toggle"
 import { Button } from "./ui/button"
 import { SelectSeparator } from "./ui/select"

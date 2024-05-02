@@ -2,6 +2,8 @@ import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import MemoryCache from "memory-cache"
 
+export const runtime = "edge"
+
 const RECIPIES_FETCH_TIMEOUT_MS = 1000
 const RECIPES_FETCH_NEW_PAGE_SLOWDOWN_TIMEOUT_MS = 200
 
@@ -9,8 +11,6 @@ const getUserIP = async () => {
   const ip = headers().get("x-forwarded-for")
   return ip
 }
-
-export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
   const forwardedFor = await getUserIP()
