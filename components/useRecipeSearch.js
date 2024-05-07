@@ -60,9 +60,7 @@ const useRecipeSearch = () => {
 
   useEffect(() => {
     const getFavs = async () => {
-      console.log("Client: getting favorites")
       await fetchFavorites()
-      console.log("Client: got favorites")
     }
     getFavs()
   }, [])
@@ -75,7 +73,6 @@ const useRecipeSearch = () => {
           setIsRecipeDataLoading(true)
 
           const res = await fetch(`/api/search?q=${q}`)
-          console.log("random search done.")
 
           const data = await res.json()
           if (data.success === false) {
@@ -303,7 +300,6 @@ const useRecipeSearch = () => {
   const removeFromFavorites = async (recipeLink, name) => {
     try {
       const newFavorites = { ...favorites }
-      console.log(newFavorites[recipeLink])
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
       const removeFav = removeFavorite(extractRecipeId(recipeLink)) // server action
@@ -347,7 +343,6 @@ const useRecipeSearch = () => {
       const newFavorites = { ...favorites }
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
-      console.log(recipeLink)
       await removeFavorite(extractRecipeId(recipeLink)) // server action
     } else {
       try {

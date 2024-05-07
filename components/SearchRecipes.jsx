@@ -3,6 +3,7 @@
 import { useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useWindowSize } from "@uidotdev/usehooks"
 // import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/server"
 import { Loader2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
@@ -41,6 +42,8 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
     isRecipeDataLoading,
   } = useRecipeSearch()
 
+  const { width, height } = useWindowSize()
+
   return (
     <div className="relative flex w-full flex-col p-2">
       {/* Background Image component */}
@@ -57,12 +60,15 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         totalResults={searchResults.count}
       /> */}
 
-      <div className="my-1 flex items-center justify-center rounded-md py-2">
-        <CardTitle className="text-xl text-slate-50 md:text-2xl">
-          Recipe Fren
-        </CardTitle>
+      <div className="flex mb-2 flex-col items-center justify-center gap-1 text-xl text-slate-50 md:text-2xl">
+        <Image
+          src={"/logo.jpg"}
+          alt="recipe fren logo"
+          className="rounded-2xl"
+          width={width < 768 ? 120 : 150}
+          height={width < 768 ? 120 : 150}
+        />
       </div>
-
       <RecipeSearchForm
         setSuggestions={setSuggestions}
         suggestions={suggestions}
@@ -87,7 +93,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         loading={loading}
         isRecipeDataLoading={isRecipeDataLoading}
       />
-      <div className="fixed inset-x-0 top-0 -z-20 h-full w-full overflow-hidden">
+      {/* <div className="fixed inset-x-0 top-0 -z-20 h-full w-full overflow-hidden">
         <Image
           src={"/recipe-fren-bg.jpg"}
           alt="recipe background"
@@ -95,7 +101,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
           className=" object-cover"
           sizes="100vw"
         />
-      </div>
+      </div> */}
 
       {/* loading spinner in the center of the page */}
       {loading ||

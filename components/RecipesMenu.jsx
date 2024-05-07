@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { FileText, Loader2, Trash2Icon, TrashIcon } from "lucide-react"
+import { FileText, Trash2Icon, TrashIcon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -15,19 +15,8 @@ import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
-import { getPreSignedUrl, imgUrlToBase64 } from "./actions"
+import { imgUrlToBase64 } from "./actions"
 import { Badge } from "./ui/badge"
-
-// const preSignedUrlCache = new Map()
-// async function getPreSignedUrlMemoized(key) {
-//   if (preSignedUrlCache.has(key)) {
-//     return preSignedUrlCache.get(key)
-//   }
-
-//   const preSignedUrl = await getPreSignedUrl(key)
-//   preSignedUrlCache.set(key, preSignedUrl)
-//   return preSignedUrl
-// }
 
 const RecipesMenu = ({
   searchResults,
@@ -35,8 +24,6 @@ const RecipesMenu = ({
   setFavorites,
   removeFromFavorites,
   loading,
-  userInfo,
-  isAuthenticated,
   isRecipeDataLoading,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
@@ -183,16 +170,15 @@ const RecipesMenu = ({
 
   return (
     <div className="relative flex h-full flex-row flex-wrap justify-between gap-2 px-4 pt-1 md:container">
+      {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
       {searchResults.count > 0 ? (
-        <Badge variant={""} className=" text-sm sm:text-base">
+        <Badge variant={"outline"}>
           Found {searchResults.count}
           {searchResults.count === 1 ? " recipe" : " recipes"}
         </Badge>
       ) : (
         <Badge variant={"outline"} className="invisible"></Badge>
       )}
-
-      {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
 
       <FavoritesSheet
         setFavorites={setFavorites}
@@ -284,7 +270,7 @@ const RecipesMenu = ({
               </Link>
             ))}
             {Object.keys(favorites).length > 0 && (
-              <div className="absolute bottom-0 right-16 p-1.5">
+              <div className="absolute bottom-0 right-16 py-1.5">
                 <DeleteAllAlert setFavorites={setFavorites}>
                   <Button
                     variant={"destructive"}

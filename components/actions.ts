@@ -19,9 +19,8 @@ import {
   s3Client,
 } from "../lib/s3"
 
-type Inputs = z.infer<typeof FeedbackFormSchema>
-
 const FEEDBACK_FORM_TIMEOUT_MS = 300000
+type Inputs = z.infer<typeof FeedbackFormSchema>
 function getCurrentShorthandDateTime() {
   const currentDate = new Date()
   const padded = (value: any) => (value < 10 ? `0${value}` : value)
@@ -191,7 +190,7 @@ export async function getFavorites() {
     const validMetadataAndUrls = metadataAndUrls.filter(
       (entry) => entry !== null
     )
-
+    revalidatePath("/recipe-fren")
     return validMetadataAndUrls
   } catch (error) {
     console.error("Error fetching favorite images:", error)
