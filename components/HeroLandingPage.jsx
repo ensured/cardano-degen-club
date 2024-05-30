@@ -110,36 +110,181 @@ export default function HeroLandingPage() {
                   <h1>made possible</h1>
                 </div>
               </div>
-              <div className="p-4 text-lg md:text-2xl flex flex-col justify-center items-center max-w-[520px] mx-auto">
+              <div className="pb-40 p-4 text-lg md:text-2xl flex flex-col justify-center items-center max-w-[520px] mx-auto">
                 Unlock the potential of the future internet while also
                 safeguarding against inflation.
               </div>
-              What is Web3?
+              <div className="flex flex-col justify-center items-center ">
+                <h1 className="text-4xl font-bold py-6">
+                  <div className="text-6xl md:text-7xl flex justify-center mb-10">
+                    🧠
+                  </div>{" "}
+                  Understanding Web3
+                </h1>
+
+                <div className="flex flex-col justify-center items-center max-w-[796px] mx-auto">
+                  <ul className="list-disc mb-2">
+                    <li className="mb-4">
+                      <span className="font-bold">Web1</span> started during the
+                      1990s, and it was a period marked by people connecting to
+                      the internet and reading what was there, but not
+                      publishing or contributing themselves.
+                    </li>
+                    <li className="mb-4">
+                      <span className="font-bold">Web2</span> came into being
+                      during the early 2000s with the rise of social media,
+                      faster internet speeds, and mobile devices. Web2 was a
+                      period marked by user generated content, targeted
+                      advertising, and corporate owned data.
+                    </li>
+                    <li className="mb-4">
+                      <span className="font-bold">Web3</span> is a new era of
+                      the internet that is currently emerging thanks to the
+                      power of blockchain technology. Web3 is marked by
+                      user-owned data, open-source software, decentralized
+                      platforms, property rights, collective action, digital
+                      money (cryptocurrencies), and interoperability.
+                    </li>
+                  </ul>
+                  <span>
+                    Web3 is attempting to solve many of the problems that arose
+                    during Web1 and Web2, and it will hopefully be yet another
+                    step in the direction of a digital world that works better
+                    for more people.{" "}
+                  </span>
+                </div>
+              </div>
             </motion.div>
 
-            <Link
-              href="/cardano-links"
-              className="select-none"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              <motion.div className="max-w-[600px] p-6 mb-12">
+            <motion.div>
+              <div className="overflow-auto mb-20">
+                <table className="min-w-full border border-gray-400 dark:border-gray-300">
+                  <tbody>
+                    <tr className="bg-zinc-200 dark:bg-zinc-900/60">
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-center">
+                          <span className="font-semibold">Web2</span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-center">
+                          <span className="font-semibold">Web3</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>Individual accounts for each website</span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>Sign in everywhere with 1 wallet/identity</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>
+                            Accounts have usernames and passwords set by the
+                            user
+                          </span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>
+                            Wallets have public addresses and private keys that
+                            are deterministic and not set by the user
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>
+                            User data is held and controlled by the website
+                            owner
+                          </span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>
+                            More user data is controlled by the user themself
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>No digital ownership or property rights</span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>Digital ownership and property rights</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>Not interoperable</span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>Highly interoperable</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>Walled gardens, hard to change platforms</span>
+                        </div>
+                      </td>
+                      <td className="border border-gray-300 p-4">
+                        <div className="text-left">
+                          <span>
+                            Open gardens, change platforms whenever you like
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+
+            <motion.div className="max-w-[600px] p-3">
+              <Link
+                href="/cardano-links"
+                className="select-none"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
                 <div className="relative left-2 mr-6 ">
                   {isHovered && (
                     <span className="animate-fadeIn absolute -right-8 top-2">
                       <ArrowRight />
                     </span>
-                  )}{" "}
+                  )}
                   <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
-                  <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-base font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
-                    Explore the new global financial operating system by diving
-                    into our curated collection of Cardano resources.
+                  <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+                    Download a Cardano wallet or just explore our official
+                    Cardano links here
                   </span>
                 </div>
-              </motion.div>
-            </Link>
+              </Link>
+            </motion.div>
 
-            <div className="select-none grid grid-cols-1 gap-2 md:grid-cols-2 p-2">
+            <div className="pt-20 select-none grid grid-cols-1 gap-2 md:grid-cols-2 p-2">
               <motion.div
                 className="max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
                 initial={{ opacity: 0 }}
