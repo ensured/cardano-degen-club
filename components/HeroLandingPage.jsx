@@ -42,6 +42,7 @@ const chivo = Chivo({
   subsets: ["latin"],
   display: "swap",
 })
+
 export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
   const [feature1Ref, feature1InView] = useInView({
@@ -109,12 +110,13 @@ export default function HeroLandingPage() {
                   <h1>made possible</h1>
                 </div>
               </div>
-
               <div className="p-4 text-lg md:text-2xl flex flex-col justify-center items-center max-w-[520px] mx-auto">
                 Unlock the potential of the future internet while also
                 safeguarding against inflation.
               </div>
+              What is Web3?
             </motion.div>
+
             <Link
               href="/cardano-links"
               className="select-none"
