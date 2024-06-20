@@ -1,25 +1,35 @@
 /* eslint-disable tailwindcss/classnames-order */
-"use client";
+"use client"
 
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
-import { useResizeObserver } from "@wojtekmaj/react-hooks";
-import { jsPDF } from "jspdf";
-import { Document, Page, pdfjs } from "react-pdf"; // Keep these for download functionality
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useResizeObserver } from "@wojtekmaj/react-hooks"
+import { jsPDF } from "jspdf"
+import { Document, Page, pdfjs } from "react-pdf"
 
-import "./PdfViewer.css";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { DownloadIcon, X } from "lucide-react";
-import { useWindowSize } from "@uidotdev/usehooks";
+import "./PdfViewer.css"
+import "react-pdf/dist/esm/Page/AnnotationLayer.css"
+import "react-pdf/dist/esm/Page/TextLayer.css"
+import { useWindowSize } from "@uidotdev/usehooks"
+import { DownloadIcon, X } from "lucide-react"
+import type { PDFDocumentProxy } from "pdfjs-dist"
+import { File } from "react-pdf/dist/cjs/shared/types"
 
-type PDFFile = string | File | null;
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import "pdfjs-dist/build/pdf.worker.mjs";
+
+
+const options = {
+  cMapUrl: "/cmaps/",
+  standardFontDataUrl: "/standard_fonts/",
+}
+
+const resizeObserverOptions = {}
+
+type PDFFile = string | File | null
 
 async function processBatch(
   batchIndex: number,
@@ -58,192 +68,210 @@ async function processBatch(
 }
 
 export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
-  const [file, setFile] = useState<PDFFile>(inputFile);
-  const [numPages, setNumPages] = useState<number>();
-  const [containerRef, setContainerRef] = useState<HTMLElement | null>(null);
-  const [containerWidth, setContainerWidth] = useState<number>();
-  const [filename, setFilename] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isSwitchChecked, setIsSwitchChecked] = useState(false);
+  const [file, setFile] = useState<PDFFile>(inputFile)
+  const [numPages, setNumPages] = useState<number>()
+  const [containerRef, setContainerRef] = useState<HTMLElement | null>(null)
+  const [containerWidth, setContainerWidth] = useState<number>()
+  const [filename, setFilename] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [isSwitchChecked, setIsSwitchChecked] = useState(false)
 
   const moveCursor = useCallback(async () => {
     if (inputRef.current) {
-      const inputLength = filename.length;
-      const pdfIndex = filename.lastIndexOf(".pdf");
+      const inputLength = filename.length
+      const pdfIndex = filename.lastIndexOf(".pdf")
 
       if (pdfIndex !== -1) {
         const cursorPosition = Math.min(
           inputRef.current.selectionStart ?? inputLength,
           pdfIndex
-        );
-        inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+        )
+        inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
       }
     }
-  }, [filename]);
+  }, [filename])
 
   useEffect(() => {
-    moveCursor();
-  }, [filename, moveCursor]);
+    moveCursor()
+  }, [filename, moveCursor])
 
-  const size = useWindowSize();
+  const size = useWindowSize()
 
   const onResize = useCallback<ResizeObserverCallback>((entries) => {
-    const [entry] = entries;
+    const [entry] = entries
 
     if (entry) {
-      setContainerWidth(entry.contentRect.width);
+      setContainerWidth(entry.contentRect.width)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    setFile(inputFile);
-  }, [inputFile]);
+    setFile(inputFile)
+  }, [inputFile])
 
-  useResizeObserver(containerRef, {}, onResize);
+  useResizeObserver(containerRef, resizeObserverOptions, onResize)
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>): void {
     try {
-      const { files } = event.target;
+      const { files } = event.target
+
       if (files && files[0]) {
-        setFile(files[0] || null);
+        setFile(files[0] || null)
       }
     } catch (e) {
-      console.error(e);
+      console.error(e)
     } finally {
-      inputRef.current?.focus();
+      inputRef.current?.focus()
+    }
+  }
+
+  function onDocumentLoadSuccess({
+    numPages: nextNumPages,
+  }: PDFDocumentProxy): void {
+    setNumPages(nextNumPages)
+    setTimeout(() => {
+      inputRef.current?.focus()
+      moveCursor()
+    }, 200)
+  }
+
+  // Function to handle download using jsPDF
+  async function handleDownload() {
+    if (file && numPages !== undefined) {
+      const doc = new jsPDF()
+      const batchSize = 10
+      const totalBatches = Math.ceil(numPages / batchSize)
+
+      const promises = []
+      for (let i = 0; i < totalBatches; i++) {
+        promises.push(processBatch(i, batchSize, numPages, doc, totalBatches))
+      }
+
+      try {
+        await Promise.all(promises)
+        let finalFilename = "Recipes-(Favorites)"
+        if (filename && filename.endsWith(".pdf")) {
+          finalFilename = filename.slice(0, -4) // Remove ".pdf" extension
+        }
+
+        if (isSwitchChecked) {
+          const date = new Date().toISOString().replace(/:/g, "-").slice(0, -5) // Format date
+          finalFilename += `--[${date}]`
+        }
+
+        finalFilename += ".pdf"
+
+        doc.save(finalFilename)
+      } catch (error) {
+        console.error("Error processing batches:", error)
+      }
     }
   }
 
   function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const { value } = event.target;
-    const newValue = value.replace(/\.pdf$/, "") + ".pdf";
+    const { value } = event.target
+    const newValue = value.replace(/\.pdf$/, "") + ".pdf"
 
     // Calculate the cursor position to be before the ".pdf" extension
-    const cursorPosition = newValue.lastIndexOf(".pdf");
+    const cursorPosition = newValue.lastIndexOf(".pdf")
 
-    setFilename(newValue);
+    setFilename(newValue)
 
     // Set the cursor position
     if (inputRef.current) {
-      inputRef.current.setSelectionRange(cursorPosition, cursorPosition);
+      inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
     }
   }
 
-  function handleSwitch() {
-    setIsSwitchChecked(!isSwitchChecked);
+  const handleSwitch = () => {
+    setIsSwitchChecked(!isSwitchChecked)
   }
 
-  // Download functionality using jsPDF (similar to previous code)
-  async function handleDownload() {
-    if (file && numPages !== undefined) {
-      const doc = new jsPDF();
-      const batchSize = 10;
-      const totalBatches = Math.ceil(numPages / batchSize);
+  if (!size.width || !size.height) return null
 
-      const promises = [];
-      for (let i = 0; i < totalBatches; i++) {
-        promises.push(processBatch(i, batchSize, numPages, doc, totalBatches));
-      }
-
-      try {
-        await Promise.all(promises);
-        let finalFilename = "Recipes-(Favorites)";
-        if (filename && filename.endsWith(".pdf")) {
-          finalFilename = filename.slice(0, -4); // Remove ".pdf" extension
-        }
-
-        if (isSwitchChecked) {
-          const date = new Date()
-            .toISOString()
-            .replace(/:/g, "-")
-            .slice(0, -5); // Format date
-            finalFilename += `--[${date}]`;
-          }
-  
-          finalFilename += ".pdf";
-  
-          doc.save(finalFilename);
-        } catch (error) {
-          console.error("Error processing batches:", error);
-        }
-      }
-    }
-  
-    if (!size.width || !size.height) return null;
-  
-    return (
-      <div>
-        <label htmlFor="file"></label>{" "}
-        <input onChange={onFileChange} type="file" hidden />
-        <div
-          ref={setContainerRef}
-          className={`absolute inset-x-0 top-0 z-40 shadow-md ${
-            file ? "border py-2 rounded-sm bg-background" : ""
-          }`}
-        >
-          {!file ||
-            (file !== null && (
-              <div className="flex flex-row justify-between items-center flex-wrap mb-2 pb-1">
-                <div className="flex gap-2 flex-wrap w-full">
-                  <div className="w-full flex justify-center gap-2">
-                    <Label htmlFor="append-datetime-switch">
-                      <div className="flex flex-col w-full items-center space-x-2">
-                        <Switch
-                          checked={isSwitchChecked}
-                          onCheckedChange={handleSwitch}
-                          id="append-datetime-switch"
-                        />
-                        <span className="text-center ">Append datetime?</span>
-                      </div>
-                    </Label>
-                    <Input
-                      type="text"
-                      placeholder="filename"
-                      value={filename}
-                      onChange={handleInputChange}
-                      ref={inputRef}
-                      className="w-40 mr-14 "
-                    />
-                  </div>
-  
-                  <div className="flex w-full justify-center items-center">
-                    <Button variant={"moon"} onClick={handleDownload}>
-                      <DownloadIcon
-                        size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
+  return (
+    <div>
+      <label htmlFor="file"></label>{" "}
+      <input onChange={onFileChange} type="file" hidden />
+      <div
+        ref={setContainerRef}
+        className={`absolute inset-x-0 top-0 z-40 shadow-md ${
+          file ? "border py-2 rounded-sm bg-background" : ""
+        }`}
+      >
+        {!file ||
+          (file !== null && (
+            <div className="flex flex-row justify-between items-center flex-wrap mb-2 pb-1">
+              <div className="flex gap-2 flex-wrap w-full">
+                <div className="w-full flex justify-center gap-2">
+                  <Label htmlFor="append-datetime-switch">
+                    <div className="flex flex-col w-full items-center space-x-2">
+                      <Switch
+                        checked={isSwitchChecked}
+                        onCheckedChange={handleSwitch}
+                        id="append-datetime-switch"
                       />
-                      <span className="ml-2 text-md md:text-3xl xl:md:text-3xl font-serif font-semibold">
-                        Download
-                      </span>
-                    </Button>
-                    <Button
-                      variant={"destructive"}
-                      className="absolute top-2 right-2"
-                      onClick={() => {
-                        if (file) {
-                          setFile(null);
-                        }
-                      }}
-                    >
-                      <X size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36} />
-                    </Button>
-                  </div>
+                      <span className="text-center ">Append datetime?</span>
+                    </div>
+                  </Label>
+                  <Input
+                    type="text"
+                    placeholder="filename"
+                    value={filename}
+                    onChange={handleInputChange}
+                    ref={inputRef}
+                    className="w-40 mr-14 "
+                  />
+                </div>
+
+                <div className="flex w-full justify-center items-center">
+                  <Button variant={"moon"} onClick={handleDownload}>
+                    <DownloadIcon
+                      size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
+                    />
+                    <span className="ml-2 text-md md:text-3xl xl:md:text-3xl font-serif font-semibold">
+                      Download
+                    </span>
+                  </Button>
+                  <Button
+                    variant={"destructive"}
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      if (file) {
+                        setFile(null)
+                      }
+                    }}
+                  >
+                    <X
+                      size={size.width < 520 ? 20 : size.width < 840 ? 28 : 36}
+                    />
+                  </Button>
                 </div>
               </div>
+            </div>
+          ))}
+        <Document
+          file={file}
+          noData={""}
+          onLoadSuccess={onDocumentLoadSuccess}
+          options={options}
+        >
+          {numPages !== undefined &&
+            Array.from(new Array(numPages), (el, index) => (
+              <Page
+                className={"rounded-sm"}
+                key={`page_${index + 1}`}
+                pageNumber={index + 1}
+                width={containerWidth}
+                canvasRef={(el) => {
+                  if (el) {
+                    el.id = `page_canvas_${index + 1}`
+                  }
+                }}
+              />
             ))}
-          {file && (
-            <Document file={file} options={{ cMapUrl: "/cmaps/", standardFontDataUrl: "/standard_fonts/" }}>
-              {numPages !== undefined &&
-                Array.from(new Array(numPages), (el, index) => (
-                  <Page
-                    className={"rounded-sm"}
-                    key={`page_${index + 1}`}
-                    pageNumber={index + 1}
-                  />
-                ))}
-            </Document>
-          )}
-        </div>
+        </Document>
       </div>
-    );
-  }
-  
+    </div>
+  )
+}
