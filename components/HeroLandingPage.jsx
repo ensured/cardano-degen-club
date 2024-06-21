@@ -47,11 +47,11 @@ export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
   const [cypherpunkBox, cypherpunkBoxInView] = useInView({
     triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
+    threshold: 0.45, // Adjust as needed
   })
   const [webTableRef, webTableInView] = useInView({
     triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
+    threshold: 0.3, // Adjust as needed
   })
 
   const [feature1Ref, feature1InView] = useInView({
@@ -93,7 +93,7 @@ export default function HeroLandingPage() {
 
   const [finishedContentRef, finishedContentInView] = useInView({
     triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
+    threshold: 0.4, // Adjust as needed
   })
 
   return (
