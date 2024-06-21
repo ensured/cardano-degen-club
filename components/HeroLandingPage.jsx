@@ -45,6 +45,15 @@ const chivo = Chivo({
 
 export default function HeroLandingPage() {
   const [isHovered, setIsHovered] = useState(false)
+  const [cypherpunkBox, cypherpunkBoxInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+  const [webTableRef, webTableInView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+
   const [feature1Ref, feature1InView] = useInView({
     triggerOnce: true,
     threshold: 0.5, // Adjust as needed
@@ -78,6 +87,11 @@ export default function HeroLandingPage() {
     threshold: 0.5, // Adjust as needed
   })
   const [title3Ref, title3InView] = useInView({
+    triggerOnce: true,
+    threshold: 0.5, // Adjust as needed
+  })
+
+  const [finishedContentRef, finishedContentInView] = useInView({
     triggerOnce: true,
     threshold: 0.5, // Adjust as needed
   })
@@ -156,7 +170,12 @@ export default function HeroLandingPage() {
               </div>
             </motion.div>
 
-            <motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={webTableInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              ref={webTableRef}
+            >
               <div className="overflow-auto mb-20">
                 <table className="min-w-full border border-gray-400 dark:border-gray-300">
                   <tbody>
@@ -262,23 +281,26 @@ export default function HeroLandingPage() {
               </div>
             </motion.div>
 
-            <motion.div className="max-w-[600px] p-3">
-              <Link
-                href="/cardano-links"
-                className="select-none"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-              >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={cypherpunkBoxInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.6, ease: "easeInOut" }}
+              ref={cypherpunkBox}
+              className="max-w-[600px] p-5 bg-zinc-900/20 rounded-md"
+            >
+              <div className="text-3xl md:text-4xl lg:text-5xl mt-1">
+                Crypto and the Cypherpunk Movement
+              </div>
+              <div className="md:text-lg sm:text-md text-sm px-6 py-4">
+                Rooted in the fervor of the early days of the internet, there is
+                a symbiotic relationship between the principles of the
+                Cypherpunk ideology and the evolution of digital currencies.
+              </div>
+              <Link href="/cardano-links" className="select-none">
                 <div className="relative left-2 mr-6 ">
-                  {isHovered && (
-                    <span className="animate-fadeIn absolute -right-8 top-2">
-                      <ArrowRight />
-                    </span>
-                  )}
                   <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
                   <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
-                    Download a Cardano wallet or just explore our official
-                    Cardano links here
+                    Learn more
                   </span>
                 </div>
               </Link>
@@ -357,7 +379,7 @@ export default function HeroLandingPage() {
             animate={keyFeaturesInView ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.4, ease: "easeInOut" }}
             ref={keyFeaturesRef}
-            className="h-20 text-center text-2xl font-bold text-zinc-900 dark:text-slate-50 md:text-3xl "
+            className="h-20 text-center text-3xl font-bold text-zinc-900 dark:text-slate-50 md:text-4xl "
           >
             Key Features
           </motion.div>
@@ -584,6 +606,43 @@ export default function HeroLandingPage() {
           </div>
         </div>
       </section>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={finishedContentInView ? { opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        ref={finishedContentRef}
+        className=" text-center font-bold text-zinc-900 dark:text-slate-50  "
+      >
+        <div className="text-3xl md:text-4xl ">
+          You are now ready to start exploring the ecosystem 👏{" "}
+        </div>
+        <div className="w-full flex p-5 justify-center items-center">
+          <Link
+            href="/cardano-links"
+            className="select-none"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <div className="relative left-2 mr-6 text-md">
+              {isHovered && (
+                <span className="animate-fadeIn absolute -right-8 top-2">
+                  <ArrowRight />
+                </span>
+              )}
+              <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
+              <span className="max-w-[420px] fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+                Download a Cardano wallet to get started and explore our
+                official Cardano links
+              </span>
+            </div>
+            <div className="text-sm flex w-full justify-center items-center text-gray-100/40 py-2">
+              Remember to always do your own research
+            </div>
+          </Link>
+        </div>
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 1, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
