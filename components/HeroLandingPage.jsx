@@ -112,11 +112,11 @@ export default function HeroLandingPage() {
             <motion.div className="space-y-2">
               <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:pb-8">
                 <Link href={"https://cardano.org/"}>
-                  <Icons.ada className="h-20 w-20 text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:h-24 md:w-24 transition-all " />
+                  <Icons.ada className=" text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:h-24 md:w-24 transition-all " />
                 </Link>
                 <div
                   className={cn(
-                    "flex flex-col select-none max-w-lg text-3xl font-bold tracking-tight text-[rgb(255,118,118)] sm:text-4xl md:text-5xl lg:text-5xl ",
+                    "flex flex-col select-none max-w-lg text-4xl font-bold tracking-tight text-[rgb(255,148,100)] sm:text-5xl md:text-5xl  ",
                     chivo.className
                   )}
                 >
@@ -124,16 +124,15 @@ export default function HeroLandingPage() {
                   <h1>made possible</h1>
                 </div>
               </div>
-              <div className="pb-40 p-4 text-lg md:text-2xl flex flex-col justify-center items-center max-w-[520px] mx-auto">
+              <div className="pb-20 p-4 text-lg md:text-2xl flex flex-col justify-center items-center max-w-[520px] mx-auto">
                 Unlock the potential of the future internet while also
                 safeguarding against inflation.
               </div>
               <div className="flex flex-col justify-center items-center ">
                 <h1 className="text-4xl font-bold py-6">
-                  <div className="text-6xl md:text-7xl flex justify-center mb-10">
-                    🧠
+                  <div className="text-4xl md:text-5xl flex flex-row justify-center">
+                    Understanding Web3
                   </div>{" "}
-                  Understanding Web3
                 </h1>
 
                 <div className="flex flex-col justify-center items-center max-w-[796px] mx-auto">
@@ -173,7 +172,7 @@ export default function HeroLandingPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={webTableInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.6, ease: "easeInOut" }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
               ref={webTableRef}
             >
               <div className="overflow-auto mb-20">
@@ -612,7 +611,7 @@ export default function HeroLandingPage() {
         animate={finishedContentInView ? { opacity: 1, scale: 1 } : {}}
         transition={{ duration: 0.4, ease: "easeInOut" }}
         ref={finishedContentRef}
-        className=" text-center font-bold text-zinc-900 dark:text-slate-50  "
+        className=" text-center font-bold text-zinc-900 dark:text-slate-50 md:px-4 px-2"
       >
         <div className="text-3xl md:text-4xl ">
           You are now ready to start exploring the ecosystem 👏{" "}
