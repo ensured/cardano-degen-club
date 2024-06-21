@@ -625,7 +625,7 @@ export default function HeroLandingPage() {
           <div className="w-full flex p-8 justify-center items-center">
             <div className="relative text-md">
               <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
-              <span className="max-w-[420px] fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+              <span className="max-w-[420px] fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100  hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
                 Download a Cardano wallet to get started and explore our
                 official Cardano links (we recommend Vespr wallet)
               </span>
