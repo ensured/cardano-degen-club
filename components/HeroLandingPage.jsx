@@ -295,7 +295,11 @@ export default function HeroLandingPage() {
                 a symbiotic relationship between the principles of the
                 Cypherpunk ideology and the evolution of digital currencies.
               </div>
-              <Link href="/cardano-links" className="select-none">
+              <Link
+                href="https://aquioxi.wixsite.com/blog/post/crypto-and-the-cypherpunk-movement"
+                target="_blank"
+                className="select-none"
+              >
                 <div className="relative left-2 mr-6 ">
                   <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
                   <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
@@ -620,7 +624,7 @@ export default function HeroLandingPage() {
           <div className="text-3xl md:text-4xl">
             You are now ready to start exploring the ecosystem 👏{" "}
           </div>
-          <div className="w-full flex p-5 justify-center items-center">
+          <div className="w-full flex p-5 m-5 justify-center items-center">
             <div className="relative left-2 mr-6 text-md">
               {isHovered && (
                 <span className="animate-fadeIn absolute -right-8 top-2">
