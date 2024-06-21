@@ -605,24 +605,22 @@ export default function HeroLandingPage() {
           </div>
         </div>
       </section>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.7 }}
-        animate={finishedContentInView ? { opacity: 1, scale: 1 } : {}}
-        transition={{ duration: 0.4, ease: "easeInOut" }}
-        ref={finishedContentRef}
-        className=" text-center font-bold text-zinc-900 dark:text-slate-50 md:px-4 px-2"
+      <Link
+        href="/cardano-links"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="text-3xl md:text-4xl ">
-          You are now ready to start exploring the ecosystem 👏{" "}
-        </div>
-        <div className="w-full flex p-5 justify-center items-center">
-          <Link
-            href="/cardano-links"
-            className="select-none"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.7 }}
+          animate={finishedContentInView ? { opacity: 1, scale: 1 } : {}}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+          ref={finishedContentRef}
+          className="text-center font-bold text-zinc-900 dark:text-slate-50 md:px-4 px-2"
+        >
+          <div className="text-3xl md:text-4xl">
+            You are now ready to start exploring the ecosystem 👏{" "}
+          </div>
+          <div className="w-full flex p-5 justify-center items-center">
             <div className="relative left-2 mr-6 text-md">
               {isHovered && (
                 <span className="animate-fadeIn absolute -right-8 top-2">
@@ -635,12 +633,12 @@ export default function HeroLandingPage() {
                 official Cardano links
               </span>
             </div>
-            <div className="text-sm flex w-full justify-center items-center text-gray-100/40 py-2">
-              Remember to always do your own research
-            </div>
-          </Link>
-        </div>
-      </motion.div>
+          </div>
+          <div className="text-sm  text-gray-100/40 py-2">
+            Remember to always do your own research
+          </div>
+        </motion.div>
+      </Link>
 
       <motion.div
         initial={{ opacity: 1, y: 30 }}
