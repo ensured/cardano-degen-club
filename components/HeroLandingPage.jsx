@@ -116,7 +116,7 @@ export default function HeroLandingPage() {
                 </Link>
                 <div
                   className={cn(
-                    "flex flex-col select-none max-w-lg text-4xl font-bold tracking-tight text-[rgb(255,148,100)] sm:text-5xl md:text-5xl  ",
+                    "flex flex-col select-none max-w-lg text-4xl font-bold tracking-tight text-[rgb(255,47,179)] sm:text-5xl md:text-5xl  ",
                     chivo.className
                   )}
                 >
@@ -135,7 +135,7 @@ export default function HeroLandingPage() {
                   </div>{" "}
                 </h1>
 
-                <div className="flex flex-col justify-center items-center max-w-[796px] mx-auto">
+                <div className="px-8 py-4 flex flex-col justify-center items-center max-w-[796px] mx-auto">
                   <ul className="list-disc mb-2">
                     <li className="mb-4">
                       <span className="font-bold">Web1</span> started during the
@@ -303,7 +303,7 @@ export default function HeroLandingPage() {
                   target="_blank"
                   className="select-none"
                 >
-                  <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+                  <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100  hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
                     Learn more
                   </span>
                 </Link>
@@ -610,31 +610,33 @@ export default function HeroLandingPage() {
           </div>
         </div>
       </section>
-      <Link href="/cardano-links">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={finishedContentInView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-          ref={finishedContentRef}
-          className="text-center font-bold text-zinc-900 dark:text-slate-50 md:px-4 px-2"
-        >
-          <div className="text-3xl md:text-4xl">
-            You are now ready to start exploring the ecosystem 👏{" "}
-          </div>
-          <div className="w-full flex p-5 m-5 justify-center items-center">
-            <div className="relative left-2 mr-6 text-md">
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.7 }}
+        animate={finishedContentInView ? { opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        ref={finishedContentRef}
+        className="text-center font-bold text-zinc-900 dark:text-slate-50 md:px-4 px-2"
+      >
+        <div className="text-3xl md:text-4xl px-4 select-none">
+          You are now ready to start exploring the ecosystem 👏{" "}
+        </div>
+        <Link href="/cardano-links">
+          <div className="w-full flex p-8 justify-center items-center">
+            <div className="relative text-md">
               <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
-              <span className="max-w-[420px] fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,118,118)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+              <span className="max-w-[420px] fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:bg-[rgb(245,108,108)] hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
                 Download a Cardano wallet to get started and explore our
-                official Cardano links
+                official Cardano links (we recommend Vespr wallet)
               </span>
             </div>
           </div>
-          <div className="text-sm  text-gray-100/40 py-2">
-            Remember to always do your own research
-          </div>
-        </motion.div>
-      </Link>
+        </Link>
+
+        <div className="text-sm  text-gray-100/40 py-2 select">
+          Remember to always do your own research
+        </div>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 1, y: 30 }}
