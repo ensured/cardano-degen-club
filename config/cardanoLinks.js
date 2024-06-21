@@ -1,5 +1,9 @@
 const officialCardano = [
   {
+    name: "Cardano Explorer",
+    url: "https://beta.explorer.cardano.org/en/",
+  },
+  {
     name: "Cardano Foundation",
     url: "https://cardanofoundation.org/",
   },
