@@ -61,6 +61,15 @@ const wallets = [
 ]
 
 const dexs = [
+  { name: "@AdaMarkets", url: "https://app.ada.markets/" },
+  {
+    name: "@SundaeSwap",
+    url: "https://app.sundae.fi/",
+  },
+  {
+    name: "@GeniusyieldO",
+    url: "https://app.geniusyield.co/",
+  },
   {
     name: "@MinswapDEX",
     url: "https://minswap.org/",
@@ -69,10 +78,7 @@ const dexs = [
     name: "@wingriderscom",
     url: "https://www.wingriders.com/",
   },
-  {
-    name: "@SundaeSwap",
-    url: "https://sundae.fi/",
-  },
+
   {
     name: "@VyFiOfficial",
     url: "https://docs.vyfi.io/",
@@ -119,11 +125,10 @@ const blockChainExplorer = [
     name: "A blockchain explorer like you've never seen before.",
     twitter: "https://twitter.com/oravecpeter",
     url: "https://eutxo.org/",
-  }
+  },
 ]
 
 const chartsAnalytics = [
-
   {
     twitter: "https://twitter.com/EdinburghUni",
     name: "Edinburgh Decentralization Index (EDI)",
@@ -193,7 +198,7 @@ const lendingBorrowing = [
   },
 ]
 
-const Aggregators = [
+const dexAggregators = [
   {
     name: "@AdaMarkets",
     url: "https://ada.markets/",
@@ -391,7 +396,7 @@ const allLinks = {
   marketplaces,
   chartsAnalytics,
   lendingBorrowing,
-  Aggregators,
+  dexAggregators,
   stablecoins,
   privacy,
   blockChainExplorer,
