@@ -33,6 +33,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "blog.iagon.com",
       },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+      },
     ],
   },
 }

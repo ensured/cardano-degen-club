@@ -65,6 +65,7 @@
     "pdfjs-dist": "^4.3.136",
     "prismjs": "^1.29.0",
     "punycode": "^2.3.1",
+    "puppeteer": "^22.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.0",

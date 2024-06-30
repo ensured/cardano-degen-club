@@ -1,5 +1,6 @@
 "use server"
 
+import puppeteer from "puppeteer"
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
@@ -324,5 +325,50 @@ export const imgUrlToBase64 = async (url: string) => {
   } catch (error) {
     console.error("Error downloading image:", error)
     return null
+  }
+}
+
+
+
+export async function scrapePickleballVideos() {
+  const browser = await puppeteer.launch({
+    // headless: false,
+    // slowMo: 80,
+    // args: ["--window-size=1920,1080"],
+  })
+
+  const page = await browser.newPage()
+  try{
+    await page.goto("https://www.youtube.com/@PPAtour/videos")
+    // Get most recent youtube videos from #thumbnail id
+    const videos = await page.evaluate(() => {
+      const thumbnails = Array.from(
+        document.querySelectorAll("#thumbnail")
+      )
+      return thumbnails.map((thumbnail) => {
+        return {
+          title: thumbnail.querySelector(".title")?.textContent,
+          url: thumbnail.querySelector("a")?.href,
+        }
+      })
+    })
+    // filter empty videos from array
+    const filteredVideos = videos.filter((video) => video.url)
+    const videoUrls = filteredVideos.map((video) => video.url)
+    
+ 
+    // extract the video ids
+    const videoIds = videoUrls.map((videoUrl) => {
+      // slice the end id
+      const videoId = videoUrl?.slice(-11)
+      return videoId
+    })
+    return videoIds
+  }
+  catch (error){
+    console.error("Error scraping pickleball videos:", error)
+  }
+  finally {
+    await page.close()
   }
 }
