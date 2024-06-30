@@ -285,7 +285,7 @@ export default function HeroLandingPage() {
               animate={cypherpunkBoxInView ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.6, ease: "easeInOut" }}
               ref={cypherpunkBox}
-              className="dark:bg-zinc-900/20 bg-zinc-300/50 rounded-md p-6"
+              className="dark:bg-zinc-900/20 bg-zinc-300/50 rounded-md p-6 max-w-[38rem]"
             >
               <div className="text-3xl md:text-4xl lg:text-5xl mt-1">
                 Crypto and the Cypherpunk Movement
@@ -297,13 +297,13 @@ export default function HeroLandingPage() {
               </div>
 
               <div className="relative left-2 mr-6 ">
-                <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
+                <span className="absolute top-0 left-0 mt-1 ml-1 size-full rounded bg-black dark:bg-white"></span>
                 <Link
                   href="https://aquioxi.wixsite.com/blog/post/crypto-and-the-cypherpunk-movement"
                   target="_blank"
-                  className="select-none"
+                  className="select-none "
                 >
-                  <span className="fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100  hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+                  <span className=" fold-bold relative inline-block size-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950 px-3  py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:text-gray-900  hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
                     Learn more
                   </span>
                 </Link>
