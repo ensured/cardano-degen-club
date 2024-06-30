@@ -8,55 +8,55 @@ import VideoCard from "@/components/VideoCard"
 import { scrapePickleballVideos } from "@/components/actions"
 
 const Page = () => {
-  const [pickleballVideos, setPickleballVideos] = useState([])
-  const [visibleVideos, setVisibleVideos] = useState([])
-  const [loading, setLoading] = useState(false)
-  const observer = useRef()
+  // const [pickleballVideos, setPickleballVideos] = useState([])
+  // const [visibleVideos, setVisibleVideos] = useState([])
+  // const [loading, setLoading] = useState(false)
+  // const observer = useRef()
 
-  const loadMoreVideos = useCallback(() => {
-    const newVisibleVideos = pickleballVideos.slice(
-      visibleVideos.length,
-      visibleVideos.length + 10
-    )
-    setVisibleVideos((prev) => [...prev, ...newVisibleVideos])
-  }, [pickleballVideos, visibleVideos.length])
+  // const loadMoreVideos = useCallback(() => {
+  //   const newVisibleVideos = pickleballVideos.slice(
+  //     visibleVideos.length,
+  //     visibleVideos.length + 10
+  //   )
+  //   setVisibleVideos((prev) => [...prev, ...newVisibleVideos])
+  // }, [pickleballVideos, visibleVideos.length])
 
-  useEffect(() => {
-    const handleObserver = (entries) => {
-      const target = entries[0]
-      if (target.isIntersecting) {
-        loadMoreVideos()
-      }
-    }
+  // useEffect(() => {
+  //   const handleObserver = (entries) => {
+  //     const target = entries[0]
+  //     if (target.isIntersecting) {
+  //       loadMoreVideos()
+  //     }
+  //   }
 
-    observer.current = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: "20px",
-      threshold: 0.1,
-    })
+  //   observer.current = new IntersectionObserver(handleObserver, {
+  //     root: null,
+  //     rootMargin: "20px",
+  //     threshold: 0.1,
+  //   })
 
-    const target = document.querySelector("#loadMoreTrigger")
-    if (target) {
-      observer.current.observe(target)
-    }
+  //   const target = document.querySelector("#loadMoreTrigger")
+  //   if (target) {
+  //     observer.current.observe(target)
+  //   }
 
-    return () => {
-      if (observer.current && target) {
-        observer.current.unobserve(target)
-      }
-    }
-  }, [loadMoreVideos])
+  //   return () => {
+  //     if (observer.current && target) {
+  //       observer.current.unobserve(target)
+  //     }
+  //   }
+  // }, [loadMoreVideos])
 
-  useEffect(() => {
-    setLoading(true)
-    async function fetchData() {
-      const videoIds = await scrapePickleballVideos()
-      setPickleballVideos(videoIds)
-      setVisibleVideos(videoIds.slice(0, 10))
-      setLoading(false)
-    }
-    fetchData()
-  }, [])
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     setLoading(true)
+  //     const videoIds = await scrapePickleballVideos()
+  //     setPickleballVideos(videoIds)
+  //     setVisibleVideos(videoIds.slice(0, 10))
+  //     setLoading(false)
+  //   }
+  //   fetchData()
+  // }, [])
 
   return (
     <div>
@@ -64,8 +64,8 @@ const Page = () => {
         Pickleball
       </div>
 
-      {visibleVideos.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 m-6  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      {/* {visibleVideos.length > 0 ? (
+        <div className="m-6 grid grid-cols-1 gap-6  sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {visibleVideos.map((videoId) => (
             <iframe
               key={videoId}
@@ -84,7 +84,7 @@ const Page = () => {
             <Loader2 className="size-10 animate-spin" />
           </div>
         )
-      )}
+      )} */}
     </div>
   )
 }
