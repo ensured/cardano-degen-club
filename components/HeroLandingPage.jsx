@@ -5,7 +5,6 @@
 import { useState } from "react"
 import { Chivo } from "next/font/google"
 import Link from "next/link"
-import { DividerHorizontalIcon } from "@radix-ui/react-icons"
 import { motion } from "framer-motion"
 import {
   ArrowRight,
@@ -112,7 +111,7 @@ export default function HeroLandingPage() {
             <motion.div className="space-y-2">
               <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:pb-8">
                 <Link href={"https://cardano.org/"}>
-                  <Icons.ada className=" text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:h-24 md:w-24 transition-all " />
+                  <Icons.ada className=" text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:size-24 transition-all" />
                 </Link>
                 <div
                   className={cn(
@@ -487,7 +486,7 @@ export default function HeroLandingPage() {
                   </p>
                 </DialogTrigger>
               </motion.div>
-              <DialogContent className="h-full w-full overflow-y-auto">
+              <DialogContent className="size-full overflow-y-auto">
                 <motion.div
                   initial={{ opacity: 1, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -624,8 +623,8 @@ export default function HeroLandingPage() {
         <Link href="/cardano-links">
           <div className="w-full flex p-8 justify-center items-center">
             <div className="relative text-md">
-              <span className="absolute top-0 left-0 mt-1 ml-1 h-full w-full rounded bg-black dark:bg-white"></span>
-              <span className="max-w-[420px] fold-bold relative inline-block h-full w-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950  px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100  hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
+              <span className="absolute top-0 left-0 mt-1 ml-1 size-full rounded bg-black dark:bg-white"></span>
+              <span className="max-w-[420px] fold-bold relative inline-block size-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950 px-3  py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:text-gray-900  hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
                 Download a Cardano wallet to get started and explore our
                 official Cardano links (we recommend Vespr wallet)
               </span>

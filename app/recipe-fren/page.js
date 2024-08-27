@@ -9,6 +9,7 @@ import {
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import Notebook from "@/components/Notebook"
 
 import SearchRecipes from "../../components/SearchRecipes"
 
@@ -80,6 +81,7 @@ const page = async () => {
 
   return (
     <>
+      <Notebook />
       <SearchRecipes isAuthenticated={isAuthenticated()} userInfo={userInfo} />
     </>
   )
