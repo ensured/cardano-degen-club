@@ -119,7 +119,7 @@ const RecipeSearchForm = ({
             className="grow"
           />
           <Button type="submit" variant="default">
-            <Search className="mr-2 size-4" />
+            <Search className="mr-2 size-4 md:text-base text-xs" />
             Search
           </Button>
         </form>
@@ -127,11 +127,10 @@ const RecipeSearchForm = ({
           <Button
             onClick={handleGetRandomFood}
             variant="outline"
-            className="flex-1"
+            className="flex-1 md:text-base text-xs"
           >
-            <Shuffle
-              className={`${width < 437 ? "size-0 " : "size-4"} mr-2 `}
-            />
+            <Shuffle className={`mr-2 size-4`} />
+            {/* {width < 440 ? "Random" : "Random Recipe"} */}
             Random Recipe
           </Button>{" "}
           <RecipesMenu
@@ -141,13 +140,13 @@ const RecipeSearchForm = ({
             loading={loading}
             isRecipeDataLoading={isRecipeDataLoading}
           />
+          {width < 372}
           <Link href="/recipe-fren/notebook">
             <Button
               onMouseOver={() => handleHover(true)}
               onMouseOut={() => handleHover(false)}
-              as="a"
+              className="md:text-base text-xs"
               variant="outline"
-              className="flex-1"
             >
               {isOpen ? (
                 <BookOpenCheck className="mr-2 size-4" />

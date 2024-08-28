@@ -44,7 +44,7 @@ const FavoritesSheet = ({
     <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button  variant="outline" className="flex-1">
+          <Button  variant="outline" className="flex-1 md:text-base text-xs">
             <Heart className="mr-2 h-4 w-4" />
             Favorites
           </Button>
