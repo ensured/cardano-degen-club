@@ -86,7 +86,7 @@ export default function Notebook() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto mt-4">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span>Notebook</span>

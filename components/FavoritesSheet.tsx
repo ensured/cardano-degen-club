@@ -41,7 +41,7 @@ const FavoritesSheet = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center ">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button  variant="outline" className="flex-1 md:text-base text-xs">
