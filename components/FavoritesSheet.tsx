@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Loader2, StarIcon } from "lucide-react"
+import { Heart, Loader2, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Button } from "./ui/button"
@@ -44,16 +44,9 @@ const FavoritesSheet = ({
     <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button
-            className="relative select-none gap-1 text-base md:text-lg"
-            disabled={isRecipeDataLoading}
-            size={"sm"}
-          >
+          <Button  variant="outline" className="flex-1">
+            <Heart className="mr-2 h-4 w-4" />
             Favorites
-            <StarIcon
-              size={size?.width < 768 ? 19 : 22}
-              color={theme.theme === "light" ? "#FFD700" : "black"}
-            />
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>

@@ -6,7 +6,14 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { FileText, Trash2Icon, TrashIcon } from "lucide-react"
+import {
+  FileText,
+  Heart,
+  Loader2,
+  Shuffle,
+  Trash2Icon,
+  TrashIcon,
+} from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -14,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
+import Notebook from "./Notebook"
 import PDFViewer from "./PdfViewer"
 import { imgUrlToBase64 } from "./actions"
 import { Badge } from "./ui/badge"
@@ -169,16 +177,16 @@ const RecipesMenu = ({
   if (!size.width || !size.height) return null
 
   return (
-    <div className="relative flex h-full flex-row flex-wrap justify-between gap-2 px-4 pt-1 md:container">
+    <>
       {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
-      {searchResults.count > 0 ? (
+      {/* {searchResults.count > 0 ? (
         <Badge variant={"outline"}>
           Found {searchResults.count}
           {searchResults.count === 1 ? " recipe" : " recipes"}
         </Badge>
       ) : (
         <Badge variant={"outline"} className="invisible"></Badge>
-      )}
+      )} */}
 
       <FavoritesSheet
         setFavorites={setFavorites}
@@ -285,7 +293,7 @@ const RecipesMenu = ({
           </div>
         </div>
       </FavoritesSheet>
-    </div>
+    </>
   )
 }
 

@@ -64,7 +64,7 @@ export const RecipeCard = ({
                 </CardItem>
               </div>
             </CardBody>
-          </CardContainer>{" "}
+          </CardContainer>
         </FullTitleToolTip>
         <StarIcon
           onMouseEnter={handleStarIconHover(index)}

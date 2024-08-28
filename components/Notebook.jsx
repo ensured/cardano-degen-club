@@ -1,7 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Loader2 } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { TrackPreviousIcon } from "@radix-ui/react-icons"
+import { Download, Loader2, RotateCcw, Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import {
@@ -15,15 +18,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { Textarea } from "./ui/textarea"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function Notebook() {
   const [text, setText] = useState("")
   const [filename, setFilename] = useState("")
   const [storageUsed, setStorageUsed] = useState(null)
+  const router = useRouter()
 
   useEffect(() => {
     calculateStorageUsage()
@@ -45,16 +55,17 @@ export default function Notebook() {
       localStorage.setItem("notebook-text", text)
       localStorage.setItem("notebook-filename", filename)
       calculateStorageUsage()
+      toast.success("Saved to local storage")
     } catch (err) {
       console.error("Error saving to local storage:", err)
       toast.error(`Failed to save to local storage. ` + err)
-      return
     }
   }
 
   const handleLoadFromLocalStorage = () => {
     setText(localStorage.getItem("notebook-text") || "")
     setFilename(localStorage.getItem("notebook-filename") || "")
+    toast.success("Loaded from local storage")
   }
 
   const handleDownload = () => {
@@ -65,87 +76,103 @@ export default function Notebook() {
     a.download = filename
     a.click()
     URL.revokeObjectURL(url)
+    toast.success("File downloaded")
   }
 
   const handleClear = () => {
     setText("")
+    setFilename("")
+    toast.info("Notebook cleared")
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 p-2.5">
-      <Textarea
-        placeholder="You can paste or type a note or recipe here"
-        value={text}
-        className="border-emerald-400/80"
-        onChange={(e) => {
-          setText(e.target.value)
-          // Set a default filename based on the text content
-          setFilename(filename)
-        }}
-        rows={17}
-        cols={50}
-      />{" "}
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="secondary" size="sm" className="">
-            Clear
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleClear}>
-              Continue
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <div className="flex w-full gap-2">
-        {/* LocalStorage stuff */}
-        <div className="flex w-1/2 flex-row gap-2">
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex justify-between items-center">
+          <span>Notebook</span>
           <Button
-            onClick={handleSaveToLocalStorage}
-            disabled={!text.length > 0}
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              router.push("/recipe-fren")
+            }}
           >
-            Save to local storage
+            <TrackPreviousIcon className="mr-2 h-4 w-4" />
+            Back
           </Button>
-
-          <Button onClick={handleLoadFromLocalStorage}>
-            Load from local storage
-          </Button>
-        </div>
-
-        <div className="flex w-1/2 flex-row gap-2">
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Textarea
+          placeholder="You can paste or type a note or recipe here"
+          value={text}
+          className="min-h-[300px] border-emerald-400/80"
+          onChange={(e) => {
+            setText(e.target.value)
+            if (!filename) {
+              setFilename(e.target.value.split("\n")[0].slice(0, 20) + ".txt")
+            }
+          }}
+        />
+        <div className="flex space-x-2">
           <Input
-            className="w-[69%]"
+            className="flex-grow"
             type="text"
-            placeholder="filename"
+            placeholder="Filename"
             value={filename}
-            required
             onChange={(e) => setFilename(e.target.value)}
           />
           <Button
-            className="w-[31%]"
-            disabled={!text.length > 0 || !filename.length > 0}
             onClick={handleDownload}
+            disabled={!text.length || !filename.length}
           >
+            <Download className="mr-2 h-4 w-4" />
             Download
           </Button>
         </div>
-      </div>
-      <div className="flex w-full justify-end">
+        <div className="flex justify-between">
+          <div className="space-x-2">
+            <Button onClick={handleSaveToLocalStorage} disabled={!text.length}>
+              <Save className="mr-2 h-4 w-4" />
+              Save
+            </Button>
+            <Button onClick={handleLoadFromLocalStorage}>
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Load
+            </Button>
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Clear
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your current note.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClear}>
+                  Clear
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </CardContent>
+      <CardFooter className="justify-end text-sm text-muted-foreground">
         {storageUsed !== null ? (
-          <span>~{100 - storageUsed}% of localstorage storage left</span>
+          <span>~{100 - storageUsed}% of local storage left</span>
         ) : (
-          <Loader2 className="size-5 w-[36%] animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }

@@ -1,16 +1,17 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useWindowSize } from "@uidotdev/usehooks"
 // import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/server"
 import { Loader2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
+import { toast } from "sonner"
 
+import { foodItems } from "../lib/foods"
 import { RecipeCard } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
-import RecipesMenu from "./RecipesMenu"
 import ScrollTooltip from "./ScrollToolTip"
 import { CardTitle } from "./ui/card"
 import useRecipeSearch from "./useRecipeSearch"
@@ -42,6 +43,12 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
     isRecipeDataLoading,
   } = useRecipeSearch()
 
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleIsOpen = () => {
+    setIsOpen(!isOpen)
+  }
+
   const { width, height } = useWindowSize()
 
   return (
@@ -60,15 +67,6 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         totalResults={searchResults.count}
       /> */}
 
-      <div className="flex mb-2 flex-col items-center justify-center gap-1 text-xl text-slate-50 md:text-2xl">
-        <Image
-          src={"/logo.jpg"}
-          alt="recipe fren logo"
-          className="rounded-2xl"
-          width={width < 768 ? 120 : 150}
-          height={width < 768 ? 120 : 150}
-        />
-      </div>
       <RecipeSearchForm
         setSuggestions={setSuggestions}
         suggestions={suggestions}
@@ -81,18 +79,9 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         setLoading={setLoading}
         setSearchResults={setSearchResults}
         isRecipeDataLoading={isRecipeDataLoading}
-      />
-      {/* results count + interactive favorites sheet */}
-      <RecipesMenu
-        userInfo={userInfo}
-        isAuthenticated={isAuthenticated}
-        removeFromFavorites={removeFromFavorites}
-        searchResults={searchResults}
         favorites={favorites}
-        setFavorites={setFavorites}
-        loading={loading}
-        isRecipeDataLoading={isRecipeDataLoading}
       />
+
       {/* <div className="fixed inset-x-0 top-0 -z-20 h-full w-full overflow-hidden">
         <Image
           src={"/recipe-fren-bg.jpg"}
@@ -107,12 +96,12 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
       {loading ||
         (isRecipeDataLoading && (
           <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
-            <Loader2Icon className="h-16 w-16 animate-spin" />
+            <Loader2Icon className="size-16 animate-spin" />
           </div>
         ))}
       {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
-        <div className="animate-fade-in mb-6 flex flex-col gap-2 pt-1">
+        <div className="animate-fade-in mb-6 mt-2 flex flex-col gap-2">
           <div className="flex flex-row flex-wrap justify-center gap-2 md:gap-4">
             {searchResults.hits.map((recipe, index) => (
               <RecipeCard
@@ -134,7 +123,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
             {loadingMore && (
               <div className="p0 relative -my-1 flex flex-col items-center justify-center">
                 <div className="absolute -bottom-14 animate-spin">
-                  <Loader2Icon className="h-12 w-12" />
+                  <Loader2Icon className="size-12" />
                 </div>
               </div>
             )}

@@ -1,11 +1,12 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { DicesIcon, Search } from "lucide-react"
-
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { BookOpen, BookOpenCheck, Search, Shuffle } from "lucide-react"
 
 import { foodItems } from "../lib/foods"
+import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
@@ -14,18 +15,20 @@ const RecipeSearchForm = ({
   handleInputChange,
   input,
   setInput,
-  inputChanged,
   loading,
   setLoading,
-  suggestions,
   setSuggestions,
   setSearchResults,
   isRecipeDataLoading,
+  favorites,
+  setFavorites,
+  removeFromFavorites,
 }) => {
   const router = useRouter()
-  const size = useWindowSize()
   const inputRef = useRef(null)
   const suggestionsListRef = useRef(null)
+
+  const { width, height } = useWindowSize()
 
   const handleHideKeyboard = () => {
     inputRef.current.blur()
@@ -97,73 +100,77 @@ const RecipeSearchForm = ({
     searchRecipes(e, suggestion)
   }
 
+  const [isOpen, setIsOpen] = useState(false)
+  const handleHover = (isOpen) => {
+    setIsOpen(isOpen)
+  }
+
   return (
-    <form onSubmit={handleFormSubmit} className={`mx-4 md:container`}>
-      <div className="flex flex-row flex-wrap items-center justify-between gap-1 md:flex-nowrap md:justify-center">
-        {" "}
-        <div className="relative w-full">
+    <div className="mx-auto flex w-full max-w-3xl space-x-2">
+      <div className="grow space-y-2">
+        <form onSubmit={handleFormSubmit} className="flex space-x-2">
           <Input
-            placeholder="search a food"
             type="text"
             name="searchTerm"
-            onChange={handleInputChange}
-            value={input}
+            placeholder="Search for recipes..."
             ref={inputRef}
-            size={"sm"}
-            className={`relative h-[2.25rem] ${
-              suggestions.length > 0 && input.length > 0
-                ? "rounded-b-none border-b-0 "
-                : ""
-            }`}
+            value={input}
+            onChange={handleInputChange}
+            className="grow"
           />
-
-          {suggestions.length > 0 && input && (
-            <div className="absolute top-10 z-10 w-full rounded-b-md bg-secondary">
-              <ScrollArea
-                className=" rounded-b-md border"
-                ref={suggestionsListRef}
-              >
-                <div className="px-1.5">
-                  {suggestions.map((suggestion) => {
-                    return (
-                      <div
-                        key={suggestion}
-                        onClick={(e) => handleSuggestionClick(e, suggestion)}
-                        className="line-clamp-1 border-b border-b-zinc-500/20 py-0.5 pl-1.5 text-sm hover:cursor-pointer hover:underline dark:border-b-zinc-50/20"
-                      >
-                        {suggestion}
-                      </div>
-                    )
-                  })}
-                </div>
-              </ScrollArea>
-            </div>
-          )}
-        </div>
-        <Button
-          type="submit"
-          className="flex w-[6.8rem] select-none items-center justify-center"
-          disabled={!inputChanged || loading || isRecipeDataLoading}
-          size={"sm"}
-        >
-          <div className="flex items-center justify-center gap-1 text-base md:text-lg">
-            {/* {loading && (
-                <Loader2Icon className="absolute right-1 flex h-4 w-4 animate-spin sm:right-2 md:h-5 md:w-5" />
-              )} */}
+          <Button type="submit" variant="default">
+            <Search className="mr-2 size-4" />
             Search
-            <Search size={size?.width < 768 ? 20 : 24} />
-          </div>
-        </Button>
-        <Button
-          className="select-none gap-1 text-base md:text-lg"
-          disabled={loading || isRecipeDataLoading}
-          onClick={handleGetRandomFood}
-          size={"sm"}
-        >
-          Random <DicesIcon size={size?.width < 768 ? 20 : 24} />
-        </Button>
+          </Button>
+        </form>
+        <div className="flex justify-between items-center flex-wrap gap-2">
+          <Button
+            onClick={handleGetRandomFood}
+            variant="outline"
+            className="flex-1"
+          >
+            <Shuffle
+              className={`${width < 437 ? "size-0 " : "size-4"} mr-2 `}
+            />
+            Random Recipe
+          </Button>{" "}
+          <RecipesMenu
+            favorites={favorites}
+            setFavorites={setFavorites}
+            removeFromFavorites={removeFromFavorites}
+            loading={loading}
+            isRecipeDataLoading={isRecipeDataLoading}
+          />
+          <Link href="/recipe-fren/notebook">
+            <Button
+              onMouseOver={() => handleHover(true)}
+              onMouseOut={() => handleHover(false)}
+              as="a"
+              variant="outline"
+              className="flex-1"
+            >
+              {isOpen ? (
+                <BookOpenCheck className="mr-2 size-4" />
+              ) : (
+                <BookOpen className="mr-2 size-4" />
+              )}
+              Notebook
+            </Button>
+          </Link>
+        </div>
       </div>
-    </form>
+      {width > 540 && (
+        <div className="flex shrink-0 items-center">
+          <Image
+            src="/logo.jpg"
+            alt="recipe fren logo"
+            className="grow rounded-md"
+            width={86}
+            height={86}
+          />
+        </div>
+      )}
+    </div>
   )
 }
 
