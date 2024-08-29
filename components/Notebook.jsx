@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { TrackPreviousIcon } from "@radix-ui/react-icons"
 import { Download, Loader2, RotateCcw, Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -32,7 +33,7 @@ export default function Notebook() {
   const [text, setText] = useState("")
   const [filename, setFilename] = useState("")
   const [storageUsed, setStorageUsed] = useState(null)
-
+  const router = useRouter()
   useEffect(() => {
     calculateStorageUsage()
   }, [])
@@ -84,14 +85,14 @@ export default function Notebook() {
   }
 
   return (
-    <Card className="mx-auto flex h-[calc(100vh-4rem)] w-full max-w-7xl flex-col rounded-none border-0 ">
+    <Card className="mx-auto flex h-[calc(100vh-8.05rem)] w-full max-w-7xl flex-col rounded-none border-0 ">
       <CardHeader className="shrink-0">
         <CardTitle className="flex items-center justify-between">
           <span className="text-2xl font-bold">Notepad</span>
-          <Link href="/">
+          <Link href="/recipe-fren">
             <Button variant="outline" size="lg">
-              <TrackPreviousIcon className="mr-2 h-5 w-5" />
-              Back to Home
+              <TrackPreviousIcon className="mr-2 size-5" />
+              Back to Recipe Fren
             </Button>
           </Link>
         </CardTitle>

@@ -141,11 +141,11 @@ const RecipeSearchForm = ({
             isRecipeDataLoading={isRecipeDataLoading}
           />
           {width < 372}
-          <Link href="/recipe-fren/notebook">
+          <Link href="/recipe-fren/notepad">
             <Button
               onMouseOver={() => handleHover(true)}
               onMouseOut={() => handleHover(false)}
-              className="md:text-base text-xs"
+              className="text-xs md:text-base"
               variant="outline"
             >
               {isOpen ? (
@@ -153,7 +153,7 @@ const RecipeSearchForm = ({
               ) : (
                 <BookOpen className="mr-2 size-4" />
               )}
-              Notebook
+              Notepad
             </Button>
           </Link>
         </div>
