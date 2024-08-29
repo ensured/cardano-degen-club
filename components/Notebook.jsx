@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { TrackPreviousIcon } from "@radix-ui/react-icons"
 import { Download, Loader2, RotateCcw, Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -33,7 +32,6 @@ export default function Notebook() {
   const [text, setText] = useState("")
   const [filename, setFilename] = useState("")
   const [storageUsed, setStorageUsed] = useState(null)
-  const router = useRouter()
 
   useEffect(() => {
     calculateStorageUsage()
@@ -86,65 +84,67 @@ export default function Notebook() {
   }
 
   return (
-    <Card className="w-full max-w-4xl mx-auto mt-4">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Notebook</span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              router.push("/recipe-fren")
-            }}
-          >
-            <TrackPreviousIcon className="mr-2 h-4 w-4" />
-            Back
-          </Button>
+    <Card className="mx-auto flex h-[calc(100vh-4rem)] w-full max-w-7xl flex-col rounded-none border-0 ">
+      <CardHeader className="shrink-0">
+        <CardTitle className="flex items-center justify-between">
+          <span className="text-2xl font-bold">Notepad</span>
+          <Link href="/">
+            <Button variant="outline" size="lg">
+              <TrackPreviousIcon className="mr-2 h-5 w-5" />
+              Back to Home
+            </Button>
+          </Link>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-grow overflow-auto space-y-6 pb-6">
         <Textarea
           placeholder="You can paste or type a note or recipe here"
           value={text}
-          className="min-h-[300px] border-emerald-400/80"
+          className="min-h-[44vh] border-emerald-400/80 text-lg"
           onChange={(e) => {
             setText(e.target.value)
-            if (!filename) {
-              setFilename(e.target.value.split("\n")[0].slice(0, 20) + ".txt")
-            }
           }}
         />
-        <div className="flex space-x-2">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <Input
-            className="flex-grow"
+            className="grow text-lg"
             type="text"
             placeholder="Filename"
             value={filename}
             onChange={(e) => setFilename(e.target.value)}
           />
           <Button
+            size="lg"
+            className="w-full sm:w-auto"
             onClick={handleDownload}
             disabled={!text.length || !filename.length}
           >
-            <Download className="mr-2 h-4 w-4" />
+            <Download className="mr-2 h-5 w-5" />
             Download
           </Button>
         </div>
-        <div className="flex justify-between">
-          <div className="space-x-2">
-            <Button onClick={handleSaveToLocalStorage} disabled={!text.length}>
-              <Save className="mr-2 h-4 w-4" />
-              Save
-            </Button>
-            <Button onClick={handleLoadFromLocalStorage}>
-              <RotateCcw className="mr-2 h-4 w-4" />
-              Load
-            </Button>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={handleSaveToLocalStorage}
+            disabled={!text.length}
+          >
+            <Save className="mr-2 h-5 w-5" />
+            Save
+          </Button>
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={handleLoadFromLocalStorage}
+          >
+            <RotateCcw className="mr-2 size-5" />
+            Load
+          </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
-                <Trash2 className="mr-2 h-4 w-4" />
+              <Button variant="destructive" size="lg" className="w-full">
+                <Trash2 className="mr-2 size-5" />
                 Clear
               </Button>
             </AlertDialogTrigger>
@@ -166,11 +166,11 @@ export default function Notebook() {
           </AlertDialog>
         </div>
       </CardContent>
-      <CardFooter className="justify-end text-sm text-muted-foreground">
+      <CardFooter className="flex-shrink-0 justify-end text-sm text-muted-foreground py-4">
         {storageUsed !== null ? (
           <span>~{100 - storageUsed}% of local storage left</span>
         ) : (
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-5 w-5 animate-spin" />
         )}
       </CardFooter>
     </Card>
