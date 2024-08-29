@@ -87,7 +87,7 @@ export default function Notebook() {
   return (
     <Card className="mx-auto flex h-[calc(100vh-8.05rem)] w-full max-w-7xl flex-col rounded-none border-0 ">
       <CardHeader className="shrink-0">
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center justify-between gap-3">
           <span className="text-2xl font-bold">Notepad</span>
           <Link href="/recipe-fren">
             <Button variant="outline" size="lg">
