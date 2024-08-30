@@ -80,6 +80,8 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         setSearchResults={setSearchResults}
         isRecipeDataLoading={isRecipeDataLoading}
         favorites={favorites}
+        setFavorites={setFavorites}
+        removeFromFavorites={removeFromFavorites}
       />
 
       {/* <div className="fixed inset-x-0 top-0 -z-20 h-full w-full overflow-hidden">
