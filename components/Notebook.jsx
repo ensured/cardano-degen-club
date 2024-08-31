@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { TrackPreviousIcon } from "@radix-ui/react-icons"
+import { useWindowSize } from "@uidotdev/usehooks"
 import { Download, Loader2, RotateCcw, Save, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -33,7 +34,8 @@ export default function Notebook() {
   const [text, setText] = useState("")
   const [filename, setFilename] = useState("")
   const [storageUsed, setStorageUsed] = useState(null)
-  const router = useRouter()
+  const { width, height } = useWindowSize()
+
   useEffect(() => {
     calculateStorageUsage()
   }, [])
@@ -85,14 +87,14 @@ export default function Notebook() {
   }
 
   return (
-    <Card className="mx-auto flex h-[calc(100vh-8.05rem)] w-full max-w-7xl flex-col rounded-none border-0 ">
-      <CardHeader className="shrink-0">
+    <Card className="mx-auto flex h-[calc(100vh-5.5rem)] w-full max-w-7xl flex-col rounded-none border-0 ">
+      <CardHeader>
         <CardTitle className="flex items-center justify-between gap-3">
           <span className="text-2xl font-bold">Notepad</span>
           <Link href="/recipe-fren">
-            <Button variant="outline" size="lg">
+            <Button variant="outline">
               <TrackPreviousIcon className="mr-2 size-5" />
-              Back to Recipe Fren
+              {width <= 342 ? "Back" : "Back to recipe fren"}
             </Button>
           </Link>
         </CardTitle>
@@ -167,7 +169,7 @@ export default function Notebook() {
           </AlertDialog>
         </div>
       </CardContent>
-      <CardFooter className="flex-shrink-0 justify-end text-sm text-muted-foreground py-4">
+      <CardFooter className="flex-shrink-0 justify-end text-sm text-muted-foreground py-1">
         {storageUsed !== null ? (
           <span>~{100 - storageUsed}% of local storage left</span>
         ) : (
