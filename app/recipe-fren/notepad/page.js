@@ -1,9 +1,9 @@
-import Notebook from "@/components/Notebook"
+import Notepad from "@@/components/Notepad
 
 const page = () => {
   return (
     <div>
-      <Notebook />
+      <Notepad />
     </div>
   )
 }

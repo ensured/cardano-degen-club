@@ -1,15 +1,14 @@
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 
-import {
-  getKindeServerSession,
-} from "@kinde-oss/kinde-auth-nextjs/server"
+import { cn } from "@/lib/utils"
 
 import { LoginPopup, LogoutPopup } from "./LoginPopup"
 import { Button, buttonVariants } from "./ui/button"
-import { cn } from "@/lib/utils"
 
 const UserButton = async () => {
   const { getUser } = getKindeServerSession()
   const user = await getUser().then((user) => user)
+  console.log(user)
 
   if (!user) {
     return (

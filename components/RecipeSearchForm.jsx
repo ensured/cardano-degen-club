@@ -6,6 +6,7 @@ import { useWindowSize } from "@uidotdev/usehooks"
 import { BookOpen, BookOpenCheck, Search, Shuffle } from "lucide-react"
 
 import { foodItems } from "../lib/foods"
+import googleLogo from "../public/recipeFrenLogo.jpg"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -119,15 +120,15 @@ const RecipeSearchForm = ({
             className="grow"
           />
           <Button type="submit" variant="default">
-            <Search className="mr-2 size-4 md:text-base text-xs" />
+            <Search className="mr-2 size-4 text-xs md:text-base" />
             Search
           </Button>
         </form>
-        <div className="flex justify-between items-center flex-wrap gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Button
             onClick={handleGetRandomFood}
             variant="outline"
-            className="flex-1 md:text-base text-xs"
+            className="flex-1 text-xs md:text-base"
           >
             <Shuffle className={`mr-2 size-4`} />
             {/* {width < 440 ? "Random" : "Random Recipe"} */}
@@ -161,11 +162,11 @@ const RecipeSearchForm = ({
       {width > 540 && (
         <div className="flex shrink-0 items-center">
           <Image
-            src="/logo.jpg"
+            src={googleLogo}
             alt="recipe fren logo"
-            className="grow rounded-md"
-            width={86}
-            height={86}
+            className="ml-1 grow rounded-2xl p-1.5"
+            width={90}
+            height={90}
           />
         </div>
       )}

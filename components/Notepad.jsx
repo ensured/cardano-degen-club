@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
-export default function Notebook() {
+export default function Notepad() {
   const [text, setText] = useState("")
   const [filename, setFilename] = useState("")
   const [storageUsed, setStorageUsed] = useState(null)
@@ -53,8 +53,8 @@ export default function Notebook() {
 
   const handleSaveToLocalStorage = () => {
     try {
-      localStorage.setItem("notebook-text", text)
-      localStorage.setItem("notebook-filename", filename)
+      localStorage.setItem("notepad-text", text)
+      localStorage.setItem("notepad-filename", filename)
       calculateStorageUsage()
       toast.success("Saved to local storage")
     } catch (err) {
@@ -64,8 +64,8 @@ export default function Notebook() {
   }
 
   const handleLoadFromLocalStorage = () => {
-    setText(localStorage.getItem("notebook-text") || "")
-    setFilename(localStorage.getItem("notebook-filename") || "")
+    setText(localStorage.getItem("notepad-text") || "")
+    setFilename(localStorage.getItem("notepad-filename") || "")
     toast.success("Loaded from local storage")
   }
 
@@ -83,7 +83,7 @@ export default function Notebook() {
   const handleClear = () => {
     setText("")
     setFilename("")
-    toast.info("Notebook cleared")
+    toast.info("Notepad cleared")
   }
 
   return (
@@ -99,7 +99,7 @@ export default function Notebook() {
           </Link>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow overflow-auto space-y-6 pb-6">
+      <CardContent className="grow space-y-6 overflow-auto pb-6">
         <Textarea
           placeholder="You can paste or type a note or recipe here"
           value={text}
@@ -122,18 +122,18 @@ export default function Notebook() {
             onClick={handleDownload}
             disabled={!text.length || !filename.length}
           >
-            <Download className="mr-2 h-5 w-5" />
+            <Download className="mr-2 size-5" />
             Download
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Button
             size="lg"
             className="w-full"
             onClick={handleSaveToLocalStorage}
             disabled={!text.length}
           >
-            <Save className="mr-2 h-5 w-5" />
+            <Save className="mr-2 size-5" />
             Save
           </Button>
           <Button
@@ -169,11 +169,11 @@ export default function Notebook() {
           </AlertDialog>
         </div>
       </CardContent>
-      <CardFooter className="flex-shrink-0 justify-end text-sm text-muted-foreground py-1">
+      <CardFooter className="shrink-0 justify-end py-1 text-sm text-muted-foreground">
         {storageUsed !== null ? (
           <span>~{100 - storageUsed}% of local storage left</span>
         ) : (
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Loader2 className="size-5 animate-spin" />
         )}
       </CardFooter>
     </Card>
