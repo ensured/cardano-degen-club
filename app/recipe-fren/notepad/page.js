@@ -1,4 +1,4 @@
-import Notepad from "@@/components/Notepad
+import Notepad from "@/components/Notepad"
 
 const page = () => {
   return (
