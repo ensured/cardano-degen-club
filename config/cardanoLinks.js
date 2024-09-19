@@ -360,6 +360,11 @@ const ai = [
 ]
 const contentCreators = [
   {
+    name: "Cardano Sapien",
+    twitter: "https://x.com/Cardano_Sapien",
+    url: "https://youtube.com/@S-PIEN",
+  },
+  {
     name: "Army Of Spies",
     twitter: "https://twitter.com/ArmySpies",
     url: "https://www.youtube.com/@ArmyofSpies/videos",
