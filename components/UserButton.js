@@ -8,7 +8,6 @@ import { Button, buttonVariants } from "./ui/button"
 const UserButton = async () => {
   const { getUser } = getKindeServerSession()
   const user = await getUser().then((user) => user)
-  console.log(user)
 
   if (!user) {
     return (

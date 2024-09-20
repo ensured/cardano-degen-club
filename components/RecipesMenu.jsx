@@ -81,7 +81,6 @@ const RecipesMenu = ({
     const borderPadding = 2 // Adjust padding for the border
     const borderWidth = 0.5 // Adjust width of the border
     let currentPosition = 0
-    console.log(favorites)
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {

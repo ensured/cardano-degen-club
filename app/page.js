@@ -6,6 +6,6 @@ export const metadata = {
   title: "Learn about Web3",
 }
 
-export default function IndexPage() {
+export default async function IndexPage() {
   return <HeroLandingPage />
 }

@@ -43,7 +43,6 @@ const chivo = Chivo({
 })
 
 export default function HeroLandingPage() {
-  const [isHovered, setIsHovered] = useState(false)
   const [cypherpunkBox, cypherpunkBoxInView] = useInView({
     triggerOnce: true,
     threshold: 0.45, // Adjust as needed
