@@ -359,6 +359,17 @@ const ai = [
   },
 ]
 const contentCreators = [
+    {
+    name: "Whale",
+    twitter: "https://x.com/cardano_whale",
+    url: "",
+  },
+  {
+    name: "DappCentral",
+    twitter: "https://x.com/dapp_central",
+    url: "http://youtube.com/dappcentral",
+  },
+  
   {
     name: "Cardano Sapien",
     twitter: "https://x.com/Cardano_Sapien",
