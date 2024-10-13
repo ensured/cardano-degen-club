@@ -33,7 +33,7 @@ const FavoritesSheet = ({
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
-  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
+  // const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
   // if (!size.width || !size.height) return null
 
   // useEffect to load the favorites whenever the Sheet onChange even is called.
