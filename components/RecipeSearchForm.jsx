@@ -20,16 +20,17 @@ const RecipeSearchForm = ({
   setLoading,
   setSuggestions,
   setSearchResults,
-  isRecipeDataLoading,
+  removeFromFavorites,
   favorites,
   setFavorites,
-  removeFromFavorites,
 }) => {
-  const router = useRouter()
-  const inputRef = useRef(null)
-  const suggestionsListRef = useRef(null)
+  const [isOpen, setIsOpen] = useState(false)
 
   const { width, height } = useWindowSize()
+  const router = useRouter()
+
+  const inputRef = useRef(null)
+  const suggestionsListRef = useRef(null)
 
   const handleHideKeyboard = () => {
     inputRef.current.blur()
@@ -89,19 +90,6 @@ const RecipeSearchForm = ({
     handleHideKeyboard()
   }
 
-  const handleSuggestionClick = (e, suggestion) => {
-    setSuggestions([])
-    setSearchResults({
-      hits: [],
-      count: 0,
-      nextPage: "",
-    })
-    handleHideKeyboard()
-    setInput(suggestion)
-    searchRecipes(e, suggestion)
-  }
-
-  const [isOpen, setIsOpen] = useState(false)
   const handleHover = (isOpen) => {
     setIsOpen(isOpen)
   }
@@ -119,7 +107,7 @@ const RecipeSearchForm = ({
             onChange={handleInputChange}
             className="grow"
           />
-          <Button type="submit" variant="default">
+          <Button type="submit" variant="default" disabled={input === ""}>
             <Search className="mr-2 size-4 text-xs md:text-base" />
             Search
           </Button>
@@ -139,9 +127,7 @@ const RecipeSearchForm = ({
             setFavorites={setFavorites}
             removeFromFavorites={removeFromFavorites}
             loading={loading}
-            isRecipeDataLoading={isRecipeDataLoading}
           />
-          {width < 372}
           <Link href="/recipe-fren/notepad">
             <Button
               onMouseOver={() => handleHover(true)}

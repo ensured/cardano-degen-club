@@ -1,10 +1,12 @@
 "use client"
 
-import { ReactNode } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { Heart, Loader2, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
+import { toast } from "react-hot-toast"
 
+import { getFavorites } from "./actions"
 import { Button } from "./ui/button"
 import {
   Sheet,
@@ -14,12 +16,12 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 
-type Favorites = {
-  [name: string]: {
-    link: string
-    url: string // Assuming image is a URL or similar
-  }
-}
+// type Favorites = {
+//   [name: string]: {
+//     link: string
+//     url: string // Assuming image is a URL or similar
+//   }
+// }
 
 const FavoritesSheet = ({
   children,
@@ -27,25 +29,46 @@ const FavoritesSheet = ({
   isOpen,
   loading,
   favorites,
-  isRecipeDataLoading,
-}: {
-  children: ReactNode
-  setOpen: (isOpen: boolean) => void // Add setOpen to the props interface
-  isOpen: boolean
-  loading: boolean
-  favorites: Favorites
-  isRecipeDataLoading: boolean
+  setFavorites,
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
-  if (!size.width || !size.height) return null
+  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
+  // if (!size.width || !size.height) return null
+
+  // useEffect to load the favorites whenever the Sheet onChange even is called.
+
+  useEffect(() => {
+    const getFavoritez = async () => {
+      const res = await getFavorites()
+      if (!res) return
+
+      //  Map over favorites and fetch recipe data
+      const newFavorites = {}
+      res.forEach((favorite) => {
+        if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
+          toast.error("Invalid favorite data")
+          return
+        }
+        newFavorites[favorite.link] = {
+          name: favorite.name,
+          url: favorite.url,
+        }
+      })
+      setFavorites(newFavorites)
+    }
+
+    getFavoritez()
+  }, [])
 
   return (
     <div className="flex justify-center ">
-      <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
+      <Sheet key={"right"} open={isOpen} onOpenChange={setOpen} modal={true}>
+        {/*  maybe add ref here? */}
         <SheetTrigger asChild>
-          <Button  variant="outline" className="flex-1 md:text-base text-xs">
-            <Heart className="mr-2 h-4 w-4" />
+          {/*  */}
+          <Button variant="outline" className="flex-1 text-xs md:text-base">
+            <Heart className="mr-2 size-4" />
             Favorites
           </Button>
         </SheetTrigger>

@@ -40,16 +40,9 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
     isMobile,
     suggestions,
     setSuggestions,
-    isRecipeDataLoading,
+    isFavoritesLoading,
+    setIsFavoritesLoading,
   } = useRecipeSearch()
-
-  const [isOpen, setIsOpen] = useState(false)
-
-  const handleIsOpen = () => {
-    setIsOpen(!isOpen)
-  }
-
-  const { width, height } = useWindowSize()
 
   return (
     <div className="relative flex w-full flex-col p-2">
@@ -78,7 +71,6 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         loading={loading}
         setLoading={setLoading}
         setSearchResults={setSearchResults}
-        isRecipeDataLoading={isRecipeDataLoading}
         favorites={favorites}
         setFavorites={setFavorites}
         removeFromFavorites={removeFromFavorites}
@@ -95,12 +87,11 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
       </div> */}
 
       {/* loading spinner in the center of the page */}
-      {loading ||
-        (isRecipeDataLoading && (
-          <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
-            <Loader2Icon className="size-16 animate-spin" />
-          </div>
-        ))}
+      {loading && (
+        <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
+          <Loader2Icon className="size-16 animate-spin" />
+        </div>
+      )}
       {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
         <div className="animate-fade-in mb-6 mt-2 flex flex-col gap-2">

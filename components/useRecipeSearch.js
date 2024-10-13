@@ -20,143 +20,76 @@ const useRecipeSearch = () => {
     nextPage: "",
   })
   const searchParams = useSearchParams()
-  const [input, setInput] = useState(searchParams.get("q") || "")
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [lastInputSearched, setLastInputSearched] = useState("")
+  const [input, setInput] = useState(searchParams?.get("q") || "")
   const lastFoodItemRef = useRef()
   const [favorites, setFavorites] = useState({})
-  const [isRecipeDataLoading, setIsRecipeDataLoading] = useState(true)
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
   const [scrollProgress, setScrollProgress] = useState(0)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
-  const fetchFavorites = async () => {
-    setIsRecipeDataLoading(true)
-    try {
-      const res = await getFavorites()
-
-      if (!res) return
-      const updatedFavorites = {}
-      res.forEach((favorite) => {
-        if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
-          toast.error("Invalid favorite data")
-          return
-        }
-
-        updatedFavorites[favorite.link] = {
-          name: favorite.name,
-          url: favorite.url,
-        }
-      })
-      setFavorites(updatedFavorites)
-    } catch (error) {
-      console.error("Error fetching favorites:", error)
-      toast.error(error.message)
-    } finally {
-      setIsRecipeDataLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    const getFavs = async () => {
-      await fetchFavorites()
-    }
-    getFavs()
-  }, [])
-
-  const searchRecipes = useCallback(
-    async (e, q) => {
-      setLoading(true)
-      if (q) {
-        try {
-          setIsRecipeDataLoading(true)
-
-          const res = await fetch(`/api/search?q=${q}`)
-
-          const data = await res.json()
-          if (data.success === false) {
-            toast(data.message, { type: "error" })
-            return
-          }
-
-          if (q !== lastInputSearched) {
-            // Clear all results in state if input changes
-            setSearchResults((prevSearchResults) => ({
-              hits: data.data.hits,
-              count: data.data.count,
-              nextPage: data.data._links.next?.href || "",
-            }))
-
-            setLoading(false)
-            return
-          } else {
-            setSearchResults((prevSearchResults) => ({
-              ...prevSearchResults,
-              hits: data.data.hits,
-              count: data.data.count,
-              nextPage: data.data._links.next?.href || "",
-            }))
-            setLoading(false)
-            return
-          }
-        } catch (error) {
-          toast(error.message, {
-            type: "error",
-          })
-        } finally {
-          setSuggestions([])
-          setLoading(false)
-          router.replace(`?q=${q}`)
-          setLastInputSearched(q)
-          setIsRecipeDataLoading(false)
-        }
-      }
-
-      if (e?.target?.tagName === "FORM") {
-        e.preventDefault()
-        setSearchResults({
-          hits: [],
-          count: 0,
-          nextPage: "",
-        })
-      }
-
+  const searchRecipes = useCallback(async (e, q) => {
+    setLoading(true)
+    if (q) {
       try {
-        const res = await fetch(`/api/search?q=${input}`)
+        const res = await fetch(`/api/search?q=${q}`)
+
         const data = await res.json()
         if (data.success === false) {
           toast(data.message, { type: "error" })
           return
         }
 
-        if (input !== lastInputSearched) {
-          // Clear all results in state if input changes
-          setSearchResults((prevSearchResults) => ({
-            hits: data.data.hits,
-            count: data.data.count,
-            nextPage: data.data._links.next?.href || "",
-          }))
-        } else {
-          setSearchResults((prevSearchResults) => ({
-            ...prevSearchResults,
-            hits: data.data.hits,
-            count: data.data.count,
-            nextPage: data.data._links.next?.href || "",
-          }))
-        }
-      } catch (err) {
-        console.log(err)
+        setSearchResults((prevSearchResults) => ({
+          ...prevSearchResults,
+          hits: data.data.hits,
+          count: data.data.count,
+          nextPage: data.data._links.next?.href || "",
+        }))
+        setLoading(false)
+        return
+      } catch (error) {
+        setLoading(false)
+        toast(error.message, {
+          type: "error",
+        })
       } finally {
         setSuggestions([])
         setLoading(false)
-        router.replace(`?q=${input}`)
+        router.replace(`?q=${q}`)
       }
-    },
-    [input, lastInputSearched, router]
-  )
+    }
 
-  const inputChanged = input !== lastInputSearched && input.length > 0
+    if (e?.target?.tagName === "FORM") {
+      e.preventDefault()
+      setSearchResults({
+        hits: [],
+        count: 0,
+        nextPage: "",
+      })
+    }
+
+    try {
+      const res = await fetch(`/api/search?q=${input}`)
+      const data = await res.json()
+      if (data.success === false) {
+        toast(data.message, { type: "error" })
+        return
+      } else {
+        setSearchResults((prevSearchResults) => ({
+          ...prevSearchResults,
+          hits: data.data.hits,
+          count: data.data.count,
+          nextPage: data.data._links.next?.href || "",
+        }))
+      }
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setLoading(false)
+      router.replace(`?q=${input}`)
+    }
+  }, [])
 
   const handleLoadNextPage = useCallback(async () => {
     setLoadingMore(true)
@@ -194,22 +127,10 @@ const useRecipeSearch = () => {
 
     checkIsMobile()
 
-    // Add resize event listener to check for changes in device type
     window.addEventListener("resize", checkIsMobile)
 
-    // Cleanup the event listener on component unmount
     return () => window.removeEventListener("resize", checkIsMobile)
   }, [])
-
-  useEffect(() => {
-    const shouldSearch = isInitialLoad && searchParams.get("q")
-    if (shouldSearch) {
-      searchRecipes()
-      setIsInitialLoad(false)
-      setLastInputSearched(input)
-    }
-    setIsInitialLoad(false)
-  }, [searchParams, searchRecipes, isInitialLoad, input, lastInputSearched])
 
   useEffect(() => {
     const onScroll = () => {
@@ -263,25 +184,9 @@ const useRecipeSearch = () => {
     }
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
-  const handleAutoCompleteDebounced = useCallback(
-    _debounce(async (newInput) => {
-      const { data } = await fetch(
-        `/api/search/autocomplete?q=${newInput}`
-      ).then((res) => res.json())
-      setSuggestions(data)
-    }, 100), // Debounce with 100ms delay
-    [] // Empty dependency array since there are no dependencies
-  )
-
-  const handleInputChange = async (e) => {
-    const newInput = e.target.value
-    setInput(newInput)
-    router.replace(`?q=${newInput}`)
-    if (newInput.length > 1) {
-      await handleAutoCompleteDebounced(newInput) // Call the debounced function
-    } else if (newInput.length === 0) {
-      setSuggestions([])
-    }
+  const handleInputChange = (e) => {
+    setInput(e.target.value)
+    router.replace(`?q=${e.target.value}`)
   }
 
   const handleStarIconHover = (index) => () => {
@@ -414,7 +319,6 @@ const useRecipeSearch = () => {
     lastFoodItemRef,
     favorites,
     setFavorites,
-    inputChanged,
     searchRecipes,
     hoveredRecipeIndex,
     handleStarIconClick,
@@ -423,7 +327,6 @@ const useRecipeSearch = () => {
     currentCardIndex,
     isMobile,
     setSearchResults,
-    isRecipeDataLoading,
   }
 }
 

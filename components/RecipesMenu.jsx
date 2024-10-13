@@ -14,6 +14,7 @@ import {
   Trash2Icon,
   TrashIcon,
 } from "lucide-react"
+import cache from "memory-cache"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -32,7 +33,7 @@ const RecipesMenu = ({
   setFavorites,
   removeFromFavorites,
   loading,
-  isRecipeDataLoading,
+  fetchFavorites,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
@@ -61,30 +62,40 @@ const RecipesMenu = ({
       setIsLoadingPdfPreview(false)
     }
   }
+
+  const CACHE_DURATION = 120000 // 2 minute cache duration
+
   const previewFavoritesPDF = async (favorites) => {
     if (!favorites || Object.keys(favorites).length === 0) {
       toast("No favorites found", {
         icon: "",
-        style: {
-          background: "#18181b",
-        },
+        style: { background: "#18181b" },
       })
       return
     }
 
     const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
     let yOffset = 10
-    const lineHeight = 10 // Adjust line height as needed
+    const lineHeight = 10
     const pageHeight = doc.internal.pageSize.height
-    const imageWidth = 32 // Adjust width of the image
-    const imageHeight = 32 // Adjust height of the image
-    const borderPadding = 2 // Adjust padding for the border
-    const borderWidth = 0.5 // Adjust width of the border
+    const imageWidth = 32
+    const imageHeight = 32
+    const borderPadding = 2
+    const borderWidth = 0.5
     let currentPosition = 0
+
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {
-          const imageBase64 = await imgUrlToBase64(url)
+          // Check if image is cached
+          let imageBase64 = cache.get(url)
+
+          // If not cached, fetch and cache the image
+          if (!imageBase64) {
+            imageBase64 = await imgUrlToBase64(url)
+            cache.put(url, imageBase64, CACHE_DURATION) // Cache for 1 minute
+          }
+
           currentPosition++
           const progress =
             (currentPosition / Object.keys(favorites).length) * 100
@@ -93,18 +104,17 @@ const RecipesMenu = ({
           // Draw border
           doc.setLineWidth(borderWidth)
           doc.roundedRect(
-            borderPadding, // x-coordinate of the top-left corner
-            yOffset, // y-coordinate of the top-left corner
-            doc.internal.pageSize.width - 2 * borderPadding, // width of the rectangle
-            imageHeight + 2 * borderPadding, // height of the rectangle
-            3, // radius of the rounded corners (adjust as needed)
-            3, // radius of the rounded corners (adjust as needed)
-            "S" // draw "stroke" (border)
+            borderPadding,
+            yOffset,
+            doc.internal.pageSize.width - 2 * borderPadding,
+            imageHeight + 2 * borderPadding,
+            3,
+            3,
+            "S"
           )
 
           // Embed image if available
           if (imageBase64) {
-            // Add image at current yOffset
             doc.addImage(
               imageBase64,
               "JPEG",
@@ -112,7 +122,7 @@ const RecipesMenu = ({
               yOffset + borderPadding,
               imageWidth,
               imageHeight
-            ) // Adjust width and height as needed, considering the border
+            )
           } else {
             console.error(`Failed to embed image`)
           }
@@ -122,13 +132,13 @@ const RecipesMenu = ({
           doc.setFont("helvetica", "bold")
           doc.setFontSize(16)
 
-          const maxNameLength = 100 // Maximum characters for recipe name
+          const maxNameLength = 100
           const truncatedName =
             name.length > maxNameLength
               ? name.substring(0, maxNameLength) + "..."
               : name
           const textLines = doc.splitTextToSize(truncatedName, 100)
-          const truncatedTextLines = textLines.slice(0, 2) // Take only the first two lines
+          const truncatedTextLines = textLines.slice(0, 2)
 
           doc.text(
             truncatedTextLines,
@@ -141,19 +151,19 @@ const RecipesMenu = ({
           doc.setFont("helvetica", "normal")
           doc.setFontSize(12)
 
-          const maxLinkLength = 60 // Maximum characters for link
+          const maxLinkLength = 60
           const truncatedLink =
             link.length > maxLinkLength
               ? link.substring(0, maxLinkLength) + "..."
               : link
 
-          const linkXOffset = 40 // Center the link horizontally within the border
+          const linkXOffset = 40
           doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
             url: link,
           })
 
           yOffset +=
-            imageHeight + 2 * borderPadding + lineHeight + borderPadding // Adjust yOffset to move to the next content with border and padding
+            imageHeight + 2 * borderPadding + lineHeight + borderPadding
 
           if (yOffset > pageHeight - 20) {
             doc.addPage()
@@ -168,7 +178,6 @@ const RecipesMenu = ({
       return URL.createObjectURL(pdfBlob)
     } catch (error) {
       console.error("Error generating PDF:", error)
-      // Handle error
     }
   }
 
@@ -193,7 +202,7 @@ const RecipesMenu = ({
         isOpen={isOpen}
         loading={loading}
         favorites={favorites}
-        isRecipeDataLoading={isRecipeDataLoading}
+        fetchFavorites={fetchFavorites}
         className="relative w-full"
       >
         {Object.keys(favorites).length > 0 ? (
