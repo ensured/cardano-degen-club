@@ -8,7 +8,6 @@ import iagLogo from "/public/iag_logo.png"
 
 function TradingViewWidget() {
   const { width } = useWindowSize() // Get window dimensions dynamically
-  const [activeChart, setActiveChart] = useState(null) // State to track the active chart
 
   useEffect(() => {
     const script = document.createElement("script")
@@ -90,11 +89,6 @@ function TradingViewWidget() {
     }
   }, [width]) // Dynamically adjust the size when the window resizes
 
-  const handleChartClick = (chartId) => {
-    // Toggle the active chart
-    setActiveChart((prev) => (prev === chartId ? null : chartId))
-  }
-
   return (
     <div className="space-r-2 inset-0 flex size-full flex-col space-y-4 rounded-md py-2">
       {[
@@ -108,14 +102,7 @@ function TradingViewWidget() {
         <div key={chartId} className="relative h-[400px] w-full">
           <div id={chartId} className="size-full rounded-md" />
           {/* Overlay */}
-          <div
-            className={`absolute inset-0 mx-2.5 rounded-md bg-white/10 transition-opacity duration-300 hover:cursor-pointer hover:rounded-sm hover:border hover:border-white hover:bg-transparent ${
-              activeChart === chartId
-                ? "pointer-events-none rounded-md opacity-0"
-                : ""
-            }`}
-            onClick={() => handleChartClick(chartId)}
-          >
+          <div className={`absolute  mx-2.5 rounded-md transition-opacity`}>
             {chartId === "tradingview_iag_usdt" && (
               <div className="flex h-full items-center justify-center">
                 <Image
