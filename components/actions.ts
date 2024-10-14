@@ -140,11 +140,13 @@ type Favorite = {
   link: string
 }
 
+
+
 export async function getFavorites() {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
 
-  const userEmail = await getUser().then((user) => user?.email)
+  const userEmail = await getUser().then((user ) => user?.email)
   const params = {
     Bucket: process.env.S3_BUCKET_NAME_RECIPES,
     Prefix: `favorites/images/${userEmail}/`,
