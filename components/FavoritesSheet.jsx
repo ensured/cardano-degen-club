@@ -60,20 +60,20 @@ const FavoritesSheet = ({
 
   return (
     <div className="flex justify-center">
-      <Sheet key={"right"} open={isOpen} onOpenChange={setOpen} modal={true}>
+      <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         {/*  maybe add ref here? */}
         <SheetTrigger asChild>
           <Button
-            disabled={loading || isFavoritesLoading}
+            disabled={isFavoritesLoading}
             variant="outline"
             className="flex-1 text-xs md:text-base"
           >
             {isFavoritesLoading ? (
-              <div className="flex flex-row items-center justify-center gap-1.5">
+              <div className="flex flex-row items-center justify-center gap-[0.85rem]">
                 <Loader2 className="size-5 animate-spin" /> Favorites
               </div>
             ) : (
-              <div className="flex flex-row items-center justify-center gap-1.5">
+              <div className="flex flex-row items-center justify-center gap-[0.65rem]">
                 <Heart className="mr-2 size-4" /> Favorites
               </div>
             )}
