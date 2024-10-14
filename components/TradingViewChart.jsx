@@ -109,7 +109,7 @@ function TradingViewWidget() {
             <div id={chartId} className="size-full rounded-md" />
             <button
               onClick={() => openFullscreen(chartId)}
-              className="absolute top-[0.222rem] right-11 bg-blue-500 text-white px-2 py-1 rounded"
+              className="bg-blue-500 absolute right-11 top-[0.222rem] rounded bg-[#00000069] px-2 py-1 text-white"
             >
               <EnterFullScreenIcon className="size-6" />
             </button>
