@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { EyeClosedIcon } from "@radix-ui/react-icons"
+import {
+  EnterFullScreenIcon,
+  ExitFullScreenIcon,
+  EyeClosedIcon,
+} from "@radix-ui/react-icons"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { X } from "lucide-react"
 
@@ -105,9 +109,9 @@ function TradingViewWidget() {
             <div id={chartId} className="size-full rounded-md" />
             <button
               onClick={() => openFullscreen(chartId)}
-              className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded"
+              className="absolute top-[0.222rem] right-11 bg-blue-500 text-white px-2 py-1 rounded"
             >
-              Fullscreen
+              <EnterFullScreenIcon className="size-6" />
             </button>
             {/* Overlay */}
             <div className={`absolute mx-2.5 rounded-md transition-opacity`}>
@@ -129,7 +133,7 @@ function TradingViewWidget() {
           <div className=" rounded-lg p-4">
             <button
               onClick={closeFullscreen}
-              className="absolute -top-1.5 right-12 bg-red-500 text-white px-2 py-1 rounded z-50"
+              className="absolute -top-1.5 right-11 bg-red-700/30 text-white px-2 py-1 rounded z-50"
             >
               <X className="size-7" />
             </button>
