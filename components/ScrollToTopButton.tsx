@@ -35,13 +35,14 @@ const ScrollToTopButton = () => {
       })
   }
 
+  // Conditionally render the button only when it should be visible
+  if (!isVisible || isNearBottom) {
+    return null
+  }
+
   return (
     <button
-      className={`duration-250 fixed bottom-4 right-4 z-50 rounded-full p-2 outline-none transition-all ${
-        isVisible ? "opacity-100" : "opacity-0"
-      } ${
-        isNearBottom ? "hidden" : "flex"
-      } bg-zinc-950 text-white shadow-[inset_0px_0px_1px_1px_#553C9A] hover:bg-zinc-900 hover:text-white focus:outline-none`}
+      className="fixed bottom-[3.675rem] right-4 z-50 flex rounded-full bg-zinc-950 p-2 text-white shadow-[inset_0px_0px_1px_1px_#553C9A] outline-none transition-all hover:bg-zinc-900 hover:text-white focus:outline-none"
       onClick={scrollToTop}
     >
       <ChevronUp />
