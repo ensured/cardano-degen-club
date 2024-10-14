@@ -85,8 +85,11 @@ const RecipeSearchForm = ({
   }
 
   const handleFormSubmit = (e) => {
+    e.preventDefault()
     setSuggestions([])
-    searchRecipes(e)
+    setInput(e.target[0].value)
+    searchRecipes(e, e.target[0].value)
+    router.push(`?q=${e.target[0].value}`)
     handleHideKeyboard()
   }
 
@@ -107,7 +110,11 @@ const RecipeSearchForm = ({
             onChange={handleInputChange}
             className="grow"
           />
-          <Button type="submit" variant="default" disabled={input === ""}>
+          <Button
+            type="submit"
+            variant="default"
+            disabled={input === "" || input === null || input === undefined}
+          >
             <Search className="mr-2 size-4 text-xs md:text-base" />
             Search
           </Button>

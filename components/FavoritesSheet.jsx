@@ -33,17 +33,13 @@ const FavoritesSheet = ({
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
-  // const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
-  // if (!size.width || !size.height) return null
-
-  // useEffect to load the favorites whenever the Sheet onChange even is called.
+  const [isFavoritesLoading, setIsFavoritesLoading] = useState(true)
 
   useEffect(() => {
     const getFavoritez = async () => {
       const res = await getFavorites()
       if (!res) return
 
-      //  Map over favorites and fetch recipe data
       const newFavorites = {}
       res.forEach((favorite) => {
         if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
@@ -56,20 +52,31 @@ const FavoritesSheet = ({
         }
       })
       setFavorites(newFavorites)
+      setIsFavoritesLoading(false)
     }
 
     getFavoritez()
   }, [])
 
   return (
-    <div className="flex justify-center ">
+    <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen} modal={true}>
         {/*  maybe add ref here? */}
         <SheetTrigger asChild>
-          {/*  */}
-          <Button variant="outline" className="flex-1 text-xs md:text-base">
-            <Heart className="mr-2 size-4" />
-            Favorites
+          <Button
+            disabled={loading || isFavoritesLoading}
+            variant="outline"
+            className="flex-1 text-xs md:text-base"
+          >
+            {isFavoritesLoading ? (
+              <div className="flex flex-row items-center justify-center gap-1.5">
+                <Loader2 className="size-5 animate-spin" /> Favorites
+              </div>
+            ) : (
+              <div className="flex flex-row items-center justify-center gap-1.5">
+                <Heart className="mr-2 size-4" /> Favorites
+              </div>
+            )}
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>
