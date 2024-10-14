@@ -6,7 +6,7 @@ import { headers } from "next/headers"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import MemoryCache from "memory-cache"
 import { z } from "zod"
-
+import { KindeUser } from "@kinde-oss/kinde-auth-nextjs/dist/types"
 import { FeedbackFormSchema } from "@/lib/schema"
 
 import {
@@ -58,6 +58,12 @@ async function generatePreSignedUrl(key: string) {
     return null
   }
 }
+
+type CustomUserProps = {
+  // Add any additional properties you expect
+  customProperty?: string; // example property
+};
+
 export async function submitFeedback(data: Inputs) {
   const result = FeedbackFormSchema.safeParse(data)
 
@@ -146,7 +152,7 @@ export async function getFavorites() {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
 
-  const userEmail = await getUser().then((user:any ) => user?.email)
+  const userEmail = await getUser().then((user: KindeUser<CustomUserProps> | null) => user?.email)
   const params = {
     Bucket: process.env.S3_BUCKET_NAME_RECIPES,
     Prefix: `favorites/images/${userEmail}/`,
@@ -205,7 +211,7 @@ export async function deleteAllFavorites() {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) throw new Error("User not authenticated")
 
-  const userEmail = await getUser().then((user:any) => user?.email)
+  const userEmail = await getUser().then((user: KindeUser<CustomUserProps> | null) => user?.email)
   if (!userEmail) throw new Error("User email not found")
 
   const params = {
@@ -250,7 +256,7 @@ export async function addFavorite({ name, url, link }: Favorite) {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
 
-  const userEmail = await getUser().then((user:any) => user?.email)
+  const userEmail = await getUser().then((user: KindeUser<CustomUserProps> | null) => user?.email)
 
   if (!userEmail) {
     return { error: "User email not found" }
@@ -303,7 +309,7 @@ export async function addFavorite({ name, url, link }: Favorite) {
 export async function removeFavorite(recipeName: string) {
   const { getUser, isAuthenticated } = getKindeServerSession()
   if (!isAuthenticated()) return
-  const userEmail = await getUser().then((user:any) => user?.email)
+  const userEmail = await getUser().then((user: KindeUser<CustomUserProps> | null) => user?.email)
   const key = `favorites/images/${userEmail}/${recipeName}.jpg`
   const params = {
     Bucket: process.env.S3_BUCKET_NAME_RECIPES,
