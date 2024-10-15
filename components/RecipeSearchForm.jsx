@@ -6,7 +6,12 @@ import { useWindowSize } from "@uidotdev/usehooks"
 import {
   BookOpen,
   BookOpenCheck,
+  Dice1Icon,
+  Dice2Icon,
   Dice3Icon,
+  Dice4Icon,
+  Dice5Icon,
+  Dice6Icon,
   Loader2,
   Loader2Icon,
   Search,
@@ -18,6 +23,15 @@ import CustomLoader2 from "./CustomLoader2"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+
+const diceIcons = [
+  Dice1Icon,
+  Dice2Icon,
+  Dice3Icon,
+  Dice4Icon,
+  Dice5Icon,
+  Dice6Icon,
+]
 
 const RecipeSearchForm = ({
   searchRecipes,
@@ -44,6 +58,34 @@ const RecipeSearchForm = ({
 
   const handleHideKeyboard = () => {
     inputRef.current.blur()
+  }
+
+  const [isHoveredRandomButton, setIsHoveredRandomButton] = useState(false)
+  const [diceSpeed, setDiceSpeed] = useState(1600)
+  const [currentDiceIndex, setCurrentDiceIndex] = useState(2) // Start with Dice3Icon
+
+  // Dice rotation logic
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDiceIndex((prevIndex) => (prevIndex + 1) % diceIcons.length)
+    }, diceSpeed) // Rotate dice based on current speed
+
+    return () => clearInterval(interval) // Cleanup interval on component unmount or when diceSpeed changes
+  }, [diceSpeed]) // Depend on diceSpeed only
+
+  // Handle hover state and speed adjustment
+  useEffect(() => {
+    if (isHoveredRandomButton) {
+      setDiceSpeed(1600 / 4) // Speed up when hovering
+    } else {
+      setDiceSpeed(1600) // Reset speed when hover ends
+    }
+  }, [isHoveredRandomButton]) // Change diceSpeed on hover state change
+
+  const CurrentDiceIcon = diceIcons[currentDiceIndex] // Get current dice icon based on index
+
+  const handleRandomButtonHover = (isHovered) => {
+    setIsHoveredRandomButton(isHovered)
   }
 
   useEffect(() => {
@@ -125,11 +167,16 @@ const RecipeSearchForm = ({
         </form>
         <div className="flex flex-wrap items-center justify-between gap-1.5">
           <Button
+            onMouseOver={() => handleRandomButtonHover(true)}
+            onMouseOut={() => handleRandomButtonHover(false)}
             onClick={handleGetRandomFood}
             variant="outline"
             className="flex-1 gap-1.5 text-xs md:text-base"
           >
-            <Dice3Icon className="size-4 md:size-5" />
+            <CurrentDiceIcon
+              className={`size-4 md:size-5 transition-transform duration-300 ease-in-out 
+      ${isHoveredRandomButton ? "text-blue-500 rotate-180 scale-125" : ""}`}
+            />
             {width < 440 ? "Random" : "Random Recipe"}
           </Button>
           <RecipesMenu
