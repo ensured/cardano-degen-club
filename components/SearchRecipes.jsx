@@ -40,8 +40,6 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
     isMobile,
     suggestions,
     setSuggestions,
-    isFavoritesLoading,
-    setIsFavoritesLoading,
     lastInputSearched,
   } = useRecipeSearch()
 

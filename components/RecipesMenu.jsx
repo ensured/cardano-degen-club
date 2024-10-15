@@ -43,6 +43,9 @@ const RecipesMenu = ({
     useState(false)
   const [progress, setProgress] = useState(0)
 
+  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
+  const [hasFetched, setHasFetched] = useState(false) // To avoid duplicate fetching
+
   const handlePreviewPDF = async () => {
     setProgress(0)
     setIsLoadingPdfPreview(true)
@@ -205,6 +208,10 @@ const RecipesMenu = ({
         favorites={favorites}
         fetchFavorites={fetchFavorites}
         userEmail={userEmail}
+        isFavoritesLoading={isFavoritesLoading}
+        setIsFavoritesLoading={setIsFavoritesLoading}
+        hasFetched={hasFetched}
+        setHasFetched={setHasFetched}
         className="relative w-full"
       >
         {Object.keys(favorites).length > 0 ? (
@@ -218,11 +225,7 @@ const RecipesMenu = ({
               }
               setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
             >
-              <Button
-                variant={"outline"}
-                className="gap-2"
-                disabled={loading ? true : false}
-              >
+              <Button variant={"outline"} className="gap-2">
                 <FileText className="left-2" />
                 <div className="line-clamp-1 items-center text-lg">
                   Preview PDF{" "}
@@ -232,10 +235,16 @@ const RecipesMenu = ({
           </div>
         ) : (
           <div className="animate-fade-in flex justify-center p-0.5">
-            <span>
-              You have <b> {Object.keys(favorites).length} </b> recipes
-              favorited. Get started by favoriting something!
-            </span>
+            {isFavoritesLoading ? (
+              <div className="mt-12 flex size-full items-center justify-center rounded-md bg-background p-2 text-primary shadow-md">
+                <Loader2 className="size-12 animate-spin" />
+              </div>
+            ) : (
+              <span>
+                You have <b> {Object.keys(favorites).length} </b> recipes
+                favorited. Get started by favoriting something!
+              </span>
+            )}
           </div>
         )}
 

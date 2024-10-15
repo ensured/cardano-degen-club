@@ -1,5 +1,4 @@
-"use client"
-
+/* eslint-disable react-hooks/exhaustive-deps */
 import { ReactNode, useEffect, useState } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { Heart, Loader2, StarIcon } from "lucide-react"
@@ -16,13 +15,6 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 
-// type Favorites = {
-//   [name: string]: {
-//     link: string
-//     url: string // Assuming image is a URL or similar
-//   }
-// }
-
 const FavoritesSheet = ({
   children,
   setOpen,
@@ -31,13 +23,17 @@ const FavoritesSheet = ({
   favorites,
   setFavorites,
   userEmail,
+  isFavoritesLoading,
+  setIsFavoritesLoading,
+  hasFetched,
+  setHasFetched,
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
-  const [isFavoritesLoading, setIsFavoritesLoading] = useState(true)
 
   useEffect(() => {
     const getFavoritez = async () => {
+      setIsFavoritesLoading(true)
       const res = await getFavorites(userEmail)
       if (!res) return
 
@@ -54,27 +50,30 @@ const FavoritesSheet = ({
       })
       setFavorites(newFavorites)
       setIsFavoritesLoading(false)
+      setHasFetched(true) // Mark that fetching has occurred
     }
 
-    getFavoritez()
-  }, [])
+    if (isOpen && !hasFetched) {
+      // Fetch only if sheet is open and we haven't fetched data yet
+      getFavoritez()
+    }
+  }, [isOpen])
 
   return (
     <div className="flex justify-center">
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
-        {/*  maybe add ref here? */}
         <SheetTrigger asChild>
           <Button
-            disabled={isFavoritesLoading}
+            disabled={loading}
             variant="outline"
             className="flex-1 text-xs md:text-base"
           >
             {isFavoritesLoading ? (
-              <div className="flex flex-row items-center justify-center gap-[0.25rem]">
-                <Loader2 className="size-4 md:size-5 animate-spin" /> Favorites
+              <div className="flex flex-row items-center justify-center gap-1">
+                <Loader2 className="size-4 animate-spin md:size-5" /> Favorites
               </div>
             ) : (
-              <div className="flex flex-row items-center justify-center gap-[0.25rem]">
+              <div className="flex flex-row items-center justify-center gap-1">
                 <Heart className="size-4 md:size-5" />
                 <span className="text-xs md:text-base">Favorites</span>
               </div>
@@ -102,12 +101,6 @@ const FavoritesSheet = ({
           </SheetHeader>
 
           {children}
-
-          {/* <SheetFooter>
-             <SheetClose asChild>
-              <Button type="submit">Save changes</Button>
-            </SheetClose>
-          </SheetFooter> */}
         </SheetContent>
       </Sheet>
     </div>

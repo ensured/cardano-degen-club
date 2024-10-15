@@ -190,6 +190,7 @@ const RecipeSearchForm = ({
             <Button
               onMouseOver={() => handleHover(true)}
               onMouseOut={() => handleHover(false)}
+              disabled={loading}
               className="flex gap-1.5 text-xs md:text-base"
               variant="outline"
             >

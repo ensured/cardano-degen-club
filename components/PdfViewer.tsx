@@ -19,8 +19,7 @@ import { Switch } from "@/components/ui/switch"
 
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import "pdfjs-dist/build/pdf.worker.mjs";
-
+import "pdfjs-dist/build/pdf.worker.mjs"
 
 const options = {
   cMapUrl: "/cmaps/",
@@ -75,6 +74,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   const [filename, setFilename] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
   const [isSwitchChecked, setIsSwitchChecked] = useState(false)
+  const [isContainerDivHidden, setIsContainerDivHidden] = useState(true)
 
   const moveCursor = useCallback(async () => {
     if (inputRef.current) {
@@ -128,12 +128,26 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   function onDocumentLoadSuccess({
     numPages: nextNumPages,
   }: PDFDocumentProxy): void {
+    setIsContainerDivHidden(false)
     setNumPages(nextNumPages)
-    setTimeout(() => {
-      inputRef.current?.focus()
-      moveCursor()
-    }, 200)
   }
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      if (inputRef.current) {
+        inputRef.current.focus()
+        moveCursor() // Move cursor if needed
+      }
+    })
+
+    const targetNode = document.body // or a more specific element containing your input
+    observer.observe(targetNode, {
+      childList: true,
+      subtree: true,
+    })
+
+    return () => observer.disconnect()
+  }, [moveCursor])
 
   // Function to handle download using jsPDF
   async function handleDownload() {
@@ -187,10 +201,12 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
     setIsSwitchChecked(!isSwitchChecked)
   }
 
+  const handleHideDiv = (opt: boolean) => setIsContainerDivHidden(opt)
+
   if (!size.width || !size.height) return null
 
   return (
-    <div>
+    <div className={`${isContainerDivHidden ? "hidden" : "block"}`}>
       <label htmlFor="file"></label>{" "}
       <input onChange={onFileChange} type="file" hidden />
       <div
@@ -239,6 +255,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
                     onClick={() => {
                       if (file) {
                         setFile(null)
+                        handleHideDiv(true)
                       }
                     }}
                   >
