@@ -72,11 +72,6 @@ const RecipeSearchForm = ({
     try {
       e.preventDefault()
       handleHideKeyboard()
-      setSearchResults({
-        hits: [],
-        count: 0,
-        nextPage: "",
-      })
       const randomIndex = Math.floor(Math.random() * foodItems.length)
       const randomFoodItem = foodItems[randomIndex]
       setInput(randomFoodItem)
