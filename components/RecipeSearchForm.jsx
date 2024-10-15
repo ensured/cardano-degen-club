@@ -3,10 +3,18 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { BookOpen, BookOpenCheck, Dice3Icon, Search } from "lucide-react"
+import {
+  BookOpen,
+  BookOpenCheck,
+  Dice3Icon,
+  Loader2,
+  Loader2Icon,
+  Search,
+} from "lucide-react"
 
 import { foodItems } from "../lib/foods"
 import recipeFrenLogo from "../public/recipeFrenLogo.jpg"
+import CustomLoader2 from "./CustomLoader2"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -61,8 +69,6 @@ const RecipeSearchForm = ({
 
   const handleGetRandomFood = async (e) => {
     try {
-      setLoading(true)
-
       e.preventDefault()
       handleHideKeyboard()
       setSearchResults({
@@ -79,8 +85,6 @@ const RecipeSearchForm = ({
       toast(error.message, {
         type: "error",
       })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -113,7 +117,7 @@ const RecipeSearchForm = ({
           <Button
             type="submit"
             variant="default"
-            disabled={!input}
+            disabled={!input || input === "" || loading}
             className="flex items-center gap-1.5"
           >
             <Search className="size-5 md:size-6" />
@@ -152,6 +156,7 @@ const RecipeSearchForm = ({
           </Link>
         </div>
       </div>
+
       {width > 540 && (
         <div className="ml-1.5 hidden items-center md:flex flex-none">
           <Image

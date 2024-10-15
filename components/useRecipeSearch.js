@@ -61,6 +61,7 @@ const useRecipeSearch = () => {
     }
 
     if (e?.target?.tagName === "FORM") {
+      setLoading(true)
       e.preventDefault()
       setSearchResults({
         hits: [],
