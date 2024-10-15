@@ -69,12 +69,13 @@ const FavoritesSheet = ({
             className="flex-1 text-xs md:text-base"
           >
             {isFavoritesLoading ? (
-              <div className="flex flex-row items-center justify-center gap-[0.85rem]">
-                <Loader2 className="size-5 animate-spin" /> Favorites
+              <div className="flex flex-row items-center justify-center gap-[0.25rem]">
+                <Loader2 className="size-4 md:size-5 animate-spin" /> Favorites
               </div>
             ) : (
-              <div className="flex flex-row items-center justify-center gap-[0.65rem]">
-                <Heart className="mr-2 size-4" /> Favorites
+              <div className="flex flex-row items-center justify-center gap-[0.25rem]">
+                <Heart className="size-4 md:size-5" />
+                <span className="text-xs md:text-base">Favorites</span>
               </div>
             )}
           </Button>

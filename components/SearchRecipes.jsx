@@ -53,13 +53,12 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         style={{ width: `${scrollProgress}%` }}
       ></div>
 
-      {/* Include the ScrollTooltip component */}
-      <ScrollTooltip
+      {/* <ScrollTooltip
         // currentCardIndex={currentCardIndex}
         // totalCards={searchResults.hits.length}
         // totalResults={searchResults.count}
         favorites={favorites}
-      />
+      /> */}
 
       <RecipeSearchForm
         setSuggestions={setSuggestions}

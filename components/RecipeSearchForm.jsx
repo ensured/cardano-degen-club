@@ -3,10 +3,10 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { BookOpen, BookOpenCheck, Search, Shuffle } from "lucide-react"
+import { BookOpen, BookOpenCheck, Dice3Icon, Search } from "lucide-react"
 
 import { foodItems } from "../lib/foods"
-import googleLogo from "../public/recipeFrenLogo.jpg"
+import recipeFrenLogo from "../public/recipeFrenLogo.jpg"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -98,9 +98,9 @@ const RecipeSearchForm = ({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl space-x-2">
-      <div className="grow space-y-2">
-        <form onSubmit={handleFormSubmit} className="flex space-x-2">
+    <div className="flex justify-center ">
+      <div className="w-full max-w-3xl space-y-1.5">
+        <form onSubmit={handleFormSubmit} className="flex gap-1.5">
           <Input
             type="text"
             name="searchTerm"
@@ -113,22 +113,22 @@ const RecipeSearchForm = ({
           <Button
             type="submit"
             variant="default"
-            disabled={input === "" || input === null || input === undefined}
+            disabled={!input}
+            className="flex items-center gap-1.5"
           >
-            <Search className="mr-2 size-4 text-xs md:text-base" />
+            <Search className="size-5 md:size-6" />
             Search
           </Button>
         </form>
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-1.5">
           <Button
             onClick={handleGetRandomFood}
             variant="outline"
-            className="flex-1 text-xs md:text-base"
+            className="flex-1 gap-1.5 text-xs md:text-base"
           >
-            <Shuffle className={`mr-2 size-4`} />
-            {/* {width < 440 ? "Random" : "Random Recipe"} */}
-            Random Recipe
-          </Button>{" "}
+            <Dice3Icon className="size-4 md:size-5" />
+            {width < 440 ? "Random" : "Random Recipe"}
+          </Button>
           <RecipesMenu
             favorites={favorites}
             setFavorites={setFavorites}
@@ -139,13 +139,13 @@ const RecipeSearchForm = ({
             <Button
               onMouseOver={() => handleHover(true)}
               onMouseOut={() => handleHover(false)}
-              className="text-xs md:text-base"
+              className="flex gap-1.5 text-xs md:text-base"
               variant="outline"
             >
               {isOpen ? (
-                <BookOpenCheck className="mr-2 size-4" />
+                <BookOpenCheck className="size-4" />
               ) : (
-                <BookOpen className="mr-2 size-4" />
+                <BookOpen className="size-4" />
               )}
               Notepad
             </Button>
@@ -153,13 +153,13 @@ const RecipeSearchForm = ({
         </div>
       </div>
       {width > 540 && (
-        <div className="flex shrink-0 items-center">
+        <div className="ml-1.5 hidden items-center md:flex flex-none">
           <Image
-            src={googleLogo}
+            src={recipeFrenLogo}
             alt="recipe fren logo"
-            className="ml-1 grow rounded-2xl p-1.5"
-            width={90}
-            height={90}
+            className="rounded-full"
+            width={90} // Set fixed width
+            height={90} // Set fixed height
           />
         </div>
       )}
