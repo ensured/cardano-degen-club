@@ -76,6 +76,7 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         setFavorites={setFavorites}
         removeFromFavorites={removeFromFavorites}
         lastInputSearched={lastInputSearched}
+        userEmail={userInfo.email}
       />
 
       {/* <div className="fixed inset-x-0 top-0 -z-20 h-full w-full overflow-hidden">

@@ -8,7 +8,7 @@ import MemoryCache from "memory-cache"
 import { z } from "zod"
 import { KindeUser } from "@kinde-oss/kinde-auth-nextjs/dist/types"
 import { FeedbackFormSchema } from "@/lib/schema"
-
+import pLimit from 'p-limit'
 import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
@@ -148,11 +148,7 @@ type Favorite = {
 
 
 
-export async function getFavorites() {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-  if (!isAuthenticated()) return
-
-  const userEmail = await getUser().then((user: KindeUser<CustomUserProps> | null) => user?.email)
+export async function getFavorites(userEmail: string) {
   const params = {
     Bucket: process.env.S3_BUCKET_NAME_RECIPES,
     Prefix: `favorites/images/${userEmail}/`,
@@ -161,15 +157,15 @@ export async function getFavorites() {
   try {
     const listObjectsV2Command = new ListObjectsV2Command(params)
     const listObjectsV2Response = await s3Client.send(listObjectsV2Command)
-    const objects = listObjectsV2Response.Contents || []
+    const objects = (listObjectsV2Response.Contents || []).filter(obj => obj.Key)
 
     if (objects.length === 0) {
-      return [] // No objects found, return empty array
+      return []
     }
 
-    // Fetch metadata and generate pre-signed URLs for all objects in parallel
+    const limit = pLimit(5)
     const metadataAndUrls = await Promise.all(
-      objects.map(async (object) => {
+      objects.map(object => limit(async () => {
         const key = object.Key
         if (!key) return
         try {
@@ -178,34 +174,27 @@ export async function getFavorites() {
             Key: key,
           })
           const headObjectResponse = await s3Client.send(headObjectCommand)
-
-          // Extract metadata
           const metadata = headObjectResponse.Metadata
           const name = metadata?.name
           const link = metadata?.link
-
-          // Generate pre-signed URL
           const preSignedUrl = await generatePreSignedUrl(key)
 
           return { name, link, url: preSignedUrl }
         } catch (error) {
           console.error(`Error fetching metadata for key ${key}:`, error)
-          return null // Return null for failed metadata retrieval
+          return null
         }
-      })
+      }))
     )
 
-    // Filter out null entries (failed metadata retrieval)
-    const validMetadataAndUrls = metadataAndUrls.filter(
-      (entry) => entry !== null
-    )
-    revalidatePath("/recipe-fren")
+    const validMetadataAndUrls = metadataAndUrls.filter(entry => entry !== null)
     return validMetadataAndUrls
   } catch (error) {
     console.error("Error fetching favorite images:", error)
-    return [] // Return empty array in case of error
+    return []
   }
 }
+
 
 export async function deleteAllFavorites() {
   const { getUser, isAuthenticated } = getKindeServerSession()

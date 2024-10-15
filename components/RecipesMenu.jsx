@@ -34,6 +34,7 @@ const RecipesMenu = ({
   removeFromFavorites,
   loading,
   fetchFavorites,
+  userEmail,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
@@ -203,6 +204,7 @@ const RecipesMenu = ({
         loading={loading}
         favorites={favorites}
         fetchFavorites={fetchFavorites}
+        userEmail={userEmail}
         className="relative w-full"
       >
         {Object.keys(favorites).length > 0 ? (

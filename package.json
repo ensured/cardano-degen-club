@@ -66,6 +66,7 @@
     "net": "^1.0.2",
     "next": "^14.2.7",
     "next-themes": "^0.2.1",
+    "p-limit": "^6.1.0",
     "pdfjs-dist": "^4.3.136",
     "prismjs": "^1.29.0",
     "punycode": "^2.3.1",

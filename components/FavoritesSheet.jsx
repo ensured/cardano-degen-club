@@ -30,6 +30,7 @@ const FavoritesSheet = ({
   loading,
   favorites,
   setFavorites,
+  userEmail,
 }) => {
   const theme = useTheme()
   const size = useWindowSize()
@@ -37,7 +38,7 @@ const FavoritesSheet = ({
 
   useEffect(() => {
     const getFavoritez = async () => {
-      const res = await getFavorites()
+      const res = await getFavorites(userEmail)
       if (!res) return
 
       const newFavorites = {}
