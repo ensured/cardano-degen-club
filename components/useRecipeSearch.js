@@ -21,6 +21,7 @@ const useRecipeSearch = () => {
   })
   const searchParams = useSearchParams()
   const [input, setInput] = useState(searchParams?.get("q") || "")
+  const [lastInputSearched, setLastInputSearched] = useState(null)
   const lastFoodItemRef = useRef()
   const [favorites, setFavorites] = useState({})
   const [hoveredRecipeIndex, setHoveredRecipeIndex] = useState(null)
@@ -29,8 +30,14 @@ const useRecipeSearch = () => {
   const [isMobile, setIsMobile] = useState(false)
 
   const searchRecipes = useCallback(async (e, q) => {
+    setSearchResults({
+      hits: [],
+      count: 0,
+      nextPage: "",
+    })
     setLoading(true)
     if (q) {
+      setLastInputSearched(q)
       try {
         const res = await fetch(`/api/search?q=${q}`)
 
@@ -54,23 +61,13 @@ const useRecipeSearch = () => {
           type: "error",
         })
       } finally {
-        setSuggestions([])
         setLoading(false)
         router.replace(`?q=${q}`)
       }
     }
 
-    if (e?.target?.tagName === "FORM") {
-      setLoading(true)
-      e.preventDefault()
-      setSearchResults({
-        hits: [],
-        count: 0,
-        nextPage: "",
-      })
-    }
-
     try {
+      setLastInputSearched(input)
       const res = await fetch(`/api/search?q=${input}`)
       const data = await res.json()
       if (data.success === false) {
@@ -328,6 +325,7 @@ const useRecipeSearch = () => {
     currentCardIndex,
     isMobile,
     setSearchResults,
+    lastInputSearched,
   }
 }
 

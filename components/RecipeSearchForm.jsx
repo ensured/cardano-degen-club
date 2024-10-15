@@ -31,6 +31,7 @@ const RecipeSearchForm = ({
   removeFromFavorites,
   favorites,
   setFavorites,
+  lastInputSearched,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -117,7 +118,9 @@ const RecipeSearchForm = ({
           <Button
             type="submit"
             variant="default"
-            disabled={!input || input === "" || loading}
+            disabled={
+              !input || input === "" || loading || lastInputSearched === input
+            }
             className="flex items-center gap-1.5"
           >
             <Search className="size-5 md:size-6" />
