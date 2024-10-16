@@ -69,7 +69,7 @@ const ConvertAda = () => {
     } catch (error) {
       let errorMessage = `${error.message}. Coingecko api down?`
       if (error.response && error.response.status) {
-        toast(`${errorMessage} Status code: ${error.response.status}`, {
+        toast(`${errorMessage}`, {
           type: "error",
         })
       }
@@ -127,75 +127,79 @@ const ConvertAda = () => {
     currency === "ADA" && amount / (cryptoPrices.ADA * cryptoPrices.BTC)
 
   return (
-    <div className=" container mt-4 flex h-52 flex-col">
-      <div className="flex flex-row items-center gap-2">
-        <Switch
-          id="currency-switch"
-          checked={currency === "ADA"}
-          onCheckedChange={handleSwitchChange}
-        />
-        <Label htmlFor="currency-switch">
-          <div className={"flex items-center justify-center gap-2"}>
-            {" "}
-            {currency}
-          </div>
-          {currency === "ADA" ? (
-            <div className={cn(`${currency === "BTC" ? "p-0" : "px-2"}`)}>
-              {cryptoPrices && <strong>${cryptoPrices.ADA.toFixed(4)}</strong>}
+    cryptoPrices.ADA !== 0 && (
+      <div className=" container mt-4 flex h-52 flex-col">
+        <div className="flex flex-row items-center gap-2">
+          <Switch
+            id="currency-switch"
+            checked={currency === "ADA"}
+            onCheckedChange={handleSwitchChange}
+          />
+          <Label htmlFor="currency-switch">
+            <div className={"flex items-center justify-center gap-2"}>
+              {" "}
+              {currency}
             </div>
+            {currency === "ADA" ? (
+              <div className={cn(`${currency === "BTC" ? "p-0" : "px-2"}`)}>
+                {cryptoPrices && (
+                  <strong>${cryptoPrices.ADA.toFixed(4)}</strong>
+                )}
+              </div>
+            ) : (
+              <div className="">
+                {cryptoPrices && (
+                  <strong>
+                    $
+                    {cryptoPrices.BTC.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </strong>
+                )}
+              </div>
+            )}
+          </Label>
+
+          {currency === "ADA" ? (
+            <Icons.ada className="h-32 w-32" />
           ) : (
-            <div className="">
-              {cryptoPrices && (
-                <strong>
-                  $
-                  {cryptoPrices.BTC.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
-                </strong>
-              )}
+            <Icons.btc className="h-32 w-32" />
+          )}
+          <Input
+            type="number"
+            min={"1"}
+            max={"20"}
+            value={amount}
+            onChange={handleAmountChange}
+            className=""
+            placeholder={`Enter ${currency} amount`}
+          />
+
+          {amount.length >= 20 ? <div className="inline">Too long!</div> : ""}
+        </div>
+
+        <div className="flex flex-col break-all">
+          {currency === "ADA" && cryptoPrices.BTC && (
+            <div>
+              BTC: {amount > 0 && <strong>{convertedBTC.toFixed(10)}</strong>}
             </div>
           )}
-        </Label>
 
-        {currency === "ADA" ? (
-          <Icons.ada className="h-32 w-32" />
-        ) : (
-          <Icons.btc className="h-32 w-32" />
-        )}
-        <Input
-          type="number"
-          min={"1"}
-          max={"20"}
-          value={amount}
-          onChange={handleAmountChange}
-          className=""
-          placeholder={`Enter ${currency} amount`}
-        />
+          {currency === "BTC" && (
+            <div>ADA: {amount > 0 && <strong>{convertedADA}</strong>}</div>
+          )}
 
-        {amount.length >= 20 ? <div className="inline">Too long!</div> : ""}
+          <p>Sats: {amount > 0 && <strong>{convertedSats}</strong>}</p>
+
+          {currency === "ADA" && (
+            <p>
+              Lovelaces: {amount > 0 && <strong>{convertedLovelaces}</strong>}
+            </p>
+          )}
+        </div>
       </div>
-
-      <div className="flex flex-col break-all">
-        {currency === "ADA" && cryptoPrices.BTC && (
-          <div>
-            BTC: {amount > 0 && <strong>{convertedBTC.toFixed(10)}</strong>}
-          </div>
-        )}
-
-        {currency === "BTC" && (
-          <div>ADA: {amount > 0 && <strong>{convertedADA}</strong>}</div>
-        )}
-
-        <p>Sats: {amount > 0 && <strong>{convertedSats}</strong>}</p>
-
-        {currency === "ADA" && (
-          <p>
-            Lovelaces: {amount > 0 && <strong>{convertedLovelaces}</strong>}
-          </p>
-        )}
-      </div>
-    </div>
+    )
   )
 }
 

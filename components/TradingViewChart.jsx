@@ -49,16 +49,11 @@ function TradingViewWidget() {
         theme: "dark",
         style: "1",
         locale: "en",
-        width: width - 20,
-        height: "400",
         container_id: containerId,
+        width: width - 20,
+        height: "420",
       })
     })
-  }
-
-  const handleChartClick = (chartId) => {
-    // Toggle the active chart
-    setActiveChart((prev) => (prev === chartId ? null : chartId))
   }
 
   const openFullscreen = (chartId) => {
@@ -82,10 +77,12 @@ function TradingViewWidget() {
         theme: "dark",
         style: "1",
         locale: "en",
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: window.innerWidth - 10,
+        height: window.innerHeight - 10,
         container_id: "fullscreen_chart",
       })
+      document.getElementById("fullscreen_chart").style.accentColor =
+        "rgba(255,255,255, 100)"
     }, 0)
   }
 
@@ -105,35 +102,26 @@ function TradingViewWidget() {
           "tradingview_iag_usdt",
         ][i]
         return (
-          <div key={chartId} className="relative h-[400px] w-full">
-            <div id={chartId} className="size-full rounded-md" />
+          <div
+            key={chartId}
+            className="relative h-full w-full gap-4 grid grid-cols-1 "
+          >
+            <div id={chartId} className="size-full rounded-md relative" />
             <button
               onClick={() => openFullscreen(chartId)}
               className="bg-blue-500 absolute right-11 top-[0.222rem] rounded bg-[#00000069] px-2 py-1 text-white"
             >
               <EnterFullScreenIcon className="size-6" />
             </button>
-            {/* Overlay */}
-            <div className={`absolute mx-2.5 rounded-md transition-opacity`}>
-              {chartId === "tradingview_iag_usdt" && (
-                <div className="flex h-full items-center justify-center">
-                  <Image
-                    src={iagLogo}
-                    alt="IAG Logo"
-                    className="size-40 rounded-lg" // Adjust width and height as needed
-                  />
-                </div>
-              )}
-            </div>
           </div>
         )
       })}
       {fullscreenChart && (
-        <div className="fixed inset-0 w-screen flex items-center justify-center bg-black bg-opacity-75 z-40">
+        <div className="fixed inset-0 pb-4 flex items-center justify-center bg-black bg-opacity-75 z-40">
           <div className=" rounded-lg p-4">
             <button
               onClick={closeFullscreen}
-              className="absolute -top-1.5 right-11 bg-red-700/30 text-white px-2 py-1 rounded z-50"
+              className="absolute -top-[0.54rem] right-11 bg-red-700/30 text-white px-2 py-1 rounded z-50"
             >
               <X className="size-7" />
             </button>

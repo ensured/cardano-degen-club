@@ -32,10 +32,13 @@ const FavoritesSheet = ({
   const size = useWindowSize()
 
   useEffect(() => {
-    const getFavoritez = async () => {
+    const getFavs = async () => {
       setIsFavoritesLoading(true)
       const res = await getFavorites(userEmail)
-      if (!res) return
+      if (!res) {
+        setIsFavoritesLoading(false)
+        return
+      }
 
       const newFavorites = {}
       res.forEach((favorite) => {
@@ -54,8 +57,8 @@ const FavoritesSheet = ({
     }
 
     if (isOpen && !hasFetched) {
-      // Fetch only if sheet is open and we haven't fetched data yet
-      getFavoritez()
+      // Only get favorites if sheet is open and we haven't fetched data yet
+      getFavs()
     }
   }, [isOpen])
 
