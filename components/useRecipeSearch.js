@@ -249,34 +249,6 @@ const useRecipeSearch = () => {
       setFavorites(newFavorites)
       setIsFavoritesLoading(true)
       const res = await removeFavorite(extractRecipeId(recipeLink)) // server action
-      if (res.httpStatusCode && res.requestId) {
-        // Display the message to the user
-        toast("", {
-          type: "success",
-          duration: 800,
-          position: "bottom-center",
-          style: {
-            margin: "0px",
-            padding: "0px",
-            width: "1rem",
-            height: "1rem",
-            transform: "translateY(-1rem)",
-          },
-        })
-      } else {
-        toast("", {
-          type: "error",
-          duration: 800,
-          position: "bottom-center",
-          style: {
-            margin: "0px",
-            padding: "0px",
-            width: "1rem",
-            height: "1rem",
-            transform: "translateY(-1rem)",
-          },
-        })
-      }
       setIsFavoritesLoading(false)
     } else {
       try {
@@ -297,37 +269,6 @@ const useRecipeSearch = () => {
           link: recipeLink,
         })
 
-        if (response.preSignedImageUrl.startsWith("https://recipes-44")) {
-          // Display the message to the user
-          toast("", {
-            type: "success",
-            duration: 800,
-            position: "bottom-center",
-            style: {
-              margin: "0px",
-              padding: "0px",
-              width: "1rem",
-              height: "1rem",
-              transform: "translateY(-1rem)",
-            },
-          })
-          setIsFavoritesLoading(false)
-        } else {
-          toast("", {
-            type: "error",
-            duration: 800,
-            position: "bottom-center",
-            style: {
-              margin: "0px",
-              padding: "0px",
-              width: "1rem",
-              height: "1rem",
-              transform: "translateY(-1rem)",
-            },
-          })
-          setIsFavoritesLoading(false)
-        }
-
         if (response.error) {
           toast(response.error, { type: "error" })
           // Revert the optimistic update if the asynchronous operation fails
@@ -335,11 +276,9 @@ const useRecipeSearch = () => {
             const { [recipeLink]: value, ...newFavorites } = prevFavorites
             return newFavorites
           })
-          setIsFavoritesLoading(false)
         } else if (response.success) {
           // Display the message to the user
           toast(response.message, { type: "error", duration: 3000 })
-          setIsFavoritesLoading(false)
           setFavorites((prevFavorites) => {
             const { [recipeLink]: value, ...newFavorites } = prevFavorites
             return newFavorites
@@ -353,7 +292,6 @@ const useRecipeSearch = () => {
               url: response.preSignedImageUrl,
             },
           }))
-          setIsFavoritesLoading(false)
         }
       } catch (error) {
         console.error("Error adding favorite:", error)
@@ -365,6 +303,7 @@ const useRecipeSearch = () => {
           const { [recipeLink]: value, ...newFavorites } = prevFavorites
           return newFavorites
         })
+      } finally {
         setIsFavoritesLoading(false)
       }
     }
