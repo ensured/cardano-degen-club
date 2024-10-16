@@ -152,6 +152,7 @@ const RecipeSearchForm = ({
             value={input}
             onChange={handleInputChange}
             className="grow"
+            enterkeyhint="search"
           />
           <Button
             type="submit"
