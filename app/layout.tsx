@@ -39,12 +39,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   return (
     <>
       <html lang="en" suppressHydrationWarning>
-        <body
-          className={cn(
-            "min-h-screen bg-background font-sans antialiased",
-            fontSans.variable
-          )}
-        >
+        <body className={cn("min-h-screen bg-background", fontSans.variable)}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

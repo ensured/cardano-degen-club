@@ -287,7 +287,7 @@ export async function addFavorite({ name, url, link }: Favorite) {
 
     // Generate pre-signed URL for the uploaded image
     const preSignedImageUrl = await generatePreSignedUrl(key)
-
+    console.log({preSignedImageUrl})
     return { preSignedImageUrl }
   } catch (err) {
     console.error("Error adding favorite:", err)
@@ -306,7 +306,8 @@ export async function removeFavorite(recipeName: string) {
   }
   const deleteObjectCommand = new DeleteObjectCommand(params)
   const deleteObjectResponse = await s3Client.send(deleteObjectCommand)
-  return deleteObjectResponse
+  console.log(deleteObjectResponse.$metadata)
+  return deleteObjectResponse.$metadata
 }
 
 export async function getPreSignedUrl(key: string) {

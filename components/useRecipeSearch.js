@@ -248,8 +248,37 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
       setIsFavoritesLoading(true)
-      await removeFavorite(extractRecipeId(recipeLink)) // server action
-      setIsFavoritesLoading(false)
+      const res = await removeFavorite(extractRecipeId(recipeLink)) // server action
+      if (res.httpStatusCode && res.requestId) {
+        // Display the message to the user
+        toast("", {
+          type: "success",
+          duration: 800,
+          position: "bottom-center",
+          style: {
+            margin: "0px",
+            padding: "0px",
+            width: "1rem",
+            height: "1rem",
+            transform: "translateY(-1rem)",
+          },
+        })
+        setIsFavoritesLoading(false)
+      } else {
+        toast("", {
+          type: "error",
+          duration: 800,
+          position: "bottom-center",
+          style: {
+            margin: "0px",
+            padding: "0px",
+            width: "1rem",
+            height: "1rem",
+            transform: "translateY(-1rem)",
+          },
+        })
+        setIsFavoritesLoading(false)
+      }
     } else {
       try {
         // Optimistically add to favorites
@@ -268,6 +297,37 @@ const useRecipeSearch = () => {
           url: recipeImage,
           link: recipeLink,
         })
+
+        if (response.preSignedImageUrl.startsWith("https://recipes-44")) {
+          // Display the message to the user
+          toast("", {
+            type: "success",
+            duration: 800,
+            position: "bottom-center",
+            style: {
+              margin: "0px",
+              padding: "0px",
+              width: "1rem",
+              height: "1rem",
+              transform: "translateY(-1rem)",
+            },
+          })
+          setIsFavoritesLoading(false)
+        } else {
+          toast("", {
+            type: "error",
+            duration: 800,
+            position: "bottom-center",
+            style: {
+              margin: "0px",
+              padding: "0px",
+              width: "1rem",
+              height: "1rem",
+              transform: "translateY(-1rem)",
+            },
+          })
+          setIsFavoritesLoading(false)
+        }
 
         if (response.error) {
           toast(response.error, { type: "error" })

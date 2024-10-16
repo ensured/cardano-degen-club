@@ -15,7 +15,7 @@ module.exports = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
-        'xxs': '240px',
+        xxs: "240px",
         xs: "325px",
         ...defaultTheme.screens,
       },
@@ -83,15 +83,15 @@ module.exports = {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       keyframes: {
-        "fadeIn": {
-          '0%': {
+        fadeIn: {
+          "0%": {
             opacity: 0,
             transform: "scale(0)",
           },
-          '100%': {
+          "100%": {
             opacity: 1,
-            transform: "scale(2)"
-          }
+            transform: "scale(2)",
+          },
         },
         "accordion-down": {
           from: { height: "0" },
@@ -105,9 +105,8 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        fadeIn: 'fadeIn 0.4s ease-in',
+        fadeIn: "fadeIn 0.4s ease-in",
       },
-
     },
   },
   plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
