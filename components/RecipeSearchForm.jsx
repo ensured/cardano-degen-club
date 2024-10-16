@@ -205,17 +205,16 @@ const RecipeSearchForm = ({
         </div>
       </div>
 
-      {width > 540 && (
-        <div className="ml-1.5 hidden flex-none items-center md:flex">
-          <Image
-            src={recipeFrenLogo}
-            alt="recipe fren logo"
-            className="rounded-full"
-            width={85} // Set fixed width
-            height={85} // Set fixed height
-          />
-        </div>
-      )}
+      <div className="ml-1.5 hidden flex-none items-center md:flex">
+        <Image
+          src={recipeFrenLogo}
+          alt="recipe fren logo"
+          className="rounded-full"
+          width={85} // Set fixed width
+          height={85} // Set fixed height
+          priority
+        />
+      </div>
     </div>
   )
 }

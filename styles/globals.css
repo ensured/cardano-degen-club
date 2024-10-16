@@ -62,6 +62,45 @@
   }
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Thinner width of the scrollbar */
+  height: 8px; /* Thinner height of the scrollbar (for horizontal scrolling) */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track); /* Background of the track */
+  border-radius: 5px; /* Round edges for the track */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb); /* Background of the thumb */
+  border-radius: 5px; /* Round edges for the thumb */
+  border: 2px solid var(--scrollbar-track); /* Optional: border around the thumb */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover); /* Change thumb color on hover */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active); /* Change thumb color when active */
+}
+
+/* Firefox scrollbar styles */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Thin scrollbar */
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); /* Thumb and track color */
+}
+
+/* Define colors for the scrollbar */
+:root {
+  --scrollbar-track: rgba(255, 255, 255, 0); /* Track color */
+  --scrollbar-thumb: rgba(238, 237, 237, 0.2); /* Thumb color */
+  --scrollbar-thumb-hover: rgba(185, 185, 185, 0.877); /* Thumb color on hover */
+  --scrollbar-thumb-active: rgba(185, 185, 185, 0.877); /* Thumb color when active */
+}
+
+
 /* Firefox
  {
   scrollbar-width: thin;

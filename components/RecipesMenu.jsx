@@ -4,17 +4,17 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
+import { SpaceEvenlyHorizontallyIcon } from "@radix-ui/react-icons"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
 import {
   FileText,
   Heart,
   Loader2,
-  Shuffle,
+  LucideAlignHorizontalSpaceAround,
   Trash2Icon,
   TrashIcon,
 } from "lucide-react"
-import cache from "memory-cache"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -22,10 +22,28 @@ import { Button } from "@/components/ui/button"
 import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
-import Notepad from "./Notepad"
 import PDFViewer from "./PdfViewer"
 import { imgUrlToBase64 } from "./actions"
-import { Badge } from "./ui/badge"
+
+function getLocalStorageSize() {
+  var total = 0
+  for (var x in localStorage) {
+    var amount = (localStorage[x].length * 2) / 1024 / 1024 // adjust for UTF-16 encoding
+    total += amount
+  }
+  return total.toFixed(2) // return size in MB
+}
+
+const setLocalStorageWithoutExpiry = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value))
+}
+
+// Helper function to get item from localStorage without expiry
+const getLocalStorageWithoutExpiry = (key) => {
+  const itemStr = localStorage.getItem(key)
+  if (!itemStr) return null
+  return JSON.parse(itemStr)
+}
 
 const RecipesMenu = ({
   searchResults,
@@ -67,9 +85,9 @@ const RecipesMenu = ({
     }
   }
 
-  const CACHE_DURATION = 120000 // 2 minute cache duration
-
   const previewFavoritesPDF = async (favorites) => {
+    const size = getLocalStorageSize()
+    console.log(size)
     if (!favorites || Object.keys(favorites).length === 0) {
       toast("No favorites found", {
         icon: "",
@@ -91,13 +109,13 @@ const RecipesMenu = ({
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {
-          // Check if image is cached
-          let imageBase64 = cache.get(url)
+          // Check if image is cached in localStorage without expiry
+          let imageBase64 = getLocalStorageWithoutExpiry(url)
 
           // If not cached, fetch and cache the image
           if (!imageBase64) {
             imageBase64 = await imgUrlToBase64(url)
-            cache.put(url, imageBase64, CACHE_DURATION) // Cache for 1 minute
+            setLocalStorageWithoutExpiry(url, imageBase64) // Set the value for the key here
           }
 
           currentPosition++
@@ -189,7 +207,7 @@ const RecipesMenu = ({
   if (!size.width || !size.height) return null
 
   return (
-    <>
+    <div>
       {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
       {/* {searchResults.count > 0 ? (
         <Badge variant={"outline"}>
@@ -199,7 +217,6 @@ const RecipesMenu = ({
       ) : (
         <Badge variant={"outline"} className="invisible"></Badge>
       )} */}
-
       <FavoritesSheet
         setFavorites={setFavorites}
         setOpen={setIsOpen}
@@ -212,10 +229,9 @@ const RecipesMenu = ({
         setIsFavoritesLoading={setIsFavoritesLoading}
         hasFetched={hasFetched}
         setHasFetched={setHasFetched}
-        className="relative w-full"
       >
         {Object.keys(favorites).length > 0 ? (
-          <div className="my-1 flex w-full justify-center ">
+          <div className="my-2 flex w-full justify-center">
             <ConfirmPreviewAlertDialog
               progress={progress}
               handlePreviewPDF={handlePreviewPDF}
@@ -248,56 +264,60 @@ const RecipesMenu = ({
           </div>
         )}
 
-        <div className="animate-fade-in h-[calc(100vh-220px)] overflow-auto rounded-md">
-          <div className="  flex flex-col flex-wrap">
-            {Object.entries(favorites).map(([link, { name, url }]) => (
-              <Link
-                target="_blank"
-                href={link}
-                key={link}
-                className=" flex items-center justify-between gap-2 border-t px-1 py-2 hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
-                style={{ textDecoration: "none" }}
-              >
-                {url && (
-                  <Image
-                    src={url}
-                    width={42}
-                    height={42}
-                    alt={name}
-                    className="rounded-full"
-                    unoptimized
-                    priority
-                  />
-                )}
-                <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 ">
-                  <span className="line-clamp-3 rounded-md text-sm  md:text-base lg:text-lg">
-                    {name}
-                  </span>
-                  <button
-                    className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      removeFromFavorites(link, name)
-                    }}
-                  >
-                    <Trash2Icon
-                      size={
-                        size?.width < 480
-                          ? 20
-                          : size?.width < 640
-                          ? 22
-                          : size?.width < 900
-                          ? 23
-                          : 24
-                      }
+        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto ">
+          <div className="flex flex-col flex-wrap rounded-md border">
+            {Object.entries(favorites).map(([link, { name, url }], index) => (
+              <div key={link}>
+                <Link
+                  target="_blank"
+                  href={link}
+                  className="flex items-center justify-between gap-1.5 p-1.5  hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
+                  style={{ textDecoration: "none" }}
+                >
+                  {url && (
+                    <Image
+                      src={url}
+                      width={42}
+                      height={42}
+                      alt={name}
+                      className="rounded-full"
+                      unoptimized
+                      priority
                     />
-                    <Separator className="bg-red-900 text-red-500" />
-                  </button>
-                </div>
-              </Link>
+                  )}
+                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
+                    <span className="line-clamp-3 rounded-md text-sm md:text-base lg:text-lg">
+                      {name}
+                    </span>
+                    <button
+                      className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        removeFromFavorites(link, name)
+                      }}
+                    >
+                      <Trash2Icon
+                        size={
+                          size?.width < 480
+                            ? 20
+                            : size?.width < 640
+                            ? 22
+                            : size?.width < 900
+                            ? 23
+                            : 24
+                        }
+                      />
+                    </button>
+                  </div>
+                </Link>
+                {/* Render Separator only if not the last item */}
+                {index < Object.entries(favorites).length - 1 && (
+                  <Separator className="h-[0.01rem] w-full bg-[#cecece31]" />
+                )}
+              </div>
             ))}
             {Object.keys(favorites).length > 0 && (
-              <div className="absolute bottom-0 right-16 py-1.5">
+              <div className="absolute inset-x-0 bottom-0 flex justify-center py-1.5">
                 <DeleteAllAlert setFavorites={setFavorites}>
                   <Button
                     variant={"destructive"}
@@ -312,7 +332,7 @@ const RecipesMenu = ({
           </div>
         </div>
       </FavoritesSheet>
-    </>
+    </div>
   )
 }
 
