@@ -94,9 +94,9 @@ function TradingViewWidget() {
     <div className="space-r-2 inset-0 flex size-full flex-col space-y-4 rounded-md py-2">
       {[...Array(6).keys()].map((i) => {
         const chartId = [
+          "tradingview_ada_usd",
           "tradingview_ada_btc",
           "tradingview_ada_eth",
-          "tradingview_ada_usd",
           "tradingview_ada_dominance",
           "tradingview_btc_dominance",
           "tradingview_iag_usdt",
