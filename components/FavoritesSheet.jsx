@@ -73,22 +73,8 @@ const FavoritesSheet = ({
             size={"sm"}
           >
             <div className="flex flex-row items-center justify-center gap-1.5">
-              {Object.keys(favorites).length === 0 ? (
-                <>
-                  <Heart className="size-4 md:size-5" />
-                  <span>Favorites (0)</span>
-                </>
-              ) : (
-                <>
-                  <Heart className="size-4 md:size-5" />
-                  <span className="text-xs md:text-base">
-                    Favorites{" "}
-                    <span className="md:text-md text-xs">
-                      ({Object.keys(favorites).length})
-                    </span>
-                  </span>
-                </>
-              )}
+              <Heart className="size-4 md:size-5" />
+              <span className="text-xs md:text-base">Favorites </span>
             </div>
           </Button>
         </SheetTrigger>
