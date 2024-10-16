@@ -12,14 +12,11 @@ import {
   Dice4Icon,
   Dice5Icon,
   Dice6Icon,
-  Loader2,
-  Loader2Icon,
   Search,
 } from "lucide-react"
 
 import { foodItems } from "../lib/foods"
 import recipeFrenLogo from "../public/recipeFrenLogo.jpg"
-import CustomLoader2 from "./CustomLoader2"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -49,6 +46,7 @@ const RecipeSearchForm = ({
   userEmail,
   isFavoritesLoading,
   setIsFavoritesLoading,
+  searchResults,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -161,7 +159,7 @@ const RecipeSearchForm = ({
             disabled={
               !input || input === "" || loading || lastInputSearched === input
             }
-            className="flex items-center gap-1.5"
+            className="flex items-center justify-center gap-1.5 text-base md:text-lg"
           >
             <Search className="size-5 md:size-6" />
             Search
@@ -173,6 +171,7 @@ const RecipeSearchForm = ({
             onMouseOut={() => handleRandomButtonHover(false)}
             onClick={handleGetRandomFood}
             variant="outline"
+            size={"sm"}
             className="flex-1 gap-1.5 text-xs md:text-base"
           >
             <CurrentDiceIcon
@@ -189,6 +188,7 @@ const RecipeSearchForm = ({
             userEmail={userEmail}
             isFavoritesLoading={isFavoritesLoading}
             setIsFavoritesLoading={setIsFavoritesLoading}
+            searchResults={searchResults}
           />
           <Link href="/recipe-fren/notepad">
             <Button
@@ -197,11 +197,12 @@ const RecipeSearchForm = ({
               disabled={loading}
               className="flex gap-1.5 text-xs md:text-base"
               variant="outline"
+              size={"sm"}
             >
               {isOpen ? (
-                <BookOpenCheck className="size-4" />
+                <BookOpenCheck className="size-4 md:size-5" />
               ) : (
-                <BookOpen className="size-4" />
+                <BookOpen className="size-4 md:size-5" />
               )}
               Notepad
             </Button>

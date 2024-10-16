@@ -70,30 +70,39 @@ const FavoritesSheet = ({
             disabled={loading}
             variant="outline"
             className="flex-1 text-xs md:text-base"
+            size={"sm"}
           >
-            {isFavoritesLoading ? (
-              <div className="flex flex-row items-center justify-center gap-1">
-                <Loader2 className="size-4 animate-spin md:size-5" /> Favorites
-              </div>
-            ) : (
-              <div className="flex flex-row items-center justify-center gap-1">
-                <Heart className="size-4 md:size-5" />
-                <span className="text-xs md:text-base">Favorites</span>
-              </div>
-            )}
+            <div className="flex flex-row items-center justify-center gap-1.5">
+              {Object.keys(favorites).length === 0 ? (
+                <>
+                  <Heart className="size-4 md:size-5" />
+                  <span>Favorites (0)</span>
+                </>
+              ) : (
+                <>
+                  <Heart className="size-4 md:size-5" />
+                  <span className="text-xs md:text-base">
+                    Favorites{" "}
+                    <span className="md:text-md text-xs">
+                      ({Object.keys(favorites).length})
+                    </span>
+                  </span>
+                </>
+              )}
+            </div>
           </Button>
         </SheetTrigger>
         <SheetContent side={"right"}>
           <SheetHeader>
             <SheetTitle>
-              <div className="flex select-none items-center justify-center gap-2 text-2xl md:text-3xl ">
+              <div className="flex select-none items-center justify-center gap-2 text-2xl md:text-3xl md:text-3xl ">
                 <StarIcon
-                  size={size?.width < 768 ? 24 : 33}
+                  size={size?.width < 768 ? 26 : 30}
                   color={theme.theme === "light" ? "black" : "#FFD700"}
                 />
-                <div className="flex gap-1 ">
+                <div className="flex gap-1">
                   Favorites
-                  <div className="mt-1 text-xs font-bold md:text-sm">
+                  <div className=" text-xs font-bold md:text-sm">
                     {Object.keys(favorites).length === 0
                       ? ""
                       : `(${Object.keys(favorites).length})`}

@@ -46,7 +46,6 @@ const getLocalStorageWithoutExpiry = (key) => {
 }
 
 const RecipesMenu = ({
-  searchResults,
   favorites,
   setFavorites,
   removeFromFavorites,
@@ -55,6 +54,7 @@ const RecipesMenu = ({
   userEmail,
   isFavoritesLoading,
   setIsFavoritesLoading,
+  searchResults,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
@@ -206,18 +206,10 @@ const RecipesMenu = ({
 
   const size = useWindowSize()
   if (!size.width || !size.height) return null
-
   return (
     <div>
       {pdfPreviewUrl && <PDFViewer inputFile={pdfPreviewUrl} />}
-      {/* {searchResults.count > 0 ? (
-        <Badge variant={"outline"}>
-          Found {searchResults.count}
-          {searchResults.count === 1 ? " recipe" : " recipes"}
-        </Badge>
-      ) : (
-        <Badge variant={"outline"} className="invisible"></Badge>
-      )} */}
+
       <FavoritesSheet
         setFavorites={setFavorites}
         setOpen={setIsOpen}
@@ -244,7 +236,7 @@ const RecipesMenu = ({
             >
               <Button
                 variant={"outline"}
-                className="gap-2 shadow-md transition-transform duration-100 transform hover:scale-105"
+                className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
               >
                 <FileText className="left-2" />
                 <div className="line-clamp-1 items-center text-lg">
@@ -260,9 +252,11 @@ const RecipesMenu = ({
                 <Loader2 className="size-12 animate-spin" />
               </div>
             ) : (
-              <span>
-                You have <b> {Object.keys(favorites).length} </b> recipes
-                favorited. Get started by favoriting something!
+              <span className="text-md mt-2 flex flex-col items-center justify-center text-center md:text-lg">
+                <span>
+                  You have <b>{Object.keys(favorites).length}</b> favorite
+                  recipes. Click the star button on a recipe to favorite it.
+                </span>
               </span>
             )}
           </div>

@@ -263,7 +263,6 @@ const useRecipeSearch = () => {
             transform: "translateY(-1rem)",
           },
         })
-        setIsFavoritesLoading(false)
       } else {
         toast("", {
           type: "error",
@@ -277,8 +276,8 @@ const useRecipeSearch = () => {
             transform: "translateY(-1rem)",
           },
         })
-        setIsFavoritesLoading(false)
       }
+      setIsFavoritesLoading(false)
     } else {
       try {
         // Optimistically add to favorites
