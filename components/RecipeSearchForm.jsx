@@ -47,6 +47,8 @@ const RecipeSearchForm = ({
   setFavorites,
   lastInputSearched,
   userEmail,
+  isFavoritesLoading,
+  setIsFavoritesLoading,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
@@ -185,6 +187,8 @@ const RecipeSearchForm = ({
             removeFromFavorites={removeFromFavorites}
             loading={loading}
             userEmail={userEmail}
+            isFavoritesLoading={isFavoritesLoading}
+            setIsFavoritesLoading={setIsFavoritesLoading}
           />
           <Link href="/recipe-fren/notepad">
             <Button

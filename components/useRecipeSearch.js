@@ -28,6 +28,7 @@ const useRecipeSearch = () => {
   const [scrollProgress, setScrollProgress] = useState(0)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
 
   const searchRecipes = useCallback(async (e, q) => {
     setSearchResults({
@@ -246,7 +247,9 @@ const useRecipeSearch = () => {
       const newFavorites = { ...favorites }
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
+      setIsFavoritesLoading(true)
       await removeFavorite(extractRecipeId(recipeLink)) // server action
+      setIsFavoritesLoading(false)
     } else {
       try {
         // Optimistically add to favorites
@@ -258,6 +261,7 @@ const useRecipeSearch = () => {
           },
         }))
 
+        setIsFavoritesLoading(true)
         // Add to favorites asynchronously
         const response = await addFavorite({
           name: recipeName,
@@ -272,9 +276,11 @@ const useRecipeSearch = () => {
             const { [recipeLink]: value, ...newFavorites } = prevFavorites
             return newFavorites
           })
+          setIsFavoritesLoading(false)
         } else if (response.success) {
           // Display the message to the user
           toast(response.message, { type: "error", duration: 3000 })
+          setIsFavoritesLoading(false)
           setFavorites((prevFavorites) => {
             const { [recipeLink]: value, ...newFavorites } = prevFavorites
             return newFavorites
@@ -288,6 +294,7 @@ const useRecipeSearch = () => {
               url: response.preSignedImageUrl,
             },
           }))
+          setIsFavoritesLoading(false)
         }
       } catch (error) {
         console.error("Error adding favorite:", error)
@@ -299,6 +306,7 @@ const useRecipeSearch = () => {
           const { [recipeLink]: value, ...newFavorites } = prevFavorites
           return newFavorites
         })
+        setIsFavoritesLoading(false)
       }
     }
   }
@@ -326,6 +334,8 @@ const useRecipeSearch = () => {
     isMobile,
     setSearchResults,
     lastInputSearched,
+    isFavoritesLoading,
+    setIsFavoritesLoading,
   }
 }
 

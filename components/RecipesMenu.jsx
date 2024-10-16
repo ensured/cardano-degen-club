@@ -53,6 +53,8 @@ const RecipesMenu = ({
   loading,
   fetchFavorites,
   userEmail,
+  isFavoritesLoading,
+  setIsFavoritesLoading,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
@@ -61,7 +63,6 @@ const RecipesMenu = ({
     useState(false)
   const [progress, setProgress] = useState(0)
 
-  const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
   const [hasFetched, setHasFetched] = useState(false) // To avoid duplicate fetching
 
   const handlePreviewPDF = async () => {
@@ -241,7 +242,10 @@ const RecipesMenu = ({
               }
               setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
             >
-              <Button variant={"outline"} className="gap-2">
+              <Button
+                variant={"outline"}
+                className="gap-2 shadow-md transition-transform duration-100 transform hover:scale-105"
+              >
                 <FileText className="left-2" />
                 <div className="line-clamp-1 items-center text-lg">
                   Preview PDF{" "}
@@ -265,7 +269,11 @@ const RecipesMenu = ({
         )}
 
         <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto ">
-          <div className="flex flex-col flex-wrap rounded-md border">
+          <div
+            className={`flex flex-col flex-wrap rounded-md ${
+              Object.entries(favorites).length > 0 && "border"
+            }`}
+          >
             {Object.entries(favorites).map(([link, { name, url }], index) => (
               <div key={link}>
                 <Link
@@ -285,7 +293,7 @@ const RecipesMenu = ({
                       priority
                     />
                   )}
-                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
+                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 ">
                     <span className="line-clamp-3 rounded-md text-sm md:text-base lg:text-lg">
                       {name}
                     </span>
@@ -312,19 +320,19 @@ const RecipesMenu = ({
                 </Link>
                 {/* Render Separator only if not the last item */}
                 {index < Object.entries(favorites).length - 1 && (
-                  <Separator className="h-[0.01rem] w-full bg-[#cecece31]" />
+                  <Separator className="h-[0.005rem] w-full bg-[#ffffff25]" />
                 )}
               </div>
             ))}
             {Object.keys(favorites).length > 0 && (
-              <div className="absolute inset-x-0 bottom-0 flex justify-center py-1.5">
+              <div className="absolute inset-x-0 bottom-0 flex justify-center py-1.5 rounded-lg shadow-md transition-transform duration-100 transform hover:scale-105">
                 <DeleteAllAlert setFavorites={setFavorites}>
                   <Button
-                    variant={"destructive"}
-                    className="flex gap-2 text-sm md:text-lg"
+                    variant="destructive"
+                    className="flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
                   >
-                    Remove all
                     <TrashIcon size={size.height < 600 ? 16 : 20} />
+                    <span>Remove all</span>
                   </Button>
                 </DeleteAllAlert>
               </div>

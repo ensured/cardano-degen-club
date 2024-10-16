@@ -41,6 +41,8 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
     suggestions,
     setSuggestions,
     lastInputSearched,
+    isFavoritesLoading,
+    setIsFavoritesLoading,
   } = useRecipeSearch()
 
   return (
@@ -75,6 +77,8 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         removeFromFavorites={removeFromFavorites}
         lastInputSearched={lastInputSearched}
         userEmail={userInfo.email}
+        isFavoritesLoading={isFavoritesLoading}
+        setIsFavoritesLoading={setIsFavoritesLoading}
       />
 
       {/* <div className="fixed inset-x-0 top-0 -z-20 h-full w-full overflow-hidden">
