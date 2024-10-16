@@ -1,10 +1,19 @@
 "use client"
 
+import { useRef, useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { useWindowSize } from "@uidotdev/usehooks"
+// import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/server"
 import { Loader2Icon } from "lucide-react"
 import { Toaster } from "react-hot-toast"
+import { toast } from "sonner"
 
+import { foodItems } from "../lib/foods"
 import { RecipeCard } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
+import ScrollTooltip from "./ScrollToolTip"
+import { CardTitle } from "./ui/card"
 import useRecipeSearch from "./useRecipeSearch"
 
 const SearchRecipes = ({ isAuthenticated, userInfo }) => {
@@ -80,9 +89,9 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
         </div>
       )}
       {/* Recipe Cards with data */}
-      {searchResults.hits.length > 0 ? (
-        <div className="animate-fade-in mb-8 mt-4 flex flex-col gap-4">
-          <div className="flex flex-row flex-wrap justify-center gap-4 md:gap-6">
+      {searchResults.hits.length > 0 && (
+        <div className="animate-fade-in mb-6 mt-2 flex flex-col gap-2">
+          <div className="flex flex-row flex-wrap justify-center gap-2 md:gap-4">
             {searchResults.hits.map((recipe, index) => (
               <RecipeCard
                 key={recipe.recipe.shareAs}
@@ -99,20 +108,17 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
             ))}
           </div>
 
-          {loadingMore && (
-            <div className="relative flex items-center justify-center">
-              <div className="absolute animate-spin">
-                <Loader2Icon className="size-12 text-gray-500" />
+          <div className="mb-[2.2rem]">
+            {loadingMore && (
+              <div className="p0 relative -my-1 flex flex-col items-center justify-center">
+                <div className="absolute -bottom-14 animate-spin">
+                  <Loader2Icon className="size-12" />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      ) : (
-        !loading && (
-          <div className="p-6 text-center text-gray-600 ">No recipes found</div>
-        )
       )}
-
       <Toaster
         toastOptions={{
           className: "dark:bg-zinc-950 dark:text-slate-100",
