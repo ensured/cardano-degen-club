@@ -90,12 +90,7 @@ export async function submitFeedback(data: Inputs) {
     // Check if the request is within the rate limit window
     const lastSubmission = MemoryCache.get(cacheKey)
     if (lastSubmission && now - lastSubmission < FEEDBACK_FORM_TIMEOUT_MS) {
-      console.log({
-        success: false,
-        message: `Rate limit exceeded, please try again in ${Math.ceil(
-          (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
-        )} seconds`,
-      })
+     
       return {
         success: false,
         message: `Rate limit exceeded, please try again in ${Math.ceil(
@@ -287,7 +282,6 @@ export async function addFavorite({ name, url, link }: Favorite) {
 
     // Generate pre-signed URL for the uploaded image
     const preSignedImageUrl = await generatePreSignedUrl(key)
-    console.log({preSignedImageUrl})
     return { preSignedImageUrl }
   } catch (err) {
     console.error("Error adding favorite:", err)
@@ -306,7 +300,6 @@ export async function removeFavorite(recipeName: string) {
   }
   const deleteObjectCommand = new DeleteObjectCommand(params)
   const deleteObjectResponse = await s3Client.send(deleteObjectCommand)
-  console.log(deleteObjectResponse.$metadata)
   return deleteObjectResponse.$metadata
 }
 

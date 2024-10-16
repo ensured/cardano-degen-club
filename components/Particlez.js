@@ -29,10 +29,6 @@ const Particlez = () => {
     })
   }, [])
 
-  const particlesLoaded = (container) => {
-    console.log(container)
-  }
-
   const options = useMemo(
     () => ({
       autoPlay: true,
@@ -536,13 +532,7 @@ const Particlez = () => {
   )
 
   if (init) {
-    return (
-      <Particles
-        id="tsparticles"
-        particlesLoaded={particlesLoaded}
-        options={options}
-      />
-    )
+    return <Particles id="tsparticles" options={options} />
   }
 
   return <></>
