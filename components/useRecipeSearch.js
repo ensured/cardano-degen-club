@@ -1,13 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import _debounce from "lodash/debounce"
 import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
-import { extractRecipeName } from "@/lib/utils"
+import { addFavorite, removeFavorite } from "./actions"
 
-import { addFavorite, getFavorites, removeFavorite } from "./actions"
+export function extractRecipeName(url) {
+  const recipePath = url.split("/")[4]
+  const lastDashIndex = recipePath.lastIndexOf("-")
+  const cleanedName =
+    lastDashIndex !== -1 ? recipePath.substring(0, lastDashIndex) : recipePath
+
+  const capitalizedString = cleanedName
+    .split("-")
+    .join(" ")
+    .replace(/(^|\s)\S/g, (char) => char.toUpperCase())
+
+  return capitalizedString
+}
 
 const useRecipeSearch = () => {
   const router = useRouter()

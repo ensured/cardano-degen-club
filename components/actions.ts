@@ -1,6 +1,5 @@
 "use server"
 
-import puppeteer from "puppeteer"
 import { revalidatePath } from "next/cache"
 import { headers } from "next/headers"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
@@ -19,6 +18,7 @@ import {
   getSignedUrl,
   s3Client,
 } from "../lib/s3"
+import { checkRateLimit, getClientIp } from "@/utils/rateLimiter"
 
 const FEEDBACK_FORM_TIMEOUT_MS = 300000
 type Inputs = z.infer<typeof FeedbackFormSchema>
@@ -65,73 +65,41 @@ type CustomUserProps = {
 };
 
 export async function submitFeedback(data: Inputs) {
-  const result = FeedbackFormSchema.safeParse(data)
+  const result = FeedbackFormSchema.safeParse(data);
 
-  if (!result) {
-    return {
-      success: false,
-      message: `Something went wrong when submitting your feedback`,
-    }
+  if (!result.success) {
+    return { success: false, message: "Invalid form submission." };
   }
 
-  if (result.success) {
-    const forwardedFor = headers().get("x-forwarded-for")
-    const ip = forwardedFor ? forwardedFor.split(",")[0] : null
+  const ip = getClientIp();
+  if (!ip) {
+    console.warn("Client IP address not found.");
+    return { success: false, message: "Client IP address not found." };
+  }
 
-    if (!ip) {
-      console.warn("Client IP address not found")
-      // Handle cases where IP is missing (e.g., reject request or implement alternative rate limiting)
-      return { success: false, message: "Client IP address not found" }
-    }
+  // Apply rate-limiting
+  const rateLimitResult = await checkRateLimit("feedback",ip, 120000);
+  if (!rateLimitResult.success) {
+    return rateLimitResult; // Return rate limit failure
+  }
 
-    const now = Date.now()
-    const cacheKey = `rateLimit-${ip}`
+  try {
+    const date = new Date().toISOString();
+    const jsonData = JSON.stringify({ date, ...data });
 
-    // Check if the request is within the rate limit window
-    const lastSubmission = MemoryCache.get(cacheKey)
-    if (lastSubmission && now - lastSubmission < FEEDBACK_FORM_TIMEOUT_MS) {
-     
-      return {
-        success: false,
-        message: `Rate limit exceeded, please try again in ${Math.ceil(
-          (FEEDBACK_FORM_TIMEOUT_MS - (now - lastSubmission)) / 1000
-        )} seconds`,
-      }
-    }
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: `feedback/${data.name}-${date}.json`,
+      Body: jsonData,
+    };
 
-    const date = getCurrentShorthandDateTime()
-    try {
-      const jsonData = JSON.stringify({
-        date,
-        name: data.name,
-        feedback: data.feedback,
-      })
-      const params = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `feedback/${data.name}-${date}.json`,
-        Body: jsonData,
-      }
-      const res = await s3Client.send(new PutObjectCommand(params))
-      revalidatePath("/protected")
-      return {
-        success: true,
-        message: `Thanks for your feedback! 🙏`,
-      }
-    } catch (error) {
-      console.error(error)
-      return {
-        success: false,
-        message: "An error occurred. Please try again later.",
-      }
-    } finally {
-      // Update last submission time in the cache
-      MemoryCache.put(cacheKey, now, FEEDBACK_FORM_TIMEOUT_MS) // Cache for 1 minute
-    }
-  } else {
-    return {
-      success: false,
-      message: result.error.errors[0].message,
-    }
+    await s3Client.send(new PutObjectCommand(params));
+    revalidatePath("/protected");
+
+    return { success: true, message: "Thanks for your feedback! 🙏" };
+  } catch (error) {
+    console.error(error);
+    return { success: false, message: "An error occurred. Please try again later." };
   }
 }
 
@@ -316,50 +284,5 @@ export const imgUrlToBase64 = async (url: string) => {
   } catch (error) {
     console.error("Error downloading image:", error)
     return null
-  }
-}
-
-
-
-export async function scrapePickleballVideos() {
-  const browser = await puppeteer.launch({
-    // headless: false,
-    // slowMo: 80,
-    // args: ["--window-size=1920,1080"],
-  })
-
-  const page = await browser.newPage()
-  try{
-    await page.goto("https://www.youtube.com/@PPAtour/videos")
-    // Get most recent youtube videos from #thumbnail id
-    const videos = await page.evaluate(() => {
-      const thumbnails = Array.from(
-        document.querySelectorAll("#thumbnail")
-      )
-      return thumbnails.map((thumbnail) => {
-        return {
-          title: thumbnail.querySelector(".title")?.textContent,
-          url: thumbnail.querySelector("a")?.href,
-        }
-      })
-    })
-    // filter empty videos from array
-    const filteredVideos = videos.filter((video) => video.url)
-    const videoUrls = filteredVideos.map((video) => video.url)
-    
- 
-    // extract the video ids
-    const videoIds = videoUrls.map((videoUrl) => {
-      // slice the end id
-      const videoId = videoUrl?.slice(-11)
-      return videoId
-    })
-    return videoIds
-  }
-  catch (error){
-    console.error("Error scraping pickleball videos:", error)
-  }
-  finally {
-    await page.close()
   }
 }

@@ -4,10 +4,22 @@ import Link from "next/link"
 import { StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
-import { extractRecipeName } from "@/lib/utils"
-
 import { CardBody, CardContainer, CardItem } from "../components/ui/3d-card"
 import FullTitleToolTip from "./FullTitleToolTip"
+
+export function extractRecipeName(url) {
+  const recipePath = url.split("/")[4]
+  const lastDashIndex = recipePath.lastIndexOf("-")
+  const cleanedName =
+    lastDashIndex !== -1 ? recipePath.substring(0, lastDashIndex) : recipePath
+
+  const capitalizedString = cleanedName
+    .split("-")
+    .join(" ")
+    .replace(/(^|\s)\S/g, (char) => char.toUpperCase())
+
+  return capitalizedString
+}
 
 export const RecipeCard = ({
   recipe,
