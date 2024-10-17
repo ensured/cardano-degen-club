@@ -217,6 +217,7 @@ const useRecipeSearch = () => {
       const newFavorites = { ...favorites }
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
+      setIsFavoritesLoading(true)
       const removeFav = removeFavorite(extractRecipeId(recipeLink)) // server action
 
       toast.promise(
@@ -240,6 +241,8 @@ const useRecipeSearch = () => {
     } catch (error) {
       console.error("Error removing from favorites:", error)
       toast.error(error.message)
+    } finally {
+      setIsFavoritesLoading(false)
     }
   }
 
@@ -279,7 +282,7 @@ const useRecipeSearch = () => {
           url: recipeImage,
           link: recipeLink,
         })
-
+        setIsFavoritesLoading(false)
         if (response.error) {
           toast(response.error, { type: "error" })
           // Revert the optimistic update if the asynchronous operation fails
