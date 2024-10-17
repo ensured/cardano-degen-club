@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { ReactNode, useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Heart, Loader2, StarIcon } from "lucide-react"
+import { Heart, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "react-hot-toast"
 
@@ -91,7 +91,7 @@ const FavoritesSheet = ({
                   <div className=" text-xs font-bold md:text-sm">
                     {Object.keys(favorites).length === 0
                       ? ""
-                      : `(${Object.keys(favorites).length})`}
+                      : `(${Object.keys(favorites).length}/100)`}
                   </div>
                 </div>
               </div>

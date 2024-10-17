@@ -4,17 +4,9 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
-import { SpaceEvenlyHorizontallyIcon } from "@radix-ui/react-icons"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import {
-  FileText,
-  Heart,
-  Loader2,
-  LucideAlignHorizontalSpaceAround,
-  Trash2Icon,
-  TrashIcon,
-} from "lucide-react"
+import { FileText, Loader2, Trash2Icon, TrashIcon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
