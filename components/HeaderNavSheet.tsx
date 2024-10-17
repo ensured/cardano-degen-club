@@ -60,14 +60,7 @@ export function HeaderNavSheet() {
           <div className="py-2 text-2xl font-semibold text-sky-500">
             Scripts/Apps
           </div>
-          <Link
-            className="flex gap-1 py-2 text-lg"
-            target="_blank"
-            href={"https://github.com/ensured/iagon-node-status-webapp"}
-            onClick={handleOpenChange}
-          >
-            Iagon Node Status Webapp
-          </Link>
+
           <Link
             className="flex gap-1 py-2 text-lg"
             target="_blank"
