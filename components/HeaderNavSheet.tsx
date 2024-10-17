@@ -71,10 +71,10 @@ export function HeaderNavSheet() {
           <Link
             className="flex gap-1 py-2 text-lg"
             target="_blank"
-            href={"https://github.com/ensured/iagon-node-status-webapp"}
+            href={"https://github.com/ensured/phone-backup-app-android"}
             onClick={handleOpenChange}
           >
-            Backup Buddy (Android)
+            Phone backup app (Android)
           </Link>
           <Link
             href="/tradingview-script"
