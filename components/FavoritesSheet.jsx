@@ -23,7 +23,6 @@ const FavoritesSheet = ({
   favorites,
   setFavorites,
   userEmail,
-  isFavoritesLoading,
   setIsFavoritesLoading,
   hasFetched,
   setHasFetched,

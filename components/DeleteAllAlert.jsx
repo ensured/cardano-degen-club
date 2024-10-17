@@ -1,36 +1,41 @@
-import { CheckCircle2Icon, CheckCircleIcon, Loader2 } from "lucide-react"
+import { useState } from "react"
+import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 import { deleteAllFavorites } from "./actions"
+// ShadCN UI Dialog
 import { Button } from "./ui/button"
 
 const DeleteAllAlert = ({ children, setFavorites }) => {
+  const [open, setOpen] = useState(false)
+
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Are you absolutely sure?</DialogTitle>
+          <DialogDescription>
             This action cannot be undone. This will permanently delete all your
             images stored with your account.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
             onClick={async () => {
               setFavorites({})
               try {
@@ -41,7 +46,6 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                     loading: "Removing",
                     success: (data) => (
                       <div className="text-white">
-                        {" "}
                         Removed <b>{data.Deleted.length}</b>{" "}
                         {data.Deleted.length > 1 ? "recipes" : "recipe"}
                       </div>
@@ -61,6 +65,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                     },
                   }
                 )
+                setOpen(false)
               } catch (error) {
                 console.error("Error removing favorites:", error)
                 toast.error(
@@ -70,10 +75,10 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
             }}
           >
             Continue
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
