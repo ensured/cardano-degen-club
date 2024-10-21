@@ -4,7 +4,7 @@ import { LoginPopup, LogoutPopup } from "./LoginPopup"
 
 const UserButton = async () => {
   const { getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = getUser()
   if (!user) {
     return (
       <div className="group relative z-50 flex shrink-0 flex-col-reverse items-center justify-center">

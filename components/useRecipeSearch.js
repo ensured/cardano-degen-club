@@ -280,8 +280,8 @@ const useRecipeSearch = () => {
             url: recipeImage,
           },
         }))
+
         setIsFavoritesLoading(true)
-        // start of testing
         const customMetadata = {
           name: recipeName,
           url: recipeImage,
@@ -299,15 +299,8 @@ const useRecipeSearch = () => {
           link: recipeLink,
           metadata,
         })
-        // end of testing
-
-        // Add to favorites asynchronously
-        // const response = await addFavorite({
-        //   name: recipeName,
-        //   url: recipeImage,
-        //   link: recipeLink,
-        // })
         setIsFavoritesLoading(false)
+
         if (response.error) {
           toast(response.error, { type: "error" })
           // Revert the optimistic update if the asynchronous operation fails

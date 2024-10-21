@@ -47,7 +47,7 @@ export const RecipeCard = ({
         <FullTitleToolTip title={extractRecipeName(recipe.recipe.shareAs)}>
           <CardContainer className="inter-var ">
             {/* eslint-disable-next-line tailwindcss/classnames-order */}
-            <CardBody className="md:w-72 md:h-72 h-[12.1rem] rounded-xl border border-black/[0.1] bg-gray-50 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
+            <CardBody className="md:size-72 h-[12.1rem] rounded-xl border border-black/[0.1] bg-gray-50 dark:border-white/[0.2] dark:bg-black dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1]">
               {/* Title */}
               <div className="flex flex-col items-center">
                 <CardItem

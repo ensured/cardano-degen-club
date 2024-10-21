@@ -34,7 +34,6 @@ const FavoritesSheet = ({
     const getFavs = async () => {
       setIsFavoritesLoading(true)
       const res = await getFavoritesFirebase(userEmail)
-      console.log(res)
       if (!res) {
         setIsFavoritesLoading(false)
         return

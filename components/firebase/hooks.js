@@ -62,7 +62,6 @@ export const deleteImage = async (imageRef) => {
   try {
     // Delete the image from storage
     await imageRef.delete()
-    console.log("Image deleted successfully.")
   } catch (error) {
     console.error("Error deleting image:", error)
   }
