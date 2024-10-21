@@ -1,16 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { fileToBase64 } from "@/utils/helper"
 import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
-import {
-  addFavorite,
-  addToFavoritesFirebase,
-  removeFavorite,
-  removeFavoriteFirebase,
-} from "./actions"
+import { addToFavoritesFirebase, removeFavoriteFirebase } from "./actions"
 
 export function extractRecipeName(url) {
   const recipePath = url.split("/")[4]
@@ -252,6 +246,15 @@ const useRecipeSearch = () => {
     }
   }
 
+  function extractRecipeId(url) {
+    const startIndex = url.indexOf("recipe/") + "recipe/".length
+    const endIndex = url.indexOf("/", startIndex)
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error("Invalid URL format")
+    }
+    return url.substring(startIndex, endIndex)
+  }
+
   const handleStarIconClick = (index) => async (e) => {
     e.preventDefault()
 
@@ -268,7 +271,7 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
       setIsFavoritesLoading(true)
-      await removeFavoriteFirebase(recipeName)
+      await removeFavoriteFirebase(extractRecipeId(recipeName))
       setIsFavoritesLoading(false)
     } else {
       try {

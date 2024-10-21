@@ -16,19 +16,22 @@ import { z } from "zod"
 
 import { FeedbackFormSchema } from "@/lib/schema"
 
-import {
-  DeleteObjectCommand,
-  DeleteObjectsCommand,
-  GetObjectCommand,
-  HeadObjectCommand,
-  ListObjectsV2Command,
-  PutObjectCommand,
-  getSignedUrl,
-  s3Client,
-} from "../lib/s3"
+import { PutObjectCommand, s3Client } from "../lib/s3"
 import { db, deleteObject, storage } from "./firebase/firebase"
 
 type Inputs = z.infer<typeof FeedbackFormSchema>
+
+export const imgUrlToBase64 = async (url: string) => {
+  try {
+    const response = await fetch(url)
+    const imageBuffer = await response.arrayBuffer() // Use arrayBuffer instead of buffer
+    const imageBase64 = Buffer.from(imageBuffer).toString("base64") // Convert buffer to Base64
+    return `data:image/jpeg;base64,${imageBase64}` // Return the Base64 image data
+  } catch (error) {
+    console.error("Error downloading image:", error)
+    return null
+  }
+}
 
 export async function submitFeedback(data: Inputs) {
   const result = FeedbackFormSchema.safeParse(data)
