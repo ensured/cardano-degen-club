@@ -143,6 +143,14 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
+    // Load favorites from localStorage
+    const storedFavorites = localStorage.getItem("favorites")
+    if (storedFavorites) {
+      setFavorites(JSON.parse(storedFavorites))
+    }
+  }, []) // No dependencies to run only on mount
+
+  useEffect(() => {
     const onScroll = () => {
       const scrollTop = document.documentElement.scrollTop
       const scrollHeight =
@@ -212,20 +220,29 @@ const useRecipeSearch = () => {
     return url.substring(startIndex, endIndex)
   }
 
-  const removeFromFavorites = async (recipeLink, name) => {
+  const removeFromFavorites = async (link, name) => {
+    setIsFavoritesLoading(true) // Move this line to the beginning
     try {
       const newFavorites = { ...favorites }
-      delete newFavorites[recipeLink]
-      setFavorites(newFavorites)
-      setIsFavoritesLoading(true)
-      const removeFav = removeFavoriteFirebase(name) // server action
+      delete newFavorites[link]
+
+      // Call the server action to remove from favorites
+      const removeFav = removeFavoriteFirebase(link) // server action
 
       toast.promise(
         removeFav,
         {
           loading: "Removing",
-          success: (data) => <div className="text-white">Removed!</div>,
-          error: (error) => "Couldn't remove favorite",
+          success: (data) => {
+            // Update favorites and localStorage on success
+            setFavorites(newFavorites)
+            localStorage.setItem("favorites", JSON.stringify(newFavorites))
+            return <div className="text-white">Removed!</div>
+          },
+          error: (error) => {
+            console.error("Couldn't remove favorite:", error)
+            return "Couldn't remove favorite" // You can customize this message if needed
+          },
           id: "delete-recipe",
         },
         {
@@ -242,17 +259,8 @@ const useRecipeSearch = () => {
       console.error("Error removing from favorites:", error)
       toast.error(error.message)
     } finally {
-      setIsFavoritesLoading(false)
+      setIsFavoritesLoading(false) // This should stay here
     }
-  }
-
-  function extractRecipeId(url) {
-    const startIndex = url.indexOf("recipe/") + "recipe/".length
-    const endIndex = url.indexOf("/", startIndex)
-    if (startIndex === -1 || endIndex === -1) {
-      throw new Error("Invalid URL format")
-    }
-    return url.substring(startIndex, endIndex)
   }
 
   const handleStarIconClick = (index) => async (e) => {
@@ -270,19 +278,23 @@ const useRecipeSearch = () => {
       const newFavorites = { ...favorites }
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
+      localStorage.setItem("favorites", JSON.stringify(newFavorites)) // Set localStorage here
       setIsFavoritesLoading(true)
-      await removeFavoriteFirebase(extractRecipeId(recipeName))
+      await removeFavoriteFirebase(recipeLink)
       setIsFavoritesLoading(false)
     } else {
       try {
         // Optimistically add to favorites
-        setFavorites((prevFavorites) => ({
-          ...prevFavorites,
+        const newFavorites = {
+          ...favorites,
           [recipeLink]: {
             name: recipeName,
             url: recipeImage,
           },
-        }))
+        }
+
+        setFavorites(newFavorites)
+        localStorage.setItem("favorites", JSON.stringify(newFavorites)) // Set localStorage here
 
         setIsFavoritesLoading(true)
         const customMetadata = {
@@ -308,18 +320,21 @@ const useRecipeSearch = () => {
           toast(response.error, { type: "error" })
           // Revert the optimistic update if the asynchronous operation fails
           setFavorites((prevFavorites) => {
-            const { [recipeLink]: value, ...newFavorites } = prevFavorites
-            return newFavorites
+            const { [recipeLink]: value, ...updatedFavorites } = prevFavorites
+            return updatedFavorites
           })
+          localStorage.setItem("favorites", JSON.stringify(favorites)) // Use the old favorites here
         } else {
           // Update favorites with the actual data
-          setFavorites((prevFavorites) => ({
-            ...prevFavorites,
+          const finalFavorites = {
+            ...newFavorites,
             [recipeLink]: {
               name: recipeName,
               url: response.url,
             },
-          }))
+          }
+          setFavorites(finalFavorites)
+          localStorage.setItem("favorites", JSON.stringify(finalFavorites)) // Set localStorage here
         }
       } catch (error) {
         console.error("Error adding favorite:", error)
@@ -328,9 +343,10 @@ const useRecipeSearch = () => {
         })
         // Revert the optimistic update if the asynchronous operation fails
         setFavorites((prevFavorites) => {
-          const { [recipeLink]: value, ...newFavorites } = prevFavorites
-          return newFavorites
+          const { [recipeLink]: value, ...updatedFavorites } = prevFavorites
+          return updatedFavorites
         })
+        localStorage.setItem("favorites", JSON.stringify(favorites)) // Use the old favorites here
       } finally {
         setIsFavoritesLoading(false)
       }

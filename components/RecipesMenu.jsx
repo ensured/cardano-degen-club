@@ -17,6 +17,15 @@ import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
 import { imgUrlToBase64 } from "./actions"
 
+function extractRecipeId(url) {
+  const startIndex = url.indexOf("recipe/") + "recipe/".length
+  const endIndex = url.indexOf("/", startIndex)
+  if (startIndex === -1 || endIndex === -1) {
+    throw new Error("Invalid URL format")
+  }
+  return url.substring(startIndex, endIndex)
+}
+
 function getLocalStorageSize() {
   var total = 0
   for (var x in localStorage) {
@@ -79,8 +88,6 @@ const RecipesMenu = ({
   }
 
   const previewFavoritesPDF = async (favorites) => {
-    const size = getLocalStorageSize()
-    console.log(size)
     if (!favorites || Object.keys(favorites).length === 0) {
       toast("No favorites found", {
         icon: "",

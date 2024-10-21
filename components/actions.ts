@@ -11,7 +11,6 @@ import {
   ref as storageRef,
   uploadBytes,
 } from "firebase/storage"
-import pLimit from "p-limit"
 import { z } from "zod"
 
 import { FeedbackFormSchema } from "@/lib/schema"
@@ -103,15 +102,12 @@ export async function getFavoritesFirebase(userEmail: string) {
 }
 
 export async function deleteAllFavoritesFirebase() {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-  if (!isAuthenticated()) throw new Error("User not authenticated")
-
+  const { getUser } = getKindeServerSession()
   const userEmail = getUser().email
   if (!userEmail) {
-    return {
-      error: "Not authenticated, please login",
-    }
+    return { error: "Not authenticated, please login" }
   }
+
   const userFolderRef = storageRef(storage, `images/${userEmail}/`)
 
   try {
@@ -149,18 +145,22 @@ function extractRecipeId(url: string) {
 }
 
 export async function removeFavoriteFirebase(recipeName: string) {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-  if (!isAuthenticated()) return
-
+  const { getUser } = getKindeServerSession()
   const userEmail = getUser().email
-  const key = `images/${userEmail}/${recipeName}` // Construct the path to the image
+  if (!userEmail) {
+    return { error: "Not authenticated, please login" }
+  }
 
   // Create a reference to the file to delete
-  const imageRef = storageRef(storage, key)
+  const imageRef = storageRef(
+    storage,
+    `images/${userEmail}/${extractRecipeId(recipeName)}`
+  )
 
   try {
     // Delete the image from Firebase Storage
     await deleteObject(imageRef)
+    await handleSetMaxImagesCount(false, userEmail)
     return {
       success: true,
     }
@@ -205,14 +205,11 @@ const handleSetMaxImagesCount = async (
 
 // @ts-ignore
 const addToFavoritesFirebase = async ({ name, url, link, metadata }) => {
-  const { getUser, isAuthenticated } = getKindeServerSession()
-  if (!isAuthenticated()) throw new Error("User not authenticated")
-
+  const { getUser } = getKindeServerSession()
   const userEmail = getUser().email
-  if (!userEmail)
-    throw new Error(
-      "User email not found. Please sign in or create an account to add favorites."
-    )
+  if (!userEmail) {
+    return { error: "Not authenticated, please login" }
+  }
 
   try {
     // Proceed with the upload
