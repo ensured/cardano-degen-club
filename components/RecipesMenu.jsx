@@ -294,7 +294,7 @@ const RecipesMenu = ({
                       className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
                       onClick={(e) => {
                         e.preventDefault()
-                        removeFromFavorites(link, name)
+                        removeFromFavorites(link)
                       }}
                     >
                       <Trash2Icon

@@ -155,7 +155,6 @@ export async function removeFavoriteFirebase(
   }
 
   let key
-
   if (needFormatting) {
     key = `images/${userEmail}/${extractRecipeId(recipeName)}`
   } else {

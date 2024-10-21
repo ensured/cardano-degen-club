@@ -211,7 +211,7 @@ const useRecipeSearch = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
-  const removeFromFavorites = async (link, name) => {
+  const removeFromFavorites = async (link) => {
     setIsFavoritesLoading(true) // Move this line to the beginning
     try {
       const newFavorites = { ...favorites }
@@ -256,6 +256,7 @@ const useRecipeSearch = () => {
 
   const handleStarIconClick = (index) => async (e) => {
     e.preventDefault()
+    setIsFavoritesLoading(true)
 
     const recipe = searchResults.hits[index].recipe
     const recipeName = extractRecipeName(recipe.shareAs)
@@ -270,9 +271,8 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
       localStorage.setItem("favorites", JSON.stringify(newFavorites)) // Set localStorage here
-      setIsFavoritesLoading(true)
+
       await removeFavoriteFirebase(recipeLink)
-      setIsFavoritesLoading(false)
     } else {
       try {
         // Optimistically add to favorites
@@ -287,7 +287,6 @@ const useRecipeSearch = () => {
         setFavorites(newFavorites)
         localStorage.setItem("favorites", JSON.stringify(newFavorites)) // Set localStorage here
 
-        setIsFavoritesLoading(true)
         const customMetadata = {
           name: recipeName,
           url: recipeImage,
@@ -305,7 +304,6 @@ const useRecipeSearch = () => {
           link: recipeLink,
           metadata,
         })
-        setIsFavoritesLoading(false)
 
         if (response.error) {
           toast(response.error, { type: "error" })

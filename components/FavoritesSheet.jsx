@@ -57,6 +57,7 @@ const FavoritesSheet = ({
         }
       })
       setFavorites(newFavorites)
+      localStorage.setItem("favorites", JSON.stringify(newFavorites))
       setIsFavoritesLoading(false)
       setHasFetched(true) // Mark that fetching has occurred
     }
