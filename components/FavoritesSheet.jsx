@@ -38,33 +38,28 @@ const FavoritesSheet = ({
         setIsFavoritesLoading(false)
         return
       }
-
       const newFavorites = {}
       res.forEach((favorite) => {
-        if (
-          !favorite ||
-          !favorite.name ||
-          !favorite.url ||
-          !favorite.link ||
-          !favorite.metadata.name
-        ) {
+        if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
           toast.error("Invalid favorite data")
           return
         }
+
         newFavorites[favorite.link] = {
-          name: favorite.metadata.name,
+          name: favorite.name,
           url: favorite.url,
+          link: favorite.link,
         }
       })
       setFavorites(newFavorites)
-      localStorage.setItem("favorites", JSON.stringify(newFavorites))
       setIsFavoritesLoading(false)
       setHasFetched(true) // Mark that fetching has occurred
     }
 
-    if (isOpen && !hasFetched) {
-      // Only get favorites if sheet is open and we haven't fetched data yet
+    if (isOpen) {
+      setIsFavoritesLoading(true)
       getFavs()
+      setIsFavoritesLoading(false)
     }
   }, [isOpen])
 

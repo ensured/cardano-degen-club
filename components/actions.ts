@@ -77,7 +77,7 @@ export async function submitFeedback(data: Inputs) {
 export async function getFavoritesFirebase(userEmail: string) {
   const folderRef = storageRef(storage, `images/${userEmail}/`)
   const results = await listAll(folderRef)
-  const items: { name: string; link: string; url: string; metadata: any }[] = []
+  const items: { name: string; url: string; link: string }[] = []
 
   // Use Promise.all with map to wait for all download URLs and metadata
   await Promise.all(
@@ -87,10 +87,9 @@ export async function getFavoritesFirebase(userEmail: string) {
         const metadata = await getMetadata(itemRef) // Get the metadata of the file
 
         items.push({
-          name: itemRef.name,
-          link: itemRef.fullPath,
+          link: metadata?.customMetadata?.link ?? "",
+          name: metadata?.customMetadata?.name ?? "",
           url: downloadUrl,
-          metadata: metadata.customMetadata, // Access customMetadata
         })
       } catch (error) {
         console.error("Error fetching download URL or metadata:", error)
@@ -214,6 +213,7 @@ const handleSetMaxImagesCount = async (
 
 // @ts-ignore
 const addToFavoritesFirebase = async ({ name, url, link, metadata }) => {
+  console.log(extractRecipeId(link))
   const { getUser } = getKindeServerSession()
   const user = await getUser()
   if (!user) {

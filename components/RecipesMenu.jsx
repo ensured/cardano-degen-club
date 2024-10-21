@@ -1,6 +1,6 @@
 // - This is a Recipe Sheet + results
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
@@ -26,26 +26,6 @@ function extractRecipeId(url) {
   return url.substring(startIndex, endIndex)
 }
 
-function getLocalStorageSize() {
-  var total = 0
-  for (var x in localStorage) {
-    var amount = (localStorage[x].length * 2) / 1024 / 1024 // adjust for UTF-16 encoding
-    total += amount
-  }
-  return total.toFixed(2) // return size in MB
-}
-
-const setLocalStorageWithoutExpiry = (key, value) => {
-  localStorage.setItem(key, JSON.stringify(value))
-}
-
-// Helper function to get item from localStorage without expiry
-const getLocalStorageWithoutExpiry = (key) => {
-  const itemStr = localStorage.getItem(key)
-  if (!itemStr) return null
-  return JSON.parse(itemStr)
-}
-
 const RecipesMenu = ({
   favorites,
   setFavorites,
@@ -55,7 +35,6 @@ const RecipesMenu = ({
   userEmail,
   isFavoritesLoading,
   setIsFavoritesLoading,
-  searchResults,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
@@ -110,13 +89,8 @@ const RecipesMenu = ({
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {
           // Check if image is cached in localStorage without expiry
-          let imageBase64 = getLocalStorageWithoutExpiry(url)
 
-          // If not cached, fetch and cache the image
-          if (!imageBase64) {
-            imageBase64 = await imgUrlToBase64(url)
-            setLocalStorageWithoutExpiry(url, imageBase64) // Set the value for the key here
-          }
+          imageBase64 = await imgUrlToBase64(url)
 
           currentPosition++
           const progress =

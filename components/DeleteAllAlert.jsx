@@ -38,7 +38,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
             variant="destructive"
             onClick={async () => {
               setFavorites({})
-              localStorage.setItem("favorites", "")
+              localStorage.setItem("favorites", {})
               try {
                 toast.promise(
                   deleteAllFavoritesFirebase(), // << Call the function here to return a promise
