@@ -19,6 +19,9 @@ import PDFViewer from "./PdfViewer"
 const urlToBase64 = async (url) => {
   const response = await fetch(url, {
     cache: "force-cache",
+    headers: {
+      "Access-Control-Allow-Origin": "https://www.cardanodegen.shop/",
+    },
   })
 
   const blob = await response.blob()
