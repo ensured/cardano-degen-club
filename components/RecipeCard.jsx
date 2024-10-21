@@ -20,6 +20,15 @@ export function extractRecipeName(url) {
 
   return capitalizedString
 }
+function extractRecipeId(url) {
+  const startIndex = url.indexOf("recipe/") + "recipe/".length
+  const endIndex = url.indexOf("/", startIndex)
+  if (startIndex === -1 || endIndex === -1) {
+    throw new Error("Invalid URL format")
+  }
+  const recipeId = url.substring(startIndex, endIndex)
+  return decodeURIComponent(recipeId) // Decode the URL-encoded string
+}
 
 export const RecipeCard = ({
   recipe,

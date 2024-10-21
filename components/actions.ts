@@ -212,7 +212,10 @@ const handleSetMaxImagesCount = async (
 }
 
 // @ts-ignore
-const addToFavoritesFirebase = async ({ name, url, link, metadata }) => {
+const addToFavoritesFirebase = async (
+  { name, url, link, metadata },
+  needFormatting: boolean = false
+) => {
   const { getUser } = getKindeServerSession()
   const userEmail = getUser().email
   if (!userEmail) {
@@ -223,10 +226,14 @@ const addToFavoritesFirebase = async ({ name, url, link, metadata }) => {
     // Proceed with the upload
     const imageResponse = await fetch(url)
     const imageBlob = await imageResponse.blob()
-    const imageRef = storageRef(
-      storage,
-      `images/${userEmail}/${extractRecipeId(link)}`
-    )
+    let key
+
+    if (needFormatting) {
+      key = `images/${userEmail}/${extractRecipeId(link)}`
+    } else {
+      key = `images/${userEmail}/${link}`
+    }
+    const imageRef = storageRef(storage, key)
 
     const uploadResult = await uploadBytes(imageRef, imageBlob, metadata)
     const downloadUrl = await getDownloadURL(uploadResult.ref)

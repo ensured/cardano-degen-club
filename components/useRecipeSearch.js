@@ -145,7 +145,7 @@ const useRecipeSearch = () => {
   useEffect(() => {
     // Load favorites from localStorage
     const storedFavorites = localStorage.getItem("favorites")
-    if (storedFavorites) {
+    if (storedFavorites && storedFavorites.length > 0) {
       setFavorites(JSON.parse(storedFavorites))
     }
   }, []) // No dependencies to run only on mount
@@ -211,15 +211,6 @@ const useRecipeSearch = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
-  function extractRecipeId(url) {
-    const startIndex = url.indexOf("recipe/") + "recipe/".length
-    const endIndex = url.indexOf("/", startIndex)
-    if (startIndex === -1 || endIndex === -1) {
-      throw new Error("Invalid URL format")
-    }
-    return url.substring(startIndex, endIndex)
-  }
-
   const removeFromFavorites = async (link, name) => {
     setIsFavoritesLoading(true) // Move this line to the beginning
     try {
@@ -227,7 +218,7 @@ const useRecipeSearch = () => {
       delete newFavorites[link]
 
       // Call the server action to remove from favorites
-      const removeFav = removeFavoriteFirebase(link.split("/")[2], false) // server action
+      const removeFav = removeFavoriteFirebase(link.split("/")[2], false)
 
       toast.promise(
         removeFav,
@@ -308,12 +299,15 @@ const useRecipeSearch = () => {
           cacheControl: "public,max-age=7200",
         }
 
-        const response = await addToFavoritesFirebase({
-          name: recipeName,
-          url: recipeImage,
-          link: recipeLink,
-          metadata,
-        })
+        const response = await addToFavoritesFirebase(
+          {
+            name: recipeName,
+            url: recipeImage,
+            link: recipeLink,
+            metadata,
+          },
+          true
+        )
         setIsFavoritesLoading(false)
 
         if (response.error) {
