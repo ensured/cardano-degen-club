@@ -13,7 +13,7 @@ export const metadata = {
 
 const page = async () => {
   const { getUser, isAuthenticated } = getKindeServerSession()
-  const user = await getUser().then((user) => user)
+  const user = await getUser()
   if (isAuthenticated) {
     if (user?.email === "finalemail417@gmail.com") {
       return <Comments />

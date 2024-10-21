@@ -5,7 +5,7 @@ import { Heart, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "react-hot-toast"
 
-import { getFavorites } from "./actions"
+import { getFavorites, getFavoritesFirebase } from "./actions"
 import { Button } from "./ui/button"
 import {
   Sheet,
@@ -33,7 +33,8 @@ const FavoritesSheet = ({
   useEffect(() => {
     const getFavs = async () => {
       setIsFavoritesLoading(true)
-      const res = await getFavorites(userEmail)
+      const res = await getFavoritesFirebase(userEmail)
+      console.log(res)
       if (!res) {
         setIsFavoritesLoading(false)
         return
@@ -41,12 +42,18 @@ const FavoritesSheet = ({
 
       const newFavorites = {}
       res.forEach((favorite) => {
-        if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
+        if (
+          !favorite ||
+          !favorite.name ||
+          !favorite.url ||
+          !favorite.link ||
+          !favorite.metadata.name
+        ) {
           toast.error("Invalid favorite data")
           return
         }
         newFavorites[favorite.link] = {
-          name: favorite.name,
+          name: favorite.metadata.name,
           url: favorite.url,
         }
       })

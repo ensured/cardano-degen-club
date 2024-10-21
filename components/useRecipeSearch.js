@@ -1,10 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { fileToBase64 } from "@/utils/helper"
 import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
-import { addFavorite, removeFavorite } from "./actions"
+import {
+  addFavorite,
+  addToFavoritesFirebase,
+  removeFavorite,
+  removeFavoriteFirebase,
+} from "./actions"
 
 export function extractRecipeName(url) {
   const recipePath = url.split("/")[4]
@@ -218,7 +224,7 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
       setIsFavoritesLoading(true)
-      const removeFav = removeFavorite(extractRecipeId(recipeLink)) // server action
+      const removeFav = removeFavoriteFirebase(name) // server action
 
       toast.promise(
         removeFav,
@@ -262,7 +268,7 @@ const useRecipeSearch = () => {
       delete newFavorites[recipeLink]
       setFavorites(newFavorites)
       setIsFavoritesLoading(true)
-      const res = await removeFavorite(extractRecipeId(recipeLink)) // server action
+      await removeFavoriteFirebase(recipeName)
       setIsFavoritesLoading(false)
     } else {
       try {
@@ -274,25 +280,37 @@ const useRecipeSearch = () => {
             url: recipeImage,
           },
         }))
-
         setIsFavoritesLoading(true)
-        // Add to favorites asynchronously
-        const response = await addFavorite({
+        // start of testing
+        const customMetadata = {
           name: recipeName,
           url: recipeImage,
           link: recipeLink,
+        }
+        const metadata = {
+          contentType: "image/jpeg",
+          customMetadata,
+          cacheControl: "public,max-age=7200",
+        }
+
+        const response = await addToFavoritesFirebase({
+          name: recipeName,
+          url: recipeImage,
+          link: recipeLink,
+          metadata,
         })
+        // end of testing
+
+        // Add to favorites asynchronously
+        // const response = await addFavorite({
+        //   name: recipeName,
+        //   url: recipeImage,
+        //   link: recipeLink,
+        // })
         setIsFavoritesLoading(false)
         if (response.error) {
           toast(response.error, { type: "error" })
           // Revert the optimistic update if the asynchronous operation fails
-          setFavorites((prevFavorites) => {
-            const { [recipeLink]: value, ...newFavorites } = prevFavorites
-            return newFavorites
-          })
-        } else if (response.success) {
-          // Display the message to the user
-          toast(response.message, { type: "error", duration: 3000 })
           setFavorites((prevFavorites) => {
             const { [recipeLink]: value, ...newFavorites } = prevFavorites
             return newFavorites
@@ -303,7 +321,7 @@ const useRecipeSearch = () => {
             ...prevFavorites,
             [recipeLink]: {
               name: recipeName,
-              url: response.preSignedImageUrl,
+              url: response.url,
             },
           }))
         }

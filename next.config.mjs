@@ -8,8 +8,18 @@ const nextConfig = {
     // Important: return the modified config
     return config
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
   images: {
     remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        port: "",
+      },
       {
         protocol: "https",
         hostname: "edamam-product-images.s3.amazonaws.com",

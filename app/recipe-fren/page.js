@@ -17,7 +17,7 @@ export const metadata = {
 
 const page = async () => {
   const { isAuthenticated, getUser } = getKindeServerSession()
-  const user = await getUser().then((user) => user)
+  const user = getUser()
 
   if (!user || !isAuthenticated()) {
     return (

@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-import { deleteAllFavorites } from "./actions"
+import { deleteAllFavorites, deleteAllFavoritesFirebase } from "./actions"
 // ShadCN UI Dialog
 import { Button } from "./ui/button"
 
@@ -39,15 +39,14 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
             onClick={async () => {
               setFavorites({})
               try {
-                const res = deleteAllFavorites()
                 toast.promise(
-                  res,
+                  deleteAllFavoritesFirebase(), // << Call the function here to return a promise
                   {
                     loading: "Removing",
                     success: (data) => (
                       <div className="text-white">
-                        Removed <b>{data.Deleted.length}</b>{" "}
-                        {data.Deleted.length > 1 ? "recipes" : "recipe"}
+                        Removed <b>{data.total}</b>{" "}
+                        {data.total > 1 ? "recipes" : "recipe"}
                       </div>
                     ),
                     error: (error) => "Couldn't remove favorites",
@@ -65,6 +64,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                     },
                   }
                 )
+
                 setOpen(false)
               } catch (error) {
                 console.error("Error removing favorites:", error)
