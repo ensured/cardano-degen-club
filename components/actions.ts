@@ -144,18 +144,26 @@ function extractRecipeId(url: string) {
   return url.substring(startIndex, endIndex)
 }
 
-export async function removeFavoriteFirebase(recipeName: string) {
+export async function removeFavoriteFirebase(
+  recipeName: string,
+  needFormatting: boolean = true
+) {
   const { getUser } = getKindeServerSession()
   const userEmail = getUser().email
   if (!userEmail) {
     return { error: "Not authenticated, please login" }
   }
 
+  let key
+
+  if (needFormatting) {
+    key = `images/${userEmail}/${extractRecipeId(recipeName)}`
+  } else {
+    key = `images/${userEmail}/${recipeName}`
+  }
+
   // Create a reference to the file to delete
-  const imageRef = storageRef(
-    storage,
-    `images/${userEmail}/${extractRecipeId(recipeName)}`
-  )
+  const imageRef = storageRef(storage, key)
 
   try {
     // Delete the image from Firebase Storage

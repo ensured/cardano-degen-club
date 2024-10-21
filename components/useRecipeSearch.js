@@ -227,7 +227,7 @@ const useRecipeSearch = () => {
       delete newFavorites[link]
 
       // Call the server action to remove from favorites
-      const removeFav = removeFavoriteFirebase(link) // server action
+      const removeFav = removeFavoriteFirebase(link.split("/")[2], false) // server action
 
       toast.promise(
         removeFav,
