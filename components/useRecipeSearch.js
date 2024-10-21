@@ -299,15 +299,12 @@ const useRecipeSearch = () => {
           cacheControl: "public,max-age=7200",
         }
 
-        const response = await addToFavoritesFirebase(
-          {
-            name: recipeName,
-            url: recipeImage,
-            link: recipeLink,
-            metadata,
-          },
-          true
-        )
+        const response = await addToFavoritesFirebase({
+          name: recipeName,
+          url: recipeImage,
+          link: recipeLink,
+          metadata,
+        })
         setIsFavoritesLoading(false)
 
         if (response.error) {
