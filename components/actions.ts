@@ -104,10 +104,10 @@ export async function getFavoritesFirebase(userEmail: string) {
 export async function deleteAllFavoritesFirebase() {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
-  const userEmail = user?.email
-  if (!userEmail) {
+  if (!user) {
     return { error: "Not authenticated, please login" }
   }
+  const userEmail = user.email
 
   const userFolderRef = storageRef(storage, `images/${userEmail}/`)
 
@@ -151,10 +151,10 @@ export async function removeFavoriteFirebase(
 ) {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
-  const userEmail = user?.email
-  if (!userEmail) {
+  if (!user) {
     return { error: "Not authenticated, please login" }
   }
+  const userEmail = user.email
 
   let key
   if (needFormatting) {
@@ -216,10 +216,10 @@ const handleSetMaxImagesCount = async (
 const addToFavoritesFirebase = async ({ name, url, link, metadata }) => {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
-  const userEmail = user?.email
-  if (!userEmail) {
+  if (!user) {
     return { error: "Not authenticated, please login" }
   }
+  const userEmail = user.email
 
   try {
     // Proceed with the upload
