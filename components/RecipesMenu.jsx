@@ -15,15 +15,19 @@ import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
-import { imgUrlToBase64 } from "./actions"
 
-function extractRecipeId(url) {
-  const startIndex = url.indexOf("recipe/") + "recipe/".length
-  const endIndex = url.indexOf("/", startIndex)
-  if (startIndex === -1 || endIndex === -1) {
-    throw new Error("Invalid URL format")
-  }
-  return url.substring(startIndex, endIndex)
+const urlToBase64 = async (url) => {
+  const response = await fetch(url, {
+    cache: "force-cache",
+  })
+
+  const blob = await response.blob()
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
 }
 
 const RecipesMenu = ({
@@ -88,10 +92,6 @@ const RecipesMenu = ({
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {
-          // Check if image is cached in localStorage without expiry
-
-          imageBase64 = await imgUrlToBase64(url)
-
           currentPosition++
           const progress =
             (currentPosition / Object.keys(favorites).length) * 100
@@ -108,6 +108,9 @@ const RecipesMenu = ({
             3,
             "S"
           )
+
+          // Convert image URL to Base64
+          const imageBase64 = await urlToBase64(url)
 
           // Embed image if available
           if (imageBase64) {
