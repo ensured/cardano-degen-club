@@ -4,7 +4,8 @@ import { LoginPopup, LogoutPopup } from "./LoginPopup"
 
 const UserButton = async () => {
   const { getUser } = getKindeServerSession()
-  const user = getUser()
+  const user = await getUser()
+  console.log("user: " + JSON.stringify(user))
   if (!user) {
     return (
       <div className="group relative z-50 flex shrink-0 flex-col-reverse items-center justify-center">
@@ -15,7 +16,7 @@ const UserButton = async () => {
 
   return (
     <div className="group relative z-50 flex shrink-0 flex-col-reverse items-center justify-center">
-      <LoginPopup userImg={user.picture} />
+      <LoginPopup userImg={user.picture}>Logout</LoginPopup>
     </div>
   )
 }

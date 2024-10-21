@@ -4,7 +4,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { User } from "lucide-react"
 
-import { cn } from "@/lib/utils"
 import {
   Popover,
   PopoverContent,
@@ -28,8 +27,8 @@ const LoginPopup = ({
             className="cursor-pointer rounded-full"
             src={userImg}
             alt="user image"
-            width={33}
-            height={33}
+            width={32}
+            height={32}
             priority
           />
         </Button>

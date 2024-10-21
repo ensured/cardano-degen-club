@@ -103,7 +103,7 @@ export async function getFavoritesFirebase(userEmail: string) {
 
 export async function deleteAllFavoritesFirebase() {
   const { getUser } = getKindeServerSession()
-  const userEmail = getUser().email
+  const userEmail = await getUser().email
   if (!userEmail) {
     return { error: "Not authenticated, please login" }
   }
@@ -149,7 +149,7 @@ export async function removeFavoriteFirebase(
   needFormatting: boolean = true
 ) {
   const { getUser } = getKindeServerSession()
-  const userEmail = getUser().email
+  const userEmail = await getUser().email
   if (!userEmail) {
     return { error: "Not authenticated, please login" }
   }
@@ -213,7 +213,7 @@ const handleSetMaxImagesCount = async (
 // @ts-ignore
 const addToFavoritesFirebase = async ({ name, url, link, metadata }) => {
   const { getUser } = getKindeServerSession()
-  const userEmail = getUser().email
+  const userEmail = await getUser().email
   if (!userEmail) {
     return { error: "Not authenticated, please login" }
   }
