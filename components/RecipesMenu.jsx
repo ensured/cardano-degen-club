@@ -326,7 +326,7 @@ const RecipesMenu = ({
               ))}
 
               {Object.keys(favorites).length > 0 && (
-                <div className="absolute inset-x-0 bottom-0 flex justify-center py-1.5 rounded-lg shadow-md transition-transform duration-100 transform hover:scale-105 z-50">
+                <div className="absolute bottom-0 right-0 flex justify-center p-1.5 rounded-lg shadow-md ">
                   <DeleteAllAlert setFavorites={setFavorites}>
                     <Button
                       variant="destructive"
