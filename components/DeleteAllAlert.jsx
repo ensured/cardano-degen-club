@@ -16,12 +16,19 @@ import { deleteAllFavorites, deleteAllFavoritesFirebase } from "./actions"
 // ShadCN UI Dialog
 import { Button } from "./ui/button"
 
-const DeleteAllAlert = ({ children, setFavorites }) => {
+const DeleteAllAlert = ({
+  children,
+  setFavorites,
+  isFavoritesLoading,
+  setIsFavoritesLoading,
+}) => {
   const [open, setOpen] = useState(false)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild disabled={isFavoritesLoading}>
+        {children}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
@@ -40,6 +47,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
               setFavorites({})
               localStorage.setItem("favorites", {})
               try {
+                setIsFavoritesLoading(true)
                 toast.promise(
                   deleteAllFavoritesFirebase(), // << Call the function here to return a promise
                   {
@@ -66,12 +74,15 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
                   }
                 )
 
+                setIsFavoritesLoading(false)
+
                 setOpen(false)
               } catch (error) {
                 console.error("Error removing favorites:", error)
                 toast.error(
                   "Failed to delete favorites. Please try again later."
                 )
+                setIsFavoritesLoading(false)
               }
             }}
           >

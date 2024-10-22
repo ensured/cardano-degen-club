@@ -326,17 +326,19 @@ const RecipesMenu = ({
               ))}
 
               {Object.keys(favorites).length > 0 && (
-                <div className="absolute bottom-0 right-0 flex justify-center p-1.5 rounded-lg shadow-md ">
-                  <DeleteAllAlert setFavorites={setFavorites}>
-                    <Button
-                      variant="destructive"
-                      className="flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
-                    >
-                      <TrashIcon size={size.height < 600 ? 16 : 20} />
-                      <span>Remove all</span>
-                    </Button>
-                  </DeleteAllAlert>
-                </div>
+                <DeleteAllAlert
+                  setFavorites={setFavorites}
+                  isFavoritesLoading={isFavoritesLoading}
+                  setIsFavoritesLoading={setIsFavoritesLoading}
+                >
+                  <Button
+                    variant="destructive"
+                    className="flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
+                  >
+                    <TrashIcon size={size.height < 600 ? 16 : 20} />
+                    <span>Remove all</span>
+                  </Button>
+                </DeleteAllAlert>
               )}
             </div>
           )}
