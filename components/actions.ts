@@ -26,6 +26,7 @@ export const imgUrlToBase64 = async (url: string) => {
   }
 }
 
+
 export async function getFavoritesFirebase(userEmail: string) {
   const folderRef = storageRef(storage, `images/${userEmail}/`);
   const results = await listAll(folderRef);
@@ -53,8 +54,8 @@ export async function getFavoritesFirebase(userEmail: string) {
     })
   );
 
-  // Sort items by timeCreated in descending order (most recent first)
-  itemsWithTimeCreated.sort((a, b) => new Date(b.timeCreated).getTime() - new Date(a.timeCreated).getTime());
+  // Sort items by timeCreated in ascending order (oldest first)
+  itemsWithTimeCreated.sort((a, b) => new Date(a.timeCreated).getTime() - new Date(b.timeCreated).getTime());
 
   // Push only the name, url, and link fields (without timeCreated) to the final items array
   itemsWithTimeCreated.forEach(({ name, url, link }) => {
@@ -63,8 +64,6 @@ export async function getFavoritesFirebase(userEmail: string) {
 
   return items; // Return the items array without timeCreated
 }
-
-
 
 
 export async function deleteAllFavoritesFirebase() {
