@@ -321,7 +321,7 @@ const RecipesMenu = ({
           )}
         </div>
         {Object.keys(favorites).length > 0 && (
-          <div className="fixed bottom-0 right-6">
+          <div className="flex justify-center items-center">
             <DeleteAllAlert
               setFavorites={setFavorites}
               isFavoritesLoading={isFavoritesLoading}
