@@ -27,30 +27,45 @@ export const imgUrlToBase64 = async (url: string) => {
 }
 
 export async function getFavoritesFirebase(userEmail: string) {
-  const folderRef = storageRef(storage, `images/${userEmail}/`)
-  const results = await listAll(folderRef)
-  const items: { name: string; url: string; link: string }[] = []
+  const folderRef = storageRef(storage, `images/${userEmail}/`);
+  const results = await listAll(folderRef);
+  const items: { name: string; url: string; link: string }[] = [];
+
+  // Temporary array to store items along with timeCreated for sorting purposes
+  const itemsWithTimeCreated: { name: string; url: string; link: string; timeCreated: string }[] = [];
 
   // Use Promise.all with map to wait for all download URLs and metadata
   await Promise.all(
     results.items.map(async (itemRef) => {
       try {
-        const downloadUrl = await getDownloadURL(itemRef) // Get the download URL of the file
-        const metadata = await getMetadata(itemRef) // Get the metadata of the file
+        const downloadUrl = await getDownloadURL(itemRef); // Get the download URL of the file
+        const metadata = await getMetadata(itemRef); // Get the metadata of the file
 
-        items.push({
+        itemsWithTimeCreated.push({
           link: metadata?.customMetadata?.link ?? "",
           name: metadata?.customMetadata?.name ?? "",
           url: downloadUrl,
-        })
+          timeCreated: metadata.timeCreated, // Add the timeCreated for sorting
+        });
       } catch (error) {
-        console.error("Error fetching download URL or metadata:", error)
+        console.error("Error fetching download URL or metadata:", error);
       }
     })
-  )
+  );
 
-  return items // Return the populated items array
+  // Sort items by timeCreated in descending order (most recent first)
+  itemsWithTimeCreated.sort((a, b) => new Date(b.timeCreated).getTime() - new Date(a.timeCreated).getTime());
+
+  // Push only the name, url, and link fields (without timeCreated) to the final items array
+  itemsWithTimeCreated.forEach(({ name, url, link }) => {
+    items.push({ name, url, link });
+  });
+
+  return items; // Return the items array without timeCreated
 }
+
+
+
 
 export async function deleteAllFavoritesFirebase() {
   const { getUser } = getKindeServerSession()
