@@ -252,7 +252,7 @@ const RecipesMenu = ({
           </span>
         )}
 
-        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto border rounded-md">
+        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-11.5rem)] overflow-auto border rounded-md">
           {isFavoritesLoading ? (
             <div className="flex flex-col flex-wrap rounded-md  border-l border-r items-center justify-center overflow-auto">
               <div className="flex flex-col gap-0.5 w-full ">
