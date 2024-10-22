@@ -251,22 +251,19 @@ const RecipesMenu = ({
           </span>
         )}
 
-        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto">
-          {!isFavoritesLoading ? (
-            <div className="flex flex-col flex-wrap rounded-md border items-center justify-center">
-              <div className="flex flex-col gap-0.5">
+        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto ">
+          {isFavoritesLoading ? (
+            <div className="flex flex-col flex-wrap rounded-md border-t border-l border-r items-center justify-center ">
+              <div className="flex flex-col gap-0.5 w-full ">
                 {Array(Object.keys(favorites).length)
                   .fill(null)
                   .map((_, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between rounded-md"
+                      className="flex items-center justify-between p-2 gap-0.5 pr-1 border-b rounded-b-md"
                     >
-                      <Skeleton className="h-[3.28rem] w-[18.65rem] border " />
-                      <Skeleton
-                        className="h-8 w-8 flex justify-center border items-center rounded-full "
-                        style={{ opacity: 0.6 }} // To give it a skeleton look
-                      />
+                      <Skeleton className="h-[2.22rem] w-full " />
+                      <Skeleton className="h-7 w-7 flex justify-center border items-center rounded-full" />
                     </div>
                   ))}
               </div>
