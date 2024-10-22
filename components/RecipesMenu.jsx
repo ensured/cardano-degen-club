@@ -15,22 +15,15 @@ import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
+import { imgUrlToBase64 } from "./actions"
 
-const urlToBase64 = async (url) => {
-  const response = await fetch(url, {
-    cache: "force-cache",
-    headers: {
-      "Access-Control-Allow-Origin": "https://www.cardanodegen.shop/",
-    },
-  })
-
-  const blob = await response.blob()
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-  })
+function extractRecipeId(url) {
+  const startIndex = url.indexOf("recipe/") + "recipe/".length
+  const endIndex = url.indexOf("/", startIndex)
+  if (startIndex === -1 || endIndex === -1) {
+    throw new Error("Invalid URL format")
+  }
+  return url.substring(startIndex, endIndex)
 }
 
 const RecipesMenu = ({
@@ -73,6 +66,17 @@ const RecipesMenu = ({
     }
   }
 
+  const setLocalStorageWithoutExpiry = (key, value) => {
+    localStorage.setItem(key, JSON.stringify(value))
+  }
+
+  // Helper function to get item from localStorage without expiry
+  const getLocalStorageWithoutExpiry = (key) => {
+    const itemStr = localStorage.getItem(key)
+    if (!itemStr) return null
+    return JSON.parse(itemStr)
+  }
+
   const previewFavoritesPDF = async (favorites) => {
     if (!favorites || Object.keys(favorites).length === 0) {
       toast("No favorites found", {
@@ -84,44 +88,51 @@ const RecipesMenu = ({
 
     const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
     let yOffset = 10
-    const lineHeight = 10
     const pageHeight = doc.internal.pageSize.height
-    const imageWidth = 32
-    const imageHeight = 32
-    const borderPadding = 2
+    const imageWidth = 22
+    const imageHeight = 22
+    const borderPadding = 2 // Padding around the content
     const borderWidth = 0.5
+    const borderRadius = 5 // Rounded corners radius
+    const contentHeight = 24
+    const contentWidth = 180 // Width of the item
     let currentPosition = 0
 
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {
+          // Check if image is cached in localStorage without expiry
+          let imageBase64 = getLocalStorageWithoutExpiry(url)
+
+          // If not cached, fetch and cache the image
+          if (!imageBase64) {
+            imageBase64 = await imgUrlToBase64(url)
+            setLocalStorageWithoutExpiry(url, imageBase64)
+          }
+
           currentPosition++
           const progress =
             (currentPosition / Object.keys(favorites).length) * 100
           setProgress(progress)
 
-          // Draw border
+          // Draw rounded border around the entire item (image + text)
           doc.setLineWidth(borderWidth)
           doc.roundedRect(
             borderPadding,
             yOffset,
-            doc.internal.pageSize.width - 2 * borderPadding,
-            imageHeight + 2 * borderPadding,
-            3,
-            3,
-            "S"
-          )
-
-          // Convert image URL to Base64
-          const imageBase64 = await urlToBase64(url)
+            contentWidth,
+            contentHeight,
+            borderRadius,
+            borderRadius
+          ) // x, y, width, height, radius for rounded corners
 
           // Embed image if available
           if (imageBase64) {
             doc.addImage(
               imageBase64,
               "JPEG",
-              borderPadding + borderWidth + 2,
-              yOffset + borderPadding,
+              borderPadding + 4, // Adjust the position inside the rounded rectangle
+              yOffset + borderPadding - 1,
               imageWidth,
               imageHeight
             )
@@ -129,47 +140,53 @@ const RecipesMenu = ({
             console.error(`Failed to embed image`)
           }
 
-          // Style for recipe name
-          doc.setTextColor(0, 0, 0)
+          // Style for recipe name with link
+          doc.setTextColor(0, 0, 255) // Blue for clickable link
           doc.setFont("helvetica", "bold")
-          doc.setFontSize(16)
+          doc.setFontSize(16) // Title size
 
-          const maxNameLength = 100
+          const maxNameLength = 100 // Limit title length
           const truncatedName =
             name.length > maxNameLength
-              ? name.substring(0, maxNameLength) + "..."
+              ? name.substring(0, maxNameLength)
               : name
-          const textLines = doc.splitTextToSize(truncatedName, 100)
-          const truncatedTextLines = textLines.slice(0, 2)
 
-          doc.text(
-            truncatedTextLines,
-            borderPadding + imageWidth + 6,
-            yOffset + lineHeight
-          )
+          // Calculate available width for text, excluding padding and image
+          const textXOffset = imageWidth + borderPadding + 4 // Position text right of the image
+          const maxTextWidth = contentWidth - textXOffset - 2 // Max width for text to avoid overflowing
 
-          // Style for link
-          doc.setTextColor(0, 0, 255)
-          doc.setFont("helvetica", "normal")
-          doc.setFontSize(12)
+          // Split text to ensure it doesn't overflow
+          const textLines = doc.splitTextToSize(truncatedName, maxTextWidth)
 
-          const maxLinkLength = 60
-          const truncatedLink =
-            link.length > maxLinkLength
-              ? link.substring(0, maxLinkLength) + "..."
-              : link
+          // Ensure only two lines are displayed and handle truncation for the second line
+          const displayedLines = textLines.slice(0, 2) // Only take up to 2 lines
+          if (textLines.length > 2) {
+            const secondLine = displayedLines[1]
+            // Truncate the second line and add ellipsis if it exceeds the max width
+            displayedLines[1] =
+              secondLine.length > maxTextWidth / doc.getFontSize()
+                ? secondLine.substring(0, maxTextWidth / 3 - 4) + "..."
+                : secondLine
+          }
 
-          const linkXOffset = 40
-          doc.textWithLink(truncatedLink, linkXOffset, yOffset + 28, {
-            url: link,
+          // Calculate starting y position for the text to center it vertically
+          let textYOffset = yOffset + borderPadding + contentHeight / 2.6 // Centering text
+
+          // Draw the text with link for each line
+          displayedLines.forEach((line) => {
+            doc.textWithLink(line, borderPadding + textXOffset, textYOffset, {
+              url: link, // Link embedded in the title
+            })
+            textYOffset += 6 // Move down for the next line
           })
 
-          yOffset +=
-            imageHeight + 2 * borderPadding + lineHeight + borderPadding
+          // Move yOffset down to draw the next item, ensuring there's space for the bottom border
+          yOffset += contentHeight + 2 * borderPadding // Ensure the bottom border is included
 
-          if (yOffset > pageHeight - 20) {
+          // Add new page if needed
+          if (yOffset + contentHeight + 2 * borderPadding > pageHeight) {
             doc.addPage()
-            yOffset = 10
+            yOffset = 10 // Reset yOffset for new page
           }
         }
       )
@@ -274,6 +291,7 @@ const RecipesMenu = ({
                       className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
                       onClick={(e) => {
                         e.preventDefault()
+                        console.log
                         removeFromFavorites(link)
                       }}
                     >
