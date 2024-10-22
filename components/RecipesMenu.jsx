@@ -53,13 +53,6 @@ const RecipesMenu = ({
       const previewUrl = await previewFavoritesPDF(favorites)
       setPdfPreviewUrl(previewUrl) // this opens the pdf into view
       setIsOpen(false)
-      toast.custom((t) => (
-        <div
-          className={`rounded-full bg-background px-6 py-4 text-primary shadow-md`}
-        >
-          👋 Preview is ready
-        </div>
-      ))
     } catch (e) {
       console.error(e)
     } finally {
