@@ -252,92 +252,96 @@ const RecipesMenu = ({
           </span>
         )}
 
-        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-11.5rem)] overflow-auto border rounded-md">
-          {isFavoritesLoading ? (
-            <div className="flex flex-col flex-wrap rounded-md  border-l border-r items-center justify-center overflow-auto">
-              <div className="flex flex-col gap-0.5 w-full ">
-                {Array(Object.keys(favorites).length)
-                  .fill(null)
-                  .map((_, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2 gap-0.5 pr-1 border-b rounded-b-md"
-                    >
-                      <Skeleton className="h-[2.22rem] w-full " />
-                      <Skeleton className="h-7 w-7 flex justify-center border items-center rounded-full" />
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ) : (
-            <div className={`flex flex-col flex-wrap rounded-md`}>
-              {Object.entries(favorites).map(([link, { name, url }], index) => (
-                <div key={link} className="overflow-auto">
-                  <Link
-                    target="_blank"
-                    href={link}
-                    className="flex items-center justify-between gap-1.5 p-1.5 hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
-                    style={{ textDecoration: "none" }}
-                  >
-                    {url && (
-                      <Image
-                        src={url}
-                        width={42}
-                        height={42}
-                        alt={name}
-                        className="rounded-full"
-                        unoptimized
-                        priority
-                      />
-                    )}
-                    <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
-                      <span className="line-clamp-2 rounded-md text-sm md:text-base lg:text-lg">
-                        {name}
-                      </span>
-                      <button
-                        className="text-red-600 hover:scale-125 hover:text-red-800"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          removeFromFavorites(link)
-                        }}
+        <div className="flex h-full flex-col gap-2">
+          <div className="animate-fade-in custom-scrollbar h-[calc(100vh-14.5rem)] overflow-auto border rounded-md">
+            {isFavoritesLoading ? (
+              <div className="flex flex-col flex-wrap rounded-md  border-l border-r items-center justify-center overflow-auto">
+                <div className="flex flex-col gap-0.5 w-full ">
+                  {Array(Object.keys(favorites).length)
+                    .fill(null)
+                    .map((_, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 gap-0.5 pr-1 border-b rounded-b-md"
                       >
-                        <Trash2Icon
-                          size={
-                            size?.width < 480
-                              ? 20
-                              : size?.width < 640
-                              ? 22
-                              : size?.width < 900
-                              ? 23
-                              : 24
-                          }
-                        />
-                      </button>
-                    </div>
-                  </Link>
+                        <Skeleton className="h-[2.22rem] w-full " />
+                        <Skeleton className="h-7 w-7 flex justify-center border items-center rounded-full" />
+                      </div>
+                    ))}
                 </div>
-              ))}
+              </div>
+            ) : (
+              <div className={`flex flex-col flex-wrap rounded-md`}>
+                {Object.entries(favorites).map(
+                  ([link, { name, url }], index) => (
+                    <div key={link} className="overflow-auto">
+                      <Link
+                        target="_blank"
+                        href={link}
+                        className="flex items-center justify-between gap-1.5 p-1.5 hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
+                        style={{ textDecoration: "none" }}
+                      >
+                        {url && (
+                          <Image
+                            src={url}
+                            width={42}
+                            height={42}
+                            alt={name}
+                            className="rounded-full"
+                            unoptimized
+                            priority
+                          />
+                        )}
+                        <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
+                          <span className="line-clamp-2 rounded-md text-sm md:text-base lg:text-lg">
+                            {name}
+                          </span>
+                          <button
+                            className="text-red-600 hover:scale-125 hover:text-red-800"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              removeFromFavorites(link)
+                            }}
+                          >
+                            <Trash2Icon
+                              size={
+                                size?.width < 480
+                                  ? 20
+                                  : size?.width < 640
+                                  ? 22
+                                  : size?.width < 900
+                                  ? 23
+                                  : 24
+                              }
+                            />
+                          </button>
+                        </div>
+                      </Link>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+          {Object.keys(favorites).length > 0 && (
+            <div className="flex justify-center items-center">
+              <DeleteAllAlert
+                setFavorites={setFavorites}
+                isFavoritesLoading={isFavoritesLoading}
+                setIsFavoritesLoading={setIsFavoritesLoading}
+              >
+                <Button
+                  variant="destructive"
+                  size={"sm"}
+                  className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
+                >
+                  <TrashIcon size={size.height < 600 ? 16 : 20} />
+                  <span>Delete All</span>
+                </Button>
+              </DeleteAllAlert>
             </div>
           )}
         </div>
-        {Object.keys(favorites).length > 0 && (
-          <div className="flex justify-center items-center">
-            <DeleteAllAlert
-              setFavorites={setFavorites}
-              isFavoritesLoading={isFavoritesLoading}
-              setIsFavoritesLoading={setIsFavoritesLoading}
-            >
-              <Button
-                variant="destructive"
-                size={"sm"}
-                className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
-              >
-                <TrashIcon size={size.height < 600 ? 16 : 20} />
-                <span>Delete All</span>
-              </Button>
-            </DeleteAllAlert>
-          </div>
-        )}
       </FavoritesSheet>
     </div>
   )
