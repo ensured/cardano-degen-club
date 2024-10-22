@@ -5,7 +5,7 @@ import { Heart, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "react-hot-toast"
 
-import { getFavorites, getFavoritesFirebase } from "./actions"
+import { getFavoritesFirebase } from "./actions"
 import { Button } from "./ui/button"
 import {
   Sheet,
@@ -33,32 +33,56 @@ const FavoritesSheet = ({
   useEffect(() => {
     const getFavs = async () => {
       setIsFavoritesLoading(true)
-      const res = await getFavoritesFirebase(userEmail)
-      if (!res) {
-        setIsFavoritesLoading(false)
-        return
-      }
-      const newFavorites = {}
-      res.forEach((favorite) => {
-        if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
-          toast.error("Invalid favorite data")
+
+      try {
+        const res = await getFavoritesFirebase(userEmail)
+
+        if (!res) {
+          toast.error("No favorites found")
           return
         }
 
-        newFavorites[favorite.link] = {
-          name: favorite.name,
-          url: favorite.url,
-          link: favorite.link,
+        const newFavorites = {}
+
+        // Flag to check if any invalid favorites exist
+        let hasInvalidFavorites = false
+
+        res.forEach((favorite) => {
+          if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
+            hasInvalidFavorites = true // Set the flag to true
+            return // Skip to the next iteration
+          }
+
+          newFavorites[favorite.link] = {
+            name: favorite.name,
+            url: favorite.url,
+            link: favorite.link,
+          }
+        })
+
+        // Notify user if there are invalid favorites
+        if (hasInvalidFavorites) {
+          toast.error("Some favorites are invalid and were not loaded.")
         }
-      })
-      setFavorites(newFavorites)
-      setIsFavoritesLoading(false)
+
+        setFavorites(newFavorites)
+      } catch (error) {
+        console.error("Error fetching favorites:", error)
+        toast.error("Failed to load favorites.")
+      } finally {
+        setIsFavoritesLoading(false) // Ensure loading state is updated
+      }
     }
 
     if (isOpen) {
       getFavs()
     }
-  }, [isOpen])
+
+    // Cleanup function to prevent state updates on unmounted components
+    return () => {
+      setIsFavoritesLoading(false) // Clean up loading state if the component unmounts
+    }
+  }, [isOpen]) // Added userEmail as a dependency
 
   return (
     <div className="flex justify-center">

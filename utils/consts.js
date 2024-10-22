@@ -1,0 +1,3 @@
+const MAX_FAVORITES = 100
+
+export { MAX_FAVORITES }

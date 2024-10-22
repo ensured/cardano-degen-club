@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
+import { MAX_FAVORITES } from "../utils/consts"
 import { addToFavoritesFirebase, removeFavoriteFirebase } from "./actions"
 
 export function extractRecipeName(url) {
@@ -144,13 +145,19 @@ const useRecipeSearch = () => {
 
   useEffect(() => {
     const storedFavorites = localStorage.getItem("favorites")
-    if (storedFavorites) {
+    if (
+      Object.keys(JSON.parse(storedFavorites)).length > 0 &&
+      Object.keys(JSON.parse(storedFavorites)).length <= 5
+    ) {
       setFavorites(JSON.parse(storedFavorites))
     }
   }, [])
 
   useEffect(() => {
-    if (Object.keys(favorites).length > 0) {
+    if (
+      Object.keys(favorites).length > 0 &&
+      Object.keys(favorites).length <= 5
+    ) {
       localStorage.setItem("favorites", JSON.stringify(favorites))
     }
   }, [favorites])
@@ -267,19 +274,22 @@ const useRecipeSearch = () => {
 
     const isFavorited = favorites[recipeLink] !== undefined
 
+    setIsFavoritesLoading(true) // Start loading state
+
+    // Optimistic update for removing favorite
     if (isFavorited) {
-      // Remove from favorites optimistically
       setFavorites((prevFavorites) => {
         const newFavorites = { ...prevFavorites }
         delete newFavorites[recipeLink]
-        return newFavorites // Return the updated state
+        return newFavorites
       })
-      setIsFavoritesLoading(true)
-      await removeFavoriteFirebase(recipeLink)
-      setIsFavoritesLoading(false)
-    } else {
+
       try {
-        // Optimistically add to favorites
+        await removeFavoriteFirebase(recipeLink)
+      } catch (error) {
+        console.error("Error removing favorite:", error)
+        toast("Failed to remove favorite", { type: "error" })
+        // Revert the state if remove fails
         setFavorites((prevFavorites) => ({
           ...prevFavorites,
           [recipeLink]: {
@@ -288,7 +298,21 @@ const useRecipeSearch = () => {
             url: recipeImage,
           },
         }))
+      } finally {
+        setIsFavoritesLoading(false) // Ensure loading state is updated
+      }
+    } else {
+      // Optimistic update for adding favorite
+      setFavorites((prevFavorites) => ({
+        ...prevFavorites,
+        [recipeLink]: {
+          name: recipeName,
+          link: recipeLink,
+          url: recipeImage,
+        },
+      }))
 
+      try {
         const customMetadata = {
           name: recipeName,
           link: recipeLink,
@@ -299,47 +323,39 @@ const useRecipeSearch = () => {
           customMetadata,
           cacheControl: "public,max-age=7200",
         }
-        setIsFavoritesLoading(true)
+
         const response = await addToFavoritesFirebase({
           name: recipeName,
           link: recipeLink,
           url: recipeImage,
           metadata,
         })
-        setIsFavoritesLoading(false)
 
         if (response.error) {
-          toast(response.error, { type: "error" })
-          // Revert the optimistic update if the asynchronous operation fails
-          setFavorites((prevFavorites) => {
-            const { [recipeLink]: value, ...updatedFavorites } = prevFavorites
-            return updatedFavorites // Return the updated state
-          })
-          setIsFavoritesLoading(false)
-          return
-        } else {
-          // Update favorites with the actual data
-          setFavorites((prevFavorites) => ({
-            ...prevFavorites,
-            [recipeLink]: {
-              name: recipeName,
-              url: response.url,
-              link: recipeLink,
-            },
-          }))
-          setIsFavoritesLoading(false)
+          throw new Error(response.error)
         }
+
+        // Finalize the update with actual URL from Firebase
+        setFavorites((prevFavorites) => ({
+          ...prevFavorites,
+          [recipeLink]: {
+            name: recipeName,
+            url: response.url,
+            link: recipeLink,
+          },
+        }))
       } catch (error) {
         console.error("Error adding favorite:", error)
-        toast(error.message, {
-          type: "error",
-        })
-        // Revert the optimistic update if the asynchronous operation fails
+        toast(error.message, { type: "error" })
+
+        // Revert optimistic update
         setFavorites((prevFavorites) => {
-          const { [recipeLink]: value, ...updatedFavorites } = prevFavorites
-          return updatedFavorites // Return the updated state
+          const newFavorites = { ...prevFavorites }
+          delete newFavorites[recipeLink]
+          return newFavorites
         })
-        setIsFavoritesLoading(false)
+      } finally {
+        setIsFavoritesLoading(false) // Ensure loading state is updated
       }
     }
   }
