@@ -177,9 +177,9 @@ const handleSetMaxImagesCount = async (
   const currentImageCount = userDoc.exists() ? userDoc.data().imageCount : 0
 
   // Check if the user has reached MAX_FAVORITES (currently 100)
-  if (currentImageCount >= 5) {
+  if (currentImageCount >= MAX_FAVORITES) {
     return {
-      error: "Maximum limit of 5 favorites reached. Remove some to add more.",
+      error: `Maximum limit of ${MAX_FAVORITES} favorites reached. Remove some to add more.`,
     }
   }
 

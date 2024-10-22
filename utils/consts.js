@@ -1,3 +1,3 @@
-const MAX_FAVORITES = 100
+const MAX_FAVORITES = 69
 
 export { MAX_FAVORITES }
