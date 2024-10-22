@@ -324,22 +324,20 @@ const RecipesMenu = ({
             )}
           </div>
           {Object.keys(favorites).length > 0 && (
-            <div className="flex justify-center items-center">
-              <DeleteAllAlert
-                setFavorites={setFavorites}
-                isFavoritesLoading={isFavoritesLoading}
-                setIsFavoritesLoading={setIsFavoritesLoading}
+            <DeleteAllAlert
+              setFavorites={setFavorites}
+              isFavoritesLoading={isFavoritesLoading}
+              setIsFavoritesLoading={setIsFavoritesLoading}
+            >
+              <Button
+                variant="destructive"
+                size={"sm"}
+                className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
               >
-                <Button
-                  variant="destructive"
-                  size={"sm"}
-                  className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
-                >
-                  <TrashIcon size={size.height < 600 ? 16 : 20} />
-                  <span>Delete All</span>
-                </Button>
-              </DeleteAllAlert>
-            </div>
+                <TrashIcon size={size.height < 600 ? 16 : 20} />
+                <span>Delete All</span>
+              </Button>
+            </DeleteAllAlert>
           )}
         </div>
       </FavoritesSheet>

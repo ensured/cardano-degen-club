@@ -25,10 +25,8 @@ const DeleteAllAlert = ({
   const [open, setOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} disabled={isFavoritesLoading}>
-      <DialogTrigger asChild disabled={isFavoritesLoading}>
-        {children}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
