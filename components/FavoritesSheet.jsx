@@ -53,13 +53,10 @@ const FavoritesSheet = ({
       })
       setFavorites(newFavorites)
       setIsFavoritesLoading(false)
-      setHasFetched(true) // Mark that fetching has occurred
     }
 
     if (isOpen) {
-      setIsFavoritesLoading(true)
       getFavs()
-      setIsFavoritesLoading(false)
     }
   }, [isOpen])
 

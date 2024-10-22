@@ -30,7 +30,7 @@ const DeleteAllAlert = ({ children, setFavorites }) => {
             images stored with your account.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>

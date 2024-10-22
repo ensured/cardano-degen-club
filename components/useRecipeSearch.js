@@ -217,15 +217,14 @@ const useRecipeSearch = () => {
   }
 
   const removeFromFavorites = async (link) => {
-    setIsFavoritesLoading(true) // Move this line to the beginning
     const prevFavorites = { ...favorites }
     try {
+      setIsFavoritesLoading(true) // Move this line to the beginning
       const newFavorites = { ...favorites }
       delete newFavorites[link]
       setFavorites(newFavorites)
-
-      // Call the server action to remove from favorites
       const removeFav = removeFavoriteFirebase(link, true)
+      setIsFavoritesLoading(false)
 
       toast.promise(
         removeFav,
@@ -255,15 +254,12 @@ const useRecipeSearch = () => {
       console.error("Error removing from favorites:", error)
       setFavorites(prevFavorites)
       toast.error(error.message)
-    } finally {
       setIsFavoritesLoading(false) // This should stay here
     }
   }
 
   const handleStarIconClick = (index) => async (e) => {
     e.preventDefault()
-    setIsFavoritesLoading(true)
-
     const recipe = searchResults.hits[index].recipe
     const recipeName = extractRecipeName(recipe.shareAs)
     const recipeImage = recipe.image
@@ -278,8 +274,9 @@ const useRecipeSearch = () => {
         delete newFavorites[recipeLink]
         return newFavorites // Return the updated state
       })
-
+      setIsFavoritesLoading(true)
       await removeFavoriteFirebase(recipeLink)
+      setIsFavoritesLoading(false)
     } else {
       try {
         // Optimistically add to favorites
@@ -302,13 +299,14 @@ const useRecipeSearch = () => {
           customMetadata,
           cacheControl: "public,max-age=7200",
         }
-
+        setIsFavoritesLoading(true)
         const response = await addToFavoritesFirebase({
           name: recipeName,
           link: recipeLink,
           url: recipeImage,
           metadata,
         })
+        setIsFavoritesLoading(false)
 
         if (response.error) {
           toast(response.error, { type: "error" })
@@ -317,6 +315,8 @@ const useRecipeSearch = () => {
             const { [recipeLink]: value, ...updatedFavorites } = prevFavorites
             return updatedFavorites // Return the updated state
           })
+          setIsFavoritesLoading(false)
+          return
         } else {
           // Update favorites with the actual data
           setFavorites((prevFavorites) => ({
@@ -327,6 +327,7 @@ const useRecipeSearch = () => {
               link: recipeLink,
             },
           }))
+          setIsFavoritesLoading(false)
         }
       } catch (error) {
         console.error("Error adding favorite:", error)
@@ -338,7 +339,6 @@ const useRecipeSearch = () => {
           const { [recipeLink]: value, ...updatedFavorites } = prevFavorites
           return updatedFavorites // Return the updated state
         })
-      } finally {
         setIsFavoritesLoading(false)
       }
     }

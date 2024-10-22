@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { FileText, Loader2, Trash2Icon, TrashIcon } from "lucide-react"
+import { FileText, Loader2, Trash, Trash2Icon, TrashIcon } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
 import { imgUrlToBase64 } from "./actions"
+import { Skeleton } from "./ui/skeleton"
 
 function extractRecipeId(url) {
   const startIndex = url.indexOf("recipe/") + "recipe/".length
@@ -242,93 +243,106 @@ const RecipesMenu = ({
             </ConfirmPreviewAlertDialog>
           </div>
         ) : (
-          <div className="animate-fade-in flex justify-center p-0.5">
-            {isFavoritesLoading ? (
-              <div className="mt-12 flex size-full items-center justify-center rounded-md bg-background p-2 text-primary shadow-md">
-                <Loader2 className="size-12 animate-spin" />
-              </div>
-            ) : (
-              <span className="text-md mt-2 flex flex-col items-center justify-center text-center md:text-lg">
-                <span>
-                  You have <b>{Object.keys(favorites).length}</b> favorite
-                  recipes. Click the star button on a recipe to favorite it.
-                </span>
-              </span>
-            )}
-          </div>
+          <span className="text-md mt-2 flex flex-col items-center justify-center text-center md:text-lg">
+            <span>
+              You have <b>{Object.keys(favorites).length}</b> favorite recipes.
+              Click the star button on a recipe to favorite it.
+            </span>
+          </span>
         )}
 
-        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto ">
-          <div
-            className={`flex flex-col flex-wrap rounded-md ${
-              Object.entries(favorites).length > 0 && "border"
-            }`}
-          >
-            {Object.entries(favorites).map(([link, { name, url }], index) => (
-              <div key={link}>
-                <Link
-                  target="_blank"
-                  href={link}
-                  className="flex items-center justify-between gap-1.5 p-1.5  hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
-                  style={{ textDecoration: "none" }}
-                >
-                  {url && (
-                    <Image
-                      src={url}
-                      width={42}
-                      height={42}
-                      alt={name}
-                      className="rounded-full"
-                      unoptimized
-                      priority
-                    />
-                  )}
-                  <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150 ">
-                    <span className="line-clamp-3 rounded-md text-sm md:text-base lg:text-lg">
-                      {name}
-                    </span>
-                    <button
-                      className="p-2 text-red-600 hover:scale-125 hover:text-red-700"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        console.log
-                        removeFromFavorites(link)
-                      }}
+        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto">
+          {isFavoritesLoading ? (
+            <div className="flex flex-col flex-wrap rounded-md border items-center justify-center">
+              <div className="flex flex-col border">
+                {Array(Object.keys(favorites).length)
+                  .fill(null)
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between "
                     >
-                      <Trash2Icon
-                        size={
-                          size?.width < 480
-                            ? 20
-                            : size?.width < 640
-                            ? 22
-                            : size?.width < 900
-                            ? 23
-                            : 24
-                        }
+                      <Skeleton className="h-[3.35rem] w-[18.5rem] border border-purple-200 rounded-sm" />
+                      <Skeleton
+                        className="h-8 w-8 flex justify-center items-center rounded-full text-red-600"
+                        style={{ opacity: 0.6 }} // To give it a skeleton look
                       />
-                    </button>
-                  </div>
-                </Link>
-                {/* Render Separator only if not the last item */}
-                {index < Object.entries(favorites).length - 1 && (
-                  <Separator className="h-[0.005rem] w-full bg-[#ffffff25]" />
-                )}
+                    </div>
+                  ))}
               </div>
-            ))}
-            {Object.keys(favorites).length > 0 && (
-              <div className="absolute inset-x-0 bottom-0 flex justify-center py-1.5 rounded-lg shadow-md transition-transform duration-100 transform hover:scale-105">
-                <DeleteAllAlert setFavorites={setFavorites}>
-                  <Button
-                    variant="destructive"
-                    className="flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
+            </div>
+          ) : (
+            <div
+              className={`flex flex-col flex-wrap rounded-md ${
+                Object.entries(favorites).length > 0 && "border"
+              }`}
+            >
+              {Object.entries(favorites).map(([link, { name, url }], index) => (
+                <div key={link}>
+                  <Link
+                    target="_blank"
+                    href={link}
+                    className="flex items-center justify-between gap-1.5 p-1.5 hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
+                    style={{ textDecoration: "none" }}
                   >
-                    <TrashIcon size={size.height < 600 ? 16 : 20} />
-                    <span>Remove all</span>
-                  </Button>
-                </DeleteAllAlert>
-              </div>
-            )}
-          </div>
+                    {url && (
+                      <Image
+                        src={url}
+                        width={42}
+                        height={42}
+                        alt={name}
+                        className="rounded-full"
+                        unoptimized
+                        priority
+                      />
+                    )}
+                    <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
+                      <span className="line-clamp-2 rounded-md text-sm md:text-base lg:text-lg">
+                        {name}
+                      </span>
+                      <button
+                        className="text-red-600 hover:scale-125 hover:text-red-800"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          removeFromFavorites(link)
+                        }}
+                      >
+                        <Trash2Icon
+                          size={
+                            size?.width < 480
+                              ? 20
+                              : size?.width < 640
+                              ? 22
+                              : size?.width < 900
+                              ? 23
+                              : 24
+                          }
+                        />
+                      </button>
+                    </div>
+                  </Link>
+                  {/* Render Separator only if not the last item */}
+                  {index < Object.entries(favorites).length - 1 && (
+                    <Separator className="h-[0.005rem] w-full bg-[#ffffff25]" />
+                  )}
+                </div>
+              ))}
+
+              {Object.keys(favorites).length > 0 && (
+                <div className="absolute inset-x-0 bottom-0 flex justify-center py-1.5 rounded-lg shadow-md transition-transform duration-100 transform hover:scale-105">
+                  <DeleteAllAlert setFavorites={setFavorites}>
+                    <Button
+                      variant="destructive"
+                      className="flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
+                    >
+                      <TrashIcon size={size.height < 600 ? 16 : 20} />
+                      <span>Remove all</span>
+                    </Button>
+                  </DeleteAllAlert>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </FavoritesSheet>
     </div>
