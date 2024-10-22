@@ -2,7 +2,6 @@ import Link from "next/link"
 
 import { siteConfig } from "@/config/site"
 
-import FeedBackDrawer from "./Feedback"
 import { Icons } from "./icons"
 import { buttonVariants } from "./ui/button"
 
@@ -18,7 +17,7 @@ const Footer = () => {
                 variant: "ghost",
               })}
             >
-              <Icons.gitHub className="h-5 w-5" />
+              <Icons.gitHub className="size-5" />
               <span className="sr-only">GitHub</span>
             </div>
           </Link>
@@ -41,7 +40,7 @@ const Footer = () => {
         <div className=" text-center text-xs font-medium text-zinc-800 hover:underline dark:text-gray-400 sm:text-sm">
           © 2024 cardanodegen.shop
         </div>
-        <FeedBackDrawer />
+        {/* <FeedBackDrawer /> */}
       </div>
     </footer>
   )

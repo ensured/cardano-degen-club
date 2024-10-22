@@ -11,14 +11,8 @@ import {
   ref as storageRef,
   uploadBytes,
 } from "firebase/storage"
-import { z } from "zod"
 
-import { FeedbackFormSchema } from "@/lib/schema"
-
-import { PutObjectCommand, s3Client } from "../lib/s3"
 import { db, deleteObject, storage } from "./firebase/firebase"
-
-type Inputs = z.infer<typeof FeedbackFormSchema>
 
 export const imgUrlToBase64 = async (url: string) => {
   try {
@@ -29,48 +23,6 @@ export const imgUrlToBase64 = async (url: string) => {
   } catch (error) {
     console.error("Error downloading image:", error)
     return null
-  }
-}
-
-export async function submitFeedback(data: Inputs) {
-  const result = FeedbackFormSchema.safeParse(data)
-
-  if (!result.success) {
-    return { success: false, message: "Invalid form submission." }
-  }
-
-  const ip = getClientIp()
-  if (!ip) {
-    console.warn("Client IP address not found.")
-    return { success: false, message: "Client IP address not found." }
-  }
-
-  // Apply rate-limiting
-  const rateLimitResult = await checkRateLimit("feedback", ip, 120000)
-  if (!rateLimitResult.success) {
-    return rateLimitResult // Return rate limit failure
-  }
-
-  try {
-    const date = new Date().toISOString()
-    const jsonData = JSON.stringify({ date, ...data })
-
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: `feedback/${data.name}-${date}.json`,
-      Body: jsonData,
-    }
-
-    await s3Client.send(new PutObjectCommand(params))
-    revalidatePath("/protected")
-
-    return { success: true, message: "Thanks for your feedback! 🙏" }
-  } catch (error) {
-    console.error(error)
-    return {
-      success: false,
-      message: "An error occurred. Please try again later.",
-    }
   }
 }
 
