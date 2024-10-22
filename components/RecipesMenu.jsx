@@ -233,11 +233,12 @@ const RecipesMenu = ({
             >
               <Button
                 variant={"outline"}
+                size="sm"
                 className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
               >
                 <FileText className="left-2" />
                 <div className="line-clamp-1 items-center text-lg">
-                  Preview PDF{" "}
+                  Preview PDF
                 </div>
               </Button>
             </ConfirmPreviewAlertDialog>
@@ -251,9 +252,9 @@ const RecipesMenu = ({
           </span>
         )}
 
-        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto ">
+        <div className="animate-fade-in custom-scrollbar h-[calc(100vh-10.5rem)] overflow-auto border rounded-md">
           {isFavoritesLoading ? (
-            <div className="flex flex-col flex-wrap rounded-md border-t border-l border-r items-center justify-center ">
+            <div className="flex flex-col flex-wrap rounded-md  border-l border-r items-center justify-center overflow-auto">
               <div className="flex flex-col gap-0.5 w-full ">
                 {Array(Object.keys(favorites).length)
                   .fill(null)
@@ -269,13 +270,9 @@ const RecipesMenu = ({
               </div>
             </div>
           ) : (
-            <div
-              className={`flex flex-col flex-wrap rounded-md ${
-                Object.entries(favorites).length > 0 && "border"
-              }`}
-            >
+            <div className={`flex flex-col flex-wrap rounded-md`}>
               {Object.entries(favorites).map(([link, { name, url }], index) => (
-                <div key={link}>
+                <div key={link} className="overflow-auto">
                   <Link
                     target="_blank"
                     href={link}
@@ -318,31 +315,26 @@ const RecipesMenu = ({
                       </button>
                     </div>
                   </Link>
-                  {/* Render Separator only if not the last item */}
-                  {index < Object.entries(favorites).length - 1 && (
-                    <Separator className="h-[0.005rem] w-full bg-[#ffffff25]" />
-                  )}
                 </div>
               ))}
-
-              {Object.keys(favorites).length > 0 && (
-                <DeleteAllAlert
-                  setFavorites={setFavorites}
-                  isFavoritesLoading={isFavoritesLoading}
-                  setIsFavoritesLoading={setIsFavoritesLoading}
-                >
-                  <Button
-                    variant="destructive"
-                    className="flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
-                  >
-                    <TrashIcon size={size.height < 600 ? 16 : 20} />
-                    <span>Remove all</span>
-                  </Button>
-                </DeleteAllAlert>
-              )}
             </div>
           )}
         </div>
+        {Object.keys(favorites).length > 0 && (
+          <DeleteAllAlert
+            setFavorites={setFavorites}
+            isFavoritesLoading={isFavoritesLoading}
+            setIsFavoritesLoading={setIsFavoritesLoading}
+          >
+            <Button
+              variant="destructive"
+              className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
+            >
+              <TrashIcon size={size.height < 600 ? 16 : 20} />
+              <span>Delete All</span>
+            </Button>
+          </DeleteAllAlert>
+        )}
       </FavoritesSheet>
     </div>
   )

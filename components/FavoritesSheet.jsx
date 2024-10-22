@@ -65,14 +65,13 @@ const FavoritesSheet = ({
       <Sheet key={"right"} open={isOpen} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button
-            disabled={loading}
             variant="outline"
             className="flex-1 text-xs md:text-base"
             size={"sm"}
           >
             <div className="flex flex-row items-center justify-center gap-1.5">
               <Heart className="size-4 md:size-5" />
-              <span className="text-xs md:text-base">Favorites </span>
+              <span className="text-xs md:text-base">Favorites</span>
             </div>
           </Button>
         </SheetTrigger>

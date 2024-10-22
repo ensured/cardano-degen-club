@@ -142,7 +142,6 @@ const useRecipeSearch = () => {
     return () => window.removeEventListener("resize", checkIsMobile)
   }, [])
 
-  // Load favorites from localStorage on mount
   useEffect(() => {
     const storedFavorites = localStorage.getItem("favorites")
     if (storedFavorites) {
@@ -150,9 +149,10 @@ const useRecipeSearch = () => {
     }
   }, [])
 
-  // Update localStorage whenever favorites change
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites))
+    if (Object.keys(favorites).length > 0) {
+      localStorage.setItem("favorites", JSON.stringify(favorites))
+    }
   }, [favorites])
 
   useEffect(() => {

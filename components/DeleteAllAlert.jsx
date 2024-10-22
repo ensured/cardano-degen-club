@@ -25,7 +25,7 @@ const DeleteAllAlert = ({
   const [open, setOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} disabled={isFavoritesLoading}>
       <DialogTrigger asChild disabled={isFavoritesLoading}>
         {children}
       </DialogTrigger>
@@ -45,7 +45,7 @@ const DeleteAllAlert = ({
             variant="destructive"
             onClick={async () => {
               setFavorites({})
-              localStorage.setItem("favorites", {})
+              localStorage.setItem("favorites", JSON.stringify({}))
               try {
                 setIsFavoritesLoading(true)
                 toast.promise(
