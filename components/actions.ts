@@ -1,8 +1,7 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
 import { MAX_FAVORITES } from "@/utils/consts"
-import { checkRateLimit, getClientIp } from "@/utils/rateLimiter"
+import { extractRecipeId } from "@/utils/helper"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { doc, getDoc, setDoc } from "firebase/firestore"
 import {
@@ -105,15 +104,6 @@ export async function deleteAllFavoritesFirebase() {
     console.error("Error deleting all favorites:", err)
     return { error: "Failed to delete all favorites." }
   }
-}
-
-function extractRecipeId(url: string) {
-  const startIndex = url.indexOf("recipe/") + "recipe/".length
-  const endIndex = url.indexOf("/", startIndex)
-  if (startIndex === -1 || endIndex === -1) {
-    throw new Error("Invalid URL format")
-  }
-  return url.substring(startIndex, endIndex)
 }
 
 export async function removeFavoriteFirebase(

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
+import { RECIPIES_SEARCH_TIMEOUT_MS } from "@/utils/consts"
 import { checkRateLimit, getClientIp } from "@/utils/rateLimiter"
-
-const RECIPIES_FETCH_TIMEOUT_MS = 1000
 
 export const runtime = "edge"
 
@@ -42,7 +41,7 @@ export async function GET(request: NextRequest) {
   const rateLimitCheck = await checkRateLimit(
     "fetchRecipes",
     ip,
-    RECIPIES_FETCH_TIMEOUT_MS
+    RECIPIES_SEARCH_TIMEOUT_MS
   )
   if (!rateLimitCheck.success) {
     return NextResponse.json({

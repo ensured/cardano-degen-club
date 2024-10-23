@@ -18,15 +18,6 @@ import PDFViewer from "./PdfViewer"
 import { imgUrlToBase64 } from "./actions"
 import { Skeleton } from "./ui/skeleton"
 
-function extractRecipeId(url) {
-  const startIndex = url.indexOf("recipe/") + "recipe/".length
-  const endIndex = url.indexOf("/", startIndex)
-  if (startIndex === -1 || endIndex === -1) {
-    throw new Error("Invalid URL format")
-  }
-  return url.substring(startIndex, endIndex)
-}
-
 const RecipesMenu = ({
   favorites,
   setFavorites,
@@ -81,15 +72,15 @@ const RecipesMenu = ({
     }
 
     const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
-    let yOffset = 10
+    let yOffset = 12
     const pageHeight = doc.internal.pageSize.height
-    const imageWidth = 22
-    const imageHeight = 22
+    const imageWidth = 24
+    const imageHeight = 24
     const borderPadding = 2 // Padding around the content
     const borderWidth = 0.5
     const borderRadius = 5 // Rounded corners radius
-    const contentHeight = 24
-    const contentWidth = 180 // Width of the item
+    const contentHeight = 26
+    const contentWidth = 206 // Width of the item
     let currentPosition = 0
 
     try {
@@ -147,7 +138,7 @@ const RecipesMenu = ({
 
           // Calculate available width for text, excluding padding and image
           const textXOffset = imageWidth + borderPadding + 4 // Position text right of the image
-          const maxTextWidth = contentWidth - textXOffset - 2 // Max width for text to avoid overflowing
+          const maxTextWidth = contentWidth - textXOffset - 3 // Max width for text to avoid overflowing
 
           // Split text to ensure it doesn't overflow
           const textLines = doc.splitTextToSize(truncatedName, maxTextWidth)
@@ -164,7 +155,7 @@ const RecipesMenu = ({
           }
 
           // Calculate starting y position for the text to center it vertically
-          let textYOffset = yOffset + borderPadding + contentHeight / 2.6 // Centering text
+          let textYOffset = yOffset + borderPadding + contentHeight / 2.6 - 5 // Centering text
 
           // Draw the text with link for each line
           displayedLines.forEach((line) => {
@@ -180,7 +171,7 @@ const RecipesMenu = ({
           // Add new page if needed
           if (yOffset + contentHeight + 2 * borderPadding > pageHeight) {
             doc.addPage()
-            yOffset = 10 // Reset yOffset for new page
+            yOffset = 12 // Reset yOffset for new page
           }
         }
       )
