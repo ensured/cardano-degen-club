@@ -186,7 +186,7 @@ const RecipeSearchForm = ({
         </div>
       </div>
 
-      <div className="ml-1.5 hidden flex-none items-center md:flex">
+      {/* <div className="ml-1.5 hidden flex-none items-center md:flex">
         <Image
           src={recipeFrenLogo}
           alt="recipe fren logo"
@@ -197,7 +197,7 @@ const RecipeSearchForm = ({
           placeholder="blur"
           quality={50}
         />
-      </div>
+      </div> */}
     </div>
   )
 }

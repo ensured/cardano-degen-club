@@ -107,7 +107,10 @@ const FavoritesSheet = ({
             ) : (
               <>
                 <div className="flex items-center gap-1.5">
-                  <Heart className="size-4 md:size-5" />
+                  <Heart
+                    className="size-4 md:size-5"
+                    aria-details="Heart icon"
+                  />
                   <span>Favorites</span>
                 </div>
                 <div className="flex items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-xs font-semibold text-primary-foreground">
