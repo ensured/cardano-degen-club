@@ -25,7 +25,6 @@ const useRecipeSearch = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [suggestions, setSuggestions] = useState(false)
   const [searchResults, setSearchResults] = useState({
     hits: [],
     count: 0,
@@ -144,6 +143,7 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
+    setIsFavoritesLoading(true)
     const storedFavorites = localStorage.getItem("favorites")
     if (
       Object.keys(JSON.parse(storedFavorites)).length > 0 &&
@@ -151,15 +151,18 @@ const useRecipeSearch = () => {
     ) {
       setFavorites(JSON.parse(storedFavorites))
     }
+    setIsFavoritesLoading(false)
   }, [])
 
   useEffect(() => {
+    setIsFavoritesLoading(true)
     if (
       Object.keys(favorites).length > 0 &&
       Object.keys(favorites).length <= MAX_FAVORITES
     ) {
       localStorage.setItem("favorites", JSON.stringify(favorites))
     }
+    setIsFavoritesLoading(false)
   }, [favorites])
 
   useEffect(() => {
@@ -369,8 +372,6 @@ const useRecipeSearch = () => {
     input,
     setInput,
     handleInputChange,
-    suggestions,
-    setSuggestions,
     lastFoodItemRef,
     favorites,
     setFavorites,

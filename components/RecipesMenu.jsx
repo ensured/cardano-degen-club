@@ -246,19 +246,19 @@ const RecipesMenu = ({
         )}
 
         <div className="flex h-full flex-col gap-2">
-          <div className="animate-fade-in custom-scrollbar h-[calc(100vh-14.5rem)] overflow-auto border rounded-md">
+          <div className="animate-fade-in custom-scrollbar h-[calc(100vh-14.5rem)] overflow-auto rounded-md border">
             {isFavoritesLoading ? (
-              <div className="flex flex-col flex-wrap rounded-md  border-l border-r items-center justify-center overflow-auto">
-                <div className="flex flex-col gap-0.5 w-full ">
+              <div className="flex flex-col flex-wrap items-center  justify-center overflow-auto rounded-md border-x">
+                <div className="flex w-full flex-col gap-0.5 ">
                   {Array(Object.keys(favorites).length)
                     .fill(null)
                     .map((_, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-2 gap-0.5 pr-1 border-b rounded-b-md"
+                        className="flex items-center justify-between gap-0.5 rounded-b-md border-b p-2 pr-1"
                       >
                         <Skeleton className="h-[2.22rem] w-full " />
-                        <Skeleton className="h-7 w-7 flex justify-center border items-center rounded-full" />
+                        <Skeleton className="flex size-7 items-center justify-center rounded-full border" />
                       </div>
                     ))}
                 </div>
@@ -325,7 +325,7 @@ const RecipesMenu = ({
               <Button
                 variant="destructive"
                 size={"sm"}
-                className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm md:text-lg transition-colors duration-200 hover:bg-red-600"
+                className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm transition-colors duration-200 hover:bg-red-600 md:text-lg"
               >
                 <TrashIcon size={size.height < 600 ? 16 : 20} />
                 <span>Delete All</span>

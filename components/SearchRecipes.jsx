@@ -38,8 +38,6 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
     scrollProgress,
     currentCardIndex,
     isMobile,
-    suggestions,
-    setSuggestions,
     lastInputSearched,
     isFavoritesLoading,
     setIsFavoritesLoading,
@@ -62,8 +60,6 @@ const SearchRecipes = ({ isAuthenticated, userInfo }) => {
       /> */}
 
       <RecipeSearchForm
-        setSuggestions={setSuggestions}
-        suggestions={suggestions}
         searchRecipes={searchRecipes}
         handleInputChange={handleInputChange}
         inputChanged={inputChanged}

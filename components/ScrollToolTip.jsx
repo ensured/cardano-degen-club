@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
+import { MAX_FAVORITES } from "@/utils/consts"
 import { CSSTransition } from "react-transition-group"
 
 const ScrollTooltip = ({ favorites }) => {
@@ -23,9 +24,9 @@ const ScrollTooltip = ({ favorites }) => {
   // }, [totalCards])
 
   return (
-    <div className="pointer-events-none cursor-wait fixed bottom-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900/80 text-xs text-white shadow-inner shadow-sky-500/80">
+    <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex size-10 items-center justify-center rounded-full bg-zinc-900/80 text-xs text-white shadow-inner shadow-sky-500/80">
       {/* {currentCardIndex}/{totalCards}  /{totalResults} */}
-      {Object.keys(favorites).length}/100
+      {Object.keys(favorites).length}/{MAX_FAVORITES}
     </div>
   )
 }

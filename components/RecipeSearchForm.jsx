@@ -12,6 +12,7 @@ import {
   Dice4Icon,
   Dice5Icon,
   Dice6Icon,
+  Loader2,
   Search,
 } from "lucide-react"
 
@@ -37,7 +38,6 @@ const RecipeSearchForm = ({
   setInput,
   loading,
   setLoading,
-  setSuggestions,
   setSearchResults,
   removeFromFavorites,
   favorites,
@@ -54,7 +54,6 @@ const RecipeSearchForm = ({
   const router = useRouter()
 
   const inputRef = useRef(null)
-  const suggestionsListRef = useRef(null)
 
   const handleHideKeyboard = () => {
     inputRef.current.blur()
@@ -88,29 +87,6 @@ const RecipeSearchForm = ({
     setIsHoveredRandomButton(isHovered)
   }
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      try {
-        if (!suggestionsListRef.current) return
-        if (
-          inputRef.current &&
-          !inputRef.current.contains(event.target) &&
-          !suggestionsListRef.current?.contains(event.target)
-        ) {
-          suggestionsListRef.current.style.display = "none"
-        } else {
-          suggestionsListRef.current.style.display = "block"
-        }
-      } catch (e) {
-        console.error(e)
-      }
-    }
-
-    document.addEventListener("click", handleClickOutside)
-
-    return () => document.removeEventListener("click", handleClickOutside)
-  }, [inputRef, suggestionsListRef, setSuggestions]) // Dependencies
-
   const handleGetRandomFood = async (e) => {
     try {
       e.preventDefault()
@@ -129,7 +105,6 @@ const RecipeSearchForm = ({
 
   const handleFormSubmit = (e) => {
     e.preventDefault()
-    setSuggestions([])
     setInput(e.target[0].value)
     searchRecipes(e, e.target[0].value)
     router.push(`?q=${e.target[0].value}`)
