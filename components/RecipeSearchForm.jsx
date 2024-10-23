@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 
 import { foodItems } from "../lib/foods"
-import recipeFrenLogo from "../public/recipeFrenLogo.jpg"
+import recipeFrenLogo from "../public/recipeFrenLogo.webp"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
