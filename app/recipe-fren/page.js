@@ -1,25 +1,29 @@
+import { Suspense } from "react"
+import dynamic from "next/dynamic"
 import Image from "next/image"
 import {
   LoginLink,
-  LogoutLink,
-  RegisterLink,
   getKindeServerSession,
 } from "@kinde-oss/kinde-auth-nextjs/server"
+import { Toaster } from "react-hot-toast"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
-import SearchRecipes from "../../components/SearchRecipes"
+const SearchRecipes = dynamic(() => import("../../components/SearchRecipes"), {
+  ssr: false,
+})
 
 export const metadata = {
   title: "Recipe Fren",
 }
 
 const page = async () => {
-  const { isAuthenticated, getUser } = getKindeServerSession()
+  const { getUser } = getKindeServerSession()
   const user = await getUser()
+  const email = await user?.email
 
-  if (!user || !isAuthenticated()) {
+  if (!email) {
     return (
       <div className="flex w-full justify-center pt-6 text-center">
         <div className=" flex flex-col items-center justify-center gap-2 p-2 text-xl sm:text-2xl">
@@ -29,9 +33,6 @@ const page = async () => {
             your favorite recipes and even download them as a formatted PDF
             file!
           </div>
-          {/* TODOS: 
-          create recipe lists seperate from one another
-          and also (add my already made shopping list app) */}
           <div>
             <LoginLink
               className={cn(buttonVariants(), "w-[260px] items-center")}
@@ -60,26 +61,33 @@ const page = async () => {
                 </svg>
               </span>
             </LoginLink>
-
-            {/* <RegisterLink className={cn(buttonVariants())}>
-              Register
-            </RegisterLink> */}
           </div>
         </div>
       </div>
     )
   }
 
-  const userInfo = {
-    id: user.id,
-    name: user.given_name,
-    email: user.email,
-    picture: user.picture,
-  }
-
   return (
     <>
-      <SearchRecipes isAuthenticated={isAuthenticated()} userInfo={userInfo} />
+      <SearchRecipes userEmail={email} />
+
+      <Toaster
+        toastOptions={{
+          className: "dark:bg-zinc-950 dark:text-slate-100",
+          duration: 1100,
+          position: "bottom-center",
+          success: {
+            style: {
+              background: "green",
+            },
+          },
+          error: {
+            style: {
+              background: "red",
+            },
+          },
+        }}
+      />
     </>
   )
 }
