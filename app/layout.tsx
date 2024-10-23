@@ -36,36 +36,34 @@ interface RootLayoutProps {
 
 export default async function RootLayout({ children }: RootLayoutProps) {
   return (
-    <>
-      <html lang="en" suppressHydrationWarning>
-        <body className={cn("min-h-screen bg-background", fontSans.variable)}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Toaster
-              richColors={true}
-              toastOptions={{
-                style: { minWidth: "20rem", maxWidth: "40rem" },
-                className: "break-all",
-              }}
-            />
-            <div className="flex min-h-screen flex-col">
-              <div className="relative">
-                <SiteHeader />
-              </div>
-              <main className="grow">{children}</main>
-              <Footer />
-              <SpeedInsights />
-              <Analytics />
+    <html lang="en" suppressHydrationWarning>
+      <body className={cn("min-h-screen bg-background", fontSans.variable)}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Toaster
+            richColors={true}
+            toastOptions={{
+              style: { minWidth: "20rem", maxWidth: "40rem" },
+              className: "break-all",
+            }}
+          />
+          <div className="flex min-h-screen flex-col">
+            <div className="relative">
+              <SiteHeader />
             </div>
-            <TailwindIndicator />
-          </ThemeProvider>
-          <ScrollToTopButton />
-        </body>
-      </html>
-    </>
+            <main className="grow">{children}</main>
+            <Footer />
+            <SpeedInsights />
+            <Analytics />
+          </div>
+          <TailwindIndicator />
+        </ThemeProvider>
+        <ScrollToTopButton />
+      </body>
+    </html>
   )
 }

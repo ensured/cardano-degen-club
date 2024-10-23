@@ -35,7 +35,7 @@ const DeleteAllAlert = ({
             images stored with your account.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2">
+        <DialogFooter className="gap-3">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>

@@ -27,10 +27,7 @@ const FavoritesSheet = ({
   userEmail,
   isFavoritesLoading,
   setIsFavoritesLoading,
-  hasFetched,
-  setHasFetched,
 }) => {
-  const theme = useTheme()
   const size = useWindowSize()
 
   useEffect(() => {
@@ -123,20 +120,13 @@ const FavoritesSheet = ({
         <SheetContent side="right">
           <SheetHeader>
             <SheetTitle>
-              <div className="flex select-none items-center justify-center gap-2 text-2xl md:text-3xl">
+              <div className=" mb-1 flex  select-none items-center justify-center gap-2 rounded-lg border border-purple-950 bg-background p-2 text-2xl shadow-md md:text-3xl">
                 <StarIcon
-                  size={size?.width < 768 ? 26 : 30}
-                  color={theme.theme === "light" ? "black" : "#FFD700"}
+                  size={size?.width < 768 ? 28 : 32}
+                  color="#FFD700" // Use gold color for the star icon
+                  cla
                 />
-                <div className="flex items-center gap-1">
-                  Favorites
-                  <Badge
-                    variant="secondary"
-                    className="text-xs font-bold md:text-sm"
-                  >
-                    {Object.keys(favorites).length}/{MAX_FAVORITES}
-                  </Badge>
-                </div>
+                Favorites
               </div>
             </SheetTitle>
           </SheetHeader>

@@ -245,7 +245,7 @@ const RecipesMenu = ({
           </span>
         )}
 
-        <div className="flex h-full flex-col gap-2">
+        <div className={`flex h-full flex-col gap-2`}>
           <div className="animate-fade-in custom-scrollbar h-[calc(100vh-14.5rem)] overflow-auto rounded-md border">
             {isFavoritesLoading ? (
               <div className="flex flex-col flex-wrap items-center  justify-center overflow-auto rounded-md border-x">
@@ -325,7 +325,7 @@ const RecipesMenu = ({
               <Button
                 variant="destructive"
                 size={"sm"}
-                className="mx-auto my-2 flex items-center gap-2 px-4 py-2 text-sm transition-colors duration-200 hover:bg-red-600 md:text-lg"
+                className="mx-auto flex items-center gap-1.5 px-4 text-sm transition-colors duration-200 hover:bg-red-600 md:text-lg"
               >
                 <TrashIcon size={size.height < 600 ? 16 : 20} />
                 <span>Delete All</span>
