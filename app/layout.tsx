@@ -57,8 +57,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             </div>
             <main className="grow">{children}</main>
             <Footer />
-            <SpeedInsights />
-            <Analytics />
           </div>
           <TailwindIndicator />
         </ThemeProvider>
