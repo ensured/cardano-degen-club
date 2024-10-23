@@ -2,22 +2,26 @@ import Link from "next/link"
 
 import { siteConfig } from "@/config/site"
 
+import { cn } from "../lib/utils"
 import { Icons } from "./icons"
 import { buttonVariants } from "./ui/button"
 
 const Footer = () => {
   return (
     <footer className="bg-white shadow dark:bg-zinc-900">
-      <div className="mx-auto flex w-full flex-wrap items-center justify-evenly gap-1 p-2 md:container">
-        <div className="flex overflow-auto">
+      <div className="flex flex-wrap">
+        <div className="flex w-full justify-center gap-2 overflow-auto p-2 md:p-1.5">
           <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
             <div
-              className={buttonVariants({
-                size: "icon",
-                variant: "ghost",
-              })}
+              className={cn(
+                buttonVariants({
+                  variant: "outline",
+                }),
+                "rounded-full px-3 py-0 md:py-[1.375rem]"
+              )}
+              // eslint-disable-next-line react/jsx-no-duplicate-props
             >
-              <Icons.gitHub className="size-5" />
+              <Icons.gitHub className="size-4 md:size-5" />
               <span className="sr-only">GitHub</span>
             </div>
           </Link>
@@ -27,19 +31,19 @@ const Footer = () => {
             rel="noreferrer"
           >
             <div
-              className={buttonVariants({
-                size: "icon",
-                variant: "ghost",
-              })}
+              className={cn(
+                buttonVariants({
+                  variant: "outline",
+                }),
+                "rounded-full px-3 py-0 md:py-[1.375rem]"
+              )}
             >
-              <Icons.twitter className="size-5 fill-current" />
+              <Icons.twitter className="size-4 fill-current md:size-5" />
               <span className="sr-only">Twitter</span>
             </div>
           </Link>
         </div>
-        <div className=" text-center text-xs font-medium text-zinc-800 hover:underline dark:text-gray-400 sm:text-sm">
-          © 2024 cardanodegen.shop
-        </div>
+
         {/* <FeedBackDrawer /> */}
       </div>
     </footer>
