@@ -194,6 +194,8 @@ const RecipeSearchForm = ({
           width={85} // Set fixed width
           height={85} // Set fixed height
           priority
+          placeholder="blur"
+          quality={50}
         />
       </div>
     </div>
