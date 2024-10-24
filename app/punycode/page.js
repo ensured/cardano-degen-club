@@ -1,3 +1,5 @@
+import Animation from "@/components/Animation"
+
 import CardForm from "../../components/CardForm"
 
 export const metadata = {
@@ -5,9 +7,11 @@ export const metadata = {
 }
 const page = () => {
   return (
-    <div className="mt-24">
-      <CardForm autoFocus={true} />
-    </div>
+    <Animation>
+      <div className="mt-24">
+        <CardForm autoFocus={true} />
+      </div>
+    </Animation>
   )
 }
 

@@ -1,10 +1,11 @@
+import Animation from "@/components/Animation"
 import Notepad from "@/components/Notepad"
 
 const page = () => {
   return (
-    <div>
+    <Animation>
       <Notepad />
-    </div>
+    </Animation>
   )
 }
 

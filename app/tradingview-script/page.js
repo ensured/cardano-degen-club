@@ -4,6 +4,8 @@ import Tabz from "@/components/Tabz"
 import "./prism.css"
 import Link from "next/link"
 
+import Animation from "@/components/Animation"
+
 export const metadata = {
   title: "TradingView Script",
 }
@@ -36,7 +38,11 @@ const Page = () => {
     </div>
   )
 
-  return <Tabz source={<PrismData />} howTo={howTo} />
+  return (
+    <Animation>
+      <Tabz source={<PrismData />} howTo={howTo} />
+    </Animation>
+  )
 }
 
 export default Page

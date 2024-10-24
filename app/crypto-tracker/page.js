@@ -1,3 +1,4 @@
+import Animation from "@/components/Animation"
 import TradingViewChart from "@/components/TradingViewChart"
 
 import ConvertAda from "../../components/ConvertAda"
@@ -7,10 +8,12 @@ export const metadata = {
 }
 const page = async () => {
   return (
-    <div className="flex flex-col">
-      <ConvertAda />
-      <TradingViewChart />
-    </div>
+    <Animation>
+      <div className="flex flex-col">
+        <ConvertAda />
+        <TradingViewChart />
+      </div>
+    </Animation>
   )
 }
 

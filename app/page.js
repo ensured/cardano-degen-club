@@ -1,5 +1,7 @@
 import { DividerVerticalIcon } from "@radix-ui/react-icons"
 
+import Animation from "@/components/Animation"
+
 import HeroLandingPage from "../components/HeroLandingPage"
 
 export const metadata = {
