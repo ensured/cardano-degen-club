@@ -24,6 +24,45 @@ const DeleteAllAlert = ({
 }) => {
   const [open, setOpen] = useState(false)
 
+  const handleDeleteAll = async () => {
+    setFavorites({})
+    localStorage.setItem("favorites", JSON.stringify({}))
+    try {
+      setIsFavoritesLoading(true)
+      toast.promise(
+        deleteAllFavoritesFirebase(), // << Call the function here to return a promise
+        {
+          loading: "Removing",
+          success: (data) => (
+            <div className="text-white">
+              Removed <b>{data.total}</b>{" "}
+              {data.total > 1 ? "recipes" : "recipe"}
+            </div>
+          ),
+          error: (error) => "Couldn't remove favorites",
+          id: "delete-recipe",
+        },
+        {
+          className: "bg-slate-500/80 min-w-[200px]",
+          loading: {
+            icon: <Loader2 className="animate-spin text-zinc-950" />,
+          },
+          success: {
+            icon: <CheckCircle2Icon className="animate-fadeIn text-white" />,
+          },
+        }
+      )
+
+      setIsFavoritesLoading(false)
+
+      setOpen(false)
+    } catch (error) {
+      console.error("Error removing favorites:", error)
+      toast.error("Failed to delete favorites. Please try again later.")
+      setIsFavoritesLoading(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -39,51 +78,7 @@ const DeleteAllAlert = ({
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={async () => {
-              setFavorites({})
-              localStorage.setItem("favorites", JSON.stringify({}))
-              try {
-                setIsFavoritesLoading(true)
-                toast.promise(
-                  deleteAllFavoritesFirebase(), // << Call the function here to return a promise
-                  {
-                    loading: "Removing",
-                    success: (data) => (
-                      <div className="text-white">
-                        Removed <b>{data.total}</b>{" "}
-                        {data.total > 1 ? "recipes" : "recipe"}
-                      </div>
-                    ),
-                    error: (error) => "Couldn't remove favorites",
-                    id: "delete-recipe",
-                  },
-                  {
-                    className: "bg-slate-500/80 min-w-[200px]",
-                    loading: {
-                      icon: <Loader2 className="animate-spin text-zinc-950" />,
-                    },
-                    success: {
-                      icon: (
-                        <CheckCircle2Icon className="animate-fadeIn text-white" />
-                      ),
-                    },
-                  }
-                )
-
-                setIsFavoritesLoading(false)
-
-                setOpen(false)
-              } catch (error) {
-                console.error("Error removing favorites:", error)
-                toast.error(
-                  "Failed to delete favorites. Please try again later."
-                )
-                setIsFavoritesLoading(false)
-              }
-            }}
-          >
+          <Button variant="destructive" onClick={handleDeleteAll}>
             Continue
           </Button>
         </DialogFooter>

@@ -35,7 +35,6 @@ const useRecipeSearch = () => {
     })
     setLoading(true)
     if (q) {
-      setLastInputSearched(q)
       try {
         const res = await fetch(`/api/search?q=${q}`)
 
@@ -60,12 +59,12 @@ const useRecipeSearch = () => {
         })
       } finally {
         setLoading(false)
+        setLastInputSearched(q)
         router.replace(`?q=${q}`)
       }
     }
 
     try {
-      setLastInputSearched(input)
       const res = await fetch(`/api/search?q=${input}`)
       const data = await res.json()
       if (data.success === false) {
@@ -84,6 +83,7 @@ const useRecipeSearch = () => {
     } finally {
       setLoading(false)
       router.replace(`?q=${input}`)
+      setLastInputSearched(input)
     }
   }, [])
 
@@ -142,6 +142,7 @@ const useRecipeSearch = () => {
 
   useEffect(() => {
     setIsFavoritesLoading(true)
+    if (favorites === {}) return
     if (
       Object.keys(favorites).length > 0 &&
       Object.keys(favorites).length <= MAX_FAVORITES

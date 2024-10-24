@@ -12,6 +12,7 @@ import { Button } from "./ui/button"
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -48,7 +49,12 @@ const FavoritesSheet = ({
         let hasInvalidFavorites = false
 
         res.forEach((favorite) => {
-          if (!favorite || !favorite.name || !favorite.url || !favorite.link) {
+          if (
+            !favorite ||
+            !favorite.name ||
+            !favorite.url ||
+            (!favorite.link && favorites !== {})
+          ) {
             hasInvalidFavorites = true // Set the flag to true
             return // Skip to the next iteration
           }
@@ -122,16 +128,16 @@ const FavoritesSheet = ({
         </SheetTrigger>
         <SheetContent side="right">
           <SheetHeader>
-            <SheetTitle>
-              <div className=" mb-1 flex  select-none items-center justify-center gap-2 rounded-lg border border-purple-950 bg-background p-2 text-2xl shadow-md md:text-3xl">
+            <SheetTitle className="select-none">
+              <div className="flex items-center justify-center gap-2 rounded-sm bg-background p-1.5 text-2xl border-b dark:border-b-white/10 border-b-black/20 shadow md:text-3xl">
                 <StarIcon
                   size={size?.width < 768 ? 28 : 32}
                   color="#FFD700" // Use gold color for the star icon
-                  cla
                 />
                 Favorites
               </div>
             </SheetTitle>
+            <SheetDescription></SheetDescription>
           </SheetHeader>
           {children}
         </SheetContent>
