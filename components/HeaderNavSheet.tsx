@@ -2,13 +2,14 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { Menu } from "lucide-react"
 
 import { SheetContent } from "./SheetContent"
 import { ThemeToggle } from "./theme-toggle"
 import { Button } from "./ui/button"
 import { SelectSeparator } from "./ui/select"
-import { Sheet, SheetTrigger } from "./ui/sheet"
+import { Sheet, SheetDescription, SheetTitle, SheetTrigger } from "./ui/sheet"
 
 export function HeaderNavSheet() {
   const [isSheetOpen, setIsSheetOpen] = useState(false)
@@ -26,6 +27,11 @@ export function HeaderNavSheet() {
       </SheetTrigger>
       <SheetContent>
         <div className="py-2">
+          <VisuallyHidden.Root>
+            <SheetTitle className="flex w-full justify-center text-xl font-bold">
+              null
+            </SheetTitle>
+          </VisuallyHidden.Root>
           <div className="absolute left-4 top-4">
             <ThemeToggle />
           </div>
@@ -96,8 +102,9 @@ export function HeaderNavSheet() {
           </Link>
           <SelectSeparator />
         </div>
-
-        {/* <SheetHeader></SheetHeader> */}
+        <VisuallyHidden.Root>
+          <SheetDescription>Description</SheetDescription>
+        </VisuallyHidden.Root>
       </SheetContent>
     </Sheet>
   )

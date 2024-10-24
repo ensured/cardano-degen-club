@@ -5,6 +5,7 @@ import PortForwardChecker from "./PortForwardChecker"
 export const metadata = {
   title: "Port Checker",
 }
+
 const page = () => {
   const headersList = headers()
   const usersIp = headersList.get("x-forwarded-for")

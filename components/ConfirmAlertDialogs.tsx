@@ -41,7 +41,7 @@ export function ConfirmPreviewAlertDialog({
             Preview
           </DialogTitle>
         </VisuallyHidden.Root>
-        <DialogDescription className="mt-8 flex h-8 w-full justify-center pb-4 font-serif text-lg italic">
+        <div className="mt-8 flex h-8 w-full justify-center pb-4 font-serif text-lg italic">
           {loading ? (
             <motion.div
               className="w-full "
@@ -49,15 +49,15 @@ export function ConfirmPreviewAlertDialog({
               animate={{ opacity: 1 }}
               transition={{ duration: 0.12 }}
             >
-              <ProgressDemo progress={progress as number} />
-              <DialogDescription className="flex justify-center">
+              <div className="flex w-full flex-col items-center justify-center">
+                <ProgressDemo progress={progress as number} />
                 {progress.toFixed(0)}%
-              </DialogDescription>
+              </div>
             </motion.div>
           ) : (
             "Are you sure?"
           )}
-        </DialogDescription>
+        </div>
 
         <DialogDescription className="relative w-full pb-5">
           <Button

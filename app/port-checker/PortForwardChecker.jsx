@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import axios from "axios"
 
 import { Button } from "@/components/ui/button"
@@ -8,35 +8,77 @@ import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 
 function PortForwardChecker({ usersIp }) {
-  const [ip, setIp] = useState("")
+  const [ip, setIp] = useState(usersIp || "")
   const [port, setPort] = useState("")
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [portHistory, setPortHistory] = useState([])
+  const [showHistory, setShowHistory] = useState(false)
+
+  const inputRef = useRef(null)
+  const historyKey = "portHistory"
+
+  // Load port history from localStorage when the component mounts
+  useEffect(() => {
+    const storedHistory = localStorage.getItem(historyKey)
+    if (storedHistory) {
+      setPortHistory(JSON.parse(storedHistory))
+    }
+  }, [])
+
+  // Save port history to localStorage
+  const saveToHistory = (newPort) => {
+    if (newPort && !portHistory.includes(newPort)) {
+      const updatedHistory = [newPort, ...portHistory].slice(0, 5) // Limit to last 5 entries
+      setPortHistory(updatedHistory)
+      localStorage.setItem(historyKey, JSON.stringify(updatedHistory))
+    }
+  }
+
+  // Hide history when clicking outside
+  const handleClickOutside = (e) => {
+    if (inputRef.current && !inputRef.current.contains(e.target)) {
+      setShowHistory(false)
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     setResult(null)
     setError(null)
-    setLoading(true) // Set loading to true when submitting form
+    setLoading(true)
 
     try {
       const response = await axios.get("/api/ping", {
         params: { ip, port },
       })
       setResult(response.data.message)
+      saveToHistory(port) // Save port to history on successful submit
     } catch (err) {
       setError(err.response?.data?.message || "Error checking port")
     }
 
-    setLoading(false) // Set loading to false after response received
+    setLoading(false)
+  }
+
+  const handleSelectHistory = (value) => {
+    setPort(value)
+    setShowHistory(false)
   }
 
   return (
     <div className="mt-2 flex flex-col items-center justify-center gap-4 rounded-md p-6 md:flex-row md:gap-10 lg:gap-20">
       <h1 className="max-w-[269px] text-center text-2xl md:max-w-[500px] md:text-4xl">
-        Check open/closed ports for any ip address
+        Check open/closed ports for any IP address
       </h1>
       <Form>
         <form onSubmit={handleSubmit}>
@@ -46,20 +88,42 @@ function PortForwardChecker({ usersIp }) {
             type="text"
             id="ip"
             placeholder="69.69.69.69"
-            value={ip}
+            value={ip === usersIp ? usersIp : ip}
+            autoComplete={"true"}
             onChange={(e) => setIp(e.target.value)}
           />
           <br />
           <label htmlFor="port">Port Number:</label>
-          <Input
-            type="number"
-            id="port"
-            placeholder={"1024"}
-            value={port}
-            onChange={(e) => setPort(e.target.value)}
-            min={0}
-            max={65535}
-          />
+
+          <div className="relative" ref={inputRef}>
+            <Input
+              type="number"
+              id="port"
+              placeholder={"1024"}
+              autoComplete={"true"}
+              value={port}
+              onChange={(e) => setPort(e.target.value)}
+              onFocus={() => setShowHistory(true)} // Show history when focused
+              min={0}
+              max={65535}
+            />
+
+            {/* Port history dropdown */}
+            {showHistory && portHistory.length > 0 && (
+              <ul className="absolute z-10 max-h-40 w-full overflow-auto border border-gray-300 bg-white">
+                {portHistory.map((item, index) => (
+                  <li
+                    key={index}
+                    className="cursor-pointer p-2 hover:bg-gray-100"
+                    onClick={() => handleSelectHistory(item)}
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <div className="h-6">
             {result && (
               <p>
