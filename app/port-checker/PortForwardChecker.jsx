@@ -151,6 +151,11 @@ function PortForwardChecker({ usersIp }) {
                     </b>
                   </>
                 )}
+                {result.includes("Invalid IP") && (
+                  <>
+                    <b className="text-red-600 opacity-90">Invalid IP</b>
+                  </>
+                )}
               </p>
             )}
             {error && <p className="text-red-600">{error}</p>}
