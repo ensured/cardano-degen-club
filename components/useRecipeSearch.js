@@ -216,26 +216,28 @@ const useRecipeSearch = () => {
   const removeFromFavorites = async (link) => {
     const prevFavorites = { ...favorites }
     try {
-      setIsFavoritesLoading(true) // Move this line to the beginning
+      setIsFavoritesLoading(true)
       const newFavorites = { ...favorites }
       delete newFavorites[link]
       setFavorites(newFavorites)
-      const removeFav = removeFavoriteFirebase(link, true)
-      setIsFavoritesLoading(false)
 
-      toast.promise(
+      const removeFav = removeFavoriteFirebase(link, true)
+
+      const toastId = toast.promise(
         removeFav,
         {
           loading: "Removing",
           success: (data) => {
-            // Update favorites and localStorage on success
+            // Manually clear the toast after 3 seconds to avoid it lingering
+            setTimeout(() => {
+              toast.dismiss(toastId)
+            }, 500) // Adjust the duration as needed
             return <div className="text-white">Removed!</div>
           },
           error: (error) => {
             console.error("Couldn't remove favorite:", error)
-            return "Couldn't remove favorite" // You can customize this message if needed
+            return "Couldn't remove favorite"
           },
-          id: "delete-recipe",
         },
         {
           className: "bg-slate-500/80",
@@ -245,13 +247,19 @@ const useRecipeSearch = () => {
           success: {
             icon: <CheckCircle2Icon className="animate-fadeIn text-white" />,
           },
+          duration: 1000,
         }
       )
+
+      // Assign toastId here, after the toast has been created
+      toastId.id = toastId
+
+      setIsFavoritesLoading(false)
     } catch (error) {
       console.error("Error removing from favorites:", error)
       setFavorites(prevFavorites)
       toast.error(error.message)
-      setIsFavoritesLoading(false) // This should stay here
+      setIsFavoritesLoading(false)
     }
   }
 

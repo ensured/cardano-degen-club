@@ -29,18 +29,23 @@ const DeleteAllAlert = ({
     localStorage.setItem("favorites", JSON.stringify({}))
     try {
       setIsFavoritesLoading(true)
-      toast.promise(
-        deleteAllFavoritesFirebase(), // << Call the function here to return a promise
+
+      const toastId = toast.promise(
+        deleteAllFavoritesFirebase(), // Call the function here to return a promise
         {
           loading: "Removing",
-          success: (data) => (
-            <div className="text-white">
-              Removed <b>{data.total}</b>{" "}
-              {data.total > 1 ? "recipes" : "recipe"}
-            </div>
-          ),
+          success: (data) => {
+            setTimeout(() => {
+              toast.dismiss(toastId)
+            }, 500)
+            return (
+              <div className="text-white">
+                Removed <b>{data.total}</b>{" "}
+                {data.total > 1 ? "recipes" : "recipe"}
+              </div>
+            )
+          },
           error: (error) => "Couldn't remove favorites",
-          id: "delete-recipe",
         },
         {
           className: "bg-slate-500/80 min-w-[200px]",
@@ -50,8 +55,12 @@ const DeleteAllAlert = ({
           success: {
             icon: <CheckCircle2Icon className="animate-fadeIn text-white" />,
           },
+          // Add this line to set a duration for the success toast
+          duration: 1000, // Customize the duration (in milliseconds) as needed
         }
       )
+
+      toastId.id = toastId
 
       setIsFavoritesLoading(false)
 
