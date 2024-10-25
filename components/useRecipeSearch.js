@@ -7,7 +7,11 @@ import { debounce } from "lodash"
 import toast from "react-hot-toast"
 
 import { MAX_FAVORITES } from "../utils/consts"
-import { addToFavoritesFirebase, removeItemsFirebase } from "./actions"
+import {
+  addToFavoritesFirebase,
+  removeFavoriteFirebase,
+  removeItemsFirebase,
+} from "./actions"
 
 const useRecipeSearch = () => {
   const router = useRouter()
@@ -302,12 +306,11 @@ const useRecipeSearch = () => {
     setIsFavoritesLoading(true)
 
     if (isFavorited) {
-      const key = extractRecipeId(recipeLink)
-      pendingRemovals.current.add(key)
       // Optimistically remove favorite
       delete updatedFavorites[recipeLink]
       setFavorites(updatedFavorites) // Update state immediately
-      debouncedRemoveItemsFirebase() // Call the debounced removal function
+      // Remove from favorites in Firebase immediately
+      removeFavoriteFirebase(recipeLink)
     } else {
       // Optimistically add favorite
       updatedFavorites[recipeLink] = {
