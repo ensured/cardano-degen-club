@@ -26,16 +26,7 @@ export async function imgUrlToBase64(url: string) {
   }
 }
 // @ts-ignore
-// @ts-nocheck
-export async function removeItemsFirebase(items, link) {
-  // format:
-  // [
-  //   'roast-chicken-with-herbs-ffc8912ccaeaa14de21a2468b2b59128',
-  //   'roast-chicken-soup-e22452322143ffa0ca089360dfe7915d',
-  //   'leftover-roast-chicken-stock-379bd1d1b9920a581c5b250c2ee09a93',
-  //   'everyday-roast-chicken-8447db596b23879387fad21559b5ea07',
-  //   'easiest-roast-chicken-18de145fb4a38884dfb08b6e84deaced'
-  // ]
+export async function removeItemsFirebase(keys) {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
   if (!user) {
@@ -46,13 +37,10 @@ export async function removeItemsFirebase(items, link) {
   // remove all keys from firebase db
   await Promise.all(
     // @ts-ignore
-    items.map(async (itemId) => {
+    keys.map(async (key) => {
       try {
         // @ts-ignore
-        const imageFileRef = storageRef(
-          storage,
-          `images/${userEmail}/${itemId}`
-        )
+        const imageFileRef = storageRef(storage, `images/${userEmail}/${key}`)
         // @ts-ignore
         await deleteObject(imageFileRef)
       } catch (error) {
@@ -60,6 +48,79 @@ export async function removeItemsFirebase(items, link) {
       }
     })
   )
+}
+
+// @ts-ignore
+// export async function addItemsFirebase(keys,urls) {
+//   const { getUser } = getKindeServerSession()
+//   const user = await getUser()
+//   if (!user) {
+//     return { error: "Not authenticated, please login" }
+//   }
+//   const userEmail = user.email
+
+//   const imageBlobs = await Promise.all(
+//     // @ts-ignore
+//     urls.map(async (url) => {
+//       const imageResponse = await fetch(url)
+//       const imageBlob = await imageResponse.blob()
+//       return imageBlob
+//     })
+//   )
+// }
+
+// @ts-ignore
+export async function addToFavoritesFirebase({ name, url, link, metadata }) {
+  const { getUser } = getKindeServerSession()
+  const user = await getUser()
+
+  // Check if the user is authenticated
+  if (!user) {
+    return { error: "Not authenticated, please login" }
+  }
+
+  const userEmail = user.email
+
+  try {
+    // Proceed with the upload after user authentication
+    const imageResponse = await fetch(url)
+
+    // Check if the image response is ok (status 200-299)
+    if (!imageResponse.ok) {
+      return { error: "Failed to fetch the image." }
+    }
+
+    const imageBlob = await imageResponse.blob()
+
+    const imageRef = storageRef(
+      storage,
+      `images/${userEmail}/${extractRecipeId(link)}`
+    )
+
+    const uploadResult = await uploadBytes(imageRef, imageBlob, metadata)
+    const downloadUrl = await getDownloadURL(uploadResult.ref)
+
+    // Call to handle max image count, checking for errors
+    const res = await handleSetMaxImagesCount(false, userEmail, {
+      increment: true,
+    })
+
+    if (res?.error) {
+      // Optionally delete the uploaded image if max count exceeded
+      await deleteObject(imageRef) // Uncomment if you want to delete the uploaded image
+
+      return {
+        error: res.error,
+      }
+    }
+
+    return {
+      url: downloadUrl, // The actual URL of the uploaded image
+    }
+  } catch (err) {
+    console.error("Error adding favorite:", err)
+    return { error: "Failed to add favorite." }
+  }
 }
 
 export async function getFavoritesFirebase(userEmail: string) {
@@ -142,42 +203,6 @@ export async function deleteAllFavoritesFirebase() {
   }
 }
 
-export async function removeFavoriteFirebase(
-  recipeName: string,
-  needFormatting: boolean = true
-) {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
-  if (!user) {
-    return { error: "Not authenticated, please login" }
-  }
-  const userEmail = user.email
-
-  let key
-  if (needFormatting) {
-    key = `images/${userEmail}/${extractRecipeId(recipeName)}`
-  } else {
-    key = `images/${userEmail}/${recipeName}`
-  }
-
-  // Create a reference to the file to delete
-  const imageRef = storageRef(storage, key)
-
-  try {
-    // Delete the image from Firebase Storage
-    await deleteObject(imageRef)
-    await handleSetMaxImagesCount(false, userEmail, { decrement: true })
-    return {
-      success: true,
-    }
-  } catch (error) {
-    console.error("Error deleting image:", error)
-    return {
-      success: false,
-      error: "Failed to delete image, try again.",
-    }
-  }
-}
 interface SetMaxImagesCountOptions {
   increment?: boolean
   decrement?: boolean
@@ -233,59 +258,3 @@ const handleSetMaxImagesCount = async (
     }
   }
 }
-
-// @ts-ignore
-const addToFavoritesFirebase = async ({ name, url, link, metadata }) => {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
-
-  // Check if the user is authenticated
-  if (!user) {
-    return { error: "Not authenticated, please login" }
-  }
-
-  const userEmail = user.email
-
-  try {
-    // Proceed with the upload after user authentication
-    const imageResponse = await fetch(url)
-
-    // Check if the image response is ok (status 200-299)
-    if (!imageResponse.ok) {
-      return { error: "Failed to fetch the image." }
-    }
-
-    const imageBlob = await imageResponse.blob()
-
-    const imageRef = storageRef(
-      storage,
-      `images/${userEmail}/${extractRecipeId(link)}`
-    )
-
-    const uploadResult = await uploadBytes(imageRef, imageBlob, metadata)
-    const downloadUrl = await getDownloadURL(uploadResult.ref)
-
-    // Call to handle max image count, checking for errors
-    const res = await handleSetMaxImagesCount(false, userEmail, {
-      increment: true,
-    })
-
-    if (res?.error) {
-      // Optionally delete the uploaded image if max count exceeded
-      await deleteObject(imageRef) // Uncomment if you want to delete the uploaded image
-
-      return {
-        error: res.error,
-      }
-    }
-
-    return {
-      url: downloadUrl, // The actual URL of the uploaded image
-    }
-  } catch (err) {
-    console.error("Error adding favorite:", err)
-    return { error: "Failed to add favorite." }
-  }
-}
-
-export { addToFavoritesFirebase }
