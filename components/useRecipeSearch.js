@@ -7,7 +7,11 @@ import { debounce } from "lodash"
 import toast from "react-hot-toast"
 
 import { MAX_FAVORITES } from "../utils/consts"
-import { addToFavoritesFirebase, removeItemsFirebase } from "./actions"
+import {
+  addToFavoritesFirebase,
+  removeFavoriteFirebase,
+  removeItemsFirebase,
+} from "./actions"
 
 const useRecipeSearch = () => {
   const router = useRouter()
@@ -50,48 +54,6 @@ const useRecipeSearch = () => {
   // )
 
   // Debounce the removal function
-  const debouncedRemoveItemsFirebase = useCallback(
-    debounce(async () => {
-      if (pendingRemovals.current.size === 0) return
-
-      const itemsToRemove = Array.from(pendingRemovals.current) // Convert Set to Array
-      pendingRemovals.current.clear() // Clear the Set for future removals
-
-      try {
-        await removeItemsFirebase(itemsToRemove) // Call your server action
-        toast.success("Favorites removed!")
-      } catch (error) {
-        console.error("Batch removal failed:", error)
-        toast.error("Failed to remove some favorites")
-      }
-    }, 850),
-    []
-  )
-
-  const removeFromFavorites = async (link) => {
-    const prevFavorites = { ...favorites }
-
-    const key = extractRecipeId(link)
-    pendingRemovals.current.add(key)
-
-    try {
-      setIsFavoritesLoading(true)
-
-      // Optimistically update the favorites state
-
-      delete prevFavorites[link] // Remove the item from the new favorites state
-      setFavorites(prevFavorites) // Update state immediately
-
-      debouncedRemoveItemsFirebase()
-
-      setIsFavoritesLoading(false)
-    } catch (error) {
-      console.error("Error removing from favorites:", error)
-      setFavorites(prevFavorites) // Revert to previous state on error
-      toast.error(error.message)
-      setIsFavoritesLoading(false)
-    }
-  }
 
   const searchRecipes = useCallback(async (e, q) => {
     setSearchResults({
@@ -289,54 +251,85 @@ const useRecipeSearch = () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
 
+  const debouncedRemoveItemsFirebase = useCallback(
+    debounce(async () => {
+      if (pendingRemovals.current.size === 0) return
+
+      const itemsToRemove = Array.from(pendingRemovals.current) // Convert Set to Array
+      pendingRemovals.current.clear() // Clear the Set for future removals
+
+      try {
+        await removeItemsFirebase(itemsToRemove) // Call your server action
+        toast.success("Favorites removed!")
+      } catch (error) {
+        console.error("Batch removal failed:", error)
+        toast.error("Failed to remove some favorites")
+      }
+    }, 850),
+    []
+  )
+
+  const removeFromFavorites = async (link) => {
+    const prevFavorites = { ...favorites }
+
+    const key = extractRecipeId(link)
+    pendingRemovals.current.add(key)
+
+    try {
+      setIsFavoritesLoading(true)
+
+      // Optimistically update the favorites state
+
+      delete prevFavorites[link] // Remove the item from the new favorites state
+      setFavorites(prevFavorites) // Update state immediately
+
+      debouncedRemoveItemsFirebase()
+
+      setIsFavoritesLoading(false)
+    } catch (error) {
+      console.error("Error removing from favorites:", error)
+      setFavorites(prevFavorites) // Revert to previous state on error
+      toast.error(error.message)
+      setIsFavoritesLoading(false)
+    }
+  }
+
   const handleStarIconClick = (index) => async (e) => {
     e.preventDefault()
     const recipe = searchResults.hits[index].recipe
     const recipeName = extractRecipeName(recipe.shareAs)
     const recipeImage = recipe.image
     const recipeLink = recipe.shareAs
-
     const isFavorited = favorites[recipeLink] !== undefined
+    const updatedFavorites = { ...favorites }
 
-    // Start loading state
     setIsFavoritesLoading(true)
 
-    // Add pending removal management
     if (isFavorited) {
       const key = extractRecipeId(recipeLink)
-
-      // Optimistic update for removing favorite
-      setFavorites((prevFavorites) => {
-        const newFavorites = { ...prevFavorites }
-        delete newFavorites[recipeLink] // Remove the item from the new favorites state
-        return newFavorites // Update state immediately
-      })
-
-      // Add the recipe link to the pending removals Set
       pendingRemovals.current.add(key)
-      debouncedRemoveItemsFirebase() // Invoke the debounced function
-
-      // No need to call removeFavoriteFirebase here since we're handling it in the debounced function
+      // Optimistically remove favorite
+      delete updatedFavorites[recipeLink]
+      setFavorites(updatedFavorites) // Update state immediately
+      debouncedRemoveItemsFirebase() // Call the debounced removal function
     } else {
-      // Optimistic update for adding favorite
-      setFavorites((prevFavorites) => ({
-        ...prevFavorites,
-        [recipeLink]: {
-          name: recipeName,
-          link: recipeLink,
-          url: recipeImage,
-        },
-      }))
+      // Optimistically add favorite
+      updatedFavorites[recipeLink] = {
+        name: recipeName,
+        link: recipeLink,
+        url: recipeImage,
+      }
+      setFavorites(updatedFavorites) // Update state immediately
 
+      // Add to favorites in Firebase immediately
       try {
-        const customMetadata = {
-          name: recipeName,
-          link: recipeLink,
-          url: recipeImage,
-        }
         const metadata = {
           contentType: "image/jpeg",
-          customMetadata,
+          customMetadata: {
+            name: recipeName,
+            link: recipeLink,
+            url: recipeImage,
+          },
           cacheControl: "public,max-age=7200",
         }
 
@@ -351,7 +344,7 @@ const useRecipeSearch = () => {
           throw new Error(response.error)
         }
 
-        // Finalize the update with actual URL from Firebase
+        // Finalize the update with the actual URL from Firebase
         setFavorites((prevFavorites) => ({
           ...prevFavorites,
           [recipeLink]: {
@@ -362,18 +355,14 @@ const useRecipeSearch = () => {
         }))
       } catch (error) {
         console.error("Error adding favorite:", error)
-        toast(error.message, { type: "error" })
+        toast.error(error.message)
 
         // Revert optimistic update
-        setFavorites((prevFavorites) => {
-          const newFavorites = { ...prevFavorites }
-          delete newFavorites[recipeLink]
-          return newFavorites
-        })
-      } finally {
-        setIsFavoritesLoading(false) // Ensure loading state is updated
+        setFavorites(favorites)
       }
     }
+
+    setIsFavoritesLoading(false) // Ensure loading state is updated
   }
 
   return {
