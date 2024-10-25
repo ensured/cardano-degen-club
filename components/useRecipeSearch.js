@@ -223,15 +223,12 @@ const useRecipeSearch = () => {
 
       const removeFav = removeFavoriteFirebase(link, true)
 
-      const toastId = toast.promise(
+      toast.promise(
         removeFav,
         {
-          loading: "Removing",
+          loading: "Removing...",
           success: (data) => {
-            // Manually clear the toast after 3 seconds to avoid it lingering
-            setTimeout(() => {
-              toast.dismiss(toastId)
-            }, 500) // Adjust the duration as needed
+            // No need to dismiss the toast here; it will auto-dismiss
             return <div className="text-white">Removed!</div>
           },
           error: (error) => {
@@ -247,12 +244,9 @@ const useRecipeSearch = () => {
           success: {
             icon: <CheckCircle2Icon className="animate-fadeIn text-white" />,
           },
-          duration: 1000,
+          duration: 400, // Show the toast for 5 seconds
         }
       )
-
-      // Assign toastId here, after the toast has been created
-      toastId.id = toastId
 
       setIsFavoritesLoading(false)
     } catch (error) {

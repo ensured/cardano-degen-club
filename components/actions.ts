@@ -138,7 +138,7 @@ export async function removeFavoriteFirebase(
     console.error("Error deleting image:", error)
     return {
       success: false,
-      error: "Failed to delete image from Firebase Storage",
+      error: "Failed to delete image, try again.",
     }
   }
 }
