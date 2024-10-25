@@ -43,6 +43,10 @@ export async function removeItemsFirebase(keys) {
         const imageFileRef = storageRef(storage, `images/${userEmail}/${key}`)
         // @ts-ignore
         await deleteObject(imageFileRef)
+        await handleSetMaxImagesCount(false, userEmail, {
+          decrement: true,
+          amount: keys.length,
+        })
       } catch (error) {
         console.error("Error deleting item from favorites:", error)
       }
@@ -203,9 +207,46 @@ export async function deleteAllFavoritesFirebase() {
   }
 }
 
+export async function removeFavoriteFirebase(
+  recipeName: string,
+  needFormatting: boolean = true
+) {
+  const { getUser } = getKindeServerSession()
+  const user = await getUser()
+  if (!user) {
+    return { error: "Not authenticated, please login" }
+  }
+  const userEmail = user.email
+
+  let key
+  if (needFormatting) {
+    key = `images/${userEmail}/${extractRecipeId(recipeName)}`
+  } else {
+    key = `images/${userEmail}/${recipeName}`
+  }
+
+  // Create a reference to the file to delete
+  const imageRef = storageRef(storage, key)
+
+  try {
+    // Delete the image from Firebase Storage
+    await deleteObject(imageRef)
+    await handleSetMaxImagesCount(false, userEmail, { decrement: true })
+    return {
+      success: true,
+    }
+  } catch (error) {
+    console.error("Error deleting image:", error)
+    return {
+      success: false,
+      error: "Failed to delete image, try again.",
+    }
+  }
+}
 interface SetMaxImagesCountOptions {
   increment?: boolean
   decrement?: boolean
+  amount?: number
 }
 
 const handleSetMaxImagesCount = async (
@@ -213,7 +254,7 @@ const handleSetMaxImagesCount = async (
   userEmail: string,
   options: SetMaxImagesCountOptions = {}
 ) => {
-  const { increment = false, decrement = false } = options
+  const { increment = false, decrement = false, amount = 1 } = options
 
   // Firestore reference to the user's document
   const userDocRef = doc(db, "users", userEmail)
@@ -239,14 +280,14 @@ const handleSetMaxImagesCount = async (
     // Increment the image count by 1
     await setDoc(
       userDocRef,
-      { imageCount: currentImageCount + 1 },
+      { imageCount: currentImageCount + amount },
       { merge: true }
     )
   } else if (decrement && !increment) {
     // Decrement the image count by 1, but ensure it doesn't go below 0
     await setDoc(
       userDocRef,
-      { imageCount: Math.max(currentImageCount - 1, 0) },
+      { imageCount: Math.max(currentImageCount - amount, 0) },
       { merge: true }
     )
   } else if (increment && decrement) {

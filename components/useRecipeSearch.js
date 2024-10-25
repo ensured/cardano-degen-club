@@ -64,7 +64,7 @@ const useRecipeSearch = () => {
         console.error("Batch removal failed:", error)
         toast.error("Failed to remove some favorites")
       }
-    }, 900),
+    }, 850),
     []
   )
 
