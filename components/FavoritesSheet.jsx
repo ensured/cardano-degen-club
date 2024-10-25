@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from "react"
 import { MAX_FAVORITES } from "@/utils/consts"
+import { extractRecipeId } from "@/utils/helper"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { Heart, Loader2, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "react-hot-toast"
 
-import { getFavoritesFirebase } from "./actions"
+import { getFavoritesFirebase, removeItemsFirebase } from "./actions"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import {

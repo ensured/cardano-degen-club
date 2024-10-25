@@ -4,6 +4,8 @@ import { extractRecipeName } from "@/utils/helper"
 import { CheckCircle2Icon, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
+// import { useDebounce } from "use-debounce"
+
 import { MAX_FAVORITES } from "../utils/consts"
 import { addToFavoritesFirebase, removeFavoriteFirebase } from "./actions"
 
@@ -131,6 +133,9 @@ const useRecipeSearch = () => {
   useEffect(() => {
     setIsFavoritesLoading(true)
     const storedFavorites = localStorage.getItem("favorites")
+    if (!storedFavorites) {
+      return
+    }
     if (
       Object.keys(JSON.parse(storedFavorites)).length > 0 &&
       Object.keys(JSON.parse(storedFavorites)).length <= MAX_FAVORITES

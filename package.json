@@ -80,6 +80,7 @@
     "tailwind-scrollbar": "^3.0.5",
     "tailwindcss-animate": "^1.0.6",
     "tsparticles": "^3.3.0",
+    "use-debounce": "^10.0.4",
     "vaul": "^0.8.0",
     "zod": "^3.22.4"
   },

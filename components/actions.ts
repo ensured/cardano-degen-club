@@ -14,7 +14,7 @@ import {
 
 import { db, deleteObject, storage } from "./firebase/firebase"
 
-export const imgUrlToBase64 = async (url: string) => {
+export async function imgUrlToBase64(url: string) {
   try {
     const response = await fetch(url)
     const imageBuffer = await response.arrayBuffer() // Use arrayBuffer instead of buffer
@@ -24,6 +24,42 @@ export const imgUrlToBase64 = async (url: string) => {
     console.error("Error downloading image:", error)
     return null
   }
+}
+// @ts-ignore
+// @ts-nocheck
+export async function removeItemsFirebase(items, link) {
+  // format:
+  // [
+  //   'roast-chicken-with-herbs-ffc8912ccaeaa14de21a2468b2b59128',
+  //   'roast-chicken-soup-e22452322143ffa0ca089360dfe7915d',
+  //   'leftover-roast-chicken-stock-379bd1d1b9920a581c5b250c2ee09a93',
+  //   'everyday-roast-chicken-8447db596b23879387fad21559b5ea07',
+  //   'easiest-roast-chicken-18de145fb4a38884dfb08b6e84deaced'
+  // ]
+  const { getUser } = getKindeServerSession()
+  const user = await getUser()
+  if (!user) {
+    return { error: "Not authenticated, please login" }
+  }
+  const userEmail = user.email
+
+  // remove all keys from firebase db
+  await Promise.all(
+    // @ts-ignore
+    items.map(async (itemId) => {
+      try {
+        // @ts-ignore
+        const imageFileRef = storageRef(
+          storage,
+          `images/${userEmail}/${itemId}`
+        )
+        // @ts-ignore
+        await deleteObject(imageFileRef)
+      } catch (error) {
+        console.error("Error deleting item from favorites:", error)
+      }
+    })
+  )
 }
 
 export async function getFavoritesFirebase(userEmail: string) {
