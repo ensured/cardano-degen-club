@@ -55,7 +55,7 @@ export async function removeItemsFirebase(keys) {
 }
 
 // @ts-ignore
-// export async function addItemsFirebase(keys,urls) {
+// export async function addItemsFirebase(favorites) {
 //   const { getUser } = getKindeServerSession()
 //   const user = await getUser()
 //   if (!user) {
@@ -64,12 +64,7 @@ export async function removeItemsFirebase(keys) {
 //   const userEmail = user.email
 
 //   const imageBlobs = await Promise.all(
-//     // @ts-ignore
-//     urls.map(async (url) => {
-//       const imageResponse = await fetch(url)
-//       const imageBlob = await imageResponse.blob()
-//       return imageBlob
-//     })
+//
 //   )
 // }
 

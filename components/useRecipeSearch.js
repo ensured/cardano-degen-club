@@ -7,11 +7,7 @@ import { debounce } from "lodash"
 import toast from "react-hot-toast"
 
 import { MAX_FAVORITES } from "../utils/consts"
-import {
-  addToFavoritesFirebase,
-  removeFavoriteFirebase,
-  removeItemsFirebase,
-} from "./actions"
+import { addToFavoritesFirebase, removeItemsFirebase } from "./actions"
 
 const useRecipeSearch = () => {
   const router = useRouter()
