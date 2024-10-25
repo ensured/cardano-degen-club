@@ -273,9 +273,16 @@ const useRecipeSearch = () => {
     }
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
+  const debouncedReplace = useCallback(
+    debounce((value) => {
+      router.push(`?q=${value}`)
+    }, 300), // Adjust delay as needed
+    [router]
+  )
+
   const handleInputChange = (e) => {
     setInput(e.target.value)
-    router.replace(`?q=${e.target.value}`)
+    debouncedReplace(e.target.value)
   }
 
   const handleStarIconHover = (index) => () => {
