@@ -32,21 +32,22 @@ const useRecipeSearch = () => {
   const pendingRemovals = useRef(new Set())
   const pendingAdditions = useRef(new Set())
 
-  const debouncedAddItemsFirebase = useCallback(
-    debounce(async (items) => {
-      if (pendingAdditions.current.size === 0) return
-      const itemsToAdd = Array.from(pendingAdditions.current) // Convert Set to Array
-      pendingRemovals.current.clear() // Clear the Set for future removals
+  // todo later
+  // const debouncedAddItemsFirebase = useCallback(
+  //   debounce(async (items) => {
+  //     if (pendingAdditions.current.size === 0) return
+  //     const itemsToAdd = Array.from(pendingAdditions.current) // Convert Set to Array
+  //     pendingRemovals.current.clear() // Clear the Set for future removals
 
-      try {
-        await addItemsFirebase(itemsToAdd) // Call your server action
-        toast.success("Favorites removed!")
-      } catch (error) {
-        console.error("Batch removal failed:", error)
-        toast.error("Failed to remove some favorites")
-      }
-    }, 500)
-  )
+  //     try {
+  //       await addItemsFirebase(itemsToAdd) // Call your server action
+  //       toast.success("Favorites removed!")
+  //     } catch (error) {
+  //       console.error("Batch removal failed:", error)
+  //       toast.error("Failed to remove some favorites")
+  //     }
+  //   }, 500)
+  // )
 
   // Debounce the removal function
   const debouncedRemoveItemsFirebase = useCallback(
