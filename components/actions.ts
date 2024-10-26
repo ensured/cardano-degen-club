@@ -238,6 +238,7 @@ export async function removeFavoriteFirebase(
     }
   }
 }
+
 interface SetMaxImagesCountOptions {
   increment?: boolean
   decrement?: boolean
