@@ -162,11 +162,15 @@ const useRecipeSearch = () => {
     if (!storedFavorites) {
       return
     }
-    if (
-      Object.keys(JSON.parse(storedFavorites)).length > 0 &&
-      Object.keys(JSON.parse(storedFavorites)).length <= MAX_FAVORITES
-    ) {
-      setFavorites(JSON.parse(storedFavorites))
+    try {
+      if (
+        Object.keys(JSON.parse(storedFavorites)).length > 0 &&
+        Object.keys(JSON.parse(storedFavorites)).length <= MAX_FAVORITES
+      ) {
+        setFavorites(JSON.parse(storedFavorites))
+      }
+    } catch (e) {
+      console.error(e)
     }
     setIsFavoritesLoading(false)
   }, [])

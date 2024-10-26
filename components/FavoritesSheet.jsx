@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { MAX_FAVORITES } from "@/utils/consts"
 import { extractRecipeId } from "@/utils/helper"
 import { useWindowSize } from "@uidotdev/usehooks"
@@ -31,31 +31,29 @@ const FavoritesSheet = ({
   setIsFavoritesLoading,
 }) => {
   const size = useWindowSize()
+  const [lastFetchTime, setLastFetchTime] = useState(0)
 
   useEffect(() => {
     const getFavs = async () => {
       setIsFavoritesLoading(true)
 
       try {
-        // Check if favorites are already in localStorage
-        const cachedFavorites = localStorage.getItem(`favorites`)
-        if (cachedFavorites) {
-          return
-        }
+        const currentTime = Date.now()
+        const timeElapsed = currentTime - lastFetchTime
 
-        // Otherwise, fetch from server
-        const res = await getFavoritesFirebase(userEmail)
-        if (res) {
-          localStorage.setItem(`favorites`, JSON.stringify(res))
-          setFavorites(res)
-        } else {
-          toast.error("No favorites found")
+        // Fetch only if 10 seconds have passed
+        if (timeElapsed >= 120000) {
+          const res = await getFavoritesFirebase(userEmail)
+          if (res) {
+            setFavorites(res)
+            setLastFetchTime(currentTime) // Update the last fetch time
+          } else {
+            toast.error("No favorites found")
+          }
         }
       } catch (error) {
         console.error("Error fetching favorites:", error)
-        toast.error(
-          "Failed to load favorites from localStorage. Must be empty ;)"
-        )
+        toast.error("Failed to load favorites from server.")
       } finally {
         setIsFavoritesLoading(false)
       }
@@ -64,7 +62,7 @@ const FavoritesSheet = ({
     if (isOpen) {
       getFavs()
     }
-  }, [isOpen, userEmail, favorites])
+  }, [isOpen, userEmail])
 
   return (
     <div className="flex justify-center">

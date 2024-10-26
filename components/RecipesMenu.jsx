@@ -217,11 +217,22 @@ const RecipesMenu = ({
               setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
             >
               {isFavoritesLoading ? (
-                <CustomLoader2 />
+                <Button
+                  variant={"outline"}
+                  disabled={isFavoritesLoading}
+                  size="sm"
+                  className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
+                >
+                  <Loader2 className="left-2 animate-spin" />
+                  <div className="line-clamp-1 items-center text-lg">
+                    Preview PDF
+                  </div>
+                </Button>
               ) : (
                 <Button
                   variant={"outline"}
                   size="sm"
+                  disabled={isFavoritesLoading}
                   className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
                 >
                   <FileText className="left-2" />
