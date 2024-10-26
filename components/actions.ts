@@ -125,7 +125,11 @@ export async function addToFavoritesFirebase({ name, url, link, metadata }) {
 export async function getFavoritesFirebase(userEmail: string) {
   const folderRef = storageRef(storage, `images/${userEmail}/`)
   const results = await listAll(folderRef)
-  const items: { name: string; url: string; link: string }[] = []
+
+  // Create an object to hold the favorite items
+  const favorites: {
+    [key: string]: { name: string; url: string; link: string }
+  } = {}
 
   // Temporary array to store items along with timeCreated for sorting purposes
   const itemsWithTimeCreated: {
@@ -160,12 +164,13 @@ export async function getFavoritesFirebase(userEmail: string) {
       new Date(a.timeCreated).getTime() - new Date(b.timeCreated).getTime()
   )
 
-  // Push only the name, url, and link fields (without timeCreated) to the final items array
+  // Build the favorites object
   itemsWithTimeCreated.forEach(({ name, url, link }) => {
-    items.push({ name, url, link })
+    // Use the link as the key and create an object for the value
+    favorites[link] = { name, url, link }
   })
 
-  return items // Return the items array without timeCreated
+  return favorites // Return the favorites object
 }
 
 export async function deleteAllFavoritesFirebase() {
