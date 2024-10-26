@@ -28,6 +28,8 @@ module.exports = {
         color: "rgba(0, 0, 0, 0.5)" /* Adjust thumb color */,
       },
       colors: {
+        p: "#00BFFF", // Light blue
+        s: "#1E90FF", // Dodger blue
         blue: "#1fb6ff",
         pink: "#ff49db",
         orange: "#ff7849",
@@ -101,11 +103,19 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        gradient: {
+          "0%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+          "100%": { backgroundPosition: "0% 50%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.4s ease-in",
+      },
+      animation: {
+        gradient: "gradient 6s ease infinite",
       },
     },
   },

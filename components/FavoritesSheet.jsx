@@ -105,12 +105,28 @@ const FavoritesSheet = ({
         <SheetContent side="right">
           <SheetHeader>
             <SheetTitle className="select-none">
-              <div className="flex items-center justify-center gap-2 rounded-sm border-b border-b-black/20 bg-background p-1.5 text-2xl shadow dark:border-b-white/10 md:text-3xl">
-                <StarIcon
-                  size={size?.width < 768 ? 28 : 32}
-                  color="#FFD700" // Use gold color for the star icon
-                />
-                Favorites
+              <div
+                className="flex animate-gradient flex-wrap items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2 text-2xl transition-all ease-in-out
+              
+              dark:from-[#3d91c9] dark:to-[#583aa8] md:p-4 md:text-3xl"
+              >
+                <div className="flex flex-row items-center justify-center gap-2">
+                  <StarIcon
+                    size={size?.width < 768 ? 28 : 32}
+                    color="#FFD700" // Use gold color for the star icon
+                  />
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                    Favorites
+                  </span>
+                </div>
+                <Badge
+                  max={MAX_FAVORITES}
+                  className="flex text-sm md:text-lg mt-0.5"
+                  size="sm"
+                  variant="outline"
+                >
+                  {Object.keys(favorites).length}/{MAX_FAVORITES}
+                </Badge>
               </div>
             </SheetTitle>
             <SheetDescription></SheetDescription>
