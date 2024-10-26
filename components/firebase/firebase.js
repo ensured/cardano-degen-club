@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app"
+import { initializeApp, getApp, getApps } from "firebase/app"
 import { getFirestore } from "firebase/firestore"
 import { deleteObject, getStorage } from "firebase/storage"
 
@@ -15,9 +15,8 @@ const firebaseConfig = {
   measurementId: process.env.measurementId,
 }
 
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig)
-
+// Initialize Fitebase only once
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Initialize Firebase Storage
 const storage = getStorage(firebaseApp)
 
