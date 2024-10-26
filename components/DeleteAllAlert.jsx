@@ -58,7 +58,6 @@ const DeleteAllAlert = ({
           success: {
             icon: <CheckCircle2Icon className="animate-fadeIn text-white" />,
           },
-          duration: 600, // Customize the duration (in milliseconds) as needed
         }
       )
 
