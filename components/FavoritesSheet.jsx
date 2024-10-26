@@ -37,59 +37,34 @@ const FavoritesSheet = ({
       setIsFavoritesLoading(true)
 
       try {
-        const res = await getFavoritesFirebase(userEmail)
-
-        if (!res) {
-          toast.error("No favorites found")
+        // Check if favorites are already in localStorage
+        const cachedFavorites = localStorage.getItem(`favorites`)
+        if (cachedFavorites) {
           return
         }
 
-        const newFavorites = {}
-
-        // Flag to check if any invalid favorites exist
-        let hasInvalidFavorites = false
-
-        res.forEach((favorite) => {
-          if (
-            !favorite ||
-            !favorite.name ||
-            !favorite.url ||
-            (!favorite.link && favorites !== {})
-          ) {
-            hasInvalidFavorites = true // Set the flag to true
-            return // Skip to the next iteration
-          }
-
-          newFavorites[favorite.link] = {
-            name: favorite.name,
-            url: favorite.url,
-            link: favorite.link,
-          }
-        })
-
-        // Notify user if there are invalid favorites
-        if (hasInvalidFavorites) {
-          toast.error("Some favorites are invalid and were not loaded.")
+        // Otherwise, fetch from server
+        const res = await getFavoritesFirebase(userEmail)
+        if (res) {
+          localStorage.setItem(`favorites`, JSON.stringify(res))
+          setFavorites(res)
+        } else {
+          toast.error("No favorites found")
         }
-
-        setFavorites(newFavorites)
       } catch (error) {
         console.error("Error fetching favorites:", error)
-        toast.error("Failed to load favorites.")
+        toast.error(
+          "Failed to load favorites from localStorage. Must be empty ;)"
+        )
       } finally {
-        setIsFavoritesLoading(false) // Ensure loading state is updated
+        setIsFavoritesLoading(false)
       }
     }
 
     if (isOpen) {
       getFavs()
     }
-
-    // Cleanup function to prevent state updates on unmounted components
-    return () => {
-      setIsFavoritesLoading(false) // Clean up loading state if the component unmounts
-    }
-  }, [isOpen]) // Added userEmail as a dependency
+  }, [isOpen, userEmail])
 
   return (
     <div className="flex justify-center">

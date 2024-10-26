@@ -12,6 +12,7 @@ import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 
 import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
+import CustomLoader2 from "./CustomLoader2"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
@@ -215,16 +216,20 @@ const RecipesMenu = ({
               }
               setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
             >
-              <Button
-                variant={"outline"}
-                size="sm"
-                className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
-              >
-                <FileText className="left-2" />
-                <div className="line-clamp-1 items-center text-lg">
-                  Preview PDF
-                </div>
-              </Button>
+              {isFavoritesLoading ? (
+                <CustomLoader2 />
+              ) : (
+                <Button
+                  variant={"outline"}
+                  size="sm"
+                  className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
+                >
+                  <FileText className="left-2" />
+                  <div className="line-clamp-1 items-center text-lg">
+                    Preview PDF
+                  </div>
+                </Button>
+              )}
             </ConfirmPreviewAlertDialog>
           </div>
         ) : (
