@@ -12,7 +12,6 @@ import toast from "react-hot-toast"
 import { Button } from "@/components/ui/button"
 
 import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
-import CustomLoader2 from "./CustomLoader2"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
@@ -253,7 +252,11 @@ const RecipesMenu = ({
         )}
 
         <div className={`flex h-full flex-col gap-2`}>
-          <div className="animate-fade-in custom-scrollbar h-[calc(100vh-14.5rem)] overflow-auto rounded-md border">
+          <div
+            className={`animate-fade-in custom-scrollbar h-[calc(100vh-14.5rem)] overflow-auto rounded-md ${
+              Object.keys(favorites).length ? "border" : ""
+            }`}
+          >
             {isFavoritesLoading ? (
               <div className="flex flex-col flex-wrap items-center  justify-center overflow-auto rounded-md border-x">
                 <div className="flex w-full flex-col gap-0.5 ">
@@ -317,6 +320,9 @@ const RecipesMenu = ({
                           </button>
                         </div>
                       </Link>
+                      {index < Object.entries(favorites).length - 1 && (
+                        <Separator className="h-[0.0625rem] bg-secondary/75 text-white" />
+                      )}
                     </div>
                   )
                 )}
