@@ -25,7 +25,6 @@ const ScrollTooltip = ({ favorites }) => {
 
   return (
     <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex size-10 items-center justify-center rounded-full bg-zinc-900/80 text-xs text-white shadow-inner shadow-sky-500/80">
-      {/* {currentCardIndex}/{totalCards}  /{totalResults} */}
       {Object.keys(favorites).length}/{MAX_FAVORITES}
     </div>
   )

@@ -1,23 +1,11 @@
-import { initializeApp } from "firebase/app"
+import { getApp, getApps, initializeApp } from "firebase/app"
 import { getFirestore } from "firebase/firestore"
 import { deleteObject, getStorage } from "firebase/storage"
 
-// Import Firestore
+import firebaseConfig from "./firebase.config"
 
-const firebaseConfig = {
-  apiKey: process.env.apiKey,
-  authDomain: process.env.authDomain,
-  databaseURL: process.env.databaseURL,
-  projectId: process.env.projectId,
-  storageBucket: "site-additions-feedback.appspot.com",
-  messagingSenderId: process.env.messagingSenderId,
-  appId: process.env.appId,
-  measurementId: process.env.measurementId,
-}
-
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig)
-
+// Initialize Fitebase only once
+const firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp()
 // Initialize Firebase Storage
 const storage = getStorage(firebaseApp)
 
