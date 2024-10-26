@@ -43,15 +43,16 @@ export async function removeItemsFirebase(keys) {
         const imageFileRef = storageRef(storage, `images/${userEmail}/${key}`)
         // @ts-ignore
         await deleteObject(imageFileRef)
-        await handleSetMaxImagesCount(false, userEmail, {
-          decrement: true,
-          amount: keys.length,
-        })
       } catch (error) {
         console.error("Error deleting item from favorites:", error)
       }
     })
   )
+
+  await handleSetMaxImagesCount(false, userEmail, {
+    decrement: true,
+    amount: keys.length,
+  })
 }
 
 // @ts-ignore
@@ -259,6 +260,7 @@ const handleSetMaxImagesCount = async (
 
   // Firestore reference to the user's document
   const userDocRef = doc(db, "users", userEmail)
+
   if (delAll) {
     // If delAll is true, reset the image count to 0
     await setDoc(userDocRef, { imageCount: 0 }, { merge: true })
@@ -269,29 +271,40 @@ const handleSetMaxImagesCount = async (
   const userDoc = await getDoc(userDocRef)
   const currentImageCount = userDoc.exists() ? userDoc.data().imageCount : 0
 
-  // Check if the user has reached MAX_FAVORITES (currently 100)
-  if (currentImageCount >= MAX_FAVORITES) {
-    return {
-      error: `Maximum limit of ${MAX_FAVORITES} favorites reached. Remove some to add more.`,
+  // Handle increment logic
+  if (increment) {
+    if (currentImageCount >= MAX_FAVORITES) {
+      return {
+        error: `Maximum limit of ${MAX_FAVORITES} favorites reached. Remove some to add more.`,
+      }
     }
-  }
-
-  // Handle increment and decrement logic
-  if (increment && !decrement) {
-    // Increment the image count by 1
+    // Increment the image count by the specified amount
     await setDoc(
       userDocRef,
-      { imageCount: currentImageCount + amount },
+      { imageCount: Math.min(currentImageCount + amount, MAX_FAVORITES) }, // Prevent going over MAX_FAVORITES
       { merge: true }
     )
-  } else if (decrement && !increment) {
-    // Decrement the image count by 1, but ensure it doesn't go below 0
+    return
+  }
+
+  // Handle decrement logic
+  if (decrement) {
+    if (currentImageCount === 0) {
+      return {
+        error: "Cannot decrement. The image count is already at 0.",
+      }
+    }
+    // Decrement the image count by the specified amount, ensuring it doesn't go below 0
     await setDoc(
       userDocRef,
       { imageCount: Math.max(currentImageCount - amount, 0) },
       { merge: true }
     )
-  } else if (increment && decrement) {
+    return
+  }
+
+  // Error handling for both increment and decrement being true
+  if (increment && decrement) {
     console.error(
       "Both increment and decrement cannot be true at the same time."
     )

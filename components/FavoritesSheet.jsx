@@ -64,7 +64,7 @@ const FavoritesSheet = ({
     if (isOpen) {
       getFavs()
     }
-  }, [isOpen, userEmail])
+  }, [isOpen, userEmail, favorites])
 
   return (
     <div className="flex justify-center">

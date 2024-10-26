@@ -179,6 +179,8 @@ const useRecipeSearch = () => {
       Object.keys(favorites).length <= MAX_FAVORITES
     ) {
       localStorage.setItem("favorites", JSON.stringify(favorites))
+    } else {
+      localStorage.setItem("favorites", JSON.stringify(favorites))
     }
     setIsFavoritesLoading(false)
   }, [favorites])
@@ -260,7 +262,9 @@ const useRecipeSearch = () => {
 
       try {
         await removeItemsFirebase(itemsToRemove) // Call your server action
-        toast.success("Favorites removed!")
+        toast.success(
+          itemsToRemove.length > 1 ? "Favorites removed!" : "Favorite removed!"
+        )
       } catch (error) {
         console.error("Batch removal failed:", error)
         toast.error("Failed to remove some favorites")
@@ -279,7 +283,6 @@ const useRecipeSearch = () => {
       setIsFavoritesLoading(true)
 
       // Optimistically update the favorites state
-
       delete prevFavorites[link] // Remove the item from the new favorites state
       setFavorites(prevFavorites) // Update state immediately
 
