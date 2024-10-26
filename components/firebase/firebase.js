@@ -1,4 +1,4 @@
-import { initializeApp, getApp, getApps } from "firebase/app"
+import { getApp, getApps, initializeApp } from "firebase/app"
 import { getFirestore } from "firebase/firestore"
 import { deleteObject, getStorage } from "firebase/storage"
 
@@ -16,7 +16,7 @@ const firebaseConfig = {
 }
 
 // Initialize Fitebase only once
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp()
 // Initialize Firebase Storage
 const storage = getStorage(firebaseApp)
 
