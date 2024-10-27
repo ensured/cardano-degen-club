@@ -21,7 +21,7 @@ const FullTitleToolTip = ({ children, title }) => {
   }
 
   return (
-    <TooltipProvider delayDuration={100}>
+    <TooltipProvider delayDuration={750}>
       <Tooltip open={isOpen} onOpenChange={handleOpenChange}>
         <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent
