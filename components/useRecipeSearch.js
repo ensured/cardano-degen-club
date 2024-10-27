@@ -78,6 +78,7 @@ const useRecipeSearch = () => {
           count: data.data.count,
           nextPage: data.data._links.next?.href || "",
         }))
+        setLastInputSearched(q)
         setLoading(false)
         return
       } catch (error) {
@@ -87,7 +88,6 @@ const useRecipeSearch = () => {
         })
       } finally {
         setLoading(false)
-        setLastInputSearched(q)
         router.replace(`?q=${q}`)
       }
     }
@@ -105,13 +105,13 @@ const useRecipeSearch = () => {
           count: data.data.count,
           nextPage: data.data._links.next?.href || "",
         }))
+        setLastInputSearched(input)
       }
     } catch (err) {
       console.log(err)
     } finally {
       setLoading(false)
       router.replace(`?q=${input}`)
-      setLastInputSearched(input)
     }
   }, [])
 
