@@ -205,42 +205,63 @@ const RecipesMenu = ({
         setHasFetched={setHasFetched}
       >
         {Object.keys(favorites).length > 0 ? (
-          <div className="my-2 flex w-full justify-center">
-            <ConfirmPreviewAlertDialog
-              progress={progress}
-              handlePreviewPDF={handlePreviewPDF}
-              loading={isLoadingPdfPreview}
-              isConfirmPreviewDialogOpen={
-                isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // is user is currently loading a pdf if so prevent it from being closed until the download is done.
-              }
-              setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
-            >
-              {isFavoritesLoading ? (
-                <Button
-                  variant={"outline"}
-                  disabled={isFavoritesLoading}
-                  size="sm"
-                  className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
+          <div className="mb-1.5 grid w-full grid-cols-1 gap-1 sm:grid-cols-2">
+            <div className="flex justify-center">
+              <ConfirmPreviewAlertDialog
+                progress={progress}
+                handlePreviewPDF={handlePreviewPDF}
+                loading={isLoadingPdfPreview}
+                isConfirmPreviewDialogOpen={
+                  isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // Prevent dialog closure if PDF is loading
+                }
+                setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
+              >
+                {isFavoritesLoading ? (
+                  <Button
+                    variant={"outline"}
+                    size="sm"
+                    disabled={isFavoritesLoading}
+                    className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105" // Make button take full width
+                  >
+                    <Loader2 className="left-2 size-5 animate-spin md:size-6 lg:size-7" />
+                    <div className="md:text-md line-clamp-2 items-center text-sm lg:text-lg">
+                      Preview PDF
+                    </div>
+                  </Button>
+                ) : (
+                  <Button
+                    variant={"outline"}
+                    size="sm"
+                    disabled={isFavoritesLoading}
+                    className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105" // Make button take full width
+                  >
+                    <FileText className="size-5 md:size-6 lg:size-7" />
+                    <div className="md:text-md line-clamp-2 items-center text-sm lg:text-lg">
+                      Preview PDF
+                    </div>
+                  </Button>
+                )}
+              </ConfirmPreviewAlertDialog>
+            </div>
+
+            <div className="flex justify-center">
+              {Object.keys(favorites).length > 0 && (
+                <DeleteAllAlert
+                  setFavorites={setFavorites}
+                  isFavoritesLoading={isFavoritesLoading}
+                  setIsFavoritesLoading={setIsFavoritesLoading}
                 >
-                  <Loader2 className="left-2 animate-spin" />
-                  <div className="line-clamp-1 items-center text-lg">
-                    Preview PDF
-                  </div>
-                </Button>
-              ) : (
-                <Button
-                  variant={"outline"}
-                  size="sm"
-                  disabled={isFavoritesLoading}
-                  className="gap-2 shadow-md transition-transform duration-100 hover:scale-105"
-                >
-                  <FileText className="left-2" />
-                  <div className="line-clamp-1 items-center text-lg">
-                    Preview PDF
-                  </div>
-                </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="mx-auto flex items-center gap-1.5 text-sm transition-colors duration-200 w-full" // Make button take full width
+                  >
+                    <TrashIcon size={18 + Math.floor(size.height / 115)} />
+                    <span>Delete All</span>
+                  </Button>
+                </DeleteAllAlert>
               )}
-            </ConfirmPreviewAlertDialog>
+            </div>
           </div>
         ) : (
           <span className="text-md mt-2 flex flex-col items-center justify-center text-center md:text-lg">
@@ -253,13 +274,13 @@ const RecipesMenu = ({
 
         <div className={`flex h-full flex-col gap-2`}>
           <div
-            className={`animate-fade-in custom-scrollbar h-[calc(100vh-14.5rem)] overflow-auto rounded-md ${
+            className={`animate-fade-in custom-scrollbar max-h-[85.75%] overflow-auto rounded-md ${
               Object.keys(favorites).length ? "border" : ""
             }`}
           >
             {isFavoritesLoading ? (
               <div className="flex flex-col flex-wrap items-center  justify-center overflow-auto rounded-md border-x">
-                <div className="flex w-full flex-col gap-0.5 ">
+                <div className="flex w-full flex-col gap-0.5">
                   {Array(Object.keys(favorites).length)
                     .fill(null)
                     .map((_, index) => (
@@ -267,13 +288,14 @@ const RecipesMenu = ({
                         key={index}
                         className="flex items-center justify-between gap-0.5 rounded-b-md border-b p-2 pr-1"
                       >
-                        <Skeleton className="h-[2.22rem] w-full " />
+                        <Skeleton className="h-[2.22rem] w-full" />
                         <Skeleton className="flex size-7 items-center justify-center rounded-full border" />
                       </div>
                     ))}
                 </div>
               </div>
             ) : (
+              // Favorites list
               <div className={`flex flex-col flex-wrap rounded-md`}>
                 {Object.entries(favorites).map(
                   ([link, { name, url }], index) => (
@@ -281,24 +303,26 @@ const RecipesMenu = ({
                       <Link
                         target="_blank"
                         href={link}
-                        className="flex items-center justify-between gap-1.5 p-1.5 hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
+                        className="flex items-center gap-2 p-1.5 hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
                         style={{ textDecoration: "none" }}
                       >
                         {url && (
                           <Image
                             src={url}
-                            width={42}
-                            height={42}
                             alt={name}
-                            className="rounded-full"
+                            width={40} // base width for smallest size
+                            height={40} // base height for smallest size
+                            className="rounded-full sm:size-[3.5rem] md:size-[3.7rem] lg:size-[3.9rem]"
                             unoptimized
                             priority
                           />
                         )}
                         <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
-                          <span className="line-clamp-2 rounded-md text-sm md:text-base lg:text-lg">
-                            {name}
-                          </span>
+                          <div>
+                            <span className="line-clamp-2 rounded-md text-[0.85rem] sm:text-[.95rem] md:text-[1.05rem] lg:text-xl">
+                              {name}
+                            </span>
+                          </div>
                           <button
                             className="text-red-600 hover:scale-125 hover:text-red-800"
                             onClick={(e) => {
@@ -320,6 +344,7 @@ const RecipesMenu = ({
                           </button>
                         </div>
                       </Link>
+
                       {index < Object.entries(favorites).length - 1 && (
                         <Separator className="h-[0.0625rem] bg-secondary/75 text-white" />
                       )}
@@ -329,22 +354,6 @@ const RecipesMenu = ({
               </div>
             )}
           </div>
-          {Object.keys(favorites).length > 0 && (
-            <DeleteAllAlert
-              setFavorites={setFavorites}
-              isFavoritesLoading={isFavoritesLoading}
-              setIsFavoritesLoading={setIsFavoritesLoading}
-            >
-              <Button
-                variant="destructive"
-                size={"sm"}
-                className="mx-auto flex items-center gap-1.5 px-4 text-sm transition-colors duration-200 hover:bg-red-600 md:text-lg"
-              >
-                <TrashIcon size={size.height < 600 ? 16 : 20} />
-                <span>Delete All</span>
-              </Button>
-            </DeleteAllAlert>
-          )}
         </div>
       </FavoritesSheet>
     </div>

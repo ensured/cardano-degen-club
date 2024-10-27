@@ -101,10 +101,10 @@ const FavoritesSheet = ({
           </Button>
         </SheetTrigger>
         <SheetContent side="right">
-          <SheetHeader>
+          <SheetHeader className="space-y-1.5">
             <SheetTitle className="select-none">
               <div
-                className="flex animate-gradient flex-wrap items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2 text-2xl transition-all ease-in-out
+                className="flex animate-gradient flex-wrap items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2.5 text-2xl transition-all ease-in-out
               
               dark:from-[#3d91c9] dark:to-[#583aa8] md:p-4 md:text-3xl"
               >
@@ -119,7 +119,7 @@ const FavoritesSheet = ({
                 </div>
                 <Badge
                   max={MAX_FAVORITES}
-                  className="flex text-sm md:text-lg mt-0.5"
+                  className="mt-0.5 flex border border-primary text-sm md:text-lg"
                   size="sm"
                   variant="outline"
                 >
