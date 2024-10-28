@@ -108,19 +108,17 @@ const FavoritesSheet = ({
               
               dark:from-[#3d91c9] dark:to-[#583aa8] md:p-4 md:text-3xl"
               >
-                <div className="flex flex-row items-center justify-center gap-2">
+                <div className="flex flex-row items-center justify-center gap-2 ">
                   <StarIcon
                     size={size?.width < 768 ? 28 : 32}
                     color="#FFD700" // Use gold color for the star icon
                   />
-                  <span className="font-semibold text-gray-800 dark:text-gray-200">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200 ">
                     Favorites
                   </span>
                 </div>
                 <Badge
-                  max={MAX_FAVORITES}
-                  className="mt-0.5 flex border border-primary text-sm md:text-lg"
-                  size="sm"
+                  className="flex border border-primary text-sm mt-1 md:mt-1.5"
                   variant="outline"
                 >
                   {Object.keys(favorites).length}/{MAX_FAVORITES}

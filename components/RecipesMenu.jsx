@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { FileText, Loader2, Trash, Trash2Icon, TrashIcon } from "lucide-react"
+import { FileText, Loader2, Trash, Trash2 } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -223,9 +223,9 @@ const RecipesMenu = ({
                     disabled={isFavoritesLoading}
                     className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105" // Make button take full width
                   >
-                    <Loader2 className="left-2 size-5 animate-spin md:size-6 lg:size-7" />
-                    <div className="md:text-md line-clamp-2 items-center text-sm lg:text-lg">
-                      Preview PDF
+                    <Loader2 className="left-2 size-5 animate-spin md:size-6" />
+                    <div className="md:text-md line-clamp-2 items-center text-sm">
+                      Preview PDFs
                     </div>
                   </Button>
                 ) : (
@@ -235,8 +235,8 @@ const RecipesMenu = ({
                     disabled={isFavoritesLoading}
                     className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105" // Make button take full width
                   >
-                    <FileText className="size-5 md:size-6 lg:size-7" />
-                    <div className="md:text-md line-clamp-2 items-center text-sm lg:text-lg">
+                    <FileText className="size-5 md:size-6" />
+                    <div className="md:text-md line-clamp-2 items-center text-sm">
                       Preview PDF
                     </div>
                   </Button>
@@ -256,7 +256,7 @@ const RecipesMenu = ({
                     variant="destructive"
                     className="mx-auto flex items-center gap-1.5 text-sm transition-colors duration-200 w-full" // Make button take full width
                   >
-                    <TrashIcon size={18 + Math.floor(size.height / 115)} />
+                    <Trash2 className="size-5 md:size-6" />
                     <span>Delete All</span>
                   </Button>
                 </DeleteAllAlert>
@@ -317,30 +317,20 @@ const RecipesMenu = ({
                             priority
                           />
                         )}
-                        <div className="flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
+                        <div className="flex w-full relative select-none items-center justify-between gap-2 transition-all duration-150">
                           <div>
-                            <span className="line-clamp-2 rounded-md text-[0.85rem] sm:text-[.95rem] md:text-[1.05rem] lg:text-xl">
+                            <span className="line-clamp-2 rounded-md text-sm md:text-[1rem] overflow-auto">
                               {name}
                             </span>
                           </div>
                           <button
-                            className="text-red-600 hover:scale-125 hover:text-red-800"
+                            className="text-red-600 hover:scale-125 hover:text-red-800 h-10 md:h-16 relative right-0 px-0.5"
                             onClick={(e) => {
                               e.preventDefault()
                               removeFromFavorites(link)
                             }}
                           >
-                            <Trash2Icon
-                              size={
-                                size?.width < 480
-                                  ? 20
-                                  : size?.width < 640
-                                  ? 22
-                                  : size?.width < 900
-                                  ? 23
-                                  : 24
-                              }
-                            />
+                            <Trash className="size-5 md:size-6" />
                           </button>
                         </div>
                       </Link>
