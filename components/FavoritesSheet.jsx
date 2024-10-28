@@ -41,8 +41,8 @@ const FavoritesSheet = ({
         const currentTime = Date.now()
         const timeElapsed = currentTime - lastFetchTime
 
-        // Fetch only if 10 seconds have passed
-        if (timeElapsed >= 120000) {
+        // Fetch only if 30 seconds have passed
+        if (timeElapsed >= 60 * 1000) {
           const res = await getFavoritesFirebase(userEmail)
           if (res) {
             setFavorites(res)
@@ -62,7 +62,7 @@ const FavoritesSheet = ({
     if (isOpen) {
       getFavs()
     }
-  }, [isOpen, userEmail])
+  }, [isOpen])
 
   return (
     <div className="flex justify-center">
@@ -118,7 +118,7 @@ const FavoritesSheet = ({
                   </span>
                 </div>
                 <Badge
-                  className="flex border border-primary text-sm mt-1 md:mt-1.5"
+                  className="mt-1 flex border border-primary text-sm md:mt-1.5"
                   variant="outline"
                 >
                   {Object.keys(favorites).length}/{MAX_FAVORITES}
