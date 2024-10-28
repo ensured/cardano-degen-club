@@ -312,7 +312,7 @@ const RecipesMenu = ({
                             alt={name}
                             width={40} // base width for smallest size
                             height={40} // base height for smallest size
-                            className="rounded-full sm:size-[3.5rem] md:size-[3.7rem] lg:size-[3.9rem]"
+                            className="rounded-full sm:size-[3.5rem] md:size-[3.7rem] "
                             unoptimized
                             priority
                           />
