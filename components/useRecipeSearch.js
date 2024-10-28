@@ -310,8 +310,6 @@ const useRecipeSearch = () => {
     const isFavorited = favorites[recipeLink] !== undefined
     const updatedFavorites = { ...favorites }
 
-    setIsFavoritesLoading(true)
-
     if (isFavorited) {
       // Optimistically remove favorite
       delete updatedFavorites[recipeLink]
@@ -367,8 +365,6 @@ const useRecipeSearch = () => {
         setFavorites(favorites)
       }
     }
-
-    setIsFavoritesLoading(false) // Ensure loading state is updated
   }
 
   return {
