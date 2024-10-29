@@ -64,10 +64,10 @@ const RecipeCard = ({ recipe, index, lastFoodItemRef, searchResults }) => (
       aria-label={`View recipe for ${recipe.recipe.label}`}
     >
       <FullTitleToolTip title={recipe.recipe.label} className="block size-full">
-        <Card className="group flex size-full flex-col items-center justify-between border-none p-1.5 transition-colors sm:p-2">
-          <CardHeader className="w-full space-y-0 p-0">
-            <div className="flex min-h-6 items-center justify-center sm:min-h-[1.8rem]">
-              <h3 className="line-clamp-2 text-center text-[0.7rem] font-medium leading-tight text-muted-foreground transition-colors group-hover:text-foreground sm:text-xs lg:text-sm">
+        <Card className="group flex size-full flex-col items-center justify-between border-none transition-colors sm:p-2">
+          <CardHeader className="w-full space-y-0 p-0.5 [@media(max-width:380px)]:py-0">
+            <div className="flex min-h-8 items-center justify-center">
+              <h3 className="line-clamp-2 text-center text-[0.74rem] font-medium leading-tight text-muted-foreground transition-colors group-hover:text-foreground [@media(min-width:380px)]:text-[0.78rem] [@media(min-width:430px)]:text-[0.82rem] [@media(min-width:480px)]:text-[0.85rem] [@media(min-width:530px)]:text-[0.87rem] [@media(min-width:580px)]:text-[0.89rem] [@media(min-width:630px)]:text-[0.91rem] [@media(min-width:680px)]:text-[0.93rem] [@media(min-width:730px)]:text-[0.95rem] [@media(min-width:780px)]:text-[0.97rem] [@media(min-width:830px)]:text-[1rem]">
                 {recipe.recipe.label}
               </h3>
             </div>
@@ -78,7 +78,7 @@ const RecipeCard = ({ recipe, index, lastFoodItemRef, searchResults }) => (
               alt={recipe.recipe.label}
               width={80}
               height={80}
-              className="w-3/5 rounded-sm object-contain transition-transform duration-200 group-hover:scale-105 "
+              className="w-[48%] rounded-sm object-contain transition-transform duration-200 group-hover:scale-105 sm:w-3/5 "
               unoptimized
               priority
             />
@@ -106,7 +106,7 @@ export const RecipeCards = ({
   }))
 
   return (
-    <div className="mt-2 grid w-full grid-cols-2 gap-1 rounded-md sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8">
+    <div className="mt-2 grid w-full grid-cols-2 gap-1 rounded-md sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
       {recipesWithFavorites.map((recipe, index) => (
         <div
           className="relative aspect-[4/3] w-full sm:aspect-[4/3.5]"
