@@ -9,7 +9,10 @@ import { Toaster } from "react-hot-toast"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import Animation from "@/components/Animation"
-import SearchRecipes from "@/components/SearchRecipes"
+
+const SearchRecipes = dynamic(() => import("../../components/SearchRecipes"), {
+  ssr: false,
+})
 
 export const metadata = {
   title: "Recipe Fren",
