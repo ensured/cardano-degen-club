@@ -30,7 +30,7 @@ const StarButton = ({
     aria-label={`Favorite ${recipe.recipe.label}`}
   >
     <StarIcon
-      className="size-6 cursor-pointer select-none rounded-md p-1 transition-all duration-200 hover:scale-125 md:size-7"
+      className="size-8 cursor-pointer select-none rounded-md p-1 transition-all duration-200 hover:scale-125"
       fill={
         recipe.isFavorite
           ? "#FFD700"
