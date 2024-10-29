@@ -156,7 +156,7 @@ const RecipeSearchForm = ({
             className="flex-1 gap-1 text-xs md:text-base"
           >
             <CurrentDiceIcon
-              className={`size-4 md:size-5 transition-transform duration-300 ease-in-out 
+              className={`size-4 transition-transform duration-300 ease-in-out md:size-5 
       ${isHoveredRandomButton ? "text-blue-500 rotate-180 scale-125" : ""}`}
             />
             {width < 440 ? "Random" : "Random Recipe"}

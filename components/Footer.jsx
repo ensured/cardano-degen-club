@@ -8,7 +8,7 @@ import { buttonVariants } from "./ui/button"
 
 const Footer = () => {
   return (
-    <footer className="bg-white shadow dark:bg-zinc-900">
+    <footer className="border-t bg-secondary">
       <div className="flex flex-wrap">
         <div className="flex w-full justify-center gap-2 overflow-auto p-2 md:p-1.5">
           <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">

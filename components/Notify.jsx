@@ -115,9 +115,9 @@ const Notify = () => {
       <h1 className="p-4 text-center font-serif text-3xl">Notification App</h1>
       <Form>
         <form onSubmit={handleSubmit}>
-          <div className="flex flex-col justify-center items-center gap-1">
+          <div className="flex flex-col items-center justify-center gap-1">
             <Input
-              className="font-mono w-[300px]"
+              className="w-[300px] font-mono"
               type="text"
               placeholder="Enter reminder message"
               value={message}
@@ -127,13 +127,13 @@ const Notify = () => {
             <div className="flex flex-row gap-1">
               <Input
                 type="date"
-                className="font-mono w-[140px]"
+                className="w-[140px] font-mono"
                 value={date}
                 onChange={handleDateChange}
               />
               <Input
                 type="time"
-                className="font-mono w-[120px]"
+                className="w-[120px] font-mono"
                 value={time}
                 onChange={handleTimeChange}
               />
@@ -141,7 +141,7 @@ const Notify = () => {
             <div className="flex flex-row">
               <Button
                 type="submit"
-                className="font-serif w-[150px]"
+                className="w-[150px] font-serif"
                 variant={"outline"}
               >
                 Notify

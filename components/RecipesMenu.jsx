@@ -317,14 +317,14 @@ const RecipesMenu = ({
                             priority
                           />
                         )}
-                        <div className="flex w-full relative select-none items-center justify-between gap-2 transition-all duration-150">
+                        <div className="relative flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
                           <div>
-                            <span className="line-clamp-2 rounded-md text-sm md:text-[1rem] overflow-auto">
+                            <span className="line-clamp-2 overflow-auto rounded-md text-sm md:text-[1rem]">
                               {name}
                             </span>
                           </div>
                           <button
-                            className="text-red-600 hover:scale-125 hover:text-red-800 h-6 md:h-10 relative right-0 px-0.5"
+                            className="relative right-0 h-6 px-0.5 text-red-600 hover:scale-125 hover:text-red-800 md:h-10"
                             onClick={(e) => {
                               e.preventDefault()
                               removeFromFavorites(link)

@@ -114,7 +114,7 @@ const PrismData = () => {
           <CopyIcon
             size={"30px"}
             onClick={handleCopy}
-            className="absolute right-0 bg-slate-900 p-2 rounded-sm hover:cursor-pointer hover:bg-slate-950 hover:text-green transition-all hover:scale-110"
+            className="absolute right-0 rounded-sm bg-slate-900 p-2 transition-all hover:scale-110 hover:cursor-pointer hover:bg-slate-950 hover:text-green"
           />
         </div>
         <code
