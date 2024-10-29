@@ -57,13 +57,11 @@ const SearchRecipes = ({ userEmail }) => {
         isFavoritesLoading={isFavoritesLoading}
         setIsFavoritesLoading={setIsFavoritesLoading}
       />
-
       {loading && (
         <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
           <Loader2Icon className="size-16 animate-spin" />
         </div>
       )}
-
       {/* Recipe Cards with data */}
       {searchResults.hits.length > 0 && (
         <div className="animate-fade-in mb-6 mt-2 flex flex-col gap-2">

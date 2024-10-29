@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
@@ -12,9 +11,9 @@ import {
   Dice4Icon,
   Dice5Icon,
   Dice6Icon,
-  Loader2,
   Search,
 } from "lucide-react"
+import toast from "react-hot-toast"
 
 import { foodItems } from "../lib/foods"
 import recipeFrenLogo from "../public/recipeFrenLogo.webp"
@@ -117,18 +116,25 @@ const RecipeSearchForm = ({
 
   return (
     <div className="flex justify-center ">
-      <div className="w-full max-w-3xl space-y-1.5">
+      <div className="w-full max-w-3xl space-y-1.5 md:space-y-3.5">
         <form onSubmit={handleFormSubmit} className="flex gap-1.5">
-          <Input
-            type="text"
-            name="searchTerm"
-            placeholder="Search for recipes..."
-            ref={inputRef}
-            value={input}
-            onChange={handleInputChange}
-            className="grow"
-            enterKeyHint="search"
-          />
+          <div className="relative flex w-full flex-col items-center justify-center">
+            <Input
+              type="text"
+              name="searchTerm"
+              placeholder="Search for recipes..."
+              ref={inputRef}
+              value={input}
+              onChange={handleInputChange}
+              className="w-full grow text-sm lg:text-lg"
+              enterKeyHint="search"
+            />
+            {searchResults.count && (
+              <div className="animate-fade-in absolute -bottom-0.5 rounded-md right-0.5 text-[0.69rem] text-[rgb(255,211,101,90)]">
+                Found {searchResults.count} recipes
+              </div>
+            )}
+          </div>
           <Button
             type="submit"
             variant="default"

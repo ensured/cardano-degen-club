@@ -225,7 +225,7 @@ const RecipesMenu = ({
                   >
                     <Loader2 className="left-2 size-5 animate-spin md:size-6" />
                     <div className="md:text-md line-clamp-2 items-center text-sm">
-                      Preview PDFs
+                      Preview PDF
                     </div>
                   </Button>
                 ) : (
@@ -312,7 +312,7 @@ const RecipesMenu = ({
                             alt={name}
                             width={40} // base width for smallest size
                             height={40} // base height for smallest size
-                            className="rounded-full sm:size-[3.5rem] md:size-[3.7rem] "
+                            className="rounded-full sm:size-[3.05rem]"
                             unoptimized
                             priority
                           />
@@ -324,7 +324,7 @@ const RecipesMenu = ({
                             </span>
                           </div>
                           <button
-                            className="text-red-600 hover:scale-125 hover:text-red-800 h-10 md:h-16 relative right-0 px-0.5"
+                            className="text-red-600 hover:scale-125 hover:text-red-800 h-6 md:h-10 relative right-0 px-0.5"
                             onClick={(e) => {
                               e.preventDefault()
                               removeFromFavorites(link)
