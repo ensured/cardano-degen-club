@@ -3,5 +3,5 @@
 import { Progress } from "@/components/ui/progress"
 
 export function ProgressDemo({ progress }: { progress: number }) {
-  return <Progress value={progress} className="w-full bg-purple-700" />
+  return <Progress value={progress} className="w-full" />
 }
