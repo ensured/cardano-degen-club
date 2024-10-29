@@ -162,9 +162,9 @@ const ConvertAda = () => {
           </Label>
 
           {currency === "ADA" ? (
-            <Icons.ada className="h-32 w-32" />
+            <Icons.ada className="size-32" />
           ) : (
-            <Icons.btc className="h-32 w-32" />
+            <Icons.btc className="size-32" />
           )}
           <Input
             type="number"

@@ -206,7 +206,10 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   if (!size.width || !size.height) return null
 
   return (
-    <div className={`${isContainerDivHidden ? "hidden" : "block"}`}>
+    <div
+      aria-hidden={isContainerDivHidden}
+      className={`${isContainerDivHidden ? "hidden" : ""}`}
+    >
       <label htmlFor="file"></label>{" "}
       <input onChange={onFileChange} type="file" hidden />
       <div

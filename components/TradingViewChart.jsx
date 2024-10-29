@@ -23,6 +23,30 @@ function TradingViewWidget() {
     script.async = true
     document.body.appendChild(script)
 
+    const initializeCharts = () => {
+      const charts = [
+        { symbol: "BINANCE:ADABTC", containerId: "tradingview_ada_btc" },
+        { symbol: "BINANCE:ADAETH", containerId: "tradingview_ada_eth" },
+        { symbol: "BINANCE:ADAUSD", containerId: "tradingview_ada_usd" },
+        { symbol: "CRYPTOCAP:ADA.D", containerId: "tradingview_ada_dominance" },
+        { symbol: "CRYPTOCAP:BTC.D", containerId: "tradingview_btc_dominance" },
+        { symbol: "GATEIO:IAGUSDT", containerId: "tradingview_iag_usdt" },
+      ]
+
+      charts.forEach(({ symbol, containerId }) => {
+        new window.TradingView.widget({
+          symbol: symbol,
+          interval: "D",
+          theme: "dark",
+          style: "1",
+          locale: "en",
+          container_id: containerId,
+          width: width - 20,
+          height: "420",
+        })
+      })
+    }
+
     script.onload = () => {
       initializeCharts()
     }
@@ -30,31 +54,7 @@ function TradingViewWidget() {
     return () => {
       document.body.removeChild(script)
     }
-  }, [width]) // Dynamically adjust the size when the window resizes
-
-  const initializeCharts = () => {
-    const charts = [
-      { symbol: "BINANCE:ADABTC", containerId: "tradingview_ada_btc" },
-      { symbol: "BINANCE:ADAETH", containerId: "tradingview_ada_eth" },
-      { symbol: "BINANCE:ADAUSD", containerId: "tradingview_ada_usd" },
-      { symbol: "CRYPTOCAP:ADA.D", containerId: "tradingview_ada_dominance" },
-      { symbol: "CRYPTOCAP:BTC.D", containerId: "tradingview_btc_dominance" },
-      { symbol: "GATEIO:IAGUSDT", containerId: "tradingview_iag_usdt" },
-    ]
-
-    charts.forEach(({ symbol, containerId }) => {
-      new window.TradingView.widget({
-        symbol: symbol,
-        interval: "D",
-        theme: "dark",
-        style: "1",
-        locale: "en",
-        container_id: containerId,
-        width: width - 20,
-        height: "420",
-      })
-    })
-  }
+  }, [width]) // Now we only depend on width
 
   const openFullscreen = (chartId) => {
     setFullscreenChart(chartId)
@@ -104,9 +104,9 @@ function TradingViewWidget() {
         return (
           <div
             key={chartId}
-            className="relative h-full w-full gap-4 grid grid-cols-1 "
+            className="relative grid size-full grid-cols-1 gap-4 "
           >
-            <div id={chartId} className="size-full rounded-md relative" />
+            <div id={chartId} className="relative size-full rounded-md" />
             <button
               onClick={() => openFullscreen(chartId)}
               className="bg-blue-500 absolute right-11 top-[0.222rem] rounded bg-[#00000069] px-2 py-1 text-white"
@@ -117,15 +117,16 @@ function TradingViewWidget() {
         )
       })}
       {fullscreenChart && (
-        <div className="fixed inset-0 pb-4 flex items-center justify-center bg-black bg-opacity-75 z-40">
+        // eslint-disable-next-line tailwindcss/migration-from-tailwind-2
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-75 pb-4">
           <div className=" rounded-lg p-4">
             <button
               onClick={closeFullscreen}
-              className="absolute -top-[0.54rem] right-11 bg-red-700/30 text-white px-2 py-1 rounded z-50"
+              className="absolute right-11 top-[-0.54rem] z-50 rounded bg-red-700/30 px-2 py-1 text-white"
             >
               <X className="size-7" />
             </button>
-            <div id="fullscreen_chart" className="w-full h-full rounded-md" />
+            <div id="fullscreen_chart" className="size-full rounded-md" />
           </div>
         </div>
       )}

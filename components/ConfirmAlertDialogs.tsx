@@ -44,7 +44,7 @@ export function ConfirmPreviewAlertDialog({
         <div className="mt-8 flex h-8 w-full justify-center pb-4 font-serif text-lg italic">
           {loading ? (
             <motion.div
-              className="w-full "
+              className="w-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.12 }}
