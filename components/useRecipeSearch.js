@@ -176,17 +176,8 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    setIsFavoritesLoading(true)
     if (favorites === {}) return
-    if (
-      Object.keys(favorites).length > 0 &&
-      Object.keys(favorites).length <= MAX_FAVORITES
-    ) {
-      localStorage.setItem("favorites", JSON.stringify(favorites))
-    } else {
-      localStorage.setItem("favorites", JSON.stringify(favorites))
-    }
-    setIsFavoritesLoading(false)
+    localStorage.setItem("favorites", JSON.stringify(favorites))
   }, [favorites])
 
   useEffect(() => {
