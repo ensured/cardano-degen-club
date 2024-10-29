@@ -132,7 +132,7 @@ const RecipeSearchForm = ({
             {searchResults.count === 0 ? (
               ""
             ) : (
-              <div className="animate-fade-in absolute -bottom-0.5 right-0.5 rounded-md text-[0.69rem] text-[rgb(255,211,101,90)]">
+              <div className="animate-fade-in absolute -bottom-0.5 right-0.5 rounded-md text-[0.67rem] text-[rgb(255,211,101,90)] md:text-[0.70rem] lg:text-[0.73rem]">
                 Found {searchResults.count} recipes
               </div>
             )}
