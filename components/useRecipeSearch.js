@@ -313,6 +313,8 @@ const useRecipeSearch = () => {
         name: recipeName,
         link: recipeLink,
         url: recipeImage,
+        // mealType: recipe.mealType,
+        // dishType: recipe.dishType,
       }
       setFavorites(updatedFavorites) // Update state immediately
 

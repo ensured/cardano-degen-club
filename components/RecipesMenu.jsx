@@ -71,107 +71,109 @@ const RecipesMenu = ({
       return
     }
 
-    const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" })
+    const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
     let yOffset = 12
     const pageHeight = doc.internal.pageSize.height
+    const pageWidth = doc.internal.pageSize.width
     const imageWidth = 24
     const imageHeight = 24
-    const borderPadding = 2 // Padding around the content
+    const borderPadding = 2
     const borderWidth = 0.5
-    const borderRadius = 5 // Rounded corners radius
+    const borderRadius = 5
     const contentHeight = 26
-    const contentWidth = 206 // Width of the item
+    const contentWidth = (pageWidth - 20) / 3 // Divide available width for 3 columns
     let currentPosition = 0
+    let xOffset = borderPadding
 
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {
-          // Check if image is cached in localStorage without expiry
           let imageBase64 = getLocalStorageWithoutExpiry(url)
 
-          // If not cached, fetch and cache the image
           if (!imageBase64) {
             imageBase64 = await imgUrlToBase64(url)
             setLocalStorageWithoutExpiry(url, imageBase64)
           }
 
           currentPosition++
-          const progress =
-            (currentPosition / Object.keys(favorites).length) * 100
+          const progress = (currentPosition / Object.keys(favorites).length) * 100
           setProgress(progress)
 
-          // Draw rounded border around the entire item (image + text)
+          // Calculate xOffset based on position (1st, 2nd, or 3rd column)
+          switch (currentPosition % 3) {
+            case 1: // First column
+              xOffset = borderPadding
+              break
+            case 2: // Second column
+              xOffset = contentWidth + 10
+              break
+            case 0: // Third column
+              xOffset = 2 * contentWidth + 15
+              break
+          }
+
+          // Rest of the drawing code remains the same
           doc.setLineWidth(borderWidth)
           doc.roundedRect(
-            borderPadding,
+            xOffset,
             yOffset,
             contentWidth,
             contentHeight,
             borderRadius,
             borderRadius
-          ) // x, y, width, height, radius for rounded corners
+          )
 
-          // Embed image if available
           if (imageBase64) {
             doc.addImage(
               imageBase64,
               "JPEG",
-              borderPadding + 4, // Adjust the position inside the rounded rectangle
+              xOffset + 4,
               yOffset + borderPadding - 1,
               imageWidth,
               imageHeight
             )
-          } else {
-            console.error(`Failed to embed image`)
           }
 
-          // Style for recipe name with link
-          doc.setTextColor(0, 0, 255) // Blue for clickable link
+          doc.setTextColor(0, 0, 255)
           doc.setFont("helvetica", "bold")
-          doc.setFontSize(16) // Title size
+          doc.setFontSize(16)
 
-          const maxNameLength = 100 // Limit title length
-          const truncatedName =
-            name.length > maxNameLength
-              ? name.substring(0, maxNameLength)
-              : name
+          const maxNameLength = 100
+          const truncatedName = name.length > maxNameLength
+            ? name.substring(0, maxNameLength)
+            : name
 
-          // Calculate available width for text, excluding padding and image
-          const textXOffset = imageWidth + borderPadding + 4 // Position text right of the image
-          const maxTextWidth = contentWidth - textXOffset - 3 // Max width for text to avoid overflowing
+          const textXOffset = xOffset + imageWidth + borderPadding + 4
+          const maxTextWidth = contentWidth - imageWidth - borderPadding - 8
 
-          // Split text to ensure it doesn't overflow
           const textLines = doc.splitTextToSize(truncatedName, maxTextWidth)
-
-          // Ensure only two lines are displayed and handle truncation for the second line
-          const displayedLines = textLines.slice(0, 2) // Only take up to 2 lines
-          if (textLines.length > 2) {
-            const secondLine = displayedLines[1]
-            // Truncate the second line and add ellipsis if it exceeds the max width
-            displayedLines[1] =
-              secondLine.length > maxTextWidth / doc.getFontSize()
-                ? secondLine.substring(0, maxTextWidth / 3 - 4) + "..."
-                : secondLine
+          const displayedLines = textLines.slice(0, 3)
+          
+          if (textLines.length > 3) {
+            const lastLine = displayedLines[2]
+            displayedLines[2] = lastLine.length > maxTextWidth / doc.getFontSize()
+              ? lastLine.substring(0, maxTextWidth / 3 - 4) + "..."
+              : lastLine
           }
 
-          // Calculate starting y position for the text to center it vertically
-          let textYOffset = yOffset + borderPadding + contentHeight / 2.6 - 5 // Centering text
+          let textYOffset = yOffset + borderPadding + contentHeight / 3 - 5
 
-          // Draw the text with link for each line
           displayedLines.forEach((line) => {
-            doc.textWithLink(line, borderPadding + textXOffset, textYOffset, {
-              url: link, // Link embedded in the title
+            doc.textWithLink(line, textXOffset, textYOffset, {
+              url: link,
             })
-            textYOffset += 6 // Move down for the next line
+            textYOffset += 6
           })
 
-          // Move yOffset down to draw the next item, ensuring there's space for the bottom border
-          yOffset += contentHeight + 2 * borderPadding // Ensure the bottom border is included
+          // Move to next row after every 3 items
+          if (currentPosition % 3 === 0) {
+            yOffset += contentHeight + 2 * borderPadding
+          }
 
           // Add new page if needed
           if (yOffset + contentHeight + 2 * borderPadding > pageHeight) {
             doc.addPage()
-            yOffset = 12 // Reset yOffset for new page
+            yOffset = 12
           }
         }
       )
