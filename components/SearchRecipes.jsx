@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader2Icon } from "lucide-react"
+import { Loader2, Loader2Icon } from "lucide-react"
 
 import { RecipeCards } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
@@ -74,6 +74,11 @@ const SearchRecipes = ({ userEmail }) => {
           isMobile={isMobile}
         />
       )}
+      <div className="relative flex w-full items-center justify-center pb-6">
+        {loadingMore && (
+          <Loader2 className="absolute -bottom-1.5 size-6 animate-spin" />
+        )}
+      </div>
     </div>
   )
 }

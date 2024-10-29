@@ -16,7 +16,6 @@ import {
 import toast from "react-hot-toast"
 
 import { foodItems } from "../lib/foods"
-import recipeFrenLogo from "../public/recipeFrenLogo.webp"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
@@ -36,8 +35,6 @@ const RecipeSearchForm = ({
   input,
   setInput,
   loading,
-  setLoading,
-  setSearchResults,
   removeFromFavorites,
   favorites,
   setFavorites,
@@ -49,7 +46,7 @@ const RecipeSearchForm = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const { width, height } = useWindowSize()
+  const { width } = useWindowSize()
   const router = useRouter()
 
   const inputRef = useRef(null)
@@ -115,9 +112,9 @@ const RecipeSearchForm = ({
   }
 
   return (
-    <div className="flex justify-center ">
-      <div className="w-full max-w-3xl space-y-1.5 md:space-y-3.5">
-        <form onSubmit={handleFormSubmit} className="flex gap-1.5">
+    <div className="mx-0 flex justify-center rounded-md ">
+      <div className="w-full max-w-3xl space-y-1">
+        <form onSubmit={handleFormSubmit} className="flex gap-1">
           <div className="relative flex w-full flex-col items-center justify-center">
             <Input
               type="text"
@@ -132,31 +129,31 @@ const RecipeSearchForm = ({
             {searchResults.count === 0 ? (
               ""
             ) : (
-              <div className="animate-fade-in absolute -bottom-0.5 right-0.5 rounded-md text-[0.67rem] text-[rgb(255,211,101,90)] md:text-[0.70rem] lg:text-[0.73rem]">
+              <div className="animate-fade-in absolute -bottom-0.5 right-0.5 rounded-md text-[0.64rem] text-muted-foreground dark:text-[rgba(255,211,101,0.75)] md:text-[0.66rem] lg:text-[0.71rem]">
                 Found {searchResults.count} recipes
               </div>
             )}
           </div>
           <Button
             type="submit"
-            variant="default"
+            variant="outline"
             disabled={
               !input || input === "" || loading || lastInputSearched === input
             }
-            className="flex items-center justify-center gap-1.5 text-base md:text-lg"
+            className="flex items-center justify-center gap-1 text-base md:text-lg"
           >
             <Search className="size-5 md:size-6" />
             Search
           </Button>
         </form>
-        <div className="flex flex-wrap items-center justify-between gap-1.5">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           <Button
             onMouseOver={() => handleRandomButtonHover(true)}
             onMouseOut={() => handleRandomButtonHover(false)}
             onClick={handleGetRandomFood}
             variant="outline"
             size={"sm"}
-            className="flex-1 gap-1.5 text-xs md:text-base"
+            className="flex-1 gap-1 text-xs md:text-base"
           >
             <CurrentDiceIcon
               className={`size-4 md:size-5 transition-transform duration-300 ease-in-out 
@@ -179,7 +176,7 @@ const RecipeSearchForm = ({
               onMouseOver={() => handleHover(true)}
               onMouseOut={() => handleHover(false)}
               disabled={loading}
-              className="flex gap-1.5 text-xs md:text-base"
+              className="flex gap-1 text-xs md:text-base"
               variant="outline"
               size={"sm"}
             >

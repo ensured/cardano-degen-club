@@ -254,7 +254,7 @@ const RecipesMenu = ({
                   <Button
                     size="sm"
                     variant="destructive"
-                    className="mx-auto flex items-center gap-1.5 text-sm transition-colors duration-200 w-full" // Make button take full width
+                    className="mx-auto flex w-full items-center gap-1.5 text-sm transition-colors duration-200" // Make button take full width
                   >
                     <Trash2 className="size-5 md:size-6" />
                     <span>Delete All</span>

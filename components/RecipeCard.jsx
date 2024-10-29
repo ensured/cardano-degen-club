@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { StarIcon } from "lucide-react"
+import { Loader2, StarIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -55,7 +55,7 @@ const StarButton = ({
 const RecipeCard = ({ recipe, index, lastFoodItemRef, searchResults }) => (
   <div
     ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
-    className="size-full rounded-sm border transition-colors hover:bg-muted"
+    className="size-full rounded-sm border bg-card transition-colors hover:bg-muted hover:shadow-sm"
   >
     <Link
       target="_blank"
@@ -96,6 +96,7 @@ export const RecipeCards = ({
   handleStarIconClick,
   hoveredRecipeIndex,
   handleStarIconHover,
+  loadingMore,
 }) => {
   const { theme } = useTheme()
 
@@ -106,7 +107,7 @@ export const RecipeCards = ({
   }))
 
   return (
-    <div className="mt-2 grid w-full grid-cols-2 gap-1 rounded-md sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
+    <div className="mt-2.5 grid w-full grid-cols-2 gap-1 rounded-md sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
       {recipesWithFavorites.map((recipe, index) => (
         <div
           className="relative aspect-[4/3] w-full sm:aspect-[4/3.5]"
@@ -117,6 +118,7 @@ export const RecipeCards = ({
             index={index}
             lastFoodItemRef={lastFoodItemRef}
             searchResults={searchResults}
+            loadingMore={loadingMore}
           />
           <StarButton
             recipe={recipe}

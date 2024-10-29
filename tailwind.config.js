@@ -33,7 +33,7 @@ module.exports = {
         blue: "#1fb6ff",
         pink: "#ff49db",
         orange: "#ff7849",
-        green: "#13ce66",
+        green: "#1b1e66",
         grayDark: "#273444",
         // gray: '#8492a6',
         grayLight: "#d3dce6",
@@ -54,6 +54,14 @@ module.exports = {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
         },
         // green: {
         //   DEFAULT: "hsl(var(--green))",

@@ -116,9 +116,9 @@ const useRecipeSearch = () => {
   }, [])
 
   const handleLoadNextPage = useCallback(async () => {
-    setLoadingMore(true)
     const { nextPage } = searchResults
     if (nextPage) {
+      setLoadingMore(true)
       try {
         const response = await fetch(`/api/search?nextPage=${nextPage}`)
         const data = await response.json()
@@ -133,11 +133,11 @@ const useRecipeSearch = () => {
           count: data.count,
           nextPage: data._links.next?.href || "",
         }))
+        setLoadingMore(false)
       } catch (error) {
         toast(error.message, {
           type: "error",
         })
-      } finally {
         setLoadingMore(false)
       }
     }
