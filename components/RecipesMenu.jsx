@@ -267,7 +267,7 @@ const RecipesMenu = ({
 
         <div className={`flex h-full flex-col gap-2`}>
           <div
-            className={`animate-fade-in custom-scrollbar max-h-[74%] overflow-auto rounded-md ${
+            className={`animate-fade-in custom-scrollbar max-h-[64%] overflow-auto rounded-md ${
               Object.keys(favorites).length ? "border" : ""
             }`}
           >

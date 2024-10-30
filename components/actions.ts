@@ -329,17 +329,33 @@ export async function addItemsFirebase(items: Array<{
   const userEmail = user.email
 
   try {
-    // Check if adding these items would exceed MAX_FAVORITES
+    // Get current favorites count
     const userDocRef = doc(db, "users", userEmail)
     const userDoc = await getDoc(userDocRef)
     const currentImageCount = userDoc.exists() ? userDoc.data().imageCount : 0
     
-    if (currentImageCount + items.length > MAX_FAVORITES) {
-      return { error: `Adding these items would exceed the maximum limit of ${MAX_FAVORITES} favorites.` }
+    // Calculate how many items we can actually add
+    const remainingSlots = MAX_FAVORITES - currentImageCount
+    if (remainingSlots <= 0) {
+      return { 
+        error: `Maximum limit of ${MAX_FAVORITES} favorites reached.`,
+        results: items.map(item => ({
+          success: false,
+          link: item.link,
+          error: 'Maximum favorites limit reached'
+        }))
+      }
     }
 
-    // Process all items in parallel
-    const uploadPromises = items.map(async ({ name, url, link, metadata }) => {
+    // Only process items that fit within the limit
+    const itemsToProcess = items.slice(0, remainingSlots)
+    
+    if (itemsToProcess.length < items.length) {
+      console.warn(`Only processing ${itemsToProcess.length} out of ${items.length} items due to favorites limit`)
+    }
+
+    // Process allowed items in parallel
+    const uploadPromises = itemsToProcess.map(async ({ name, url, link, metadata }) => {
       try {
         const imageResponse = await fetch(url)
         if (!imageResponse.ok) {
@@ -372,7 +388,17 @@ export async function addItemsFirebase(items: Array<{
 
     const results = await Promise.all(uploadPromises)
     
-    // Update the image count
+    // Add failed results for items that weren't processed due to limit
+    const allResults = [
+      ...results,
+      ...items.slice(remainingSlots).map(item => ({
+        success: false,
+        link: item.link,
+        error: 'Exceeded maximum favorites limit'
+      }))
+    ]
+    
+    // Update the image count only for successful uploads
     const successfulUploads = results.filter(r => r.success).length
     if (successfulUploads > 0) {
       await handleSetMaxImagesCount(false, userEmail, {
@@ -382,11 +408,22 @@ export async function addItemsFirebase(items: Array<{
     }
 
     return {
-      results,
+      results: allResults,
       successCount: successfulUploads,
+      partialSuccess: itemsToProcess.length < items.length,
+      message: itemsToProcess.length < items.length 
+        ? `Only ${successfulUploads} items were added due to favorites limit`
+        : undefined
     }
   } catch (error) {
     console.error("Error in batch upload:", error)
-    return { error: "Failed to process batch upload" }
+    return { 
+      error: "Failed to process batch upload",
+      results: items.map(item => ({
+        success: false,
+        link: item.link,
+        error: 'Batch upload failed'
+      }))
+    }
   }
 }
