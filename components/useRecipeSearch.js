@@ -36,6 +36,8 @@ const useRecipeSearch = () => {
   const pendingRemovals = useRef(new Set())
   const pendingAdditions = useRef(new Set())
 
+  const [pendingRequests, setPendingRequests] = useState(new Set())
+
   // todo later
   // const debouncedAddItemsFirebase = useCallback(
   //   debounce(async (items) => {
@@ -176,9 +178,29 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    if (favorites === {}) return
-    localStorage.setItem("favorites", JSON.stringify(favorites))
-  }, [favorites])
+    if (Object.keys(favorites).length === 0) return;
+    try {
+      const favoritesString = JSON.stringify(favorites);
+      // Check size before attempting to save
+      const size = new Blob([favoritesString]).size;
+      // 5MB = 5 * 1024 * 1024 bytes (adjust if needed)
+      const MAX_SIZE = 5 * 1024 * 1024;
+      
+      if (size > MAX_SIZE) {
+        toast.error('Favorites storage limit reached. Some items may not be saved.');
+        return;
+      }
+      
+      localStorage.setItem('favorites', favoritesString);
+    } catch (error) {
+      if (error.name === 'QuotaExceededError' || error.code === 22) {
+        toast.error('Storage limit reached. Please remove some favorites.');
+      } else {
+        console.error('Error saving favorites:', error);
+        toast.error('Failed to save favorites');
+      }
+    }
+  }, [favorites]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -269,13 +291,16 @@ const useRecipeSearch = () => {
   )
 
   const removeFromFavorites = async (link) => {
-    const prevFavorites = { ...favorites }
+    // If this exact removal request is already pending, don't duplicate it
+    if (pendingRequests.has(link)) return;
 
+    const prevFavorites = { ...favorites }
     const key = extractRecipeId(link)
     pendingRemovals.current.add(key)
 
     try {
-      setIsFavoritesLoading(true)
+      // Add this request to pending set
+      setPendingRequests(prev => new Set(prev).add(link))
 
       // Optimistically update the favorites state
       delete prevFavorites[link] // Remove the item from the new favorites state
@@ -283,43 +308,50 @@ const useRecipeSearch = () => {
 
       debouncedRemoveItemsFirebase()
 
-      setIsFavoritesLoading(false)
     } catch (error) {
       console.error("Error removing from favorites:", error)
       setFavorites(prevFavorites) // Revert to previous state on error
       toast.error(error.message)
-      setIsFavoritesLoading(false)
+    } finally {
+      // Remove this request from pending set
+      setPendingRequests(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(link)
+        return newSet
+      })
     }
   }
 
   const handleStarIconClick = (index) => async (e) => {
     e.preventDefault()
+    
     const recipe = searchResults.hits[index].recipe
-    const recipeName = extractRecipeName(recipe.shareAs)
-    const recipeImage = recipe.image
     const recipeLink = recipe.shareAs
-    const isFavorited = favorites[recipeLink] !== undefined
-    const updatedFavorites = { ...favorites }
 
-    if (isFavorited) {
-      // Optimistically remove favorite
-      delete updatedFavorites[recipeLink]
-      setFavorites(updatedFavorites) // Update state immediately
-      // Remove from favorites in Firebase immediately
-      removeFavoriteFirebase(recipeLink)
-    } else {
-      // Optimistically add favorite
-      updatedFavorites[recipeLink] = {
-        name: recipeName,
-        link: recipeLink,
-        url: recipeImage,
-        // mealType: recipe.mealType,
-        // dishType: recipe.dishType,
-      }
-      setFavorites(updatedFavorites) // Update state immediately
+    // If this exact request is already pending, don't duplicate it
+    if (pendingRequests.has(recipeLink)) return;
 
-      // Add to favorites in Firebase immediately
-      try {
+    try {
+      // Add this request to pending set
+      setPendingRequests(prev => new Set(prev).add(recipeLink))
+
+      const recipeName = extractRecipeName(recipe.shareAs)
+      const recipeImage = recipe.image
+      const isFavorited = favorites[recipeLink] !== undefined
+      const updatedFavorites = { ...favorites }
+
+      if (isFavorited) {
+        // Remove from favorites
+        delete updatedFavorites[recipeLink]
+        setFavorites(updatedFavorites)
+        
+        await removeFavoriteFirebase(recipeLink)
+      } else {
+        if (Object.keys(updatedFavorites).length >= MAX_FAVORITES) {
+          toast.error(`Maximum of ${MAX_FAVORITES} favorites reached`)
+          return
+        }
+
         const metadata = {
           contentType: "image/jpeg",
           customMetadata: {
@@ -329,6 +361,14 @@ const useRecipeSearch = () => {
           },
           cacheControl: "public,max-age=7200",
         }
+
+        // Add to favorites
+        updatedFavorites[recipeLink] = {
+          name: recipeName,
+          link: recipeLink,
+          url: recipeImage,
+        }
+        setFavorites(updatedFavorites)
 
         const response = await addToFavoritesFirebase({
           name: recipeName,
@@ -341,22 +381,29 @@ const useRecipeSearch = () => {
           throw new Error(response.error)
         }
 
-        // Finalize the update with the actual URL from Firebase
-        setFavorites((prevFavorites) => ({
-          ...prevFavorites,
+        // Update with the Firebase URL
+        setFavorites(prev => ({
+          ...prev,
           [recipeLink]: {
             name: recipeName,
             url: response.url,
             link: recipeLink,
           },
         }))
-      } catch (error) {
-        console.error("Error adding favorite:", error)
-        toast.error(error.message)
-
-        // Revert optimistic update
-        setFavorites(favorites)
       }
+    } catch (error) {
+      console.error("Error updating favorite:", error)
+      toast.error("Failed to update favorite")
+      // Revert to previous state on error
+      const prevFavorites = { ...favorites }
+      setFavorites(prevFavorites)
+    } finally {
+      // Remove this request from pending set
+      setPendingRequests(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(recipeLink)
+        return newSet
+      })
     }
   }
 
