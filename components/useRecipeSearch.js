@@ -319,7 +319,7 @@ const useRecipeSearch = () => {
       try {
         await removeItemsFirebase(itemsToRemove) // Call your server action
         toast.success(
-          itemsToRemove.length > 1 ? "Favorites removed!" : "Favorite removed!"
+          `${itemsToRemove.length} favorites removed!`
         )
       } catch (error) {
         console.error("Batch removal failed:", error)
