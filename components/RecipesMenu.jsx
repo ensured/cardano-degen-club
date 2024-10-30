@@ -17,6 +17,7 @@ import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
 import { imgUrlToBase64 } from "./actions"
 import { Skeleton } from "./ui/skeleton"
+import { imageCache } from "@/utils/indexedDB"
 
 const RecipesMenu = ({
   favorites,
@@ -51,17 +52,6 @@ const RecipesMenu = ({
     }
   }
 
-  const setLocalStorageWithoutExpiry = (key, value) => {
-    localStorage.setItem(key, JSON.stringify(value))
-  }
-
-  // Helper function to get item from localStorage without expiry
-  const getLocalStorageWithoutExpiry = (key) => {
-    const itemStr = localStorage.getItem(key)
-    if (!itemStr) return null
-    return JSON.parse(itemStr)
-  }
-
   const previewFavoritesPDF = async (favorites) => {
     if (!favorites || Object.keys(favorites).length === 0) {
       toast("No favorites found", {
@@ -88,11 +78,12 @@ const RecipesMenu = ({
     try {
       const imageLoadingPromises = Object.entries(favorites).map(
         async ([link, { name, url }]) => {
-          let imageBase64 = getLocalStorageWithoutExpiry(url)
+          // Use IndexedDB cache instead of localStorage
+          let imageBase64 = await imageCache.get(url)
 
           if (!imageBase64) {
             imageBase64 = await imgUrlToBase64(url)
-            setLocalStorageWithoutExpiry(url, imageBase64)
+            await imageCache.set(url, imageBase64)
           }
 
           currentPosition++

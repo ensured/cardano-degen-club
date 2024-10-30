@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { MAX_FAVORITES } from "@/utils/consts"
 import { extractRecipeId } from "@/utils/helper"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Heart, Loader2, StarIcon } from "lucide-react"
+import { Heart, Loader2, StarIcon, Database } from "lucide-react"
 import { useTheme } from "next-themes"
 import { toast } from "react-hot-toast"
 
@@ -18,6 +18,46 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet"
+
+const StorageIndicator = () => {
+  const [storage, setStorage] = useState({ used: 0, total: 0 })
+
+  useEffect(() => {
+    async function checkStorage() {
+      if ('storage' in navigator && 'estimate' in navigator.storage) {
+        const estimate = await navigator.storage.estimate()
+        setStorage({
+          used: estimate.usage || 0,
+          total: estimate.quota || 0,
+        })
+      }
+    }
+    
+    checkStorage()
+    // Check storage every minute
+    const interval = setInterval(checkStorage, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const usedMB = Math.round(storage.used / (1024 * 1024))
+  const totalMB = Math.round(storage.total / (1024 * 1024))
+  const percentUsed = Math.round((storage.used / storage.total) * 100) || 0
+
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <Database className="size-4" />
+      <div className="flex items-center gap-1.5">
+        <div className="w-32 h-1.5 bg-secondary rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-primary rounded-full transition-all duration-500"
+            style={{ width: `${percentUsed}%` }}
+          />
+        </div>
+        <span>{usedMB}MB / {totalMB}MB</span>
+      </div>
+    </div>
+  )
+}
 
 const FavoritesSheet = ({
   children,
@@ -125,7 +165,10 @@ const FavoritesSheet = ({
                 </Badge>
               </div>
             </SheetTitle>
-            <SheetDescription></SheetDescription>
+            <div className="flex justify-between items-center">
+              <SheetDescription></SheetDescription>
+              <StorageIndicator />
+            </div>
           </SheetHeader>
           {children}
         </SheetContent>
