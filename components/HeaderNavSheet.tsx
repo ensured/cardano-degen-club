@@ -3,7 +3,16 @@
 import { useState } from "react"
 import Link from "next/link"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
-import { Menu } from "lucide-react"
+import { 
+  Menu,
+  Globe,
+  Link as LinkIcon,
+  LineChart,
+  Smartphone,
+  Monitor,
+  UtensilsCrossed,
+  Network,
+} from "lucide-react"
 
 import { SheetContent } from "./SheetContent"
 import { ThemeToggle } from "./theme-toggle"
@@ -43,22 +52,25 @@ export function HeaderNavSheet() {
           <Link
             href="/punycode"
             onClick={handleOpenChange}
-            className="py-1 text-lg"
+            className="flex items-center gap-2 py-1 text-lg"
           >
+            <Globe className="size-5" />
             Punycode Converter
           </Link>
           <Link
-            className="py-1 text-lg"
+            className="flex items-center gap-2 py-1 text-lg"
             href="/cardano-links"
             onClick={handleOpenChange}
           >
+            <LinkIcon className="size-5" />
             Cardano Links
           </Link>
           <Link
-            className="py-1 text-lg"
+            className="flex items-center gap-2 py-1 text-lg"
             href="/crypto-tracker"
             onClick={handleOpenChange}
           >
+            <LineChart className="size-5" />
             Crypto Tracker
           </Link>
           <SelectSeparator />
@@ -68,19 +80,20 @@ export function HeaderNavSheet() {
           </div>
 
           <Link
-            className="flex gap-1 py-2 text-lg"
+            className="flex items-center gap-2 py-2 text-lg"
             target="_blank"
             href={"https://github.com/ensured/phone-backup-app-android"}
             onClick={handleOpenChange}
           >
+            <Smartphone className="size-5" />
             Phone backup app (Android)
           </Link>
           <Link
             href="/tradingview-script"
             onClick={handleOpenChange}
-            className="py-1 text-lg"
+            className="flex items-center gap-2 py-1 text-lg"
           >
-            {" "}
+            <Monitor className="size-5" />
             Tradingview Script: Auto-Close Ads
           </Link>
           <SelectSeparator />
@@ -89,15 +102,17 @@ export function HeaderNavSheet() {
           <Link
             href="/recipe-fren"
             onClick={handleOpenChange}
-            className="py-1 text-lg"
+            className="flex items-center gap-2 py-1 text-lg"
           >
+            <UtensilsCrossed className="size-5" />
             Recipe Fren
           </Link>
           <Link
             href="/port-checker"
             onClick={handleOpenChange}
-            className="py-1 text-lg"
+            className="flex items-center gap-2 py-1 text-lg"
           >
+            <Network className="size-5" />
             <span>Port Checker</span>
           </Link>
           <SelectSeparator />
