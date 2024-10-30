@@ -66,81 +66,87 @@ function TradingViewChart() {
   const lastUpdatedChartRef = useRef(null)
 
   // Add chart controls component
-  const ChartControls = ({ containerId }) => (
-    <div className="flex items-center justify-between bg-black/30 p-2">
-      <div className="flex items-center gap-2">
-        <h3 className="text-sm font-medium text-white">{CHART_CONFIG.find(c => c.containerId === containerId)?.title}</h3>
-        <select
-          value={chartSettings[containerId].interval}
-          onChange={(e) => {
-            updateChartSetting(containerId, { interval: e.target.value })
-          }}
-          className="rounded bg-black/40 px-1 py-0.5 text-xs text-white"
+  const ChartControls = ({ containerId }) => {
+    const containerRef = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+    const [isScrollable, setIsScrollable] = useState(false);
+
+    // Check if content is scrollable
+    const checkScrollable = useCallback(() => {
+      if (containerRef.current) {
+        const isContentScrollable = containerRef.current.scrollWidth > containerRef.current.clientWidth;
+        setIsScrollable(isContentScrollable);
+      }
+    }, []);
+
+    // Check on mount and window resize
+    useEffect(() => {
+      checkScrollable();
+      window.addEventListener('resize', checkScrollable);
+      return () => window.removeEventListener('resize', checkScrollable);
+    }, [checkScrollable]);
+
+    const handleMouseDown = (e) => {
+      if (!isScrollable) return;
+      setIsDragging(true);
+      setStartX(e.pageX - containerRef.current.offsetLeft);
+      setScrollLeft(containerRef.current.scrollLeft);
+    };
+  
+    const handleMouseLeave = () => setIsDragging(false);
+    const handleMouseUp = () => setIsDragging(false);
+  
+    const handleMouseMove = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - containerRef.current.offsetLeft;
+      const walk = (x - startX) * 2;
+      containerRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    return (
+      <div className="flex bg-secondary p-2 dark:bg-black/40">
+        <div
+          ref={containerRef}
+          className={`scrollable-container custom-scrollbar flex w-full items-center gap-2 overflow-x-auto ${
+            isScrollable ? 'is-scrollable' : ''
+          }`}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
         >
-          {INTERVALS.map(({ label, value }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-        <button
-          onClick={() => initializeChart(containerId)}
-          className="rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
-          aria-label="Refresh chart"
-        >
-          <ReloadIcon className="size-4" />
-        </button>
-        <select
-          value=""
-          onChange={(e) => {
-            const indicator = e.target.value
-            if (!indicator) return
-            
-            const updatedSettings = {
-              ...chartSettings[containerId],
-              indicators: [...new Set([...chartSettings[containerId].indicators, indicator])]
-            }
-            
-            setChartSettings(prev => ({
-              ...prev,
-              [containerId]: updatedSettings
-            }))
-            
-            reinitializeChart(containerId, updatedSettings)
-          }}
-          className="rounded bg-black/40 px-1 py-0.5 text-xs text-white"
-        >
-          <option value="">+ Add Indicator</option>
-          {INDICATORS.map(({ label, value }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-      </div>
-      <div className="flex items-center gap-2">
-        <select
-          value={chartSettings[containerId].theme}
-          onChange={(e) => {
-            updateChartSetting(containerId, { theme: e.target.value })
-          }}
-          className="rounded bg-black/40 px-1 py-0.5 text-xs text-white"
-        >
-          {THEMES.map(({ label, value }) => (
-            <option key={value} value={value}>{label}</option>
-          ))}
-        </select>
-        <button
-          onClick={() => openFullscreen(containerId)}
-          className="rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
-          aria-label="Enter fullscreen"
-        >
-          <EnterFullScreenIcon className="size-5" />
-        </button>
-        <div className="flex flex-wrap gap-1">
-          {chartSettings[containerId].indicators.map((indicator) => (
+          <div className="flex shrink-0 items-center gap-2">
+            <h3 className="text-sm font-medium text-white">{CHART_CONFIG.find(c => c.containerId === containerId)?.title}</h3>
+            <select
+              value={chartSettings[containerId].interval}
+              onChange={(e) => {
+                updateChartSetting(containerId, { interval: e.target.value })
+              }}
+              className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
+            >
+              {INTERVALS.map(({ label, value }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
             <button
-              key={indicator}
-              onClick={() => {
+              onClick={() => initializeChart(containerId)}
+              className="shrink-0 rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
+              aria-label="Refresh chart"
+            >
+              <ReloadIcon className="size-4" />
+            </button>
+            <select
+              value=""
+              onChange={(e) => {
+                const indicator = e.target.value
+                if (!indicator) return
+                
                 const updatedSettings = {
                   ...chartSettings[containerId],
-                  indicators: chartSettings[containerId].indicators.filter(i => i !== indicator)
+                  indicators: [...new Set([...chartSettings[containerId].indicators, indicator])]
                 }
                 
                 setChartSettings(prev => ({
@@ -150,16 +156,62 @@ function TradingViewChart() {
                 
                 reinitializeChart(containerId, updatedSettings)
               }}
-              className="flex items-center gap-1 rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
+              className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
             >
-              {INDICATORS.find(i => i.value === indicator)?.label || indicator}
-              <MinusIcon className="size-3" />
+              <option value="">+ Add Indicator</option>
+              {INDICATORS.map(({ label, value }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <select
+              value={chartSettings[containerId].theme}
+              onChange={(e) => {
+                updateChartSetting(containerId, { theme: e.target.value })
+              }}
+              className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
+            >
+              {THEMES.map(({ label, value }) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => openFullscreen(containerId)}
+              className="shrink-0 rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
+              aria-label="Enter fullscreen"
+            >
+              <EnterFullScreenIcon className="size-5" />
             </button>
-          ))}
+            <div className="flex shrink-0 flex-nowrap gap-1">
+              {chartSettings[containerId].indicators.map((indicator) => (
+                <button
+                  key={indicator}
+                  onClick={() => {
+                    const updatedSettings = {
+                      ...chartSettings[containerId],
+                      indicators: chartSettings[containerId].indicators.filter(i => i !== indicator)
+                    }
+                    
+                    setChartSettings(prev => ({
+                      ...prev,
+                      [containerId]: updatedSettings
+                    }))
+                    
+                    reinitializeChart(containerId, updatedSettings)
+                  }}
+                  className="flex items-center gap-1 rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
+                >
+                  {INDICATORS.find(i => i.value === indicator)?.label || indicator}
+                  <MinusIcon className="size-3" />
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  )
+    );
+  }
 
   // Add hidden charts menu
   const HiddenChartsMenu = () => (
