@@ -313,3 +313,80 @@ const handleSetMaxImagesCount = async (
     }
   }
 }
+
+// Add this new server action
+export async function addItemsFirebase(items: Array<{
+  name: string;
+  url: string;
+  link: string;
+  metadata: any;
+}>) {
+  const { getUser } = getKindeServerSession()
+  const user = await getUser()
+  if (!user) {
+    return { error: "Not authenticated, please login" }
+  }
+  const userEmail = user.email
+
+  try {
+    // Check if adding these items would exceed MAX_FAVORITES
+    const userDocRef = doc(db, "users", userEmail)
+    const userDoc = await getDoc(userDocRef)
+    const currentImageCount = userDoc.exists() ? userDoc.data().imageCount : 0
+    
+    if (currentImageCount + items.length > MAX_FAVORITES) {
+      return { error: `Adding these items would exceed the maximum limit of ${MAX_FAVORITES} favorites.` }
+    }
+
+    // Process all items in parallel
+    const uploadPromises = items.map(async ({ name, url, link, metadata }) => {
+      try {
+        const imageResponse = await fetch(url)
+        if (!imageResponse.ok) {
+          throw new Error("Failed to fetch image")
+        }
+
+        const imageBlob = await imageResponse.blob()
+        const imageRef = storageRef(
+          storage,
+          `images/${userEmail}/${extractRecipeId(link)}`
+        )
+
+        const uploadResult = await uploadBytes(imageRef, imageBlob, metadata)
+        const downloadUrl = await getDownloadURL(uploadResult.ref)
+
+        return {
+          success: true,
+          link,
+          url: downloadUrl,
+          name,
+        }
+      } catch (error) {
+        return {
+          success: false,
+          link,
+          error: "Failed to upload image",
+        }
+      }
+    })
+
+    const results = await Promise.all(uploadPromises)
+    
+    // Update the image count
+    const successfulUploads = results.filter(r => r.success).length
+    if (successfulUploads > 0) {
+      await handleSetMaxImagesCount(false, userEmail, {
+        increment: true,
+        amount: successfulUploads,
+      })
+    }
+
+    return {
+      results,
+      successCount: successfulUploads,
+    }
+  } catch (error) {
+    console.error("Error in batch upload:", error)
+    return { error: "Failed to process batch upload" }
+  }
+}
