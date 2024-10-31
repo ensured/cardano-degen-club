@@ -261,16 +261,22 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
     const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
     const recipes = Object.entries(favorites)
     const totalRecipes = recipes.length
-
+    
     // First, collect all unique image URLs
     const imageUrls = recipes.map(([_, { url }]) => url)
     
-    // Try to get images from cache first
+    onProgress?.(5) // Start progress
+    
+    // Try to get images from cache first (5-30%)
+    let processedCacheItems = 0
     const cachedImages = await Promise.all(
-      imageUrls.map(async url => ({
-        url,
-        base64: await imageCache.get(url)
-      }))
+      imageUrls.map(async url => {
+        const base64 = await imageCache.get(url)
+        processedCacheItems++
+        const cacheProgress = 5 + Math.round((processedCacheItems / imageUrls.length) * 25)
+        onProgress?.(cacheProgress)
+        return { url, base64 }
+      })
     )
 
     // Filter out URLs that need fetching
@@ -278,17 +284,41 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
       url => !cachedImages.find(img => img.url === url && img.base64)
     )
 
-    // Fetch missing images in batch if needed
+    // Fetch missing images in batch if needed (30-70%)
     let fetchedImages = {}
     if (urlsToFetch.length > 0) {
-      fetchedImages = await getImagesBase64(urlsToFetch)
+      // Split URLs into smaller batches for more granular progress
+      const batchSize = 2
+      const batches = []
       
-      // Cache the newly fetched images
+      for (let i = 0; i < urlsToFetch.length; i += batchSize) {
+        batches.push(urlsToFetch.slice(i, i + batchSize))
+      }
+
+      const results = {}
+      for (let i = 0; i < batches.length; i++) {
+        const batchResult = await getImagesBase64(batches[i])
+        Object.assign(results, batchResult)
+        
+        // Calculate progress for fetching phase (30-70%)
+        const fetchProgress = 30 + Math.round(((i + 1) / batches.length) * 40)
+        onProgress?.(fetchProgress)
+      }
+      
+      fetchedImages = results
+      
+      // Cache the newly fetched images (70-75%)
+      let cacheCount = 0
       await Promise.all(
-        Object.entries(fetchedImages).map(([url, base64]) => 
-          imageCache.set(url, base64)
-        )
+        Object.entries(fetchedImages).map(async ([url, base64]) => {
+          await imageCache.set(url, base64)
+          cacheCount++
+          const cacheProgress = 70 + Math.round((cacheCount / Object.keys(fetchedImages).length) * 5)
+          onProgress?.(cacheProgress)
+        })
       )
+    } else {
+      onProgress?.(75) // Skip fetching phase if all images were cached
     }
 
     // Combine cached and fetched images
@@ -297,7 +327,7 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
       return acc
     }, { ...fetchedImages })
 
-    // Rest of your PDF generation code...
+    // PDF Generation setup (75-80%)
     const PAGE = {
       width: doc.internal.pageSize.width,
       height: doc.internal.pageSize.height,
@@ -317,10 +347,19 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
     let yPos = PAGE.margin
     let currentPosition = 0
 
-    // Process recipes and track progress
+    onProgress?.(80)
+
+    // Process recipes and track progress (75-95%)
+    const totalSteps = recipes.length
+    const progressStep = 20 / totalSteps // Distribute 20% (75-95%) across all recipes
+    
     for (const [link, { name, url }] of recipes) {
       const column = currentPosition % PAGE.columns
       const xPos = PAGE.margin + column * (cardWidth + CARD.spacing)
+
+      // Update progress before processing each recipe
+      const currentProgress = 75 + (progressStep * currentPosition)
+      onProgress?.(Math.round(currentProgress))
 
       const imageBase64 = allImages[url]
       if (imageBase64) {
@@ -359,16 +398,23 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
         doc.addPage()
         yPos = PAGE.margin
       }
-
-      // Calculate and report progress
-      const progress = Math.round((currentPosition / totalRecipes) * 100)
-      onProgress?.(progress)
     }
 
-    return forDownload ? doc : URL.createObjectURL(doc.output("blob"))
+    // Final steps (95-100%)
+    onProgress?.(95)
+    const result = forDownload ? doc : URL.createObjectURL(doc.output('blob'))
+    
+    // Ensure we hit 100% before returning
+    onProgress?.(98)
+    await new Promise(resolve => setTimeout(resolve, 100)) // Small delay for visual feedback
+    onProgress?.(100)
+    await new Promise(resolve => setTimeout(resolve, 100)) // Small delay at 100%
+    
+    return result
 
   } catch (error) {
     console.error("Error generating PDF:", error)
+    toast.error("Failed to generate PDF")
     return null
   }
 }
