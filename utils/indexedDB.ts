@@ -10,6 +10,8 @@ export interface CachedImage {
 
 export class ImageCache {
   private db: IDBDatabase | null = null
+  private readonly CLEANUP_INTERVAL = 7 * 24 * 60 * 60 * 1000 // 1 week in milliseconds
+  private readonly CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000 // 1 week in milliseconds
 
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -18,6 +20,7 @@ export class ImageCache {
       request.onerror = () => reject(request.error)
       request.onsuccess = () => {
         this.db = request.result
+        this.setupAutoCleanup()
         resolve()
       }
 
@@ -29,6 +32,30 @@ export class ImageCache {
         }
       }
     })
+  }
+
+  private setupAutoCleanup(): void {
+    // Check last cleanup timestamp from localStorage
+    const lastCleanup = localStorage.getItem('lastCacheCleanup')
+    const now = Date.now()
+
+    if (!lastCleanup || now - Number(lastCleanup) > this.CLEANUP_INTERVAL) {
+      // Run cleanup if it's been more than a week
+      this.cleanup(this.CACHE_MAX_AGE)
+        .then(() => {
+          localStorage.setItem('lastCacheCleanup', now.toString())
+        })
+        .catch(console.error)
+    }
+
+    // Setup interval for future cleanups
+    setInterval(() => {
+      this.cleanup(this.CACHE_MAX_AGE)
+        .then(() => {
+          localStorage.setItem('lastCacheCleanup', Date.now().toString())
+        })
+        .catch(console.error)
+    }, this.CLEANUP_INTERVAL)
   }
 
   async set(url: string, base64: string): Promise<void> {
