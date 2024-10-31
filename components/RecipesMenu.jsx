@@ -223,7 +223,6 @@ const RecipesMenu = ({
     </div>
   )
 }
-
 // Helper function to generate PDF
 const generatePDF = async (favorites, forDownload = false, setProgress) => {
   if (!favorites || Object.keys(favorites).length === 0) {
@@ -234,123 +233,107 @@ const generatePDF = async (favorites, forDownload = false, setProgress) => {
     return null
   }
 
+  // Initialize PDF document in landscape mode
   const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
-  let yOffset = 12
-  const pageHeight = doc.internal.pageSize.height
-  const pageWidth = doc.internal.pageSize.width
-  const imageWidth = 24
-  const imageHeight = 24
-  const borderPadding = 2
-  const borderWidth = 0.5
-  const borderRadius = 5
-  const contentHeight = 26
-  const contentWidth = (pageWidth - 20) / 3
+
+  // Page layout constants
+  const PAGE = {
+    width: doc.internal.pageSize.width,
+    height: doc.internal.pageSize.height,
+    margin: 15,
+    columns: 2
+  }
+
+  // Recipe card styling
+  const CARD = {
+    padding: 10,
+    imageSize: 35,
+    spacing: 8,
+    height: 52,
+    borderRadius: 4
+  }
+
+  // Calculate card width based on page width and columns
+  const cardWidth = (PAGE.width - (PAGE.margin * 2) - (CARD.spacing * (PAGE.columns - 1))) / PAGE.columns
+
+  let yPos = PAGE.margin
   let currentPosition = 0
-  let xOffset = borderPadding
 
   try {
-    const imageLoadingPromises = Object.entries(favorites).map(
-      async ([link, { name, url }]) => {
-        let imageBase64 = await imageCache.get(url)
-
-        if (!imageBase64) {
-          imageBase64 = await imgUrlToBase64(url)
-          await imageCache.set(url, imageBase64)
-        }
-
-        currentPosition++
-        if (setProgress) {
-          const progress = (currentPosition / Object.keys(favorites).length) * 100
-          setProgress(progress)
-        }
-
-        // Calculate xOffset based on position (1st, 2nd, or 3rd column)
-        switch (currentPosition % 3) {
-          case 1: // First column
-            xOffset = borderPadding
-            break
-          case 2: // Second column
-            xOffset = contentWidth + 10
-            break
-          case 0: // Third column
-            xOffset = 2 * contentWidth + 15
-            break
-        }
-
-        // Rest of the drawing code remains the same
-        doc.setLineWidth(borderWidth)
-        doc.roundedRect(
-          xOffset,
-          yOffset,
-          contentWidth,
-          contentHeight,
-          borderRadius,
-          borderRadius
-        )
-
-        if (imageBase64) {
-          doc.addImage(
-            imageBase64,
-            "JPEG",
-            xOffset + 4,
-            yOffset + borderPadding - 1,
-            imageWidth,
-            imageHeight
-          )
-        }
-
-        doc.setTextColor(0, 0, 255)
-        doc.setFont("helvetica", "bold")
-        doc.setFontSize(16)
-
-        const maxNameLength = 100
-        const truncatedName = name.length > maxNameLength
-          ? name.substring(0, maxNameLength)
-          : name
-
-        const textXOffset = xOffset + imageWidth + borderPadding + 4
-        const maxTextWidth = contentWidth - imageWidth - borderPadding - 8
-
-        const textLines = doc.splitTextToSize(truncatedName, maxTextWidth)
-        const displayedLines = textLines.slice(0, 3)
-        
-        if (textLines.length > 3) {
-          const lastLine = displayedLines[2]
-          displayedLines[2] = lastLine.length > maxTextWidth / doc.getFontSize()
-            ? lastLine.substring(0, maxTextWidth / 3 - 4) + "..."
-            : lastLine
-        }
-
-        let textYOffset = yOffset + borderPadding + contentHeight / 3 - 5
-
-        displayedLines.forEach((line) => {
-          doc.textWithLink(line, textXOffset, textYOffset, {
-            url: link,
-          })
-          textYOffset += 6
-        })
-
-        // Move to next row after every 3 items
-        if (currentPosition % 3 === 0) {
-          yOffset += contentHeight + 2 * borderPadding
-        }
-
-        // Add new page if needed
-        if (yOffset + contentHeight + 2 * borderPadding > pageHeight) {
-          doc.addPage()
-          yOffset = 12
-        }
+    // Process each favorite recipe
+    const imageLoadingPromises = Object.entries(favorites).map(async ([link, { name, url }]) => {
+      // Load and cache image
+      let imageBase64 = await imageCache.get(url)
+      if (!imageBase64) {
+        imageBase64 = await imgUrlToBase64(url)
+        await imageCache.set(url, imageBase64)
       }
-    )
+
+      // Update progress if callback provided
+      currentPosition++
+      if (setProgress) {
+        const progress = (currentPosition / Object.keys(favorites).length) * 100
+        setProgress(progress)
+      }
+
+      // Calculate x position based on column
+      const column = (currentPosition - 1) % PAGE.columns
+      const xPos = PAGE.margin + (column * (cardWidth + CARD.spacing))
+
+      // Draw card background
+      doc.setFillColor(250, 250, 250)
+      doc.roundedRect(xPos, yPos, cardWidth, CARD.height, CARD.borderRadius, CARD.borderRadius, 'F')
+
+      // Add recipe image
+      if (imageBase64) {
+        doc.addImage(
+          imageBase64,
+          "JPEG",
+          xPos + CARD.padding,
+          yPos + CARD.padding,
+          CARD.imageSize,
+          CARD.imageSize
+        )
+      }
+
+      // Add recipe name and link
+      doc.setTextColor(40, 40, 40)
+      doc.setFont("helvetica", "bold")
+      doc.setFontSize(19)
+
+      // Adjust text positioning to use full width
+      const textX = xPos + CARD.padding + CARD.imageSize + CARD.padding
+      const textWidth = cardWidth - (CARD.padding * 2) - CARD.imageSize
+
+      // Format recipe name with adjusted width
+      const lines = doc.splitTextToSize(name, textWidth)
+      const displayLines = lines.slice(0, 3)
+      if (lines.length > 3) {
+        displayLines[2] = displayLines[2].substring(0, displayLines[2].length - 3) + "..."
+      }
+
+      // Add text with link
+      displayLines.forEach((line, i) => {
+        const textY = yPos + (CARD.padding * 1.6) + (i * 12)
+        doc.textWithLink(line, textX, textY, { url: link })
+      })
+
+      // Move to next row if needed
+      if (column === PAGE.columns - 1) {
+        yPos += CARD.height + CARD.spacing
+      }
+
+      // Add new page if needed
+      if (yPos + CARD.height > PAGE.height - PAGE.margin) {
+        doc.addPage()
+        yPos = PAGE.margin
+      }
+    })
 
     await Promise.all(imageLoadingPromises)
 
-    if (forDownload) {
-      return doc
-    } else {
-      const pdfBlob = doc.output("blob")
-      return URL.createObjectURL(pdfBlob)
-    }
+    return forDownload ? doc : URL.createObjectURL(doc.output("blob"))
+
   } catch (error) {
     console.error("Error generating PDF:", error)
     return null
