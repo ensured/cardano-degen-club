@@ -463,3 +463,41 @@ export async function addItemsFirebase(items: Array<{
     }
   }
 }
+
+// Add this new server action
+export async function getImagesBase64(urls: string[]) {
+  try {
+    const imagePromises = urls.map(async (url) => {
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Accept': 'image/webp,image/jpeg,image/png,image/*',
+          },
+          cache: 'force-cache', // Use cache-first strategy
+        });
+
+        if (!response.ok) return { url, base64: null };
+
+        const contentType = response.headers.get('content-type') || 'image/jpeg';
+        const buffer = await response.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString('base64');
+        return { 
+          url, 
+          base64: `data:${contentType};base64,${base64}` 
+        };
+      } catch (error) {
+        console.error("Error processing image:", url, error);
+        return { url, base64: null };
+      }
+    });
+
+    const results = await Promise.all(imagePromises);
+    return results.reduce((acc, { url, base64 }) => {
+      if (base64) acc[url] = base64;
+      return acc;
+    }, {} as Record<string, string>);
+  } catch (error) {
+    console.error("Error in batch image processing:", error);
+    return {};
+  }
+}

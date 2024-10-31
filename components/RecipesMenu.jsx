@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
-import { imgUrlToBase64 } from "./actions"
+import { imgUrlToBase64, getImagesBase64 } from "./actions"
 import { Skeleton } from "./ui/skeleton"
 import { imageCache } from "@/utils/indexedDB"
 import { Progress } from "./ui/progress"
@@ -262,7 +262,42 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
     const recipes = Object.entries(favorites)
     const totalRecipes = recipes.length
 
-    // Page layout constants
+    // First, collect all unique image URLs
+    const imageUrls = recipes.map(([_, { url }]) => url)
+    
+    // Try to get images from cache first
+    const cachedImages = await Promise.all(
+      imageUrls.map(async url => ({
+        url,
+        base64: await imageCache.get(url)
+      }))
+    )
+
+    // Filter out URLs that need fetching
+    const urlsToFetch = imageUrls.filter(
+      url => !cachedImages.find(img => img.url === url && img.base64)
+    )
+
+    // Fetch missing images in batch if needed
+    let fetchedImages = {}
+    if (urlsToFetch.length > 0) {
+      fetchedImages = await getImagesBase64(urlsToFetch)
+      
+      // Cache the newly fetched images
+      await Promise.all(
+        Object.entries(fetchedImages).map(([url, base64]) => 
+          imageCache.set(url, base64)
+        )
+      )
+    }
+
+    // Combine cached and fetched images
+    const allImages = cachedImages.reduce((acc, { url, base64 }) => {
+      if (base64) acc[url] = base64
+      return acc
+    }, { ...fetchedImages })
+
+    // Rest of your PDF generation code...
     const PAGE = {
       width: doc.internal.pageSize.width,
       height: doc.internal.pageSize.height,
@@ -270,7 +305,6 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
       columns: 2
     }
 
-    // Recipe card styling
     const CARD = {
       padding: 8,
       imageSize: 30,
@@ -288,17 +322,7 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
       const column = currentPosition % PAGE.columns
       const xPos = PAGE.margin + column * (cardWidth + CARD.spacing)
 
-      // Try to get image from IndexedDB cache first
-      let imageBase64 = await imageCache.get(url)
-      
-      if (!imageBase64) {
-        // If not in cache, fetch and convert
-        imageBase64 = await imgUrlToBase64(url)
-        if (imageBase64) {
-          await imageCache.set(url, imageBase64)
-        }
-      }
-
+      const imageBase64 = allImages[url]
       if (imageBase64) {
         doc.addImage(
           imageBase64,
