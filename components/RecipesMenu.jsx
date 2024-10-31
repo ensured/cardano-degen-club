@@ -240,16 +240,16 @@ const generatePDF = async (favorites, forDownload = false, setProgress) => {
   const PAGE = {
     width: doc.internal.pageSize.width,
     height: doc.internal.pageSize.height,
-    margin: 15,
+    margin: 12,
     columns: 2
   }
 
   // Recipe card styling
   const CARD = {
-    padding: 10,
-    imageSize: 35,
-    spacing: 8,
-    height: 52,
+    padding: 8,
+    imageSize: 30,
+    spacing: 6,
+    height: 42,
     borderRadius: 4
   }
 
