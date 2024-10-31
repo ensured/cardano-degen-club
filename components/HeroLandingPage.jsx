@@ -2,7 +2,6 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client"
 
-import { useState } from "react"
 import { Chivo } from "next/font/google"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -20,7 +19,6 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
 
-import Particlez from "./Particlez"
 import { Icons } from "./icons"
 import { Section } from "@/components/ui/Section"
 
@@ -56,95 +54,38 @@ const stats = [
 ]
 
 export default function HeroLandingPage() {
-  const [cypherpunkBox, cypherpunkBoxInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.45, // Adjust as needed
-  })
-  const [webTableRef, webTableInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.3, // Adjust as needed
-  })
-
-  const [feature1Ref, feature1InView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-
-  const [feature2Ref, feature2InView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-  const [feature3Ref, feature3InView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-  const [feature4Ref, feature4InView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-
-  const [keyFeaturesRef, keyFeaturesInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-
-  const [title1Ref, title1InView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-
-  const [title2Ref, title2InView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-  const [title3Ref, title3InView] = useInView({
-    triggerOnce: true,
-    threshold: 0.5, // Adjust as needed
-  })
-
-  const [finishedContentRef, finishedContentInView] = useInView({
-    triggerOnce: true,
-    threshold: 0.4, // Adjust as needed
-  })
+  const [title1Ref, title1InView] = useInView({ triggerOnce: true, threshold: 0.2 });
+  const [title2Ref, title2InView] = useInView({ triggerOnce: true, threshold: 0.2 });
+  const [title3Ref, title3InView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
-    <div className="relative">
-      <div className="relative h-[100vh] bg-gray-100 dark:bg-slate-800">
-        <div className="absolute z-10 opacity-20 right-0 top-0 w-48 px-4 py-2">
-          <Particlez />
-        </div>
-        <div className="relative z-20 mx-auto max-w-5xl px-6 flex flex-col justify-center h-[calc(100vh-80px)] text-center">
-          <div className="flex flex-col items-center">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "text-4xl font-extrabold tracking-tight sm:text-6xl",
-                chivo.className
-              )}
-            >
-              The Future of Finance is 
-              <span className="text-[rgb(255,47,179)]"> Decentralized</span>
-            </motion.h1>
-            
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mt-6 text-lg text-muted-foreground sm:text-xl"
-            >
+    <div className="relative overflow-visible">
+      <Section.Hero>
+        <div className="min-h-[calc(100vh-4rem)] flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <h1 className={cn(
+              "text-4xl font-extrabold tracking-tight sm:text-6xl flex flex-col gap-2",
+              chivo.className
+            )}>
+              <span>The Future of Finance is</span>{" "}
+              <span className="bg-gradient-to-r from-[hsl(276,49%,20%)] via-[hsl(276,30%,42%)] to-[hsl(276,49%,20%)] bg-clip-text text-transparent px-2 py-1 
+                border border-[hsl(276,30%,42%)]/30 rounded-md 
+                shadow-[0_0_15px_rgba(89,46,109,0.3),0_0_25px_rgba(89,46,109,0.2)] 
+                hover:shadow-[0_0_20px_rgba(89,46,109,0.4),0_0_30px_rgba(89,46,109,0.3)] transition-shadow
+                dark:bg-gradient-to-r dark:from-[hsl(276,70%,60%)] dark:via-[hsl(276,80%,70%)] dark:to-[hsl(276,70%,60%)] 
+                dark:border-[hsl(276,70%,60%)]/20 
+                dark:shadow-[0_0_20px_rgba(186,104,200,0.5),0_0_30px_rgba(186,104,200,0.3)]
+                dark:hover:shadow-[0_0_25px_rgba(186,104,200,0.6),0_0_40px_rgba(186,104,200,0.4)] dark:hover:border-[hsl(276,70%,60%)]/30">
+                Decentralized
+              </span>
+            </h1>
+            <p className="mt-6 text-lg text-muted-foreground sm:text-xl">
               Join millions of users building a more equitable financial future with Cardano.
-            </motion.p>
-
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mt-10 flex justify-center gap-4"
-            >
+            </p>
+            <div className="mt-10 flex justify-center gap-4">
               <Link href="/cardano-links">
                 <Button size="lg" className="font-semibold">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                  Get Started <ArrowRight className="ml-2 size-4" />
                 </Button>
               </Link>
               <Link href="https://cardano.org/" target="_blank">
@@ -152,45 +93,34 @@ export default function HeroLandingPage() {
                   Learn More <ExternalLink className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-            </motion.div>
+            </div>
           </div>
-
-          <motion.div 
-            className="absolute left-0 right-0 bottom-12 mx-auto w-fit"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ 
-              opacity: 1, 
-              y: 0,
-            }}
-            transition={{ delay: 1 }}
-          >
-            <motion.div
-              animate={{ 
-                y: [0, 8, 0],
-              }}
-              transition={{
-                duration: 1.5,
+          
+          <div className="flex justify-center">
+            <motion.div 
+              animate={{ y: [0, 10, 0] }}
+              transition={{ 
+                duration: 2,
                 repeat: Infinity,
-                repeatType: "reverse",
                 ease: "easeInOut"
               }}
-              className="flex justify-center items-center"
+              className="py-8"
             >
               <ChevronDown className="h-8 w-8 text-muted-foreground" />
             </motion.div>
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </Section.Hero>
 
-      <Section variant="gradient" delay={0.1}>
-        <motion.div className="space-y-2">
-          <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row md:pb-8">
+      <Section.Feature delay={0.1}>
+        <div className="space-y-8">
+          <div className="flex w-full flex-col items-center justify-center gap-4 md:flex-row">
             <Link href={"https://cardano.org/"}>
-              <Icons.ada className=" text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:size-24 transition-all" />
+              <Icons.ada className="text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:size-24 transition-all" />
             </Link>
             <div
               className={cn(
-                "flex flex-col select-none max-w-lg text-4xl font-bold tracking-tight text-[rgb(255,47,179)] sm:text-5xl md:text-5xl  ",
+                "flex flex-col select-none max-w-lg text-4xl font-bold tracking-tight text-[#FF2FB9] sm:text-5xl md:text-5xl  ",
                 chivo.className
               )}
             >
@@ -241,91 +171,73 @@ export default function HeroLandingPage() {
               </span>
             </div>
           </div>
-        </motion.div>
-      </Section>
+        </div>
+      </Section.Feature>
 
-      <Section variant="grid" delay={0.2}>
-        <div className="flex flex-col items-center justify-center">
-          <div className="mb-12 text-center text-3xl font-bold text-zinc-900 dark:text-slate-50 md:text-4xl">
+      <Section.Content delay={0.2}>
+        <div className="flex flex-col items-center justify-center space-y-12">
+          <h2 className="text-3xl font-bold md:text-4xl">
             Key Features
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2">
+          </h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-2">
             <motion.div
-              className="max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+              className="p-6 rounded-lg bg-card text-card-foreground shadow-lg hover:bg-secondary/50 transition-all"
               initial={{ opacity: 0 }}
-              animate={title1InView ? { opacity: 1 } : {}}
+              animate={title1InView ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 1, ease: "easeInOut" }}
               ref={title1Ref}
             >
-              Cardano restores trust to global systems - creating, through
-              science, a more secure, transparent, and sustainable foundation
-              for individuals to transact and exchange, systems to govern, and
-              enterprises to grow.{" "}
+              Cardano restores trust to global systems - creating, through science, a more secure, transparent, and sustainable foundation for individuals to transact and exchange, systems to govern, and enterprises to grow.
             </motion.div>
+            
             <motion.div
-              className="select-none container max-w-[475px] rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
+              className="p-6 rounded-lg bg-card text-card-foreground shadow-lg hover:bg-secondary/50 transition-all"
               initial={{ opacity: 0 }}
-              animate={title2InView ? { opacity: 1 } : {}}
+              animate={title2InView ? { opacity: 1 } : { opacity: 0 }}
               transition={{ duration: 1, ease: "easeInOut" }}
               ref={title2Ref}
             >
-              Cardano brings a new standard in technology - open and inclusive
-              - to challenge the old and activate a new age of sustainable,
-              globally-distributed innovation.
+              Cardano brings a new standard in technology - open and inclusive - to challenge the old and activate a new age of sustainable, globally-distributed innovation.
             </motion.div>
-          </div>
-          <div className="grid grid-cols-1 gap-2 p-2">
-            <motion.div
-              className="select-none flex flex-col max-w-[960px] gap-4 rounded-lg border border-sky-300 bg-slate-200 p-6 shadow-lg transition-all hover:bg-secondary hover:shadow-2xl dark:bg-background dark:hover:bg-secondary"
-              initial={{ opacity: 0 }}
-              animate={title3InView ? { opacity: 1 } : {}}
-              transition={{ duration: 1, ease: "easeInOut" }}
-              ref={title3Ref}
-            >
-              <div className="text-2xl md:text-3xl">
-                <u>Unparalleled Security</u> - And The Makings Of A Trustless
-                World
-              </div>
-              Cardano makes it possible for any actors that do not know each
-              other - and have no reason to trust one another - to interact
-              and transact, securely. It's a platform for building trust where
-              none might naturally exist, opening up whole new markets and
-              opportunities. Through Ouroboros, Cardano is provably secure
-              against bad actors and Sybil attacks. Every transaction,
-              interaction, and exchange is immutably and transparently
-              recovered, and securely validated using multi-signature and a
-              pioneering extended UTXO model.{" "}
-              <Link href="https://roadmap.cardano.org/">
-                <Button>Visit the roadmap</Button>
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </Section>
-
-      <Section variant="gradient" delay={0.3}>
-        <div className="flex flex-col items-center justify-center space-y-8">
-          <div className="text-3xl md:text-4xl font-bold text-center text-zinc-900 dark:text-slate-50">
-            You are now ready to start exploring the ecosystem 👏
           </div>
           
-          <Link href="/cardano-links" className="w-full max-w-2xl">
-            <div className="flex justify-center items-center p-8">
-              <div className="relative text-md">
-                <span className="absolute top-0 left-0 mt-1 ml-1 size-full rounded bg-black dark:bg-white"></span>
-                <span className="max-w-[420px] fold-bold relative inline-block size-full rounded border-2 border-black dark:border-white bg-[rgb(255,47,179)] hover:bg-[rgb(225,77,179)] dark:bg-[rgb(19,16,16)] dark:hover:bg-zinc-950 px-3 py-1 text-md md:text-2xl font-bold text-black dark:text-white transition duration-100 hover:text-gray-900 hover:top-0.5 hover:left-0.5 focus:left-0.5 focus:top-0.5">
-                  Download a Cardano wallet to get started and explore our
-                  official Cardano links (we recommend Vespr wallet)
-                </span>
-              </div>
-            </div>
-          </Link>
+          <motion.div
+            className="p-6 rounded-lg bg-card text-card-foreground shadow-lg hover:bg-secondary/50 transition-all max-w-3xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={title3InView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 1, ease: "easeInOut" }}
+            ref={title3Ref}
+          >
+            <h3 className="text-2xl md:text-3xl font-semibold mb-4">
+              Unparalleled Security - And The Makings Of A Trustless World
+            </h3>
+            Cardano makes it possible for any actors that do not know each
+            other - and have no reason to trust one another - to interact
+            and transact, securely. It's a platform for building trust where
+            none might naturally exist, opening up whole new markets and
+            opportunities. Through Ouroboros, Cardano is provably secure
+            against bad actors and Sybil attacks. Every transaction,
+            interaction, and exchange is immutably and transparently
+            recovered, and securely validated using multi-signature and a
+            pioneering extended UTXO model.{" "}
+           
+          </motion.div>
 
-          <div className="text-sm text-gray-100/40 text-center">
-            Remember to always do your own research
+          <div className="flex gap-4 justify-center">
+            <Link href="https://roadmap.cardano.org/" target="_blank">
+              <Button size="lg" variant="outline" className="font-semibold">
+                Visit the Roadmap <ExternalLink className="ml-2 size-4" />
+              </Button>
+            </Link>
+            <Link href="/cardano-links">
+              <Button size="lg" className="font-semibold">
+                Explore Cardano <ArrowRight className="ml-2 size-4" />
+              </Button>
+            </Link>
           </div>
+
         </div>
-      </Section>
+      </Section.Content>
     </div>
   )
 }

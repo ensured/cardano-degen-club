@@ -1,1 +1,29 @@
- 
+@layer base {
+  :root {
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --accent: 210 40% 96.1%;
+    --border: 214.3 31.8% 91.4%;
+  }
+
+  .dark {
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --accent: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 17.5%;
+  }
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  animation: gradient 3s ease infinite;
+}
+
+.bg-300\% {
+  background-size: 300% 300%;
+} 
