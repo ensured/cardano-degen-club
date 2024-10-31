@@ -47,9 +47,9 @@ const StorageIndicator = () => {
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <Database className="size-4" />
       <div className="flex items-center gap-1.5">
-        <div className="w-32 h-1.5 bg-secondary rounded-full overflow-hidden">
+        <div className="h-1.5 w-32 overflow-hidden rounded-full bg-secondary">
           <div 
-            className="h-full bg-primary rounded-full transition-all duration-500"
+            className="h-full rounded-full bg-primary transition-all duration-500"
             style={{ width: `${percentUsed}%` }}
           />
         </div>
@@ -165,7 +165,7 @@ const FavoritesSheet = ({
                 </Badge>
               </div>
             </SheetTitle>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <SheetDescription></SheetDescription>
               <StorageIndicator />
             </div>

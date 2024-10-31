@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
-import { imgUrlToBase64, getImagesBase64 } from "./actions"
+import { getImagesBase64 } from "./actions"
 import { Skeleton } from "./ui/skeleton"
 import { imageCache } from "@/utils/indexedDB"
 import { Progress } from "./ui/progress"
@@ -260,7 +260,6 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
   try {
     const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
     const recipes = Object.entries(favorites)
-    const totalRecipes = recipes.length
     
     // First, collect all unique image URLs
     const imageUrls = recipes.map(([_, { url }]) => url)
@@ -284,28 +283,12 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
       url => !cachedImages.find(img => img.url === url && img.base64)
     )
 
-    // Fetch missing images in batch if needed (30-70%)
+    // Fetch missing images in a single batch if needed (30-70%)
     let fetchedImages = {}
     if (urlsToFetch.length > 0) {
-      // Split URLs into smaller batches for more granular progress
-      const batchSize = 2
-      const batches = []
-      
-      for (let i = 0; i < urlsToFetch.length; i += batchSize) {
-        batches.push(urlsToFetch.slice(i, i + batchSize))
-      }
-
-      const results = {}
-      for (let i = 0; i < batches.length; i++) {
-        const batchResult = await getImagesBase64(batches[i])
-        Object.assign(results, batchResult)
-        
-        // Calculate progress for fetching phase (30-70%)
-        const fetchProgress = 30 + Math.round(((i + 1) / batches.length) * 40)
-        onProgress?.(fetchProgress)
-      }
-      
-      fetchedImages = results
+      onProgress?.(30) // Start fetch phase
+      fetchedImages = await getImagesBase64(urlsToFetch)
+      onProgress?.(70) // End fetch phase
       
       // Cache the newly fetched images (70-75%)
       let cacheCount = 0
@@ -349,16 +332,16 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
 
     onProgress?.(80)
 
-    // Process recipes and track progress (75-95%)
+    // Process recipes and track progress (80-95%)
     const totalSteps = recipes.length
-    const progressStep = 20 / totalSteps // Distribute 20% (75-95%) across all recipes
+    const progressStep = 15 / totalSteps // Distribute 15% (80-95%) across all recipes
     
     for (const [link, { name, url }] of recipes) {
       const column = currentPosition % PAGE.columns
       const xPos = PAGE.margin + column * (cardWidth + CARD.spacing)
 
       // Update progress before processing each recipe
-      const currentProgress = 75 + (progressStep * currentPosition)
+      const currentProgress = 80 + (progressStep * currentPosition)
       onProgress?.(Math.round(currentProgress))
 
       const imageBase64 = allImages[url]

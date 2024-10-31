@@ -14,43 +14,6 @@ import {
 
 import { db, deleteObject, storage } from "./firebase/firebase"
 
-export async function imgUrlToBase64(url: string) {
-  try {
-    // Add caching headers to the fetch request
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'image/webp,image/jpeg,image/png,image/*',
-      },
-      cache: 'force-cache', // Use cache-first strategy
-    })
-
-    if (!response.ok) throw new Error('Failed to fetch image')
-
-    // Get content type to handle different image formats
-    const contentType = response.headers.get('content-type') || 'image/jpeg'
-
-    // Stream the response instead of loading it all into memory
-    const chunks = []
-    const reader = response.body?.getReader()
-    if (!reader) throw new Error('Failed to read image')
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      chunks.push(value)
-    }
-
-    // Combine chunks and convert to base64
-    const blob = new Blob(chunks, { type: contentType })
-    const arrayBuffer = await blob.arrayBuffer()
-    const base64 = Buffer.from(arrayBuffer).toString('base64')
-
-    return `data:${contentType};base64,${base64}`
-  } catch (error) {
-    console.error("Error downloading image:", error)
-    return null
-  }
-}
 // @ts-ignore
 export async function removeItemsFirebase(keys) {
   const { getUser } = getKindeServerSession()
@@ -467,46 +430,39 @@ export async function addItemsFirebase(items: Array<{
 // Modify the getImagesBase64 function to report progress
 export async function getImagesBase64(urls: string[]) {
   try {
-    const results: { url: string; base64: string | null }[] = [];
-    const batchSize = 3; // Process in smaller batches
-    
-    // Process URLs in batches
-    for (let i = 0; i < urls.length; i += batchSize) {
-      const batch = urls.slice(i, Math.min(i + batchSize, urls.length));
-      
-      const batchPromises = batch.map(async (url) => {
-        try {
-          const response = await fetch(url, {
-            headers: {
-              'Accept': 'image/webp,image/jpeg,image/png,image/*',
-            },
-            cache: 'force-cache',
-          });
+    // Process all images in parallel
+    const imagePromises = urls.map(async (url) => {
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Accept': 'image/webp,image/jpeg,image/png,image/*',
+          },
+          cache: 'force-cache',
+        });
 
-          if (!response.ok) return { url, base64: null };
-
-          const contentType = response.headers.get('content-type') || 'image/jpeg';
-          const buffer = await response.arrayBuffer();
-          const base64 = Buffer.from(buffer).toString('base64');
-          return { 
-            url, 
-            base64: `data:${contentType};base64,${base64}` 
-          };
-        } catch (error) {
-          console.error("Error processing image:", url, error);
-          return { url, base64: null };
+        if (!response.ok) {
+          return [url, null];
         }
-      });
 
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
-    }
+        const contentType = response.headers.get('content-type') || 'image/jpeg';
+        const buffer = await response.arrayBuffer();
+        const base64 = `data:${contentType};base64,${Buffer.from(buffer).toString('base64')}`;
+        
+        return [url, base64];
+      } catch (error) {
+        console.error("Error processing image:", url, error);
+        return [url, null];
+      }
+    });
 
-    // Convert results to the expected format
-    return results.reduce((acc, { url, base64 }) => {
-      if (base64) acc[url] = base64;
-      return acc;
-    }, {} as Record<string, string>);
+    // Wait for all images to be processed
+    const results = await Promise.all(imagePromises);
+
+    // Convert results array to object, filtering out failed images
+    return Object.fromEntries(
+      results.filter(([_, base64]) => base64 !== null)
+    );
+
   } catch (error) {
     console.error("Error in batch image processing:", error);
     return {};
