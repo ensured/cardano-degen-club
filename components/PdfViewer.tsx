@@ -66,7 +66,13 @@ async function processBatch(
   }
 }
 
-export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
+// Add these new props to the component
+interface PDFViewerProps {
+  inputFile: File | null;
+  onProgress?: (progress: number) => void;
+}
+
+export default function PDFViewer({ inputFile, onProgress }: PDFViewerProps) {
   const [file, setFile] = useState<PDFFile>(inputFile)
   const [numPages, setNumPages] = useState<number>()
   const [containerRef, setContainerRef] = useState<HTMLElement | null>(null)
@@ -75,6 +81,7 @@ export default function PDFViewer({ inputFile }: { inputFile: File | null }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isSwitchChecked, setIsSwitchChecked] = useState(false)
   const [isContainerDivHidden, setIsContainerDivHidden] = useState(true)
+  const [progress, setProgress] = useState(0)
 
   const moveCursor = useCallback(async () => {
     if (inputRef.current) {

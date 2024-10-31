@@ -15,6 +15,7 @@ import PDFViewer from "./PdfViewer"
 import { imgUrlToBase64 } from "./actions"
 import { Skeleton } from "./ui/skeleton"
 import { imageCache } from "@/utils/indexedDB"
+import { Progress } from "./ui/progress"
 
 const RecipesMenu = ({
   favorites,
@@ -27,15 +28,18 @@ const RecipesMenu = ({
   setIsFavoritesLoading,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
+  const [isLoadingPdfDownload, setIsLoadingPdfDownload] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [pdfProgress, setPdfProgress] = useState(0)
 
   const handlePreviewPDF = async () => {
-    setProgress(0)
+    setPdfProgress(0)
     setIsLoadingPdfPreview(true)
     try {
-      const previewUrl = await generatePDF(favorites, false, setProgress)
+      const previewUrl = await generatePDF(favorites, false, (progress) => {
+        setPdfProgress(progress)
+      })
       if (previewUrl) {
         setPdfPreviewUrl(previewUrl)
         setIsOpen(false)
@@ -45,14 +49,15 @@ const RecipesMenu = ({
       toast.error("Failed to generate PDF preview")
     } finally {
       setIsLoadingPdfPreview(false)
+      setPdfProgress(0)
     }
   }
 
   const handleDownloadPDF = async () => {
-    setProgress(0)
-    setIsLoadingPdfPreview(true)
+    setPdfProgress(0)
+    setIsLoadingPdfDownload(true)
     try {
-      const doc = await generatePDF(favorites, true, setProgress)
+      const doc = await generatePDF(favorites, true, setPdfProgress)
       if (doc) {
         doc.save("Recipes-(Favorites).pdf")
       }
@@ -60,7 +65,8 @@ const RecipesMenu = ({
       console.error(e)
       toast.error("Failed to download PDF")
     } finally {
-      setIsLoadingPdfPreview(false)
+      setIsLoadingPdfDownload(false)
+      setPdfProgress(0)
     }
   }
 
@@ -83,39 +89,61 @@ const RecipesMenu = ({
       >
         {Object.keys(favorites).length > 0 ? (
           <div className="mb-1.5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isFavoritesLoading || isLoadingPdfPreview}
-              className="hover:scale-102 w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
-              onClick={handlePreviewPDF}
-            >
-              {isLoadingPdfPreview ? (
-                <Loader2 className="size-5 animate-spin md:size-6" />
-              ) : (
-                <FileText className="size-5 md:size-6" />
-              )}
-              <div className="md:text-md line-clamp-2 items-center text-sm">
-                Preview PDF
-              </div>
-            </Button>
+              {/* Preview PDF Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isFavoritesLoading || isLoadingPdfPreview || isLoadingPdfDownload}
+                className="hover:scale-102 relative w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
+                onClick={handlePreviewPDF}
+              >
+                {isLoadingPdfPreview ? (
+                  <>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-sm font-medium">{Math.round(pdfProgress)}%</span>
+                    </div>
+                    <Progress 
+                      value={Math.round(pdfProgress)} 
+                      className="absolute inset-x-0 bottom-0 h-1 rounded-none rounded-b-lg bg-secondary transition-all duration-300"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <FileText className="size-5 md:size-6" />
+                    <div className="md:text-md line-clamp-2 items-center text-sm">
+                      Preview PDF
+                    </div>
+                  </>
+                )}
+              </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isFavoritesLoading || isLoadingPdfPreview}
-              className="w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:scale-102 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
-              onClick={handleDownloadPDF}
-            >
-              {isLoadingPdfPreview ? (
-                <Loader2 className="size-5 animate-spin md:size-6" />
-              ) : (
-                <DownloadIcon className="size-5 md:size-6" />
-              )}
-              <div className="md:text-md line-clamp-2 items-center text-sm">
-                Download PDF
-              </div>
-            </Button>
+              {/* Download PDF Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isFavoritesLoading || isLoadingPdfDownload || isLoadingPdfPreview}
+                className="hover:scale-102 relative w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
+                onClick={handleDownloadPDF}
+              >
+                {isLoadingPdfDownload  ? (
+                  <>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-sm font-medium">{Math.round(pdfProgress)}%</span>
+                    </div>
+                    <Progress 
+                      value={Math.round(pdfProgress)} 
+                      className="absolute inset-x-0 bottom-0 h-1 rounded-none rounded-b-lg bg-secondary transition-all duration-300"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <DownloadIcon className="size-5 md:size-6" />
+                    <div className="md:text-md line-clamp-2 items-center text-sm">
+                      Download PDF
+                    </div>
+                  </>
+                )}
+              </Button>
 
             <div className="col-span-full">
               <DeleteAllAlert
@@ -218,8 +246,9 @@ const RecipesMenu = ({
     </div>
   )
 }
+
 // Helper function to generate PDF
-const generatePDF = async (favorites, forDownload = false, setProgress) => {
+const generatePDF = async (favorites, forDownload = false, onProgress) => {
   if (!favorites || Object.keys(favorites).length === 0) {
     toast("No favorites found", {
       icon: "",
@@ -228,58 +257,48 @@ const generatePDF = async (favorites, forDownload = false, setProgress) => {
     return null
   }
 
-  // Initialize PDF document in landscape mode
-  const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
-
-  // Page layout constants
-  const PAGE = {
-    width: doc.internal.pageSize.width,
-    height: doc.internal.pageSize.height,
-    margin: 12,
-    columns: 2
-  }
-
-  // Recipe card styling
-  const CARD = {
-    padding: 8,
-    imageSize: 30,
-    spacing: 6,
-    height: 42,
-    borderRadius: 4
-  }
-
-  // Calculate card width based on page width and columns
-  const cardWidth = (PAGE.width - (PAGE.margin * 2) - (CARD.spacing * (PAGE.columns - 1))) / PAGE.columns
-
-  let yPos = PAGE.margin
-  let currentPosition = 0
-
   try {
-    // Process each favorite recipe
-    const imageLoadingPromises = Object.entries(favorites).map(async ([link, { name, url }]) => {
-      // Load and cache image
+    const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
+    const recipes = Object.entries(favorites)
+    const totalRecipes = recipes.length
+
+    // Page layout constants
+    const PAGE = {
+      width: doc.internal.pageSize.width,
+      height: doc.internal.pageSize.height,
+      margin: 12,
+      columns: 2
+    }
+
+    // Recipe card styling
+    const CARD = {
+      padding: 8,
+      imageSize: 30,
+      spacing: 6,
+      height: 42,
+      borderRadius: 4
+    }
+
+    const cardWidth = (PAGE.width - (PAGE.margin * 2) - (CARD.spacing * (PAGE.columns - 1))) / PAGE.columns
+    let yPos = PAGE.margin
+    let currentPosition = 0
+
+    // Process recipes and track progress
+    for (const [link, { name, url }] of recipes) {
+      const column = currentPosition % PAGE.columns
+      const xPos = PAGE.margin + column * (cardWidth + CARD.spacing)
+
+      // Try to get image from IndexedDB cache first
       let imageBase64 = await imageCache.get(url)
+      
       if (!imageBase64) {
+        // If not in cache, fetch and convert
         imageBase64 = await imgUrlToBase64(url)
-        await imageCache.set(url, imageBase64)
+        if (imageBase64) {
+          await imageCache.set(url, imageBase64)
+        }
       }
 
-      // Update progress if callback provided
-      currentPosition++
-      if (setProgress) {
-        const progress = (currentPosition / Object.keys(favorites).length) * 100
-        setProgress(progress)
-      }
-
-      // Calculate x position based on column
-      const column = (currentPosition - 1) % PAGE.columns
-      const xPos = PAGE.margin + (column * (cardWidth + CARD.spacing))
-
-      // Draw card background
-      doc.setFillColor(250, 250, 250)
-      doc.roundedRect(xPos, yPos, cardWidth, CARD.height, CARD.borderRadius, CARD.borderRadius, 'F')
-
-      // Add recipe image
       if (imageBase64) {
         doc.addImage(
           imageBase64,
@@ -291,41 +310,36 @@ const generatePDF = async (favorites, forDownload = false, setProgress) => {
         )
       }
 
-      // Add recipe name and link
-      doc.setTextColor(40, 40, 40)
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(19)
-
-      // Adjust text positioning to use full width
+      // Add recipe text and link
       const textX = xPos + CARD.padding + CARD.imageSize + CARD.padding
       const textWidth = cardWidth - (CARD.padding * 2) - CARD.imageSize
-
-      // Format recipe name with adjusted width
       const lines = doc.splitTextToSize(name, textWidth)
       const displayLines = lines.slice(0, 3)
+      
       if (lines.length > 3) {
         displayLines[2] = displayLines[2].substring(0, displayLines[2].length - 3) + "..."
       }
 
-      // Add text with link
       displayLines.forEach((line, i) => {
         const textY = yPos + (CARD.padding * 1.6) + (i * 12)
         doc.textWithLink(line, textX, textY, { url: link })
       })
 
-      // Move to next row if needed
+      // Update position and page management
+      currentPosition++
       if (column === PAGE.columns - 1) {
         yPos += CARD.height + CARD.spacing
       }
 
-      // Add new page if needed
       if (yPos + CARD.height > PAGE.height - PAGE.margin) {
         doc.addPage()
         yPos = PAGE.margin
       }
-    })
 
-    await Promise.all(imageLoadingPromises)
+      // Calculate and report progress
+      const progress = Math.round((currentPosition / totalRecipes) * 100)
+      onProgress?.(progress)
+    }
 
     return forDownload ? doc : URL.createObjectURL(doc.output("blob"))
 
