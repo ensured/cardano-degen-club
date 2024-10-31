@@ -9,7 +9,7 @@ import { motion } from "framer-motion"
 import {
   ArrowRight,
   CornerLeftDown,
-  Drumstick,
+  Code as CodeIcon,
   ExternalLink,
   HardDrive,
   HardDriveIcon,
@@ -41,6 +41,25 @@ const chivo = Chivo({
   subsets: ["latin"],
   display: "swap",
 })
+
+const features = [
+  {
+    title: "Proof of Stake",
+    description: "Energy-efficient consensus mechanism that allows anyone to participate in network security.",
+    icon: ScalingIcon,
+  },
+  {
+    title: "Smart Contracts",
+    description: "Build decentralized applications with Plutus, a purpose-built smart contract platform.",
+    icon: CodeIcon,
+  },
+  {
+    title: "Governance",
+    description: "Community-driven development through on-chain voting and treasury system.",
+    icon: Users,
+  },
+  // Add more features as needed
+]
 
 export default function HeroLandingPage() {
   const [cypherpunkBox, cypherpunkBoxInView] = useInView({
@@ -98,6 +117,46 @@ export default function HeroLandingPage() {
     <div className="bg-gray-100 dark:bg-slate-800">
       <div className="absolute z-10 opacity-20 right-0 top-0 w-48 px-4 py-2">
         <Particlez />
+      </div>
+      <div className="relative z-20 mx-auto max-w-5xl px-6 pt-32 pb-24 text-center sm:pt-40">
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={cn(
+            "text-4xl font-extrabold tracking-tight sm:text-6xl",
+            chivo.className
+          )}
+        >
+          The Future of Finance is 
+          <span className="text-[rgb(255,47,179)]"> Decentralized</span>
+        </motion.h1>
+        
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-6 text-lg text-muted-foreground sm:text-xl"
+        >
+          Join millions of users building a more equitable financial future with Cardano.
+        </motion.p>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-10 flex justify-center gap-4"
+        >
+          <Link href="/cardano-links">
+            <Button size="lg" className="font-semibold">
+              Get Started <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href="https://cardano.org/" target="_blank">
+            <Button size="lg" variant="outline" className="font-semibold">
+              Learn More <ExternalLink className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </motion.div>
       </div>
       <motion.section
         initial={{ opacity: 0, y: 0, scale: 0.45 }}
