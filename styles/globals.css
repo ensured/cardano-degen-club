@@ -67,6 +67,46 @@
   }
 }
 
+@layer utilities {
+  .bg-gradient-radial {
+    background-image: radial-gradient(
+      circle at center,
+      var(--gradient-start) 0%,
+      var(--gradient-end) 100%
+    );
+  }
+} 
+@supports (-webkit-touch-callout: none) {
+  .h-screen {
+    height: -webkit-fill-available;
+  }
+}
+.bg-grid-slate-100 {
+  background-image: linear-gradient(to right, #f1f5f910 1px, transparent 1px),
+    linear-gradient(to bottom, #f1f5f910 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-grid-slate-700 {
+  background-image: linear-gradient(to right, #334155 1px, transparent 1px),
+    linear-gradient(to bottom, #334155 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+@layer utilities {
+  .bg-grid-slate-100 {
+    background-image: linear-gradient(to right, #f1f5f910 1px, transparent 1px),
+      linear-gradient(to bottom, #f1f5f910 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .bg-grid-slate-700 {
+    background-image: linear-gradient(to right, #334155 1px, transparent 1px),
+      linear-gradient(to bottom, #334155 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px; /* Thinner width of the scrollbar */
   height: 8px; /* Thinner height of the scrollbar (for horizontal scrolling) */
