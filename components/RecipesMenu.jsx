@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Separator } from "@radix-ui/react-dropdown-menu"
 import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
-import { FileText, Loader2, Trash, Trash2 } from "lucide-react"
+import { DownloadIcon, FileText, Loader2, Trash, Trash2 } from "lucide-react"
 import toast from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
@@ -30,151 +30,40 @@ const RecipesMenu = ({
   setIsFavoritesLoading,
 }) => {
   const [isLoadingPdfPreview, setIsLoadingPdfPreview] = useState(false)
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null) // this opens the pdf into view
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
-  const [isConfirmPreviewDialogOpen, setIsConfirmPreviewDialogOpen] =
-    useState(false)
   const [progress, setProgress] = useState(0)
-
-  const [hasFetched, setHasFetched] = useState(false) // To avoid duplicate fetching
 
   const handlePreviewPDF = async () => {
     setProgress(0)
     setIsLoadingPdfPreview(true)
     try {
-      const previewUrl = await previewFavoritesPDF(favorites)
-      setPdfPreviewUrl(previewUrl) // this opens the pdf into view
-      setIsOpen(false)
+      const previewUrl = await generatePDF(favorites, false, setProgress)
+      if (previewUrl) {
+        setPdfPreviewUrl(previewUrl)
+        setIsOpen(false)
+      }
     } catch (e) {
       console.error(e)
+      toast.error("Failed to generate PDF preview")
     } finally {
       setIsLoadingPdfPreview(false)
     }
   }
 
-  const previewFavoritesPDF = async (favorites) => {
-    if (!favorites || Object.keys(favorites).length === 0) {
-      toast("No favorites found", {
-        icon: "",
-        style: { background: "#18181b" },
-      })
-      return
-    }
-
-    const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
-    let yOffset = 12
-    const pageHeight = doc.internal.pageSize.height
-    const pageWidth = doc.internal.pageSize.width
-    const imageWidth = 24
-    const imageHeight = 24
-    const borderPadding = 2
-    const borderWidth = 0.5
-    const borderRadius = 5
-    const contentHeight = 26
-    const contentWidth = (pageWidth - 20) / 3 // Divide available width for 3 columns
-    let currentPosition = 0
-    let xOffset = borderPadding
-
+  const handleDownloadPDF = async () => {
+    setProgress(0)
+    setIsLoadingPdfPreview(true)
     try {
-      const imageLoadingPromises = Object.entries(favorites).map(
-        async ([link, { name, url }]) => {
-          // Use IndexedDB cache instead of localStorage
-          let imageBase64 = await imageCache.get(url)
-
-          if (!imageBase64) {
-            imageBase64 = await imgUrlToBase64(url)
-            await imageCache.set(url, imageBase64)
-          }
-
-          currentPosition++
-          const progress = (currentPosition / Object.keys(favorites).length) * 100
-          setProgress(progress)
-
-          // Calculate xOffset based on position (1st, 2nd, or 3rd column)
-          switch (currentPosition % 3) {
-            case 1: // First column
-              xOffset = borderPadding
-              break
-            case 2: // Second column
-              xOffset = contentWidth + 10
-              break
-            case 0: // Third column
-              xOffset = 2 * contentWidth + 15
-              break
-          }
-
-          // Rest of the drawing code remains the same
-          doc.setLineWidth(borderWidth)
-          doc.roundedRect(
-            xOffset,
-            yOffset,
-            contentWidth,
-            contentHeight,
-            borderRadius,
-            borderRadius
-          )
-
-          if (imageBase64) {
-            doc.addImage(
-              imageBase64,
-              "JPEG",
-              xOffset + 4,
-              yOffset + borderPadding - 1,
-              imageWidth,
-              imageHeight
-            )
-          }
-
-          doc.setTextColor(0, 0, 255)
-          doc.setFont("helvetica", "bold")
-          doc.setFontSize(16)
-
-          const maxNameLength = 100
-          const truncatedName = name.length > maxNameLength
-            ? name.substring(0, maxNameLength)
-            : name
-
-          const textXOffset = xOffset + imageWidth + borderPadding + 4
-          const maxTextWidth = contentWidth - imageWidth - borderPadding - 8
-
-          const textLines = doc.splitTextToSize(truncatedName, maxTextWidth)
-          const displayedLines = textLines.slice(0, 3)
-          
-          if (textLines.length > 3) {
-            const lastLine = displayedLines[2]
-            displayedLines[2] = lastLine.length > maxTextWidth / doc.getFontSize()
-              ? lastLine.substring(0, maxTextWidth / 3 - 4) + "..."
-              : lastLine
-          }
-
-          let textYOffset = yOffset + borderPadding + contentHeight / 3 - 5
-
-          displayedLines.forEach((line) => {
-            doc.textWithLink(line, textXOffset, textYOffset, {
-              url: link,
-            })
-            textYOffset += 6
-          })
-
-          // Move to next row after every 3 items
-          if (currentPosition % 3 === 0) {
-            yOffset += contentHeight + 2 * borderPadding
-          }
-
-          // Add new page if needed
-          if (yOffset + contentHeight + 2 * borderPadding > pageHeight) {
-            doc.addPage()
-            yOffset = 12
-          }
-        }
-      )
-
-      await Promise.all(imageLoadingPromises)
-
-      const pdfBlob = doc.output("blob")
-      return URL.createObjectURL(pdfBlob)
-    } catch (error) {
-      console.error("Error generating PDF:", error)
+      const doc = await generatePDF(favorites, true, setProgress)
+      if (doc) {
+        doc.save("Recipes-(Favorites).pdf")
+      }
+    } catch (e) {
+      console.error(e)
+      toast.error("Failed to download PDF")
+    } finally {
+      setIsLoadingPdfPreview(false)
     }
   }
 
@@ -194,66 +83,58 @@ const RecipesMenu = ({
         userEmail={userEmail}
         isFavoritesLoading={isFavoritesLoading}
         setIsFavoritesLoading={setIsFavoritesLoading}
-        hasFetched={hasFetched}
-        setHasFetched={setHasFetched}
       >
         {Object.keys(favorites).length > 0 ? (
           <div className="mb-1.5 grid w-full grid-cols-1 gap-1 sm:grid-cols-2">
-            <div className="flex justify-center">
-              <ConfirmPreviewAlertDialog
-                progress={progress}
-                handlePreviewPDF={handlePreviewPDF}
-                loading={isLoadingPdfPreview}
-                isConfirmPreviewDialogOpen={
-                  isLoadingPdfPreview ? true : isConfirmPreviewDialogOpen // Prevent dialog closure if PDF is loading
-                }
-                setIsConfirmPreviewDialogOpen={setIsConfirmPreviewDialogOpen}
-              >
-                {isFavoritesLoading ? (
-                  <Button
-                    variant={"outline"}
-                    size="sm"
-                    disabled={isFavoritesLoading}
-                    className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105" // Make button take full width
-                  >
-                    <Loader2 className="left-2 size-5 animate-spin md:size-6" />
-                    <div className="md:text-md line-clamp-2 items-center text-sm">
-                      Preview PDF
-                    </div>
-                  </Button>
-                ) : (
-                  <Button
-                    variant={"outline"}
-                    size="sm"
-                    disabled={isFavoritesLoading}
-                    className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105" // Make button take full width
-                  >
-                    <FileText className="size-5 md:size-6" />
-                    <div className="md:text-md line-clamp-2 items-center text-sm">
-                      Preview PDF
-                    </div>
-                  </Button>
-                )}
-              </ConfirmPreviewAlertDialog>
-            </div>
-
-            <div className="flex justify-center">
-              {Object.keys(favorites).length > 0 && (
-                <DeleteAllAlert
-                  setFavorites={setFavorites}
-                  isFavoritesLoading={isFavoritesLoading}
-                  setIsFavoritesLoading={setIsFavoritesLoading}
-                >
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="mx-auto flex w-full items-center gap-1.5 text-sm transition-colors duration-200" // Make button take full width
-                  >
-                    <Trash2 className="size-5 md:size-6" />
-                    <span>Delete All</span>
-                  </Button>
-                </DeleteAllAlert>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isFavoritesLoading || isLoadingPdfPreview}
+              className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105"
+              onClick={handlePreviewPDF}
+            >
+              {isLoadingPdfPreview ? (
+                <Loader2 className="size-5 animate-spin md:size-6" />
+              ) : (
+                <FileText className="size-5 md:size-6" />
               )}
+              <div className="md:text-md line-clamp-2 items-center text-sm">
+                Preview PDF
+              </div>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isFavoritesLoading || isLoadingPdfPreview}
+              className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105"
+              onClick={handleDownloadPDF}
+            >
+              {isLoadingPdfPreview ? (
+                <Loader2 className="size-5 animate-spin md:size-6" />
+              ) : (
+                <DownloadIcon className="size-5 md:size-6" />
+              )}
+              <div className="md:text-md line-clamp-2 items-center text-sm">
+                Download PDF
+              </div>
+            </Button>
+
+            <div className="col-span-full">
+              <DeleteAllAlert
+                setFavorites={setFavorites}
+                isFavoritesLoading={isFavoritesLoading}
+                setIsFavoritesLoading={setIsFavoritesLoading}
+              >
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="mx-auto flex w-full items-center gap-1.5 text-sm transition-colors duration-200"
+                >
+                  <Trash2 className="size-5 md:size-6" />
+                  <span>Delete All</span>
+                </Button>
+              </DeleteAllAlert>
             </div>
           </div>
         ) : (
@@ -341,6 +222,139 @@ const RecipesMenu = ({
       </FavoritesSheet>
     </div>
   )
+}
+
+// Helper function to generate PDF
+const generatePDF = async (favorites, forDownload = false, setProgress) => {
+  if (!favorites || Object.keys(favorites).length === 0) {
+    toast("No favorites found", {
+      icon: "",
+      style: { background: "#18181b" },
+    })
+    return null
+  }
+
+  const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
+  let yOffset = 12
+  const pageHeight = doc.internal.pageSize.height
+  const pageWidth = doc.internal.pageSize.width
+  const imageWidth = 24
+  const imageHeight = 24
+  const borderPadding = 2
+  const borderWidth = 0.5
+  const borderRadius = 5
+  const contentHeight = 26
+  const contentWidth = (pageWidth - 20) / 3
+  let currentPosition = 0
+  let xOffset = borderPadding
+
+  try {
+    const imageLoadingPromises = Object.entries(favorites).map(
+      async ([link, { name, url }]) => {
+        let imageBase64 = await imageCache.get(url)
+
+        if (!imageBase64) {
+          imageBase64 = await imgUrlToBase64(url)
+          await imageCache.set(url, imageBase64)
+        }
+
+        currentPosition++
+        if (setProgress) {
+          const progress = (currentPosition / Object.keys(favorites).length) * 100
+          setProgress(progress)
+        }
+
+        // Calculate xOffset based on position (1st, 2nd, or 3rd column)
+        switch (currentPosition % 3) {
+          case 1: // First column
+            xOffset = borderPadding
+            break
+          case 2: // Second column
+            xOffset = contentWidth + 10
+            break
+          case 0: // Third column
+            xOffset = 2 * contentWidth + 15
+            break
+        }
+
+        // Rest of the drawing code remains the same
+        doc.setLineWidth(borderWidth)
+        doc.roundedRect(
+          xOffset,
+          yOffset,
+          contentWidth,
+          contentHeight,
+          borderRadius,
+          borderRadius
+        )
+
+        if (imageBase64) {
+          doc.addImage(
+            imageBase64,
+            "JPEG",
+            xOffset + 4,
+            yOffset + borderPadding - 1,
+            imageWidth,
+            imageHeight
+          )
+        }
+
+        doc.setTextColor(0, 0, 255)
+        doc.setFont("helvetica", "bold")
+        doc.setFontSize(16)
+
+        const maxNameLength = 100
+        const truncatedName = name.length > maxNameLength
+          ? name.substring(0, maxNameLength)
+          : name
+
+        const textXOffset = xOffset + imageWidth + borderPadding + 4
+        const maxTextWidth = contentWidth - imageWidth - borderPadding - 8
+
+        const textLines = doc.splitTextToSize(truncatedName, maxTextWidth)
+        const displayedLines = textLines.slice(0, 3)
+        
+        if (textLines.length > 3) {
+          const lastLine = displayedLines[2]
+          displayedLines[2] = lastLine.length > maxTextWidth / doc.getFontSize()
+            ? lastLine.substring(0, maxTextWidth / 3 - 4) + "..."
+            : lastLine
+        }
+
+        let textYOffset = yOffset + borderPadding + contentHeight / 3 - 5
+
+        displayedLines.forEach((line) => {
+          doc.textWithLink(line, textXOffset, textYOffset, {
+            url: link,
+          })
+          textYOffset += 6
+        })
+
+        // Move to next row after every 3 items
+        if (currentPosition % 3 === 0) {
+          yOffset += contentHeight + 2 * borderPadding
+        }
+
+        // Add new page if needed
+        if (yOffset + contentHeight + 2 * borderPadding > pageHeight) {
+          doc.addPage()
+          yOffset = 12
+        }
+      }
+    )
+
+    await Promise.all(imageLoadingPromises)
+
+    if (forDownload) {
+      return doc
+    } else {
+      const pdfBlob = doc.output("blob")
+      return URL.createObjectURL(pdfBlob)
+    }
+  } catch (error) {
+    console.error("Error generating PDF:", error)
+    return null
+  }
 }
 
 export default RecipesMenu
