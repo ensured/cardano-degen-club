@@ -21,7 +21,7 @@ export function AnimatedCard({
     <motion.div
       ref={ref}
       className={cn(
-        "rounded-lg bg-card p-6 text-card-foreground shadow-lg transition-all hover:bg-secondary/50",
+        "rounded-lg bg-card dark:bg-purple-800/10 p-6 text-card-foreground shadow-lg transition-all hover:bg-secondary/50",
         className
       )}
       initial={{ opacity: 0 }}

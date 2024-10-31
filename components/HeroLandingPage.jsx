@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/button"
 
 import { Icons } from "./icons"
 import { Section } from "@/components/ui/Section"
+import { GradientText } from "@/components/ui/GradientText"
+import { AnimatedCard } from "@/components/ui/AnimatedCard"
 
 const chivo = Chivo({
   subsets: ["latin"],
@@ -52,6 +54,16 @@ const stats = [
   { value: '3,000+', label: 'Projects Built' },
   { value: '0.07¢', label: 'Average TX Fee' },
 ]
+
+const GradientHeading = ({ children, className, ...props }) => (
+  <h2 className={cn(
+    "text-3xl md:text-4xl font-bold",
+    chivo.className,
+    className
+  )}>
+    <GradientText>{children}</GradientText>
+  </h2>
+)
 
 export default function HeroLandingPage() {
   const [title1Ref, title1InView] = useInView({ triggerOnce: true, threshold: 0.2 });
@@ -109,7 +121,7 @@ export default function HeroLandingPage() {
               }}
               className="py-8"
             >
-              <ChevronDown className="h-8 w-8 text-muted-foreground" />
+              <ChevronDown className="size-8 text-muted-foreground" />
             </motion.div>
           </div>
         </div>
@@ -121,37 +133,21 @@ export default function HeroLandingPage() {
             <Link href={"https://cardano.org/"}>
               <Icons.ada className="text-[#0D1E30] dark:text-[#84bfffda] dark:hover:text-[#63a1e4ad] md:size-24 transition-all hover:scale-110" />
             </Link>
-            <div
-              className={cn(
-                "flex flex-col select-none text-4xl font-bold tracking-tight sm:text-5xl md:text-5xl",
-                chivo.className
-              )}
-            >
-              <h1 className="bg-gradient-to-r from-[hsl(276,49%,20%)] via-[hsl(276,30%,42%)] to-[hsl(276,49%,20%)] bg-clip-text text-transparent
-                dark:from-[hsl(276,70%,60%)] dark:via-[hsl(276,80%,70%)] dark:to-[hsl(276,70%,60%)]
-                hover:opacity-80 transition-opacity">
-                A history of impossible, made possible
-              </h1>
-            </div>
+            <GradientHeading>
+              A history of impossible, made possible
+            </GradientHeading>
           </div>
-          <div className="pb-20 p-4 text-xl text-muted-foreground flex flex-col justify-center items-center max-w-[520px] mx-auto">
+          <div className="pb-20 p-4 text-xl flex flex-col justify-center items-center max-w-[520px] mx-auto">
             Unlock the potential of the future internet while also
             safeguarding against inflation.
           </div>
           <div className="flex flex-col justify-center items-center ">
-            <h1 className={cn(
-              "text-4xl md:text-5xl font-bold py-6",
-              chivo.className
-            )}>
-              <div className="bg-gradient-to-r from-[hsl(276,49%,20%)] via-[hsl(276,30%,42%)] to-[hsl(276,49%,20%)] bg-clip-text text-transparent
-                dark:from-[hsl(276,70%,60%)] dark:via-[hsl(276,80%,70%)] dark:to-[hsl(276,70%,60%)]
-                hover:opacity-80 transition-opacity">
-                Understanding Web3
-              </div>
-            </h1>
+            <GradientHeading className="py-6">
+              Understanding Web3
+            </GradientHeading>
 
             <div className="px-8 py-4 flex flex-col justify-center items-center max-w-[796px] mx-auto">
-              <ul className="list-disc mb-2 text-xl text-muted-foreground">
+              <ul className="list-disc mb-2 text-xl">
                 <li className="mb-4">
                   <span className="font-bold">Web1</span> started during the
                   1990s, and it was a period marked by people connecting to
@@ -174,7 +170,7 @@ export default function HeroLandingPage() {
                   money (cryptocurrencies), and interoperability.
                 </li>
               </ul>
-              <span className="text-xl text-muted-foreground">
+              <span className="text-xl ">
                 Web3 is attempting to solve many of the problems that arose
                 during Web1 and Web2, and it will hopefully be yet another
                 step in the direction of a digital world that works better
@@ -187,66 +183,29 @@ export default function HeroLandingPage() {
 
       <Section.Content delay={0.2}>
         <div className="flex flex-col items-center justify-center space-y-12">
-          <h2 className={cn(
-            "text-3xl md:text-4xl font-bold",
-            chivo.className
-          )}>
-            <span className="bg-gradient-to-r from-[hsl(276,49%,20%)] to-[hsl(276,30%,42%)] bg-clip-text text-transparent
-              dark:from-[hsl(276,70%,60%)] dark:to-[hsl(276,80%,70%)]
-              hover:opacity-80 transition-opacity">
-              Key Features
-            </span>
-          </h2>
+          <GradientHeading>Key Features</GradientHeading>
+          
           <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-2">
-            <motion.div
-              className="p-6 rounded-lg bg-card/95 backdrop-blur-sm text-card-foreground shadow-lg 
-                hover:bg-secondary/50 hover:scale-[1.02] transition-all text-xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={title1InView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              ref={title1Ref}
-            >
-              Cardano restores trust to global systems - creating, through science, a more secure, transparent, and sustainable foundation for individuals to transact and exchange, systems to govern, and enterprises to grow.
-            </motion.div>
+            <AnimatedCard ref={title1Ref} inView={title1InView}>
+            <div className="text-xl ">
+            Cardano restores trust to global systems - creating, through science, a more secure, transparent, and sustainable foundation for individuals to transact and exchange, systems to govern, and enterprises to grow.
+            </div>
+            </AnimatedCard>
             
-            <motion.div
-              className="p-6 rounded-lg bg-card/95 backdrop-blur-sm text-card-foreground shadow-lg 
-                hover:bg-secondary/50 hover:scale-[1.02] transition-all text-xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={title2InView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              ref={title2Ref}
-            >
-              Cardano brings a new standard in technology - open and inclusive - to challenge the old and activate a new age of sustainable, globally-distributed innovation.
-            </motion.div>
+            <AnimatedCard ref={title2Ref} inView={title2InView}>
+            <div className="text-xl ">  Cardano brings a new standard in technology - open and inclusive - to challenge the old and activate a new age of sustainable, globally-distributed innovation.
+            </div>
+            </AnimatedCard>
           </div>
           
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <motion.div
-              className="p-6 rounded-lg bg-card text-card-foreground shadow-lg hover:bg-secondary/50 transition-all md:col-span-2"
-              initial={{ opacity: 0 }}
-              animate={title3InView ? { opacity: 1 } : { opacity: 0 }}
-              transition={{ duration: 1, ease: "easeInOut" }}
-              ref={title3Ref}
-            >
-              <div className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-[hsl(276,49%,20%)] via-[hsl(276,30%,42%)] to-[hsl(276,49%,20%)] bg-clip-text text-transparent
-                dark:from-[hsl(276,70%,60%)] dark:via-[hsl(276,80%,70%)] dark:to-[hsl(276,70%,60%)]
-                hover:opacity-80 transition-opacity">
-                Unparalleled Security - And The Makings Of A Trustless World
-              </div>
-              <div className="text-xl text-muted-foreground">
-                Cardano makes it possible for any actors that do not know each
-                other - and have no reason to trust one another - to interact
-                and transact, securely. It's a platform for building trust where
-                none might naturally exist, opening up whole new markets and
-                opportunities. Through Ouroboros, Cardano is provably secure
-                against bad actors and Sybil attacks. Every transaction,
-                interaction, and exchange is immutably and transparently
-                recovered, and securely validated using multi-signature and a
-                pioneering extended UTXO model.
-              </div>
-            </motion.div>
-          </div>
+          <AnimatedCard.Content ref={title3Ref} inView={title3InView}>
+            <GradientHeading className="text-2xl md:text-3xl mb-4">
+              Unparalleled Security - And The Makings Of A Trustless World
+            </GradientHeading>
+            <div className="text-xl">
+            Cardano makes it possible for any actors that do not know each other - and have no reason to trust one another - to interact and transact, securely. It's a platform for building trust where none might naturally exist, opening up whole new markets and opportunities. Through Ouroboros, Cardano is provably secure against bad actors and Sybil attacks. Every transaction, interaction, and exchange is immutably and transparently recovered, and securely validated using multi-signature and a pioneering extended UTXO model.
+            </div>
+          </AnimatedCard.Content>
 
           <div className="flex gap-4 justify-center">
             <Link href="https://roadmap.cardano.org/" target="_blank">
