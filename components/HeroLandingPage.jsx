@@ -8,12 +8,8 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import {
   ArrowRight,
-  CornerLeftDown,
   Code as CodeIcon,
   ExternalLink,
-  HardDrive,
-  HardDriveIcon,
-  Heading1,
   ScalingIcon,
   Users,
   ChevronDown,
@@ -22,18 +18,7 @@ import { useInView } from "react-intersection-observer"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+
 
 import Particlez from "./Particlez"
 import { Icons } from "./icons"
