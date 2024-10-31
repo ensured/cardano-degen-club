@@ -8,10 +8,7 @@ import { useWindowSize } from "@uidotdev/usehooks"
 import jsPDF from "jspdf"
 import { DownloadIcon, FileText, Loader2, Trash, Trash2 } from "lucide-react"
 import toast from "react-hot-toast"
-
 import { Button } from "@/components/ui/button"
-
-import { ConfirmPreviewAlertDialog } from "./ConfirmAlertDialogs"
 import DeleteAllAlert from "./DeleteAllAlert"
 import FavoritesSheet from "./FavoritesSheet"
 import PDFViewer from "./PdfViewer"
@@ -90,7 +87,7 @@ const RecipesMenu = ({
               variant="outline"
               size="sm"
               disabled={isFavoritesLoading || isLoadingPdfPreview}
-              className="w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:scale-102 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
+              className="hover:scale-102 w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
               onClick={handlePreviewPDF}
             >
               {isLoadingPdfPreview ? (

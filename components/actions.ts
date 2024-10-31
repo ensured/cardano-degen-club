@@ -16,10 +16,36 @@ import { db, deleteObject, storage } from "./firebase/firebase"
 
 export async function imgUrlToBase64(url: string) {
   try {
-    const response = await fetch(url)
-    const imageBuffer = await response.arrayBuffer() // Use arrayBuffer instead of buffer
-    const imageBase64 = Buffer.from(imageBuffer).toString("base64") // Convert buffer to Base64
-    return `data:image/jpeg;base64,${imageBase64}` // Return the Base64 image data
+    // Add caching headers to the fetch request
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'image/webp,image/jpeg,image/png,image/*',
+      },
+      cache: 'force-cache', // Use cache-first strategy
+    })
+
+    if (!response.ok) throw new Error('Failed to fetch image')
+
+    // Get content type to handle different image formats
+    const contentType = response.headers.get('content-type') || 'image/jpeg'
+
+    // Stream the response instead of loading it all into memory
+    const chunks = []
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('Failed to read image')
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      chunks.push(value)
+    }
+
+    // Combine chunks and convert to base64
+    const blob = new Blob(chunks, { type: contentType })
+    const arrayBuffer = await blob.arrayBuffer()
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+
+    return `data:${contentType};base64,${base64}`
   } catch (error) {
     console.error("Error downloading image:", error)
     return null
@@ -349,45 +375,54 @@ export async function addItemsFirebase(items: Array<{
 
     // Only process items that fit within the limit
     const itemsToProcess = items.slice(0, remainingSlots)
-    
-    if (itemsToProcess.length < items.length) {
-      console.warn(`Only processing ${itemsToProcess.length} out of ${items.length} items due to favorites limit`)
-    }
 
-    // Process allowed items in parallel
-    const uploadPromises = itemsToProcess.map(async ({ name, url, link, metadata }) => {
-      try {
-        const imageResponse = await fetch(url)
-        if (!imageResponse.ok) {
-          throw new Error("Failed to fetch image")
-        }
-
-        const imageBlob = await imageResponse.blob()
-        const imageRef = storageRef(
-          storage,
-          `images/${userEmail}/${extractRecipeId(link)}`
-        )
-
-        const uploadResult = await uploadBytes(imageRef, imageBlob, metadata)
-        const downloadUrl = await getDownloadURL(uploadResult.ref)
-
-        return {
-          success: true,
-          link,
-          url: downloadUrl,
-          name,
-        }
-      } catch (error) {
-        return {
-          success: false,
-          link,
-          error: "Failed to upload image",
-        }
-      }
+    // Fetch all images in parallel
+    const imagePromises = itemsToProcess.map(async ({ url }) => {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error("Failed to fetch image")
+      return response.blob()
     })
 
-    const results = await Promise.all(uploadPromises)
+    // Wait for all image fetches to complete
+    const imageBlobs = await Promise.all(imagePromises)
+
+    // Process uploads in batches of 5 to avoid overwhelming the server
+    const batchSize = 5
+    const results = []
     
+    for (let i = 0; i < itemsToProcess.length; i += batchSize) {
+      const batch = itemsToProcess.slice(i, i + batchSize)
+      const batchBlobs = imageBlobs.slice(i, i + batchSize)
+
+      const batchPromises = batch.map(async ({ name, link, metadata }, index) => {
+        try {
+          const imageRef = storageRef(
+            storage,
+            `images/${userEmail}/${extractRecipeId(link)}`
+          )
+
+          const uploadResult = await uploadBytes(imageRef, batchBlobs[index], metadata)
+          const downloadUrl = await getDownloadURL(uploadResult.ref)
+
+          return {
+            success: true,
+            link,
+            url: downloadUrl,
+            name,
+          }
+        } catch (error) {
+          return {
+            success: false,
+            link,
+            error: "Failed to upload image",
+          }
+        }
+      })
+
+      const batchResults = await Promise.all(batchPromises)
+      results.push(...batchResults)
+    }
+
     // Add failed results for items that weren't processed due to limit
     const allResults = [
       ...results,
@@ -398,13 +433,14 @@ export async function addItemsFirebase(items: Array<{
       }))
     ]
     
-    // Update the image count only for successful uploads
+    // Update the image count in a single operation
     const successfulUploads = results.filter(r => r.success).length
     if (successfulUploads > 0) {
-      await handleSetMaxImagesCount(false, userEmail, {
-        increment: true,
-        amount: successfulUploads,
-      })
+      await setDoc(
+        userDocRef,
+        { imageCount: currentImageCount + successfulUploads },
+        { merge: true }
+      )
     }
 
     return {

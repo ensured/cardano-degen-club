@@ -92,7 +92,7 @@ const useRecipeSearch = () => {
           return newFavorites;
         });
       }
-    }, 700),
+    }, 800),
     []  // Remove favorites dependency to prevent recreation
   );
 
@@ -325,7 +325,7 @@ const useRecipeSearch = () => {
         console.error("Batch removal failed:", error)
         toast.error("Failed to remove some favorites")
       }
-    }, 700),
+    }, 800),
     []
   )
 
