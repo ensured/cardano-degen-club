@@ -85,12 +85,12 @@ const RecipesMenu = ({
         setIsFavoritesLoading={setIsFavoritesLoading}
       >
         {Object.keys(favorites).length > 0 ? (
-          <div className="mb-1.5 grid w-full grid-cols-1 gap-1 sm:grid-cols-2">
+          <div className="mb-1.5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
             <Button
               variant="outline"
               size="sm"
               disabled={isFavoritesLoading || isLoadingPdfPreview}
-              className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105"
+              className="w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:scale-102 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
               onClick={handlePreviewPDF}
             >
               {isLoadingPdfPreview ? (
@@ -107,7 +107,7 @@ const RecipesMenu = ({
               variant="outline"
               size="sm"
               disabled={isFavoritesLoading || isLoadingPdfPreview}
-              className="w-full gap-1.5 shadow-md transition-transform duration-75 hover:scale-105"
+              className="w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:scale-102 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
               onClick={handleDownloadPDF}
             >
               {isLoadingPdfPreview ? (
@@ -129,7 +129,7 @@ const RecipesMenu = ({
                 <Button
                   size="sm"
                   variant="destructive"
-                  className="mx-auto flex w-full items-center gap-1.5 text-sm transition-colors duration-200"
+                  className="mx-auto flex w-full items-center gap-2 rounded-lg text-sm transition-all duration-200 hover:bg-red-600/90"
                 >
                   <Trash2 className="size-5 md:size-6" />
                   <span>Delete All</span>
@@ -138,7 +138,7 @@ const RecipesMenu = ({
             </div>
           </div>
         ) : (
-          <span className="text-md mt-2 flex flex-col items-center justify-center text-center md:text-lg">
+          <span className="text-md mt-4 flex flex-col items-center justify-center gap-2 text-center font-medium text-zinc-700 dark:text-zinc-300 md:text-lg">
             <span>
               You have <b>{Object.keys(favorites).length}</b> favorite recipes.
               Click the star button on a recipe to favorite it.
@@ -146,12 +146,10 @@ const RecipesMenu = ({
           </span>
         )}
 
-        <div className={`flex h-full flex-col gap-2`}>
-          <div
-            className={`animate-fade-in custom-scrollbar max-h-[64%] overflow-auto rounded-md ${
-              Object.keys(favorites).length ? "border" : ""
-            }`}
-          >
+        <div className="flex h-full flex-col gap-3">
+          <div className={`animate-fade-in custom-scrollbar max-h-[64%] overflow-auto rounded-lg border bg-white/50 shadow-inner dark:bg-zinc-900/50 ${
+            Object.keys(favorites).length ? "border-zinc-200 dark:border-zinc-800" : ""
+          }`}>
             {isFavoritesLoading ? (
               <div className="flex flex-col flex-wrap items-center  justify-center overflow-auto rounded-md border-x">
                 <div className="flex w-full flex-col gap-0.5">
@@ -170,35 +168,35 @@ const RecipesMenu = ({
               </div>
             ) : (
               // Favorites list
-              <div className={`flex flex-col flex-wrap rounded-md`}>
+              <div className="flex flex-col flex-wrap rounded-lg">
                 {Object.entries(favorites).map(
                   ([link, { name, url }], index) => (
                     <div key={link} className="overflow-auto">
                       <Link
                         target="_blank"
                         href={link}
-                        className="flex items-center gap-2 p-1.5 hover:bg-zinc-300/40 hover:text-zinc-600/70 hover:underline dark:hover:bg-zinc-900/70 dark:hover:text-zinc-100/60"
+                        className="flex items-center gap-3 p-2.5 transition-colors duration-200 hover:bg-zinc-100/70 hover:text-zinc-800 dark:hover:bg-zinc-800/70 dark:hover:text-zinc-100"
                         style={{ textDecoration: "none" }}
                       >
                         {url && (
                           <Image
                             src={url}
                             alt={name}
-                            width={40} // base width for smallest size
-                            height={40} // base height for smallest size
-                            className="rounded-full sm:size-[3.05rem]"
+                            width={44}
+                            height={44}
+                            className="rounded-full object-cover shadow-sm transition-transform duration-200 hover:scale-105 sm:size-[3.25rem]"
                             unoptimized
                             priority
                           />
                         )}
-                        <div className="relative flex w-full select-none items-center justify-between gap-2 transition-all duration-150">
+                        <div className="relative flex w-full select-none items-center justify-between gap-3">
                           <div>
                             <span className="line-clamp-2 overflow-auto rounded-md text-sm md:text-[1rem]">
                               {name}
                             </span>
                           </div>
                           <button
-                            className="relative right-0 h-6 px-0.5 text-red-600 hover:scale-125 hover:text-red-800 md:h-10"
+                            className="relative right-0 h-8 px-1 text-red-500 transition-all duration-200 hover:scale-110 hover:text-red-600 md:h-10"
                             onClick={(e) => {
                               e.preventDefault()
                               removeFromFavorites(link)
@@ -210,7 +208,7 @@ const RecipesMenu = ({
                       </Link>
 
                       {index < Object.entries(favorites).length - 1 && (
-                        <Separator className="h-[0.0625rem] bg-secondary/75 text-white" />
+                        <Separator className="h-px bg-zinc-200 dark:bg-zinc-800" />
                       )}
                     </div>
                   )
