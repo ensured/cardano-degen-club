@@ -116,16 +116,30 @@ module.exports = {
           "50%": { backgroundPosition: "100% 50%" },
           "100%": { backgroundPosition: "0% 50%" },
         },
+        'gradient-x': {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center',
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center',
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         fadeIn: "fadeIn 0.4s ease-in",
+        'gradient-x': 'gradient-x 15s ease infinite',
       },
       animation: {
         gradient: "gradient 6s ease infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("tailwind-scrollbar")],
+  plugins: [
+    require('tailwind-scrollbar'),
+    require("tailwindcss-animate"),
+  ],
 }
