@@ -133,9 +133,6 @@ module.exports = {
         fadeIn: "fadeIn 0.4s ease-in",
         'gradient-x': 'gradient-x 15s ease infinite',
       },
-      animation: {
-        gradient: "gradient 6s ease infinite",
-      },
     },
   },
   plugins: [
