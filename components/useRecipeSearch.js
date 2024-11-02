@@ -11,6 +11,7 @@ import {
   removeItemsFirebase,
   addItemsFirebase,
 } from "./actions"
+import { useTheme } from "next-themes"
 
 const useRecipeSearch = () => {
   const router = useRouter()
@@ -31,7 +32,7 @@ const useRecipeSearch = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
   const [isFavoritesLoading, setIsFavoritesLoading] = useState(false)
-
+  const { theme } = useTheme()
   const pendingRemovals = useRef(new Set())
   const pendingAdditions = useRef(new Set())
 
@@ -115,6 +116,15 @@ const useRecipeSearch = () => {
         }))
         setLastInputSearched(q)
         setLoading(false)
+
+        toast.success(`Found ${data.data.count} recipes`, {
+          duration: 1500,
+          position: "top-center",
+          style: {
+            background: theme === "dark" ? "#121212" : "#fff",
+            color: theme === "dark" ? "#fff" : "#000",
+          }
+        })
        
         return
       } catch (error) {
