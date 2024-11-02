@@ -12,7 +12,14 @@ import Animation from "@/components/Animation"
 import SearchRecipes from "@/components/SearchRecipes"
 
 export const metadata = {
-  title: "Recipe Fren",
+  title: "Recipe Fren | Recipe Search and Collection",
+  description: "Discover and save your favorite recipes with our AI-powered recipe search. Create personalized collections and get cooking inspiration.",
+  keywords: "recipes, cooking, meal planning, recipe search, food, AI recipes, recipe collection",
+  openGraph: {
+    title: "Recipe Fren | Recipe Search",
+    description: "Discover and save your favorite recipes with our AI-powered recipe search.",
+    type: "website",
+  },
 }
 
 const TOAST_OPTIONS = {
@@ -111,8 +118,11 @@ const RecipeFrenPage = async () => {
 
   return (
     <Animation>
-      <SearchRecipes userEmail={email} />
-      <Toaster toastOptions={TOAST_OPTIONS} />
+      <main className="min-h-screen">
+        <h1 className="sr-only">Recipe Fren - Your Recipe Fren</h1>
+        <SearchRecipes userEmail={email} />
+        <Toaster toastOptions={TOAST_OPTIONS} />
+      </main>
     </Animation>
   )
 }

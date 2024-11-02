@@ -8,6 +8,12 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
+export const metadata = {
+  title: "404 - Page Not Found",
+  description: "The page you are looking for doesn't exist or has been moved.",
+  robots: "noindex, follow",
+}
+
 export default function NotFound() {
   return (
     <main className={`flex min-h-[calc(100vh-20rem)] items-center justify-center p-10 ${inter.className}`}>

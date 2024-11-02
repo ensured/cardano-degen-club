@@ -7,7 +7,9 @@ import {
 import { CardTitle } from "@/components/ui/card"
 
 export const metadata = {
-  title: "admin",
+  title: "Admin Dashboard | Secure Access",
+  description: "Secure administrative dashboard for authorized users.",
+  robots: "noindex, nofollow", // Prevent indexing of admin pages
 }
 
 const page = async () => {
