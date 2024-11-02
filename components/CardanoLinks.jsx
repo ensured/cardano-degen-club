@@ -126,9 +126,8 @@ const CardanoLinks = () => {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-8 pt-3">
         <Select value={activeCategory} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-[250px] text-base">
+          <SelectTrigger className="text-base">
             <SelectValue>
               {formattedCategories[categories.indexOf(activeCategory)]}
             </SelectValue>
@@ -143,11 +142,8 @@ const CardanoLinks = () => {
             </SelectGroup>
           </SelectContent>
         </Select>
-      </div>
       
-      <div className="mt-4 h-full overflow-auto px-8 pb-8">
         <LinkTable activeCategory={activeCategory} />
-      </div>
     </div>
   )
 }
