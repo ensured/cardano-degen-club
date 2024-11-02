@@ -8,8 +8,6 @@ import toast from "react-hot-toast"
 
 import { MAX_FAVORITES } from "../utils/consts"
 import {
-  addToFavoritesFirebase,
-  removeFavoriteFirebase,
   removeItemsFirebase,
   addItemsFirebase,
 } from "./actions"
@@ -72,10 +70,6 @@ const useRecipeSearch = () => {
           return updatedFavorites;
         });
         
-        if (response.successCount > 0) {
-          toast.success(`${response.successCount} favorites added successfully!`);
-        }
-        
         if (response.successCount < itemsToAdd.length) {
           toast.error(`Failed to add ${itemsToAdd.length - response.successCount} items`);
         }
@@ -121,6 +115,7 @@ const useRecipeSearch = () => {
         }))
         setLastInputSearched(q)
         setLoading(false)
+       
         return
       } catch (error) {
         setLoading(false)
@@ -333,23 +328,25 @@ const useRecipeSearch = () => {
     // If this exact removal request is already pending, don't duplicate it
     if (pendingRequests.has(link)) return;
 
-    const prevFavorites = { ...favorites }
     const key = extractRecipeId(link)
     pendingRemovals.current.add(key)
+
+    // Optimistically update the favorites state immediately
+    setFavorites(prev => {
+      const updatedFavorites = { ...prev }
+      delete updatedFavorites[link] // Remove the item from the new favorites state
+      return updatedFavorites
+    })
 
     try {
       // Add this request to pending set
       setPendingRequests(prev => new Set(prev).add(link))
 
-      // Optimistically update the favorites state
-      delete prevFavorites[link] // Remove the item from the new favorites state
-      setFavorites(prevFavorites) // Update state immediately
-
+      // Trigger the debounced removal
       debouncedRemoveItemsFirebase()
-
     } catch (error) {
       console.error("Error removing from favorites:", error)
-      setFavorites(prevFavorites) // Revert to previous state on error
+      // Optionally, you can revert the state here if needed
       toast.error(error.message)
     } finally {
       // Remove this request from pending set

@@ -126,13 +126,7 @@ const RecipeSearchForm = ({
               className="w-full grow text-sm lg:text-lg"
               enterKeyHint="search"
             />
-            {searchResults.count === 0 ? (
-              ""
-            ) : (
-              <div className="animate-fade-in absolute -bottom-0.5 right-0.5 rounded-md text-[0.64rem] text-muted-foreground dark:text-[rgba(255,211,101,0.75)] md:text-[0.66rem] lg:text-[0.71rem]">
-                Found {searchResults.count} recipes
-              </div>
-            )}
+       
           </div>
           <Button
             type="submit"

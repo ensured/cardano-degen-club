@@ -22,7 +22,7 @@ const Page = () => {
           1. Open{" "}
           <Link
             href="https://www.tradingview.com/chart/?symbol=COINBASE%3AADAUSD"
-            className="text-zinc-800 underline dark:hover:text-zinc-200"
+            className="underline hover:text-purple-400"
           >
             TradingView chart
           </Link>
