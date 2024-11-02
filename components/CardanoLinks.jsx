@@ -25,50 +25,58 @@ import {
 import allLinks from "../config/cardanoLinks"
 import Link from "next/link"
 
-const LinkTable = ({ links }) => (
-  <div className="mt-4 rounded-md border">
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[150px]">Name</TableHead>
-          <TableHead className="w-[250px]">URL</TableHead>
-          {links.some((link) => link.twitter) && (
-            <TableHead className="w-[250px]">Twitter</TableHead>
-          )}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {links.map((link, index) => (
-          <TableRow key={index}>
-            <TableCell className="font-medium">{link.name}</TableCell>
-            <TableCell>
-              <Link 
-                href={link.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="hover:underline"
-              >
-                {link.url}
-              </Link>
-            </TableCell>
-            {link.twitter && (
-              <TableCell>
-                <Link 
-                  href={link.twitter} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  {link.twitter}
-                </Link>
-              </TableCell>
+const linkTable = (activeCategory) => {
+ return  <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[200px] text-base font-semibold">
+                Name
+              </TableHead>
+              <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[300px] text-base font-semibold">
+                URL
+              </TableHead>
+              {allLinks[activeCategory] && allLinks[activeCategory].some((link) => link.twitter && link.url) && (
+                <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[300px] text-base font-semibold">
+                  Twitter
+                </TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {allLinks[activeCategory] ? allLinks[activeCategory].map((link, index) => (
+              <TableRow key={index} className="hover:bg-muted/50 transition-colors">
+                <TableCell className="font-medium text-base">{link.name}</TableCell>
+                <TableCell className="whitespace-nowrap text-base">
+                  <Link 
+                    href={link.url || link.twitter} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:underline text-primary dark:text-zinc-50/80 hover:text-primary/80 transition-colors"
+                  >
+                    {link.url || link.twitter}
+                  </Link>
+                </TableCell>
+                {link.twitter && link.url && (
+                  <TableCell className="whitespace-nowrap text-base">
+                    <Link 
+                      href={link.twitter} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:underline text-primary dark:text-zinc-50/80 hover:text-primary/80 transition-colors"
+                    >
+                      {link.twitter}
+                    </Link>
+                  </TableCell>
+                )}
+              </TableRow>
+            )): (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center text-muted-foreground">No links found for this category</TableCell>
+              </TableRow>
             )}
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </div>
-)
+          </TableBody>
+        </Table>
+}
 
 const CardanoLinks = () => {
   const searchParams = useSearchParams()
@@ -119,52 +127,7 @@ const CardanoLinks = () => {
       </div>
       
       <div className="h-full overflow-auto px-8 pb-8 mt-4">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[200px] text-base font-semibold">
-                Name
-              </TableHead>
-              <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[300px] text-base font-semibold">
-                URL
-              </TableHead>
-              {allLinks[activeCategory].some((link) => link.twitter) && (
-                <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[300px] text-base font-semibold">
-                  Twitter
-                </TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {allLinks[activeCategory].map((link, index) => (
-              <TableRow key={index} className="hover:bg-muted/50 transition-colors">
-                <TableCell className="font-medium text-base">{link.name}</TableCell>
-                <TableCell className="whitespace-nowrap text-base">
-                  <Link 
-                    href={link.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="hover:underline text-primary dark:text-zinc-50/80 hover:text-primary/80 transition-colors"
-                  >
-                    {link.url}
-                  </Link>
-                </TableCell>
-                {link.twitter && (
-                  <TableCell className="whitespace-nowrap text-base">
-                    <Link 
-                      href={link.twitter} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="hover:underline text-primary dark:text-zinc-50/80 hover:text-primary/80 transition-colors"
-                    >
-                      {link.twitter}
-                    </Link>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {linkTable(activeCategory)}
       </div>
     </div>
   )

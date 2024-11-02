@@ -272,12 +272,14 @@ const memecoins = [
     url: "https://hosky.io/",
   },
   {
-    name: "@stablecoinada",
-    url: "https://www.stablecoinada.xyz/",
-  },
+    name:"all of them",
+    url: "https://www.taptools.io/?currency=USD&subcategory=8"
+  }
+]
+const depin = [
   {
-    name: "@BankercoinAda",
-    url: "https://bankercoinada.com/",
+    name: "All",
+    url: "https://www.taptools.io/?currency=USD&subcategory=36",
   },
 ]
 
@@ -421,6 +423,7 @@ const allLinks = {
   memecoins,
   metaverse,
   contentCreators,
+  depin,
   other,
 }
 
