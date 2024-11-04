@@ -402,6 +402,21 @@ const contentCreators = [
     twitter: "https://twitter.com/cwpaulm",
     url: "https://www.youtube.com/@CardanoWithPaul/videos",
   },
+  {
+    name:"LearnCardano",
+    twitter: "https://x.com/LearnCardano",
+    url: "",
+  },
+  {
+    name: "angrycryptoshow",
+    twitter: "https://x.com/angrycryptoshow",
+    url: "",
+  },
+  {
+    name:"ddawsoncrypto",
+    twitter: "https://x.com/ddawsoncrypto",
+    url: "",
+  },
 ]
 
 const allLinks = {
