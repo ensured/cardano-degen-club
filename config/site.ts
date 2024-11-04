@@ -5,13 +5,13 @@ export const siteConfig = {
   description: "All things Cardano and Food related.",
   mainNav: [
     {
-      title: "Projects",
-      href: "/projects",
+      title: "Cardano",
+      href: "/",
     },
   ],
   links: {
     twitter: "https://twitter.com/cardanokid",
-    github: "https://github.com/ensured/punycode-unicode.converter",
+    github: "https://github.com/ensured/cardano-degen-club",
     docs: "https://ui.shadcn.com",
   },
 }
