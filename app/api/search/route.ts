@@ -38,11 +38,12 @@ export async function GET(request: NextRequest) {
   }
 
   // For regular fetching with rate-limiting
-  const rateLimitCheck = await checkRateLimit(
-    "fetchRecipes",
+  const rateLimitCheck = await checkRateLimit({
+    key: "fetchRecipes",
     ip,
-    RECIPIES_SEARCH_TIMEOUT_MS
-  )
+    limitTimeout: 10000,
+    maxAttempts: 3,
+  })
   if (!rateLimitCheck.success) {
     return NextResponse.json({
       success: false,
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
     if (response.status === 429) {
       return NextResponse.json({
         success: false,
-        message: `API Usage limits are exceeded, try again later`,
+        message: `API Free Tier Usage limits exceeded: try again in a few minutes`,
       })
     }
 

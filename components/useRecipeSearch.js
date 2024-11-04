@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { extractRecipeId, extractRecipeName } from "@/utils/helper"
 import { debounce } from "lodash"
 // Import debounce from lodash
-import toast from "react-hot-toast"
+import { toast, useToasterStore } from 'react-hot-toast'
 
 import { MAX_FAVORITES } from "../utils/consts"
 import {
@@ -37,6 +37,16 @@ const useRecipeSearch = () => {
   const pendingAdditions = useRef(new Set())
 
   const [pendingRequests, setPendingRequests] = useState(new Set())
+
+  const TOAST_LIMIT = 1
+  const { toasts } = useToasterStore()
+
+  useEffect(() => {
+    toasts
+      .filter(t => t.visible)
+      .filter((_, i) => i >= TOAST_LIMIT)
+      .forEach(t => toast.dismiss(t.id))
+  }, [toasts])
 
   const debouncedAddItemsFirebase = useCallback(
     debounce(async () => {
@@ -104,7 +114,12 @@ const useRecipeSearch = () => {
 
         const data = await res.json()
         if (data.success === false) {
-          toast(data.message, { type: "error" })
+          toast.dismiss() // Dismiss any existing toasts
+          toast(data.message, { 
+            type: "error",
+            duration: 1000,
+            position: "top-center",
+          })
           return
         }
 
@@ -142,7 +157,11 @@ const useRecipeSearch = () => {
       const res = await fetch(`/api/search?q=${input}`)
       const data = await res.json()
       if (data.success === false) {
-        toast(data.message, { type: "error" })
+        toast.dismiss() // Dismiss any existing toasts
+        toast(data.message, { 
+          type: "error",
+          duration: 3000 // Optional: set duration in milliseconds
+        })
         return
       } else {
         setSearchResults((prevSearchResults) => ({
