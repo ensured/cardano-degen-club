@@ -1,4 +1,4 @@
-import punycode from "punycode"
+import punycode from "punycode/";
 
 const punycodeConverter = (text) => {
   // check if text is punycode
