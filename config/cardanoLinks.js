@@ -427,6 +427,7 @@ const allLinks = {
   officialCardano,
   wallets,
   dexs,
+  contentCreators,
   cloudServices,
   telecomms,
   ai,
@@ -441,7 +442,6 @@ const allLinks = {
   oracles,
   memecoins,
   metaverse,
-  contentCreators,
   depin,
   other,
 }
