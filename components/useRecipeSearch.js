@@ -118,6 +118,7 @@ const useRecipeSearch = () => {
             type: "error",
             duration: 1000,
             position: "top-center",
+            onClick: (t) => toast.dismiss(t.id),
           })
           return
         }
@@ -134,6 +135,7 @@ const useRecipeSearch = () => {
         toast.success(`Found ${data.data.count} recipes`, {
           duration: 1500,
           position: "top-center",
+          onClick: (t) => toast.dismiss(t.id),
           style: {
             background: theme === "dark" ? "#121212" : "#fff",
             color: theme === "dark" ? "#fff" : "#000",
@@ -159,7 +161,8 @@ const useRecipeSearch = () => {
         toast.dismiss() // Dismiss any existing toasts
         toast(data.message, { 
           type: "error",
-          duration: 3000 // Optional: set duration in milliseconds
+          duration: 3000,
+          onClick: (t) => toast.dismiss(t.id)
         })
         return
       } else {
@@ -187,7 +190,7 @@ const useRecipeSearch = () => {
         const response = await fetch(`/api/search?nextPage=${nextPage}`)
         const data = await response.json()
         if (data.success === false) {
-          toast(data.message, { type: "error" })
+          toast(data.message, { type: "error", onClick: (t) => toast.dismiss(t.id) })
           return
         }
 
@@ -342,7 +345,9 @@ const useRecipeSearch = () => {
       try {
         await removeItemsFirebase(itemsToRemove) // Call your server action
         toast.success(
-          `${itemsToRemove.length} favorites removed!`
+          `${itemsToRemove.length} favorites removed!`, {
+            onClick: (t) => toast.dismiss(t.id),
+          }
         )
       } catch (error) {
         console.error("Batch removal failed:", error)
