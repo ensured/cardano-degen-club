@@ -74,7 +74,6 @@ const useRecipeSearch = () => {
                 link: result.link,
               };
             } else {
-              // Remove failed items from favorites
               delete updatedFavorites[result.link];
             }
           });
@@ -98,7 +97,7 @@ const useRecipeSearch = () => {
         });
       }
     }, 800),
-    []  // Remove favorites dependency to prevent recreation
+    []
   );
 
   const searchRecipes = useCallback(async (e, q) => {
