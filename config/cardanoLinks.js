@@ -60,6 +60,7 @@ const wallets = [
   },
 ]
 
+
 const dexs = [
   { name: "@AdaMarkets", url: "https://app.ada.markets/" },
   {
@@ -90,6 +91,65 @@ const dexs = [
   {
     name: "@SpectrumLabs_",
     url: "https://spectrum.fi/",
+  },
+]
+
+const contentCreators = [
+  {
+    name: "Whale",
+    twitter: "https://x.com/cardano_whale",
+    url: "",
+  },
+  {
+    name: "DappCentral",
+    twitter: "https://x.com/dapp_central",
+    url: "http://youtube.com/dappcentral",
+  },
+
+  {
+    name: "Cardano Sapien",
+    twitter: "https://x.com/Cardano_Sapien",
+    url: "https://youtube.com/@S-PIEN",
+  },
+  {
+    name: "Army Of Spies",
+    twitter: "https://twitter.com/ArmySpies",
+    url: "https://www.youtube.com/@ArmyofSpies/videos",
+  },
+  {
+    name: "The Crypto Crow",
+    twitter: "https://twitter.com/jasonappleton",
+    url: "https://www.youtube.com/@CryptoCrowOfficial/videos",
+  },
+  {
+    name: "AllinCrypto",
+    twitter: "https://twitter.com/RealAllinCrypto",
+    url: "https://www.youtube.com/@realallincrypto/videos",
+  },
+  {
+    name: "ConvincingCrypto",
+    twitter: "https://twitter.com/convincingcryp2",
+    url: "https://www.youtube.com/@ConvincingCrypto/videos",
+  },
+  {
+    name: "CardanoWithPaul",
+    twitter: "https://twitter.com/cwpaulm",
+    url: "https://www.youtube.com/@CardanoWithPaul/videos",
+  },
+  {
+    name:"LearnCardano",
+    twitter: "https://x.com/LearnCardano",
+    url: "",
+  },
+  {
+    name: "angrycryptoshow",
+    twitter: "https://x.com/angrycryptoshow",
+    url: "",
+  },
+  {
+    name:"ddawsoncrypto",
+    twitter: "https://x.com/ddawsoncrypto",
+    url: "",
   },
 ]
 
@@ -162,6 +222,7 @@ const chartsAnalytics = [
     url: "https://fxy.re/handles",
   },
 ]
+
 
 const lendingBorrowing = [
   {
@@ -360,64 +421,7 @@ const ai = [
     url: "https://cardanogpt.ai/",
   },
 ]
-const contentCreators = [
-  {
-    name: "Whale",
-    twitter: "https://x.com/cardano_whale",
-    url: "",
-  },
-  {
-    name: "DappCentral",
-    twitter: "https://x.com/dapp_central",
-    url: "http://youtube.com/dappcentral",
-  },
 
-  {
-    name: "Cardano Sapien",
-    twitter: "https://x.com/Cardano_Sapien",
-    url: "https://youtube.com/@S-PIEN",
-  },
-  {
-    name: "Army Of Spies",
-    twitter: "https://twitter.com/ArmySpies",
-    url: "https://www.youtube.com/@ArmyofSpies/videos",
-  },
-  {
-    name: "The Crypto Crow",
-    twitter: "https://twitter.com/jasonappleton",
-    url: "https://www.youtube.com/@CryptoCrowOfficial/videos",
-  },
-  {
-    name: "AllinCrypto",
-    twitter: "https://twitter.com/RealAllinCrypto",
-    url: "https://www.youtube.com/@realallincrypto/videos",
-  },
-  {
-    name: "ConvincingCrypto",
-    twitter: "https://twitter.com/convincingcryp2",
-    url: "https://www.youtube.com/@ConvincingCrypto/videos",
-  },
-  {
-    name: "CardanoWithPaul",
-    twitter: "https://twitter.com/cwpaulm",
-    url: "https://www.youtube.com/@CardanoWithPaul/videos",
-  },
-  {
-    name:"LearnCardano",
-    twitter: "https://x.com/LearnCardano",
-    url: "",
-  },
-  {
-    name: "angrycryptoshow",
-    twitter: "https://x.com/angrycryptoshow",
-    url: "",
-  },
-  {
-    name:"ddawsoncrypto",
-    twitter: "https://x.com/ddawsoncrypto",
-    url: "",
-  },
-]
 
 const allLinks = {
   officialCardano,
