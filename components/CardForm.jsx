@@ -185,14 +185,13 @@ const CardForm = ({ autoFocus }) => {
   const inputRef = useRef()
   return (
     <div className="container items-center justify-center">
-      <Card>
+      <Card className="rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800">
         <CardHeader>
-          <CardTitle className="flex justify-center rounded-sm p-4 text-sky-600 opacity-100 dark:text-sky-500 dark:opacity-50">
+          <CardTitle className="flex justify-center rounded-md p-4 text-sky-600 dark:text-sky-400">
             Punycode Converter
           </CardTitle>
-          <CardDescription className="text-md">
-            Get started by entering either a emoji, punycode, or unicode.{" "}
-            <i>ex</i>:{" "}
+          <CardDescription className="text-md text-gray-700 dark:text-gray-300">
+            Get started by entering either an emoji, punycode, or unicode
             <span
               className="hover:cursor-pointer"
               ref={inputRef}
@@ -200,7 +199,6 @@ const CardForm = ({ autoFocus }) => {
             >
               📙
             </span>{" "}
-            Here are some emojis. <strong>Click one</strong> to try it out!{" "}
             {emojis.map((emoji, index) => (
               <span
                 key={index}
@@ -221,13 +219,14 @@ const CardForm = ({ autoFocus }) => {
               placeholder="Enter text here..."
               onChange={handleInputChange}
               value={searchInput}
+              className="rounded-md border-gray-300 focus:border-sky-500 dark:border-gray-600 dark:focus:border-sky-400"
             />
           </div>
         </CardContent>
         <CardFooter>
           <div>
             {output ? (
-              <span className="overflow-wrap flex w-full flex-col">
+              <span className="overflow-wrap flex w-full flex-col text-gray-800 dark:text-gray-200">
                 {output}
               </span>
             ) : null}{" "}
