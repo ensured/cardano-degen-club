@@ -161,6 +161,17 @@ const contentCreators = [
     twitter: "https://x.com/ddawsoncrypto",
     url: "",
   },
+  {
+    JaromirTesar",
+    twitter: "https://x.com/JaromirTesar",
+    url: "",
+  },
+  {
+    name: "CardanoHumpback",
+    twitter: "https://x.com/CardanoHumpback",
+    url: "",
+  },
+    
 ]
 
 const marketplaces = [
