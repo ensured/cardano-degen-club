@@ -162,7 +162,7 @@ const contentCreators = [
     url: "",
   },
   {
-    JaromirTesar",
+    name: "JaromirTesar",
     twitter: "https://x.com/JaromirTesar",
     url: "",
   },
