@@ -117,6 +117,16 @@ const contentCreators = [
     url: "https://www.youtube.com/@ArmyofSpies/videos",
   },
   {
+    name: "Dave_ADA",
+    twitter: "https://x.com/ItsDave_ADA",
+    url: "",
+  },
+  {
+    name: "Chris O",
+    twitter: "https://x.com/TheOCcryptobro",
+    url: "",
+  },
+  {
     name: "The Crypto Crow",
     twitter: "https://twitter.com/jasonappleton",
     url: "https://www.youtube.com/@CryptoCrowOfficial/videos",
