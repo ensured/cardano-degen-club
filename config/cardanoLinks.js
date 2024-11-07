@@ -137,6 +137,11 @@ const contentCreators = [
     url: "https://www.youtube.com/@realallincrypto/videos",
   },
   {
+    name: "Astroboysoup",
+    twitter: "https://x.com/astroboysoup",
+    url: "",
+  },
+  {
     name: "ConvincingCrypto",
     twitter: "https://twitter.com/convincingcryp2",
     url: "https://www.youtube.com/@ConvincingCrypto/videos",
