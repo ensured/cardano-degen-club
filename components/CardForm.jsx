@@ -198,7 +198,7 @@ const CardForm = ({ autoFocus }) => {
               onClick={(e) => handleAddEmojiToInput(e)}
             >
               📙
-            </span>{" "}
+            </span>
             {emojis.map((emoji, index) => (
               <span
                 key={index}

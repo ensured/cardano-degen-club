@@ -16,7 +16,7 @@ export const metadata = {
 const Page = async () => {
   return (
     <Animation>
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4">
+      <main className="mx-auto flex w-full max-w-full flex-col gap-6 p-4 lg:max-w-[90%]">
         <h1 className="sr-only">Cryptocurrency Price Tracker and Converter</h1>
         <ConvertAda />
         <TradingViewChart />

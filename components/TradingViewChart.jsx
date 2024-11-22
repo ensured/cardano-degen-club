@@ -13,12 +13,13 @@ import { useWindowSize } from "@uidotdev/usehooks"
 
 // Move chart configuration outside component to prevent recreating on each render
 const CHART_CONFIG = [
-  { symbol: "BINANCE:ADABTC", containerId: "tradingview_ada_btc", title: "ADA/BTC" },
-  { symbol: "BINANCE:ADAETH", containerId: "tradingview_ada_eth", title: "ADA/ETH" },
   { symbol: "BINANCE:ADAUSD", containerId: "tradingview_ada_usd", title: "ADA/USD" },
+  { symbol: "GATEIO:IAGUSDT", containerId: "tradingview_iag_usdt", title: "IAG/USDT" },
+  { symbol: "BINANCE:ADABTC", containerId: "tradingview_ada_btc", title: "ADA/BTC" },
   { symbol: "CRYPTOCAP:ADA.D", containerId: "tradingview_ada_dominance", title: "ADA Dominance" },
   { symbol: "CRYPTOCAP:BTC.D", containerId: "tradingview_btc_dominance", title: "BTC Dominance" },
-  { symbol: "GATEIO:IAGUSDT", containerId: "tradingview_iag_usdt", title: "IAG/USDT" },
+  { symbol: "BINANCE:ADAETH", containerId: "tradingview_ada_eth", title: "ADA/ETH" },
+ 
 ]
 
 // Add chart intervals and themes configuration
@@ -169,6 +170,7 @@ function TradingViewChart() {
               value={chartSettings[containerId].theme}
               onChange={(e) => {
                 updateChartSetting(containerId, { theme: e.target.value })
+                setTimeout(() => initializeChart(containerId), 0);
               }}
               className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
             >
@@ -572,9 +574,9 @@ function TradingViewChart() {
 
   // Update fullscreen modal in return statement
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
       {CHART_CONFIG.filter(({ containerId }) => !hiddenCharts.has(containerId)).map(({ containerId }) => (
-        <div key={containerId} className="relative overflow-hidden rounded-lg bg-black/5">
+        <div key={containerId} className="relative overflow-hidden rounded-lg border-x border-t border-border bg-black/5">
           <ChartControls 
             containerId={containerId}
             onHide={(chartId) => setHiddenCharts(prev => new Set([...prev, chartId]))}
@@ -589,7 +591,7 @@ function TradingViewChart() {
         <div className="fixed inset-0 z-50 bg-black/90">
           <FullscreenChartControls onClose={() => setFullscreenChart(null)} />
           <div className="h-[calc(100vh-72px)] w-screen pt-[72px]">
-            <div id="fullscreen_chart" className="h-full w-full" />
+            <div id="fullscreen_chart" className="size-full" />
           </div>
         </div>
       )}

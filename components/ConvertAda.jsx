@@ -67,7 +67,7 @@ const ConvertAda = () => {
         BTC: btcRes.bitcoin.usd,
       })
     } catch (error) {
-      let errorMessage = `${error.message}. Coingecko api down?`
+      let errorMessage = `${error.message}. Coingecko api down/rate limited. Please try again soon.`
       if (error.response && error.response.status) {
         toast(`${errorMessage}`, {
           type: "error",
@@ -128,7 +128,7 @@ const ConvertAda = () => {
 
   return (
     cryptoPrices.ADA !== 0 && (
-      <div className=" container mt-4 flex h-52 flex-col">
+      <div className="flex flex-col px-2 sm:px-1.5">
         <div className="flex flex-row items-center gap-2">
           <Switch
             id="currency-switch"
