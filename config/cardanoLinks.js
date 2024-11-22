@@ -117,6 +117,16 @@ const contentCreators = [
     url: "https://www.youtube.com/@ArmyofSpies/videos",
   },
   {
+    name: "Dave_ADA",
+    twitter: "https://x.com/ItsDave_ADA",
+    url: "",
+  },
+  {
+    name: "Chris O",
+    twitter: "https://x.com/TheOCcryptobro",
+    url: "",
+  },
+  {
     name: "The Crypto Crow",
     twitter: "https://twitter.com/jasonappleton",
     url: "https://www.youtube.com/@CryptoCrowOfficial/videos",
@@ -125,6 +135,11 @@ const contentCreators = [
     name: "AllinCrypto",
     twitter: "https://twitter.com/RealAllinCrypto",
     url: "https://www.youtube.com/@realallincrypto/videos",
+  },
+  {
+    name: "Astroboysoup",
+    twitter: "https://x.com/astroboysoup",
+    url: "",
   },
   {
     name: "ConvincingCrypto",
@@ -151,6 +166,17 @@ const contentCreators = [
     twitter: "https://x.com/ddawsoncrypto",
     url: "",
   },
+  {
+    name: "JaromirTesar",
+    twitter: "https://x.com/JaromirTesar",
+    url: "",
+  },
+  {
+    name: "CardanoHumpback",
+    twitter: "https://x.com/CardanoHumpback",
+    url: "",
+  },
+    
 ]
 
 const marketplaces = [
