@@ -106,10 +106,12 @@ const FavoritesSheet = ({
 
   return (
     <div className="flex justify-center">
-      <Sheet open={isOpen} onOpenChange={setOpen}>
+      <Sheet open={isOpen} onOpenChange={() => {
+        setOpen(!isOpen)
+      }}>
         <SheetTrigger asChild>
           <Button
-            disabled={isFavoritesLoading || loading}
+            disabled={isFavoritesLoading}
             variant="outline"
             className="flex items-center justify-between gap-1.5 px-3 py-2 text-xs md:text-sm"
             size="sm"
@@ -144,7 +146,7 @@ const FavoritesSheet = ({
           <SheetHeader className="space-y-1.5">
             <SheetTitle className="select-none">
               <div
-                className="flex animate-gradient flex-wrap items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2.5 text-2xl transition-all ease-in-out
+                className="animate-gradient flex flex-wrap items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2.5 text-2xl transition-all ease-in-out
               
               dark:from-[#3d91c9] dark:to-[#583aa8] md:p-4 md:text-3xl"
               >

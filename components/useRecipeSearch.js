@@ -227,6 +227,7 @@ const useRecipeSearch = () => {
     setIsFavoritesLoading(true)
     const storedFavorites = localStorage.getItem("favorites")
     if (!storedFavorites) {
+      setIsFavoritesLoading(false)
       return
     }
     try {
