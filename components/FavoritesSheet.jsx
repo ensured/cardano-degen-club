@@ -17,10 +17,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 
-const sleep = 1000
-
-// const sleep2 = await sleep
-const sleep2 = () => new Promise(resolve => setTimeout(resolve, 1000))
+const revalidate = 30000
 
 
 const StorageIndicator = () => {
@@ -84,10 +81,9 @@ const FavoritesSheet = ({
         const currentTime = Date.now()
         const timeElapsed = currentTime - lastFetchTime
 
-        // Fetch only if sleep seconds have passed
-        if (timeElapsed >= sleep) {
+        // Fetch only if revalidate seconds have passed
+        if (timeElapsed >= revalidate) {
           const res = await getFavoritesFirebase(userEmail)
-          await sleep2()
           if (res) {
             setFavorites(res)
             setLastFetchTime(currentTime) // Update the last fetch time
