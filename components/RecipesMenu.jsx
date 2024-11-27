@@ -16,6 +16,7 @@ import { getImagesBase64 } from "./actions"
 import { Skeleton } from "./ui/skeleton"
 import { imageCache } from "@/utils/indexedDB"
 import { Progress } from "./ui/progress"
+import FavoritesSkeleton from "./FavoritesSkeleton"
 
 const RecipesMenu = ({
   favorites,
@@ -155,6 +156,7 @@ const RecipesMenu = ({
                   size="sm"
                   variant="destructive"
                   className="mx-auto flex w-full items-center gap-2 rounded-lg text-sm transition-all duration-200 hover:bg-red-600/90"
+                  disabled={isFavoritesLoading}
                 >
                   <Trash2 className="size-5 md:size-6" />
                   <span>Delete All</span>
@@ -176,21 +178,7 @@ const RecipesMenu = ({
             Object.keys(favorites).length ? "border-zinc-200 dark:border-zinc-800" : ""
           }`}>
             {isFavoritesLoading ? (
-              <div className="flex flex-col flex-wrap items-center  justify-center overflow-auto rounded-md border-x">
-                <div className="flex w-full flex-col gap-0.5">
-                  {Array(Object.keys(favorites).length)
-                    .fill(null)
-                    .map((_, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between gap-0.5 rounded-b-md border-b p-2 pr-1"
-                      >
-                        <Skeleton className="h-[2.22rem] w-full" />
-                        <Skeleton className="flex size-7 items-center justify-center rounded-full border" />
-                      </div>
-                    ))}
-                </div>
-              </div>
+              <FavoritesSkeleton />
             ) : (
               // Favorites list
               <div className="flex flex-col flex-wrap rounded-lg">
@@ -207,9 +195,9 @@ const RecipesMenu = ({
                           <Image
                             src={url}
                             alt={name}
-                            width={44}
-                            height={44}
-                            className="rounded-full object-cover shadow-sm transition-transform duration-200 hover:scale-105 sm:size-[3.25rem]"
+                            width={42}
+                            height={42}
+                            className="rounded-full object-cover shadow-sm transition-transform duration-200 hover:scale-105 sm:size-[2.8rem]"
                             unoptimized
                             priority
                           />

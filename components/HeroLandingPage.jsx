@@ -29,31 +29,6 @@ const chivo = Chivo({
   display: "swap",
 })
 
-const features = [
-  {
-    title: "Proof of Stake",
-    description: "Energy-efficient consensus mechanism that allows anyone to participate in network security.",
-    icon: ScalingIcon,
-  },
-  {
-    title: "Smart Contracts",
-    description: "Build decentralized applications with Plutus, a purpose-built smart contract platform.",
-    icon: CodeIcon,
-  },
-  {
-    title: "Governance",
-    description: "Community-driven development through on-chain voting and treasury system.",
-    icon: Users,
-  },
-  // Add more features as needed
-]
-
-const stats = [
-  { value: '2M+', label: 'Active Users' },
-  { value: '$40B+', label: 'Total Value Locked' },
-  { value: '3,000+', label: 'Projects Built' },
-  { value: '0.07¢', label: 'Average TX Fee' },
-]
 
 const GradientHeading = ({ children, className, ...props }) => (
   <h2 className={cn(
@@ -66,9 +41,6 @@ const GradientHeading = ({ children, className, ...props }) => (
 )
 
 export default function HeroLandingPage() {
-  const [title1Ref, title1InView] = useInView({ triggerOnce: true, threshold: 0.2 });
-  const [title2Ref, title2InView] = useInView({ triggerOnce: true, threshold: 0.2 });
-  const [title3Ref, title3InView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
     <div className="relative overflow-visible">
@@ -186,22 +158,26 @@ export default function HeroLandingPage() {
           <GradientHeading>Key Features</GradientHeading>
           
           <div className="grid grid-cols-1 gap-8 md:grid-cols-1 lg:grid-cols-2">
-            <AnimatedCard ref={title1Ref} inView={title1InView}>
+            <AnimatedCard>
             <div className="text-xl ">
             Cardano restores trust to global systems - creating, through science, a more secure, transparent, and sustainable foundation for individuals to transact and exchange, systems to govern, and enterprises to grow.
             </div>
             </AnimatedCard>
             
-            <AnimatedCard ref={title2Ref} inView={title2InView}>
+            <AnimatedCard >
             <div className="text-xl ">  Cardano brings a new standard in technology - open and inclusive - to challenge the old and activate a new age of sustainable, globally-distributed innovation.
             </div>
             </AnimatedCard>
           </div>
           
-          <AnimatedCard.Content ref={title3Ref} inView={title3InView}>
-            <GradientHeading className="text-2xl md:text-3xl mb-4">
+          <AnimatedCard.Content>
+            <h2 className={cn(
+              "text-2xl md:text-3xl font-bold mb-4 text-center",
+              chivo.className
+              )}
+            >
               Unparalleled Security - And The Makings Of A Trustless World
-            </GradientHeading>
+            </h2>
             <div className="text-xl">
             Cardano makes it possible for any actors that do not know each other - and have no reason to trust one another - to interact and transact, securely. It's a platform for building trust where none might naturally exist, opening up whole new markets and opportunities. Through Ouroboros, Cardano is provably secure against bad actors and Sybil attacks. Every transaction, interaction, and exchange is immutably and transparently recovered, and securely validated using multi-signature and a pioneering extended UTXO model.
             </div>

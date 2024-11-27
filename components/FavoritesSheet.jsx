@@ -1,10 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react"
 import { MAX_FAVORITES } from "@/utils/consts"
-import { extractRecipeId } from "@/utils/helper"
 import { useWindowSize } from "@uidotdev/usehooks"
 import { Heart, Loader2, StarIcon, Database } from "lucide-react"
-import { useTheme } from "next-themes"
 import { toast } from "react-hot-toast"
 
 import { getFavoritesFirebase, removeItemsFirebase } from "./actions"
@@ -18,6 +16,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet"
+
+const sleep = 1000
+
+// const sleep2 = await sleep
+const sleep2 = () => new Promise(resolve => setTimeout(resolve, 1000))
+
 
 const StorageIndicator = () => {
   const [storage, setStorage] = useState({ used: 0, total: 0 })
@@ -63,7 +67,6 @@ const FavoritesSheet = ({
   children,
   setOpen,
   isOpen,
-  loading,
   favorites,
   setFavorites,
   userEmail,
@@ -81,9 +84,10 @@ const FavoritesSheet = ({
         const currentTime = Date.now()
         const timeElapsed = currentTime - lastFetchTime
 
-        // Fetch only if 30 seconds have passed
-        if (timeElapsed >= 60 * 1000) {
+        // Fetch only if sleep seconds have passed
+        if (timeElapsed >= sleep) {
           const res = await getFavoritesFirebase(userEmail)
+          await sleep2()
           if (res) {
             setFavorites(res)
             setLastFetchTime(currentTime) // Update the last fetch time

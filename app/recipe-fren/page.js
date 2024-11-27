@@ -1,4 +1,4 @@
-import dynamic from "next/dynamic"
+
 import Image from "next/image"
 import {
   LoginLink,
@@ -13,11 +13,11 @@ import SearchRecipes from "@/components/SearchRecipes"
 
 export const metadata = {
   title: "Recipe Fren | Recipe Search and Collection",
-  description: "Discover and save your favorite recipes with our AI-powered recipe search. Create personalized collections and get cooking inspiration.",
-  keywords: "recipes, cooking, meal planning, recipe search, food, AI recipes, recipe collection",
+  description: "Discover and save your favorite recipes with our recipe search. Create personalized collections and get cooking inspiration.",
+  keywords: "recipes, cooking, meal planning, recipe search, food, recipes, recipe collection",
   openGraph: {
     title: "Recipe Fren | Recipe Search",
-    description: "Discover and save your favorite recipes with our AI-powered recipe search.",
+    description: "Discover and save your favorite recipes with our recipe search.",
     type: "website",
   },
 }
@@ -40,9 +40,8 @@ const TOAST_OPTIONS = {
 const RecipeFrenPage = async () => {
   const { getUser } = getKindeServerSession()
   const user = await getUser()
-  const email = await user?.email
 
-  if (!email) {
+  if (!user) {
     return (
       <Animation>
         <div className="flex w-full justify-center pt-6 text-center">
@@ -100,7 +99,7 @@ const RecipeFrenPage = async () => {
                 <span className="flex items-center justify-center gap-2">
                   Sign in with
                   <svg
-                    className="h-5 w-5 dark:fill-white"
+                    className="size-5 dark:fill-white"
                     fill="currentColor"
                     viewBox="0 -4 38 38"
                     xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +119,7 @@ const RecipeFrenPage = async () => {
     <Animation>
       <main className="min-h-screen">
         <h1 className="sr-only">Recipe Fren - Your Recipe Fren</h1>
-        <SearchRecipes userEmail={email} />
+        <SearchRecipes userEmail={user?.email} />
         <Toaster toastOptions={TOAST_OPTIONS} />
       </main>
     </Animation>

@@ -19,6 +19,7 @@ import { foodItems } from "../lib/foods"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+import Image from "next/image"
 
 const diceIcons = [
   Dice1Icon,
@@ -184,18 +185,9 @@ const RecipeSearchForm = ({
           </Link>
         </div>
       </div>
-
-      {/* <div className="ml-1.5 hidden flex-none items-center md:flex">
-        <Image
-          src={recipeFrenLogo}
-          alt="recipe fren logo"
-          className="rounded-full"
-          width={85} // Set fixed width
-          height={85} // Set fixed height
-          priority
-          placeholder="blur"
-          quality={50}
-        />
+{/* 
+      <div className="ml-1.5 hidden flex-none items-center md:flex">
+       gg
       </div> */}
     </div>
   )
