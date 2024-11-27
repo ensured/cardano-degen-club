@@ -57,7 +57,7 @@ const RecipeFrenPage = async () => {
               <LoginLink
                 className={cn(
                   buttonVariants({ variant: "outline" }),
-                  "w-[260px] items-center bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-white"
+                  "w-[260px] items-center bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                 )}
               >
                 <span className="flex items-center justify-center gap-2">
@@ -75,7 +75,7 @@ const RecipeFrenPage = async () => {
               <LoginLink
                 className={cn(
                   buttonVariants({ variant: "outline" }),
-                  "w-[260px] items-center bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-white"
+                  "w-[260px] items-center bg-white hover:bg-gray-50 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700"
                 )}
               >
                 <span className="flex items-center justify-center gap-2">

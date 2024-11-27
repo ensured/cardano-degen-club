@@ -99,7 +99,7 @@ export default function HeroLandingPage() {
                 <Button size="lg" className="font-semibold relative 
                   before:absolute before:inset-0 before:-z-10 before:rounded-lg 
                   before:bg-gradient-to-r before:from-[hsl(276,70%,60%)] before:to-[hsl(276,80%,70%)] 
-                  before:p-[1px] hover:scale-105 transition-transform">
+                  before:p-px hover:scale-105 transition-transform">
                   Get Started <ArrowRight className="ml-2 size-4" />
                 </Button>
               </Link>

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
 import { useEffect, useState, useCallback, useRef } from "react"
@@ -271,7 +272,7 @@ function TradingViewChart() {
       studies: settings.indicators,
       drawings_access: { type: "all", tools: [ { name: "Regression Trend" } ] },
     })
-  }, [])
+  }, [chartSettings])
 
   // Update useEffect to initialize charts
   useEffect(() => {
@@ -289,8 +290,11 @@ function TradingViewChart() {
     }
 
     return () => {
+      // Copy the current chart instances to a variable for cleanup
+      const currentChartInstances = { ...chartInstancesRef.current }
+
       // Cleanup chart instances
-      Object.values(chartInstancesRef.current).forEach(chart => {
+      Object.values(currentChartInstances).forEach(chart => {
         try {
           if (chart && chart.remove && document.getElementById(chart._options.container_id)) {
             chart.remove()
@@ -335,8 +339,11 @@ function TradingViewChart() {
     }
 
     return () => {
+      // Copy the current chart instances to a variable for cleanup
+      const currentChartInstances = { ...chartInstancesRef.current }
+
       // Cleanup chart instances
-      Object.values(chartInstancesRef.current).forEach(chart => {
+      Object.values(currentChartInstances).forEach(chart => {
         try {
           if (chart && chart.remove && document.getElementById(chart._options.container_id)) {
             chart.remove()
@@ -395,7 +402,7 @@ function TradingViewChart() {
 
   // Add FullscreenChartControls component
   const FullscreenChartControls = ({ onClose }) => (
-    <div className="absolute left-0 right-0 top-0 z-10">
+    <div className="absolute inset-x-0 top-0 z-10">
       <div className="flex items-center justify-between bg-black/30 p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-medium text-white">

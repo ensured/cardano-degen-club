@@ -25,10 +25,10 @@ import allLinks from "../config/cardanoLinks"
 const TableHeaders = ({ activeCategory, hasTwitterLinks }) => (
   <TableHeader>
     <TableRow>
-      <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[200px] text-base font-semibold">
+      <TableHead className="sticky top-0 w-[200px] bg-background/95 text-base font-semibold backdrop-blur supports-[backdrop-filter]:bg-background/60">
         Name
       </TableHead>
-      <TableHead className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 w-[300px] text-base font-semibold">
+      <TableHead className="sticky top-0 w-[300px] bg-background/95 text-base font-semibold backdrop-blur supports-[backdrop-filter]:bg-background/60">
         URL
       </TableHead>
       {hasTwitterLinks && (
@@ -65,14 +65,14 @@ const LinkTable = ({ activeCategory }) => {
       <TableHeaders activeCategory={activeCategory} hasTwitterLinks={hasTwitterLinks} />
       <TableBody>
         {categoryLinks.map((link, index) => (
-          <TableRow key={index} className="hover:bg-muted/50 transition-colors ">
-            <TableCell className="font-medium text-base">{link.name}</TableCell>
+          <TableRow key={index} className="transition-colors hover:bg-muted/50 ">
+            <TableCell className="text-base font-medium">{link.name}</TableCell>
             <TableCell className="whitespace-nowrap text-base">
               <Link 
                 href={link.url || link.twitter} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="hover:underline text-primary dark:text-zinc-50/80 hover:text-primary/80 transition-colors"
+                className="text-primary transition-colors hover:text-primary/80 hover:underline dark:text-zinc-50/80"
               >
                 {link.url || link.twitter}
               </Link>
@@ -83,7 +83,7 @@ const LinkTable = ({ activeCategory }) => {
                   href={link.twitter} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="hover:underline text-primary dark:text-zinc-50/80 hover:text-primary/80 transition-colors"
+                  className="text-primary transition-colors hover:text-primary/80 hover:underline dark:text-zinc-50/80"
                 >
                   {link.twitter}
                 </Link>
