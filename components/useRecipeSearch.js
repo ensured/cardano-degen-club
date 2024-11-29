@@ -48,58 +48,6 @@ const useRecipeSearch = () => {
       .forEach(t => toast.dismiss(t.id))
   }, [toasts])
 
-  const debouncedAddItemsFirebase = useCallback(
-    debounce(async () => {
-      if (pendingAdditions.current.size === 0) return;
-
-      const itemsToAdd = Array.from(pendingAdditions.current);
-      pendingAdditions.current.clear();
-
-      try {
-        const response = await addItemsFirebase(itemsToAdd);
-        
-        if (response.error) {
-          toast.error(response.error);
-          return;
-        }
-
-        // Update favorites with successful uploads
-        setFavorites(prev => {
-          const updatedFavorites = { ...prev };
-          response.results.forEach(result => {
-            if (result.success) {
-              updatedFavorites[result.link] = {
-                name: result.name,
-                url: result.url,
-                link: result.link,
-              };
-            } else {
-              delete updatedFavorites[result.link];
-            }
-          });
-          return updatedFavorites;
-        });
-        
-        if (response.successCount < itemsToAdd.length) {
-          toast.error(`Failed to add ${itemsToAdd.length - response.successCount} items`);
-        }
-      } catch (error) {
-        console.error("Batch addition failed:", error);
-        toast.error("Failed to add some favorites");
-        
-        // Revert optimistic updates on complete failure
-        setFavorites(prev => {
-          const newFavorites = { ...prev };
-          itemsToAdd.forEach(item => {
-            delete newFavorites[item.link];
-          });
-          return newFavorites;
-        });
-      }
-    }, 800),
-    []
-  );
-
   const searchRecipes = useCallback(async (e, q) => {
     setSearchResults({
       hits: [],
@@ -181,6 +129,59 @@ const useRecipeSearch = () => {
       router.replace(`?q=${input}`)
     }
   }, [])
+  
+  const debouncedAddItemsFirebase = useCallback(
+    debounce(async () => {
+      if (pendingAdditions.current.size === 0) return;
+
+      const itemsToAdd = Array.from(pendingAdditions.current);
+      pendingAdditions.current.clear();
+
+      try {
+        const response = await addItemsFirebase(itemsToAdd);
+        
+        if (response.error) {
+          toast.error(response.error);
+          return;
+        }
+
+        // Update favorites with successful uploads
+        setFavorites(prev => {
+          const updatedFavorites = { ...prev };
+          response.results.forEach(result => {
+            if (result.success) {
+              updatedFavorites[result.link] = {
+                name: result.name,
+                url: result.url,
+                link: result.link,
+              };
+            } else {
+              delete updatedFavorites[result.link];
+            }
+          });
+          return updatedFavorites;
+        });
+        
+        if (response.successCount < itemsToAdd.length) {
+          toast.error(`Failed to add ${itemsToAdd.length - response.successCount} items`);
+        }
+      } catch (error) {
+        console.error("Batch addition failed:", error);
+        toast.error("Failed to add some favorites");
+        
+        // Revert optimistic updates on complete failure
+        setFavorites(prev => {
+          const newFavorites = { ...prev };
+          itemsToAdd.forEach(item => {
+            delete newFavorites[item.link];
+          });
+          return newFavorites;
+        });
+      }
+    }, 800),
+    []
+  );
+
 
   const handleLoadNextPage = useCallback(async () => {
     const { nextPage } = searchResults

@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { Inter } from "next/font/google"
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card"
+import { HomeIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -16,25 +18,32 @@ export const metadata = {
 
 export default function NotFound() {
   return (
-    <main className={`flex min-h-[calc(100vh-20rem)] items-center justify-center p-10 ${inter.className}`}>
-      <Card className="w-full max-w-md text-center">
-        <CardHeader>
-          <h1 className="text-4xl font-bold">404</h1>
-        </CardHeader>
-        <CardContent>
-          <p className="text-lg text-muted-foreground">
-            The page you are looking for doesn&apos;t exist or has been moved.
-          </p>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Link 
-            href="/" 
-            className="rounded-md bg-primary px-6 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Return Home
-          </Link>
-        </CardFooter>
-      </Card>
+    <main className="flex flex-1 items-start justify-center pt-24 sm:pt-32">
+      <div className="w-full max-w-md">
+        <Card className="border-2 shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-center">
+              <span className="duration-5000 animate-pulse bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-8xl font-bold text-transparent">
+                404
+              </span>
+            </CardTitle>
+            <CardDescription className="mt-4 text-center text-xl">
+              Houston, we have a problem! 🚀
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center text-muted-foreground">
+            This page has pulled a disappearing act worthy of Houdini! 🎩✨
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <Link href="/">
+              <Button className="gap-2 transition-transform hover:scale-105">
+                <HomeIcon size={16} />
+                Beam me up, Scotty!
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
     </main>
-  )
+  );
 }
