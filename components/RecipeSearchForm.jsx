@@ -3,6 +3,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
 import {
+  ArrowDown,
   BookOpen,
   BookOpenCheck,
   Dice1Icon,
@@ -11,7 +12,6 @@ import {
   Dice4Icon,
   Dice5Icon,
   Dice6Icon,
-  Eye,
   Search,
   Settings,
   X,
@@ -22,10 +22,10 @@ import { foodItems } from "../lib/foods"
 import RecipesMenu from "./RecipesMenu"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import Image from "next/image"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -33,11 +33,10 @@ import {
 import { Badge } from "./ui/badge"
 import { ScrollArea } from "./ui/scroll-area"
 import { Checkbox } from "./ui/checkbox"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import useIsMobile from "../hooks/useIsMobile"
+
+
+const MAX_EXCLUDED_INGREDIENTS = 10
 
 const diceIcons = [
   Dice1Icon,
@@ -117,6 +116,8 @@ const RecipeSearchForm = ({
     inputRef.current.blur()
   }
 
+  const isMobile = useIsMobile()
+
   const [isHoveredRandomButton, setIsHoveredRandomButton] = useState(false)
   const [diceSpeed, setDiceSpeed] = useState(1600)
   const [currentDiceIndex, setCurrentDiceIndex] = useState(2) // Start with Dice3Icon
@@ -187,10 +188,11 @@ const RecipeSearchForm = ({
 
   const handleAddExcludedItem = (e) => {
     e.preventDefault()
-    if (newExcludedItem.trim()) {
+    if (newExcludedItem.trim() && !excludedIngredients.includes(newExcludedItem.trim())) {
       setExcludedIngredients([...excludedIngredients, newExcludedItem.trim()])
       setNewExcludedItem("")
     }
+
   }
 
   const handleRemoveExcludedItem = (item) => {
@@ -233,17 +235,17 @@ const RecipeSearchForm = ({
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center justify-center gap-1 text-base md:text-lg">
                 <Settings className="size-4 md:size-5" />
-                {width < 469 ? "" : "Settings"}
+                {isMobile ? "" : "Settings"}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>Search Settings</DialogTitle>
+                <DialogTitle className="text-lg text-muted-foreground">Settings</DialogTitle>
               </DialogHeader>
               
-              <div className="grid gap-4 py-1">
-                <div className="grid gap-2">
-                  <div className="mb-2 flex items-center justify-between">
+              <div className="grid gap-3 py-4">
+                <div className="grid gap-1">
+                  <div className=" flex items-center justify-between">
                   <label>Diet Restrictions</label>
                     <Button
                       onClick={() => {
@@ -257,8 +259,12 @@ const RecipeSearchForm = ({
                       <X className="size-4"/>
                     </Button>
                   </div>
-                  <ScrollArea className="h-44 rounded-md border p-4">
-                    <div className="grid grid-cols-2 gap-2 pl-1">
+                  <ScrollArea className="h-44 rounded-md border ">
+                    {isMobile && (
+                      <ArrowDown className="flex size-3.5 w-full animate-move-down-up items-center justify-center repeat-infinite" />
+                    ) }
+                      <div className="p-4">
+                        <div className="grid grid-cols-2 gap-2 pl-1">
                       {healthOptions.map((option) => (
                         <div key={option} className="flex items-center space-x-2">
                           <Checkbox 
@@ -280,12 +286,14 @@ const RecipeSearchForm = ({
                           </label>
                         </div>
                       ))}
-                    </div>
+                        </div>
+                      </div>
+                    
                   </ScrollArea>
                  
                 </div>
-                <div className="grid gap-2">
-                  <div className="mb-2 flex items-center justify-between">
+                <div className="grid gap-1">
+                  <div className=" flex items-center justify-between">
                     <label>Meal Type</label>
 
                       <Button
@@ -321,7 +329,7 @@ const RecipeSearchForm = ({
                   </ScrollArea>
                   
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-1 pt-1 -my-1">
                   <label>Excluded Ingredients</label>
                     <Button
                       onClick={() => {
@@ -335,27 +343,64 @@ const RecipeSearchForm = ({
                       <X className="size-4"/>
                     </Button>
                   </div>
-                  <form onSubmit={handleAddExcludedItem} className="flex gap-2">
+                  <div className="flex gap-1">
                     <Input
                       value={newExcludedItem}
                       onChange={(e) => setNewExcludedItem(e.target.value)}
                       placeholder="Add ingredient to exclude"
+                      disabled={excludedIngredients.length >= MAX_EXCLUDED_INGREDIENTS}
+                      onKeyDown={(e) => {
+                        if (excludedIngredients.length < MAX_EXCLUDED_INGREDIENTS) {
+                          if (e.key === 'Enter') {
+                            e.preventDefault(); // Prevent default form submission
+                            if (newExcludedItem.trim()) {
+                              handleAddExcludedItem(e);
+                            }
+                          }
+                        }
+                      }}
                     />
-                    <Button type="submit" size="sm">Add</Button>
-                  </form>
-                  <div className="flex flex-wrap gap-2">
-                    {excludedIngredients.map(item => (
-                      <Badge 
-                        key={item}
-                        variant="secondary"
-                        className="cursor-pointer"
-                        onClick={() => handleRemoveExcludedItem(item)}
+                    {excludedIngredients.length < MAX_EXCLUDED_INGREDIENTS ? (
+                      <Button 
+                        type="button" // Change type to prevent form submission
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddExcludedItem(e);
+                        }}
                       >
-                        {item} 
-                      </Badge>
-                    ))}
+                        Add
+                      </Button>
+                    ) : (
+                      <div className="flex items-center justify-center  ">
+                        <span onClick={() => {
+                            setExcludedIngredients([])
+                          }} className="flex w-full cursor-pointer items-center text-sm text-muted-foreground hover:text-primary">Max Limit Hit Click to Clear
+                          <Button variant="outline" className="h-8 w-12" >
+                            <X className="size-4"/>
+                          </Button>
+                        </span>
+                      </div>
+                    ) }
                   </div>
+              
+                    <div className="flex flex-wrap gap-1">
+                      {excludedIngredients && excludedIngredients.map(item => (
+                        <Badge 
+                          key={item}
+                          variant="secondary"
+                          className="cursor-pointer"
+                          onClick={() => handleRemoveExcludedItem(item)}
+                        >
+                          {item} 
+                        </Badge>
+                      ))}
+                   
+                    </div>
               </div>
+              <DialogDescription>
+               
+              </DialogDescription>
             </DialogContent>
           </Dialog>
         </form>

@@ -197,8 +197,7 @@ const RecipesMenu = ({
                             alt={name}
                             width={42}
                             height={42}
-                            className="rounded-full object-cover shadow-sm transition-transform duration-200 hover:scale-105 sm:size-[2.8rem]"
-                            unoptimized
+                            className="aspect-square size-[42px] rounded-full object-cover shadow-sm transition-transform duration-200"
                             priority
                           />
                         )}

@@ -1,5 +1,5 @@
 "use client";
-import {  Database, Loader2, Settings, Trash2 } from "lucide-react";
+import {  Database, Info, Loader2, Settings, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import {
@@ -73,8 +73,16 @@ useEffect(() => {
     return () => clearInterval(interval)
 }, [])
 
-const usedMB = (storage.used / (1024 * 1024)).toFixed(2)
-const totalMB = (storage.total / (1024 * 1024)).toFixed(2)
+const formatStorage = (bytes) => {
+  const gb = bytes / (1024 * 1024 * 1024);
+  const mb = bytes / (1024 * 1024);
+  return gb >= 1 
+    ? `${gb.toFixed(2)}GB` 
+    : `${mb.toFixed(2)}MB`;
+}
+
+const usedStorage = formatStorage(storage.used)
+const totalStorage = formatStorage(storage.total)
 const percentUsed = Math.round((storage.used / storage.total) * 100) || 0
 
 return (
@@ -100,11 +108,11 @@ return (
             <div className="flex items-center gap-1.5">
                 <div className="h-1.5 w-32 overflow-hidden rounded-full bg-secondary">
                 <div 
-                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    className={`h-full rounded-full bg-primary transition-all duration-500`}
                     style={{ width: `${percentUsed}%` }}
                 />
                 </div>
-                <span>{usedMB}MB / {totalMB}MB</span>
+                <span>{usedStorage} / {totalStorage}</span>
             </div>
             </div>
         </div>
@@ -126,6 +134,11 @@ return (
             </Button>
         )}
         </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Info className="size-4" />
+            This is useful if you need to clear up space on your device if you have saved a lot of recipes.
+        </div>
+
     </DialogContent>
     </Dialog>
 )
