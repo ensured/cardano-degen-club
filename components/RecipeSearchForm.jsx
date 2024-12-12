@@ -216,6 +216,19 @@ const RecipeSearchForm = ({
             />
        
           </div>
+         
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={
+              !input || input === "" || loading || lastInputSearched === input
+            }
+            className="flex items-center justify-center gap-1 text-base md:text-lg"
+            size={"sm"}
+          >
+            <Search className="size-4 md:size-5" />
+            Search
+          </Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center justify-center gap-1 text-base md:text-lg">
@@ -345,19 +358,6 @@ const RecipeSearchForm = ({
               </div>
             </DialogContent>
           </Dialog>
-          <Button
-            type="submit"
-            variant="outline"
-            disabled={
-              !input || input === "" || loading || lastInputSearched === input
-            }
-            className="flex items-center justify-center gap-1 text-base md:text-lg"
-            size={"sm"}
-          >
-            <Search className="size-4 md:size-5" />
-            Search
-          </Button>
-          
         </form>
         <div className="flex flex-wrap items-center justify-between gap-1">
           <Button
