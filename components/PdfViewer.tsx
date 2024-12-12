@@ -156,57 +156,6 @@ export default function PDFViewer({ inputFile, onProgress }: PDFViewerProps) {
     return () => observer.disconnect()
   }, [moveCursor])
 
-  // Function to handle download using jsPDF
-  async function handleDownload() {
-    if (file && numPages !== undefined) {
-      const doc = new jsPDF()
-      const batchSize = 10
-      const totalBatches = Math.ceil(numPages / batchSize)
-
-      const promises = []
-      for (let i = 0; i < totalBatches; i++) {
-        promises.push(processBatch(i, batchSize, numPages, doc, totalBatches))
-      }
-
-      try {
-        await Promise.all(promises)
-        let finalFilename = "Recipes-(Favorites)"
-        if (filename && filename.endsWith(".pdf")) {
-          finalFilename = filename.slice(0, -4) // Remove ".pdf" extension
-        }
-
-        if (isSwitchChecked) {
-          const date = new Date().toISOString().replace(/:/g, "-").slice(0, -5) // Format date
-          finalFilename += `--[${date}]`
-        }
-
-        finalFilename += ".pdf"
-
-        doc.save(finalFilename)
-      } catch (error) {
-        console.error("Error processing batches:", error)
-      }
-    }
-  }
-
-  function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const { value } = event.target
-    const newValue = value.replace(/\.pdf$/, "") + ".pdf"
-
-    // Calculate the cursor position to be before the ".pdf" extension
-    const cursorPosition = newValue.lastIndexOf(".pdf")
-
-    setFilename(newValue)
-
-    // Set the cursor position
-    if (inputRef.current) {
-      inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
-    }
-  }
-
-  const handleSwitch = () => {
-    setIsSwitchChecked(!isSwitchChecked)
-  }
 
   const handleHideDiv = (opt: boolean) => setIsContainerDivHidden(opt)
 

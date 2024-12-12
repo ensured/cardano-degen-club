@@ -352,10 +352,6 @@ const useRecipeSearch = () => {
     [router]
   )
 
-  const handleInputChange = (e) => {
-    setInput(e.target.value)
-    debouncedReplace(e.target.value)
-  }
 
   const handleStarIconHover = (index) => () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
@@ -483,7 +479,6 @@ const useRecipeSearch = () => {
     searchResults,
     input,
     setInput,
-    handleInputChange,
     lastFoodItemRef,
     favorites,
     setFavorites,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWindowSize } from "@uidotdev/usehooks"
@@ -36,6 +36,14 @@ import { Checkbox } from "./ui/checkbox"
 import useIsMobile from "../hooks/useIsMobile"
 import { Label } from "./ui/label"
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 
 
 const MAX_EXCLUDED_INGREDIENTS = 10
@@ -92,7 +100,6 @@ const mealTypes = ["Breakfast", "Dinner", "Lunch", "Snack", "Teatime"]
 
 const RecipeSearchForm = ({
   searchRecipes,
-  handleInputChange,
   input,
   setInput,
   loading,
@@ -203,6 +210,64 @@ const RecipeSearchForm = ({
 
   const [selectedMealType, setSelectedMealType] = useState("")
 
+  const [suggestions, setSuggestions] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
+  // Add debounced fetch suggestions function
+  const debouncedFetchSuggestions = useCallback(
+    debounce(async (value) => {
+      if (!value) {
+        setSuggestions([])
+        return
+      }
+      
+      try {
+        const response = await fetch(`/api/search/autocomplete?q=${encodeURIComponent(value)}`)
+        const { data } = await response.json()
+        setSuggestions(data)
+      } catch (error) {
+        console.error('Failed to fetch suggestions:', error)
+      }
+    }, 300), // 300ms delay
+    []
+  )
+
+  // Update handleLocalInputChange
+  const handleLocalInputChange = (e) => {
+    const value = e.target.value
+    setInput(value)
+    setShowSuggestions(true)
+    debouncedFetchSuggestions(value)
+  }
+
+  // Add debounce helper function at the top of your component
+  function debounce(func, wait) {
+    let timeout
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout)
+        func(...args)
+      }
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+    }
+  }
+
+  // Add function to handle suggestion selection
+  const handleSelectSuggestion = (suggestion) => {
+    setInput(suggestion)
+    setShowSuggestions(false)
+    // Trigger search with the selected suggestion
+    searchRecipes(
+      new Event('submit'), 
+      suggestion, 
+      selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
+      excludedIngredients.length > 0 ? excludedIngredients : undefined,
+      selectedMealType ? selectedMealType : undefined
+    )
+    router.push(`?q=${suggestion}`)
+  }
+
   return (
     <div className="mx-0 flex justify-center rounded-md ">
       <div className="w-full max-w-3xl space-y-1">
@@ -214,11 +279,29 @@ const RecipeSearchForm = ({
               placeholder="Search for a recipe"
               ref={inputRef}
               value={input}
-              onChange={handleInputChange}
+              onChange={handleLocalInputChange}
               enterKeyHint="search"
               className="h-9 w-full"
             />
-       
+            
+            {/* Add autocomplete suggestions */}
+            {showSuggestions && suggestions.length > 0 && (
+              <Command className="absolute top-full z-50 mt-1 w-full rounded-lg border shadow-md h-44">
+                <CommandList>
+                  <CommandGroup>
+                    {suggestions.map((suggestion, index) => (
+                      <CommandItem
+                        key={index}
+                        onSelect={() => handleSelectSuggestion(suggestion)}
+                        className="cursor-pointer"
+                      >
+                        {suggestion}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            )}
           </div>
          
           <Button

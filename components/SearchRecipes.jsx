@@ -16,7 +16,6 @@ const SearchRecipes = ({ userEmail }) => {
     setSearchResults,
     input,
     setInput,
-    handleInputChange,
     lastFoodItemRef,
     favorites,
     setFavorites,
@@ -30,6 +29,10 @@ const SearchRecipes = ({ userEmail }) => {
     lastInputSearched,
     isFavoritesLoading,
     setIsFavoritesLoading,
+    suggestions,
+    setSuggestions,
+    showSuggestions,
+    setShowSuggestions,
   } = useRecipeSearch()
 
   return (
@@ -41,7 +44,6 @@ const SearchRecipes = ({ userEmail }) => {
 
       <RecipeSearchForm
         searchRecipes={searchRecipes}
-        handleInputChange={handleInputChange}
         inputChanged={inputChanged}
         input={input}
         setInput={setInput}
@@ -56,6 +58,10 @@ const SearchRecipes = ({ userEmail }) => {
         userEmail={userEmail}
         isFavoritesLoading={isFavoritesLoading}
         setIsFavoritesLoading={setIsFavoritesLoading}
+        suggestions={suggestions}
+        setSuggestions={setSuggestions}
+        showSuggestions={showSuggestions}
+        setShowSuggestions={setShowSuggestions}
       />
       {loading && (
         <div className="absolute inset-0 flex min-h-[88vh] items-center justify-center">
