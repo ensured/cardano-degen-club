@@ -3,7 +3,6 @@
 import { MAX_FAVORITES } from "@/utils/consts"
 import { extractRecipeId } from "@/utils/helper"
 import { currentUser } from "@clerk/nextjs/server"
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { doc, getDoc, setDoc } from "firebase/firestore"
 import {
   getDownloadURL,
