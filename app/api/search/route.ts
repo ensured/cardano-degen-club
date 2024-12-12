@@ -53,7 +53,38 @@ export async function GET(request: NextRequest) {
 
   try {
     const input = searchParams?.get("q")
-    const url = `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.APP_ID}&app_key=${process.env.APP_KEY}`
+    const healthOptions = searchParams?.getAll("health")
+    const excluded = searchParams?.getAll("excluded")
+    const mealType = searchParams?.get("mealType")
+
+    let url = `https://api.edamam.com/api/recipes/v2?q=${input}&type=public&app_id=${process.env.APP_ID}&app_key=${process.env.APP_KEY}`
+    
+    // Add all health parameters
+    if (healthOptions && healthOptions.length > 0) {
+      healthOptions.forEach(health => {
+        const healthItems = health.split(',')
+        healthItems.forEach(item => {
+          url += `&health=${encodeURIComponent(item.trim())}`
+        })
+      })
+    }
+    
+    // Add all meal types
+    if (mealType) {
+      url += `&mealType=${encodeURIComponent(mealType)}`
+    }
+    
+    // Add all excluded ingredients
+    if (excluded && excluded.length > 0) {
+      excluded.forEach(item => {
+        const excludedItems = item.split(',')
+        excludedItems.forEach(item => {
+          url += `&excluded=${encodeURIComponent(item)}`
+        })
+      })
+    }
+    console.log(url)
+
     const response = await fetch(url)
 
     if (response.status === 429) {

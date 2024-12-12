@@ -63,7 +63,7 @@ const SearchRecipes = ({ userEmail }) => {
         </div>
       )}
       {/* Recipe Cards with data */}
-      {searchResults.hits.length > 0 && (
+      {searchResults.hits && searchResults.hits.length > 0 && (
         <RecipeCards
           searchResults={searchResults}
           lastFoodItemRef={lastFoodItemRef}

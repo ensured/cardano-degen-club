@@ -48,7 +48,7 @@ const useRecipeSearch = () => {
       .forEach(t => toast.dismiss(t.id))
   }, [toasts])
 
-  const searchRecipes = useCallback(async (e, q) => {
+  const searchRecipes = useCallback(async (e, q, selectedHealth, excludedIngredients, selectedMealType) => {
     setSearchResults({
       hits: [],
       count: 0,
@@ -57,7 +57,20 @@ const useRecipeSearch = () => {
     setLoading(true)
     if (q) {
       try {
-        const res = await fetch(`/api/search?q=${q}`)
+        // Build the query URL with filters
+        let queryUrl = `/api/search?q=${q}`
+        if (selectedHealth) {
+          queryUrl += `&health=${selectedHealth}`
+        }
+        if (excludedIngredients?.length > 0) {
+          excludedIngredients.forEach(item => {
+            queryUrl += `&excluded=${encodeURIComponent(item)}`
+          })
+        }
+        if (selectedMealType) {
+          queryUrl += `&mealType=${selectedMealType}`
+        }
+        const res = await fetch(queryUrl)
 
         const data = await res.json()
         if (data.success === false) {
@@ -75,7 +88,7 @@ const useRecipeSearch = () => {
           ...prevSearchResults,
           hits: data.data.hits,
           count: data.data.count,
-          nextPage: data.data._links.next?.href || "",
+          nextPage: data?.data?._links?.next?.href || "",
         }))
         setLastInputSearched(q)
         setLoading(false)
@@ -103,7 +116,18 @@ const useRecipeSearch = () => {
     }
 
     try {
-      const res = await fetch(`/api/search?q=${input}`)
+      // Build the query URL with filters for the input case
+      let queryUrl = `/api/search?q=${input}`
+      if (selectedHealth) {
+        queryUrl += `&health=${selectedHealth}`
+      }
+      if (excludedIngredients?.length > 0) {
+        excludedIngredients.forEach(item => {
+          queryUrl += `&excluded=${encodeURIComponent(item)}`
+        })
+      }
+
+      const res = await fetch(queryUrl)
       const data = await res.json()
       if (data.success === false) {
         toast.dismiss() // Dismiss any existing toasts

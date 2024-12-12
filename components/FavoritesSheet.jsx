@@ -16,133 +16,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog"
-
+import StorageIndicator from "./StorageIndicator"
 const revalidate = 30000
-
-
-const StorageIndicator = () => {
-  const [storage, setStorage] = useState({ used: 0, total: 0 })
-  const [isClearing, setIsClearing] = useState(false)
-
-  const checkStorage = async () => {
-    if ('storage' in navigator && 'estimate' in navigator.storage) {
-      const estimate = await navigator.storage.estimate()
-      console.log('Storage estimate:', {
-        usage: estimate.usage,
-        quota: estimate.quota,
-        usageDetails: estimate.usageDetails
-      })
-      setStorage({
-        used: estimate.usage || 0,
-        total: estimate.quota || 0,
-      })
-    }
-  }
-
-  const clearAllCache = async () => {
-    setIsClearing(true)
-    try {
-      await Promise.all([
-        caches.keys().then(keys => 
-          Promise.all(keys.map(key => caches.delete(key)))
-        ),
-        window.indexedDB.databases?.().then(dbs => 
-          dbs?.forEach(db => window.indexedDB.deleteDatabase(db.name))
-        ),
-        navigator.serviceWorker?.getRegistrations().then(registrations => {
-          for (const registration of registrations) {
-            registration.unregister()
-          }
-        }),
-        localStorage.clear(),
-        sessionStorage.clear(),
-        document.cookie.split(';').forEach(cookie => {
-          document.cookie = cookie
-            .replace(/^ +/, '')
-            .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`)
-        })
-      ])
-
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      await checkStorage()
-      toast.success("Cache cleared successfully")
-    } catch (error) {
-      console.error("Error clearing cache:", error)
-      toast.error("Failed to clear cache")
-    } finally {
-      setIsClearing(false)
-    }
-  }
-
-  useEffect(() => {
-    checkStorage()
-    const interval = setInterval(checkStorage, 60000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const usedMB = (storage.used / (1024 * 1024)).toFixed(2)
-  const totalMB = (storage.total / (1024 * 1024)).toFixed(2)
-  const percentUsed = Math.round((storage.used / storage.total) * 100) || 0
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-full">
-          <Settings className="mr-2 size-4" />
-          Settings
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          {/* Storage Usage */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Storage Usage</label>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Database className="size-4" />
-              <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-32 overflow-hidden rounded-full bg-secondary">
-                  <div 
-                    className="h-full rounded-full bg-primary transition-all duration-500"
-                    style={{ width: `${percentUsed}%` }}
-                  />
-                </div>
-                <span>{usedMB}MB / {totalMB}MB</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Clear Cache Button */}
-          {isClearing ? (
-            <Button variant="destructive" className="w-full" disabled>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              Clearing cache...
-            </Button>
-          ) : (
-            <Button 
-              variant="destructive" 
-              className="w-full" 
-              onClick={clearAllCache}
-            >
-              <Trash2 className="mr-2 size-4" />
-              Clear browser cache
-            </Button>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 const FavoritesSheet = ({
   children,
@@ -230,11 +105,11 @@ const FavoritesSheet = ({
           <SheetHeader className="space-y-1.5">
             <SheetTitle className="select-none">
               <div
-                className="animate-gradient flex flex-wrap items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2.5 text-2xl transition-all ease-in-out
+                className="animate-gradient relative flex flex-wrap items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2.5 text-2xl transition-all ease-in-out
               
               dark:from-[#3d91c9] dark:to-[#583aa8] md:p-4 md:text-3xl"
               >
-                <div className="flex flex-row items-center justify-center gap-2 ">
+                <div className=" flex flex-row items-center justify-center gap-2 ">
                   <StarIcon
                     size={size?.width < 768 ? 28 : 32}
                     color="#FFD700" // Use gold color for the star icon
@@ -242,13 +117,17 @@ const FavoritesSheet = ({
                   <span className="font-semibold text-gray-800 dark:text-gray-200 ">
                     Favorites
                   </span>
+                  
                 </div>
                 <Badge
                   className="mt-1 flex border border-primary text-sm md:mt-1.5"
                   variant="outline"
                 >
+                    
                   {Object.keys(favorites).length}/{MAX_FAVORITES}
+                  <StorageIndicator />
                 </Badge>
+                
               </div>
             </SheetTitle>
             <div className="flex items-center justify-between">
@@ -256,9 +135,7 @@ const FavoritesSheet = ({
             </div>
           </SheetHeader>
           {children}
-          <div className="absolute bottom-0 left-0 right-0 p-6">
-            <StorageIndicator />
-          </div>
+         
         </SheetContent>
       </Sheet>
     </div>
