@@ -58,7 +58,7 @@ const SearchRecipes = ({ userEmail }) => {
         setIsFavoritesLoading={setIsFavoritesLoading}
       />
       {loading && (
-        <div className="absolute inset-0 flex min-h-[80vh] items-center justify-center">
+        <div className="absolute inset-0 flex min-h-[88vh] items-center justify-center">
           <Loader2Icon className="size-16 animate-spin" />
         </div>
       )}

@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-const FullTitleToolTip = ({ children, title }) => {
+const FullTitleToolTip = ({ children, title, url }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   const handleCloseToolTip = () => {
@@ -21,17 +21,18 @@ const FullTitleToolTip = ({ children, title }) => {
   }
 
   return (
-    <TooltipProvider delayDuration={750}>
+    <TooltipProvider delayDuration={650}>
       <Tooltip open={isOpen} onOpenChange={handleOpenChange}>
         <TooltipTrigger>{children}</TooltipTrigger>
         <TooltipContent
-          className="select-none"
+          className="flex w-full select-none flex-col items-center justify-center gap-2"
           onClick={(e) => {
             e.preventDefault()
             handleCloseToolTip()
           }}
         >
-          <p>{title}</p>
+          <p className="">{title}</p>
+          <p className="">{url}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -135,9 +135,14 @@ module.exports = {
           '30%': { transform: 'translateY(33.33%)' },
           '100%': { transform: 'translateY(0)' },
         },
-        'spin-once': {
+        'spin-3-times': {
           '0%': { transform: 'rotate(0deg)' },
-          '100%': { transform: 'rotate(360deg)' },
+          '28%': { transform: 'rotate(360deg)' },
+          '30%': { transform: 'rotate(360deg)' },
+          '58%': { transform: 'rotate(720deg)' },
+          '60%': { transform: 'rotate(720deg)' },
+          '88%': { transform: 'rotate(1080deg)' },
+          '100%': { transform: 'rotate(1080deg)' },
         },
       },
       animation: {
@@ -146,7 +151,7 @@ module.exports = {
         fadeIn: "fadeIn 0.4s ease-in",
         'gradient-x': 'gradient-x 15s ease infinite',
         'move-down-up': 'move-down-up 3s ease-in',
-        'spin-once': 'spin-once 2s ease-in-out',
+        'spin-3-times': 'spin-3-times 4.4s ease-in-out',
       },
     },
   },

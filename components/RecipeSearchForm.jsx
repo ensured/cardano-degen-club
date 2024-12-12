@@ -34,6 +34,8 @@ import { Badge } from "./ui/badge"
 import { ScrollArea } from "./ui/scroll-area"
 import { Checkbox } from "./ui/checkbox"
 import useIsMobile from "../hooks/useIsMobile"
+import { Label } from "./ui/label"
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
 
 
 const MAX_EXCLUDED_INGREDIENTS = 10
@@ -236,10 +238,18 @@ const RecipeSearchForm = ({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="flex items-center justify-center gap-1 text-base md:text-lg group"
+                className="group relative flex items-center justify-center gap-1 text-sm md:text-base lg:text-lg"
               >
-                <Settings className="size-4 md:size-5 group-hover:animate-spin-once" />
+                <Settings className="size-4 group-hover:animate-spin-3-times md:size-5" />
                 {isMobile ? "" : "Settings"}
+                {(selectedHealthOptions.length > 0 || excludedIngredients.length > 0 || selectedMealType) && (
+                  <Badge 
+                    variant="secondary" 
+                    className="absolute -right-2 -top-2 size-5 rounded-full p-0 text-xs"
+                  >
+                    {selectedHealthOptions.length + excludedIngredients.length + (selectedMealType ? 1 : 0)}
+                  </Badge>
+                )}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
@@ -247,21 +257,24 @@ const RecipeSearchForm = ({
                 <DialogTitle className="text-lg text-muted-foreground">Settings</DialogTitle>
               </DialogHeader>
               
-              <div className="grid gap-3 py-4">
+              <div className="grid gap-3 py-2">
                 <div className="grid gap-1">
                   <div className=" flex items-center justify-between">
                   <label>Diet Restrictions</label>
-                    <Button
+                    {selectedHealthOptions.length > 0 && (
+                      <Button
                       onClick={() => {
                         setSelectedHealthOptions([]) // Reset selected health options
                       }}
                       variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      disabled={selectedHealthOptions.length === 0}
+                      size="sm"
+                      className="h-6 w-20 gap-1 text-base"
+                     
                     >
-                      <X className="size-4"/>
+                      Clear
+                      <X className="size-5"/>
                     </Button>
+                    )}
                   </div>
                   <ScrollArea className="h-44 rounded-md border ">
                     {isMobile && (
@@ -299,60 +312,65 @@ const RecipeSearchForm = ({
                 <div className="grid gap-1">
                   <div className=" flex items-center justify-between">
                     <label>Meal Type</label>
-
-                      <Button
-                        onClick={() => setSelectedMealType("")}
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        disabled={!selectedMealType}
+{selectedMealType && (
+  <Button
+    onClick={() => setSelectedMealType("")}
+    variant="outline"
+    size="sm"
+    className="h-6 w-20 gap-1 text-base"
+    
                       >
-                        <X className="size-4"/>
-                    </Button>
+                        Clear
+                        <X className="size-5"/>
+                      </Button>
+                    )}
                   </div>
                   <ScrollArea className="h-22 rounded-md border p-4">
-                    <div className="grid grid-cols-2 gap-2 pl-1">
+                    <RadioGroup
+                      value={selectedMealType}
+                      onValueChange={setSelectedMealType}
+                      className="grid grid-cols-2 gap-2 pl-1"
+                    >
                       {mealTypes.map((type) => (
                         <div key={type} className="flex items-center space-x-2">
-                          <Checkbox 
+                          <RadioGroupItem 
+                            value={type.toLowerCase()} 
                             id={type}
-                            checked={selectedMealType === type.toLowerCase()}
-                            onCheckedChange={(checked) => {
-                              setSelectedMealType(checked ? type.toLowerCase() : "")
-                            }}
                           />
-                          <label
+                          <Label
                             htmlFor={type}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            className="text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                           >
                             {type}
-                          </label>
+                          </Label>
                         </div>
                       ))}
-                    </div>
+                    </RadioGroup>
                   </ScrollArea>
                   
                 </div>
-                <div className="flex items-center justify-between gap-1 pt-1 -my-1">
-                  <label>Excluded Ingredients</label>
-                    <Button
-                      onClick={() => {
-                        setExcludedIngredients([]) // Reset excluded ingredients
-                      }}
+                <div className="grid gap-1">
+                  <div className="flex items-center justify-between">
+                    <label>Excluded Ingredients</label>
+                    {excludedIngredients.length > 0 && (
+                      <Button
+                        onClick={() => {
+                          setExcludedIngredients([])
+                        }}
                       variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      disabled={excludedIngredients.length === 0}
-                    >
-                      <X className="size-4"/>
-                    </Button>
+                      size="sm"
+                       className="h-6 w-20 gap-1 text-base"
+                      >
+                        Clear
+                        <X className="size-5"/>
+                      </Button>
+                    )}
                   </div>
                   <div className="flex gap-1">
                     <Input
                       value={newExcludedItem}
                       onChange={(e) => setNewExcludedItem(e.target.value)}
                       placeholder="Add ingredient to exclude"
-                      disabled={excludedIngredients.length >= MAX_EXCLUDED_INGREDIENTS}
                       onKeyDown={(e) => {
                         if (excludedIngredients.length < MAX_EXCLUDED_INGREDIENTS) {
                           if (e.key === 'Enter') {
@@ -387,20 +405,20 @@ const RecipeSearchForm = ({
                       </div>
                     ) }
                   </div>
-              
-                    <div className="flex flex-wrap gap-1">
-                      {excludedIngredients && excludedIngredients.map(item => (
-                        <Badge 
-                          key={item}
-                          variant="secondary"
-                          className="cursor-pointer"
-                          onClick={() => handleRemoveExcludedItem(item)}
-                        >
-                          {item} 
-                        </Badge>
-                      ))}
-                   
-                    </div>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {excludedIngredients && excludedIngredients.map(item => (
+                    <Badge 
+                      key={item}
+                      variant="secondary"
+                      className="cursor-pointer"
+                      onClick={() => handleRemoveExcludedItem(item)}
+                    >
+                      {item} 
+                    </Badge>
+                  ))}
+               
+                </div>
               </div>
               <DialogDescription>
                
@@ -415,7 +433,7 @@ const RecipeSearchForm = ({
             onClick={handleGetRandomFood}
             variant="outline"
             size={"sm"}
-            className="flex-1 gap-1 text-xs md:text-base"
+            className="flex-1 gap-1 text-xs md:text-base lg:text-lg"
           >
             <CurrentDiceIcon
               className={`size-4 transition-transform duration-300 ease-in-out md:size-5 
@@ -438,7 +456,7 @@ const RecipeSearchForm = ({
               onMouseOver={() => handleHover(true)}
               onMouseOut={() => handleHover(false)}
               disabled={loading}
-              className="flex gap-1 text-xs md:text-base"
+              className="flex gap-1 text-xs md:text-base lg:text-lg"
               variant="outline"
               size={"sm"}
             >
