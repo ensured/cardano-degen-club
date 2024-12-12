@@ -1,21 +1,56 @@
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
-
-import { LoginPopup, LogoutPopup } from "./LoginPopup"
+import { SignedIn, SignedOut, SignInButton, SignOutButton } from "@clerk/nextjs"
+import Image from "next/image"
+import { currentUser } from "@clerk/nextjs/server"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "./ui/button"
+import { User } from "lucide-react"
 
 const UserButton = async () => {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
-  if (!user) {
-    return (
-      <div className="group relative z-50 flex shrink-0 flex-col-reverse items-center justify-center">
-        <LogoutPopup />
-      </div>
-    )
-  }
-
+  const user = await currentUser()
   return (
-    <div className="group relative z-50 flex shrink-0 flex-col-reverse items-center justify-center">
-      <LoginPopup userImg={user.picture}>Logout</LoginPopup>
+    <div className="flex shrink-0 items-center justify-center">  
+      <SignedIn>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="rounded-full outline-none hover:ring-2 hover:ring-gray-200">
+            <Image 
+              src={user?.imageUrl} 
+              alt="User Image" 
+              width={32} 
+              height={32} 
+              className="rounded-full"
+            />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <SignOutButton>
+              <DropdownMenuItem className="cursor-pointer">
+                Sign out
+              </DropdownMenuItem>
+            </SignOutButton>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SignedIn>
+      
+      <SignedOut>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <User className="size-6" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <SignInButton>
+              <DropdownMenuItem className="cursor-pointer">
+                Sign in
+              </DropdownMenuItem>
+            </SignInButton>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SignedOut>
     </div>
   )
 }

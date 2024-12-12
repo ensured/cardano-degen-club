@@ -1,5 +1,4 @@
 import "@/styles/globals.css"
-import { Metadata } from "next"
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
@@ -9,8 +8,10 @@ import { SiteHeader } from "@/components/site-header"
 import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Inter } from "next/font/google"
+import CustomClerkProvider from "./clerk/Provider"
 
-export const metadata: Metadata = {
+
+export const metadata = {
   title: "Home",
   description: siteConfig.description,
   icons: {
@@ -25,20 +26,18 @@ export const viewport = {
   ],
 }
 
-interface RootLayoutProps {
-  children: React.ReactNode
-}
 
 const inter = Inter({ 
   subsets: ["latin"],
   variable: "--font-inter",
 })
 
-export default async function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={cn(
-        "min-h-screen bg-background font-sans antialiased",
+    <CustomClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={cn(
+          "min-h-screen bg-background font-sans antialiased",
         inter.variable,
         inter.className
       )}>
@@ -67,5 +66,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <ScrollToTopButton />
       </body>
     </html>
+    </CustomClerkProvider>
   )
 }

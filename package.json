@@ -14,14 +14,10 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.490.0",
-    "@aws-sdk/s3-request-presigner": "^3.554.0",
     "@clerk/nextjs": "^6.9.1",
     "@firebase/messaging": "^0.12.8",
     "@hookform/resolvers": "^3.3.4",
-    "@kinde-oss/kinde-auth-nextjs": "^2.3.11",
-    "@kinde-oss/kinde-auth-react": "^3.0.28",
-    "@octokit/core": "^5.0.1",
+
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.0",

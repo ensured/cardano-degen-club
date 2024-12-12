@@ -98,6 +98,19 @@ const healthOptions = [
 
 const mealTypes = ["Breakfast", "Dinner", "Lunch", "Snack", "Teatime"]
 
+// Move debounce helper outside component
+function debounce(func, wait) {
+  let timeout
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout)
+      func(...args)
+    }
+    clearTimeout(timeout)
+    timeout = setTimeout(later, wait)
+  }
+}
+
 const RecipeSearchForm = ({
   searchRecipes,
   input,
@@ -213,22 +226,26 @@ const RecipeSearchForm = ({
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
 
-  // Add debounced fetch suggestions function
+  // Move the async function inside useCallback
   const debouncedFetchSuggestions = useCallback(
-    debounce(async (value) => {
-      if (!value) {
-        setSuggestions([])
-        return
+    (value) => {
+      const fetchSuggestions = async () => {
+        if (!value) {
+          setSuggestions([])
+          return
+        }
+        
+        try {
+          const response = await fetch(`/api/search/autocomplete?q=${encodeURIComponent(value)}`)
+          const { data } = await response.json()
+          setSuggestions(data)
+        } catch (error) {
+          console.error('Failed to fetch suggestions:', error)
+        }
       }
-      
-      try {
-        const response = await fetch(`/api/search/autocomplete?q=${encodeURIComponent(value)}`)
-        const { data } = await response.json()
-        setSuggestions(data)
-      } catch (error) {
-        console.error('Failed to fetch suggestions:', error)
-      }
-    }, 300), // 300ms delay
+
+      debounce(fetchSuggestions, 300)()
+    },
     []
   )
 
@@ -238,19 +255,6 @@ const RecipeSearchForm = ({
     setInput(value)
     setShowSuggestions(true)
     debouncedFetchSuggestions(value)
-  }
-
-  // Add debounce helper function at the top of your component
-  function debounce(func, wait) {
-    let timeout
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout)
-        func(...args)
-      }
-      clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
-    }
   }
 
   // Add function to handle suggestion selection

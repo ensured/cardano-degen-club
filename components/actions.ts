@@ -2,6 +2,7 @@
 
 import { MAX_FAVORITES } from "@/utils/consts"
 import { extractRecipeId } from "@/utils/helper"
+import { currentUser } from "@clerk/nextjs/server"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 import { doc, getDoc, setDoc } from "firebase/firestore"
 import {
@@ -16,12 +17,12 @@ import { db, deleteObject, storage } from "./firebase/firebase"
 
 // @ts-ignore
 export async function removeItemsFirebase(keys) {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = await currentUser()
   if (!user) {
     return { error: "Not authenticated, please login" }
   }
-  const userEmail = user.email
+  const userEmail = user?.emailAddresses[0].emailAddress
+
 
   // remove all keys from firebase db
   await Promise.all(
@@ -45,30 +46,15 @@ export async function removeItemsFirebase(keys) {
 }
 
 // @ts-ignore
-// export async function addItemsFirebase(favorites) {
-//   const { getUser } = getKindeServerSession()
-//   const user = await getUser()
-//   if (!user) {
-//     return { error: "Not authenticated, please login" }
-//   }
-//   const userEmail = user.email
-
-//   const imageBlobs = await Promise.all(
-//
-//   )
-// }
-
-// @ts-ignore
 export async function addToFavoritesFirebase({ name, url, link, metadata }) {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = await currentUser()
 
   // Check if the user is authenticated
   if (!user) {
     return { error: "Not authenticated, please login" }
   }
 
-  const userEmail = user.email
+  const userEmail = user?.emailAddresses[0].emailAddress
 
   try {
     // Proceed with the upload after user authentication
@@ -164,12 +150,11 @@ export async function getFavoritesFirebase(userEmail: string) {
 }
 
 export async function deleteAllFavoritesFirebase() {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = await currentUser()
   if (!user) {
     return { error: "Not authenticated, please login" }
   }
-  const userEmail = user.email
+  const userEmail = user?.emailAddresses[0].emailAddress
 
   const userFolderRef = storageRef(storage, `images/${userEmail}/`)
 
@@ -201,12 +186,11 @@ export async function removeFavoriteFirebase(
   recipeName: string,
   needFormatting: boolean = true
 ) {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = await currentUser()
   if (!user) {
     return { error: "Not authenticated, please login" }
   }
-  const userEmail = user.email
+  const userEmail = user?.emailAddresses[0].emailAddress
 
   let key
   if (needFormatting) {
@@ -310,12 +294,11 @@ export async function addItemsFirebase(items: Array<{
   link: string;
   metadata: any;
 }>) {
-  const { getUser } = getKindeServerSession()
-  const user = await getUser()
+  const user = await currentUser()
   if (!user) {
     return { error: "Not authenticated, please login" }
   }
-  const userEmail = user.email
+  const userEmail = user?.emailAddresses[0].emailAddress
 
   try {
     // Get current favorites count

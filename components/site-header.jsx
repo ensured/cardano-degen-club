@@ -1,7 +1,9 @@
 import { MainNav } from "@/components/main-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Suspense } from "react"
 
 import { HeaderNavSheet } from "./HeaderNavSheet"
+import { Skeleton } from "./ui/skeleton"
 import UserButton from "./UserButton"
 
 export function SiteHeader() {
@@ -11,8 +13,10 @@ export function SiteHeader() {
         <MainNav />
         <HeaderNavSheet />
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <nav className="flex items-center gap-2">
-            <UserButton />
+          <nav className="flex items-center gap-1">
+            <Suspense fallback={<div><Skeleton className="size-10 rounded-full" /></div>}>
+              <UserButton />
+            </Suspense>
             <ThemeToggle />
           </nav>
         </div>
