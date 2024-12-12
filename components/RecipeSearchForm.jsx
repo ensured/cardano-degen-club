@@ -220,7 +220,7 @@ const RecipeSearchForm = ({
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center justify-center gap-1 text-base md:text-lg">
                 <Settings className="size-4 md:size-5" />
-                Settings
+                {width < 469 ? "" : "Settings"}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
