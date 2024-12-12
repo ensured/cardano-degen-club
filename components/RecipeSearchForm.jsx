@@ -245,7 +245,7 @@ const RecipeSearchForm = ({
                     </Button>
                   </div>
                   <ScrollArea className="h-44 rounded-md border p-4">
-                    <div className="grid grid-cols-3 gap-2 pl-1">
+                    <div className="grid grid-cols-2 gap-2 pl-1">
                       {healthOptions.map((option) => (
                         <div key={option} className="flex items-center space-x-2">
                           <Checkbox 
