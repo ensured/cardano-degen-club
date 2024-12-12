@@ -233,8 +233,12 @@ const RecipeSearchForm = ({
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center justify-center gap-1 text-base md:text-lg">
-                <Settings className="size-4 md:size-5" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center justify-center gap-1 text-base md:text-lg group"
+              >
+                <Settings className="size-4 md:size-5 group-hover:animate-spin-once" />
                 {isMobile ? "" : "Settings"}
               </Button>
             </DialogTrigger>

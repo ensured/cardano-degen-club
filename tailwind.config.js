@@ -135,6 +135,10 @@ module.exports = {
           '30%': { transform: 'translateY(33.33%)' },
           '100%': { transform: 'translateY(0)' },
         },
+        'spin-once': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -142,6 +146,7 @@ module.exports = {
         fadeIn: "fadeIn 0.4s ease-in",
         'gradient-x': 'gradient-x 15s ease infinite',
         'move-down-up': 'move-down-up 3s ease-in',
+        'spin-once': 'spin-once 2s ease-in-out',
       },
     },
   },

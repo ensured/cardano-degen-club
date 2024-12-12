@@ -17,6 +17,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 import StorageIndicator from "./StorageIndicator"
+import { useTheme } from "next-themes"
 const revalidate = 30000
 
 const FavoritesSheet = ({
@@ -31,7 +32,8 @@ const FavoritesSheet = ({
 }) => {
   const size = useWindowSize()
   const [lastFetchTime, setLastFetchTime] = useState(0)
-
+  const [isHovered, setIsHovered] = useState(false);
+  const { theme } = useTheme()
   useEffect(() => {
     const getFavs = async () => {
       setIsFavoritesLoading(true)
@@ -74,6 +76,8 @@ const FavoritesSheet = ({
             variant="outline"
             className="flex items-center justify-between gap-1.5 px-3 py-2 text-xs md:text-sm"
             size="sm"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
             {isFavoritesLoading ? (
               <>
@@ -89,7 +93,20 @@ const FavoritesSheet = ({
               <>
                 <div className="flex items-center gap-1.5">
                   <Heart
+                    style={{
+                      fill: isHovered ? 'currentColor' : 'none',
+                      color: isHovered ? 'red' : 'currentColor',
+                      transition: 'all 0.3s ease',
+                      willChange: 'transform',
+                      position: 'relative',
+                      zIndex: 1,
+                      strokeWidth: 2,
+                      stroke: isHovered ? 'black' : 'currentColor'
+                    }}
                     className="size-4 md:size-5"
+                    fill="none"
+                    stroke="black"
+                    strokeWidth={2}
                     aria-details="Heart icon"
                   />
                   <span>Favorites</span>
