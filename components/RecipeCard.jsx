@@ -56,17 +56,17 @@ const StarButton = ({
 const RecipeCard = ({ recipe, index, lastFoodItemRef, searchResults }) => (
   <div
     ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
-    className="size-full rounded-sm border bg-card transition-colors hover:bg-muted hover:shadow-sm"
+    className="size-full rounded-sm border bg-card transition-colors hover:bg-muted hover:shadow-sm "
   >
     <Link
       target="_blank"
       href={recipe.recipe.shareAs}
-      className="flex size-full flex-col justify-center"
+      className="flex size-full flex-col justify-center "
       aria-label={`View recipe for ${recipe.recipe.label}`}
     >
-      <FullTitleToolTip title={recipe.recipe.label} url={recipe.recipe.url} className="block size-full">
-        <Card className="group flex size-full flex-col items-center justify-between border-none shadow-none transition-colors sm:p-2">
-          <CardHeader className="w-full space-y-0 p-0.5 [@media(max-width:380px)]:py-0">
+      <FullTitleToolTip title={recipe.recipe.label} url={recipe.recipe.url} className="block size-full ">
+        <Card className="group flex size-full flex-col items-center justify-between border-none px-1 py-2 shadow-none transition-colors sm:p-2">
+          <CardHeader className="w-full space-y-0 p-1 [@media(max-width:380px)]:py-0">
             <div className="flex min-h-8 items-center justify-center">
               <h3 className="line-clamp-2 px-1 text-center text-[0.85rem] font-medium leading-tight text-muted-foreground transition-colors group-hover:text-foreground [@media(min-width:380px)]:text-[1rem] [@media(min-width:430px)]:text-[1.1rem] [@media(min-width:480px)]:text-[1.07rem] [@media(min-width:530px)]:text-[1.09rem] [@media(min-width:580px)]:text-[1.11rem] [@media(min-width:630px)]:text-[1.13rem] [@media(min-width:680px)]:text-[1.15rem] [@media(min-width:730px)]:text-[1.17rem] [@media(min-width:780px)]:text-[1.19rem] [@media(min-width:830px)]:text-[1.21rem]">
                 {recipe.recipe.label}
