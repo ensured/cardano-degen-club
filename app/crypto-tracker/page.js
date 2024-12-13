@@ -1,5 +1,6 @@
 import Animation from "@/components/Animation"
 import TradingViewChart from "@/components/TradingViewChart"
+import { currentUser } from "@clerk/nextjs/server"
 import ConvertAda from "../../components/ConvertAda"
 
 export const metadata = {
@@ -14,7 +15,20 @@ export const metadata = {
 }
 
 const Page = async () => {
-
+  const user = await currentUser()
+  const email = user?.emailAddresses[0].emailAddress
+  if (!email) {
+    return (
+      <Animation>
+        <div className="flex w-full justify-center pt-6 text-center">
+          <div className=" flex flex-col items-center justify-center gap-2 p-2 text-xl sm:text-2xl">
+            👋 Welcome to Crypto Tracker!
+            <p className="text-sm">Sign in to get started</p>
+          </div>
+        </div>
+      </Animation>
+    )
+  }
 
   return (
     <Animation>
@@ -23,7 +37,7 @@ const Page = async () => {
         <ConvertAda />
         <TradingViewChart />
       </main>
-    </Animation>
+    </Animation>    
   )
 }
 
