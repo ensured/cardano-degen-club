@@ -56,7 +56,7 @@ export default async function RootLayout({ children }) {
           />
           <div className="flex min-h-screen flex-col">
             <div className="relative">
-              <SiteHeader />
+                <SiteHeader />
             </div>
             <main className="grow">{children}</main>
             <Footer />

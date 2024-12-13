@@ -1,6 +1,5 @@
 import { MainNav } from "@/components/main-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Suspense } from "react"
 
 import { HeaderNavSheet } from "./HeaderNavSheet"
 import UserButton from "./UserButton"

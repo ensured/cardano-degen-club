@@ -42,7 +42,9 @@ const UserButton = () => {
   return (
     <div className="flex shrink-0 items-center justify-center">  
       <SignedIn>
-        <ClerkUserButton userProfileMode="modal" />
+        <Button variant={"ghost"} size="icon">
+          <ClerkUserButton userProfileMode="modal" />
+        </Button>
       </SignedIn>
       
       <SignedOut>
