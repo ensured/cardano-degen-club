@@ -17,7 +17,6 @@ import {
   SheetTrigger,
 } from "./ui/sheet"
 import StorageIndicator from "./StorageIndicator"
-import { useTheme } from "next-themes"
 
 const revalidate = 30000
 
@@ -34,7 +33,7 @@ const FavoritesSheet = ({
   const size = useWindowSize()
   const [lastFetchTime, setLastFetchTime] = useState(0)
   const [isHovered, setIsHovered] = useState(false);
-  const { theme } = useTheme()
+
   useEffect(() => {
     const getFavs = async () => {
       setIsFavoritesLoading(true)
