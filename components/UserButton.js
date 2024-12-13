@@ -4,6 +4,8 @@ import { UserIcon } from "lucide-react"
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+import { CustomGoogleOneTap } from "./CustomGoogleOneTap"; 
+import { useWindowSize } from "@uidotdev/usehooks";
 
 const UserButton = () => {
   const [open, setOpen] = useState(false);
@@ -39,8 +41,10 @@ const UserButton = () => {
     }
   };
 
+  const {width} = useWindowSize();
+
   return (
-    <div className="flex shrink-0 items-center justify-center">  
+    <div className="flex shrink-0 items-center justify-center relative">  
       <SignedIn>
         <Button variant={"ghost"} size="icon">
           <ClerkUserButton userProfileMode="modal" />
@@ -48,20 +52,20 @@ const UserButton = () => {
       </SignedIn>
       
       <SignedOut>
-        <SignInButton>
+        <SignInButton className="">
           <TooltipProvider delayDuration={400}>
             <Tooltip open={open} onOpenChange={handleOpenChange}>
               <TooltipTrigger asChild onClick={handleClick}>
-                <Button ref={buttonRef} className="flex items-center gap-2 px-2" variant={"ghost"} size="sm">
-                  <UserIcon className="size-6 text-primary-foreground" />
+                <Button ref={buttonRef} className="flex items-center" variant={"ghost"} size="sm">
+                  <UserIcon className="size-6" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent ref={tooltipRef} onClick={() => {
+              <TooltipContent className={`absolute top-10 ${width < 368 ? "-left-64" : width < 400 ? "-left-72" : "-left-96"}`} ref={tooltipRef} onClick={() => {
                 setClicked(false);
                 setOpen(false);
               }}>
-                <div>
-                  <SignIn className="size-6 text-primary-foreground" mode="modal" />
+                <div className="">
+                  <SignIn className="size-6" mode="modal" />
                 </div>
               </TooltipContent>
             </Tooltip>

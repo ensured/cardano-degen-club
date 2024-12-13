@@ -9,7 +9,7 @@ import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Inter } from "next/font/google"
 import CustomClerkProvider from "./clerk/Provider"
-
+import {GoogleOneTap } from "@clerk/nextjs"
 
 export const metadata = {
   title: "Home",
