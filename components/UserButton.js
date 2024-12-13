@@ -1,4 +1,4 @@
-import { SignedIn, SignedOut, SignInButton, SignOutButton } from "@clerk/nextjs"
+import { SignedIn, SignedOut, SignInButton, SignOutButton, GoogleOneTap } from "@clerk/nextjs"
 import Image from "next/image"
 import { currentUser } from "@clerk/nextjs/server"
 import {
@@ -10,8 +10,10 @@ import {
 import { Button } from "./ui/button"
 import { User } from "lucide-react"
 
+
 const UserButton = async () => {
   const user = await currentUser()
+
   return (
     <div className="flex shrink-0 items-center justify-center">  
       <SignedIn>
@@ -26,7 +28,7 @@ const UserButton = async () => {
             />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <SignOutButton>
+            <SignOutButton redirectUrl={"/recipe-fren"}>
               <DropdownMenuItem className="cursor-pointer">
                 Sign out
               </DropdownMenuItem>
