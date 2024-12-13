@@ -98,19 +98,6 @@ const healthOptions = [
 
 const mealTypes = ["Breakfast", "Dinner", "Lunch", "Snack", "Teatime"]
 
-// Move debounce helper outside component
-function debounce(func, wait) {
-  let timeout
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
-}
-
 const RecipeSearchForm = ({
   searchRecipes,
   input,
@@ -192,6 +179,7 @@ const RecipeSearchForm = ({
 
   const handleFormSubmit = (e) => {
     e.preventDefault()
+    setShowSuggestions(false)
     setInput(e.target[0].value)
     searchRecipes(
       e, 
@@ -211,14 +199,37 @@ const RecipeSearchForm = ({
   const handleAddExcludedItem = (e) => {
     e.preventDefault()
     if (newExcludedItem.trim() && !excludedIngredients.includes(newExcludedItem.trim())) {
-      setExcludedIngredients([...excludedIngredients, newExcludedItem.trim()])
+      const newExcludedIngredients = [...excludedIngredients, newExcludedItem.trim()]
+      setExcludedIngredients(newExcludedIngredients)
       setNewExcludedItem("")
+      
+      // Update URL params
+      const params = new URLSearchParams(window.location.search)
+      // Clear existing excluded params
+      params.delete('excluded')
+      // Add each excluded ingredient as a separate parameter
+      newExcludedIngredients.forEach(ingredient => {
+        params.append('excluded', ingredient)
+      })
+      router.push(`?${params.toString()}`, { shallow: true })
     }
-
   }
 
   const handleRemoveExcludedItem = (item) => {
-    setExcludedIngredients(excludedIngredients.filter(i => i !== item))
+    const newExcludedIngredients = excludedIngredients.filter(i => i !== item)
+    setExcludedIngredients(newExcludedIngredients)
+    
+    // Update URL params
+    const params = new URLSearchParams(window.location.search)
+    // Clear existing excluded params
+    params.delete('excluded')
+    // Add remaining ingredients as separate parameters
+    if (newExcludedIngredients.length > 0) {
+      newExcludedIngredients.forEach(ingredient => {
+        params.append('excluded', ingredient)
+      })
+    }
+    router.push(`?${params.toString()}`, { shallow: true })
   }
 
   const [selectedMealType, setSelectedMealType] = useState("")
@@ -229,27 +240,19 @@ const RecipeSearchForm = ({
   // Move the async function inside useCallback
   const debouncedFetchSuggestions = useCallback(
     (value) => {
-      const fetchSuggestions = async () => {
-        if (!value) {
-          setSuggestions([])
-          return
-        }
-        
-        try {
-          const response = await fetch(`/api/search/autocomplete?q=${encodeURIComponent(value)}`)
-          const { data } = await response.json()
-          setSuggestions(data)
-        } catch (error) {
-          console.error('Failed to fetch suggestions:', error)
-        }
+      if (!value) {
+        setSuggestions([])
+        return
       }
-
-      debounce(fetchSuggestions, 300)()
+      
+      fetch(`/api/search/autocomplete?q=${encodeURIComponent(value)}`)
+        .then(response => response.json())
+        .then(({ data }) => setSuggestions(data))
+        .catch(error => console.error('Failed to fetch suggestions:', error))
     },
     []
   )
 
-  // Update handleLocalInputChange
   const handleLocalInputChange = (e) => {
     const value = e.target.value
     setInput(value)
@@ -257,7 +260,41 @@ const RecipeSearchForm = ({
     debouncedFetchSuggestions(value)
   }
 
-  // Add function to handle suggestion selection
+  const handleHealthOptionChange = (option, checked) => {
+    // Update the selected options in state
+    const newSelectedOptions = checked 
+      ? [...selectedHealthOptions, option] 
+      : selectedHealthOptions.filter(item => item !== option)
+    
+    setSelectedHealthOptions(newSelectedOptions)
+
+    // Update URL params
+    const params = new URLSearchParams(window.location.search)
+    const currentHealth = params.get('health')
+    
+    if (checked) {
+      // Adding new option
+      if (currentHealth) {
+        params.set('health', `${currentHealth},${option}`)
+      } else {
+        params.set('health', option)
+      }
+    } else {
+      // Removing option
+      if (currentHealth) {
+        const healthArray = currentHealth.split(',')
+        const filteredHealth = healthArray.filter(item => item !== option)
+        if (filteredHealth.length > 0) {
+          params.set('health', filteredHealth.join(','))
+        } else {
+          params.delete('health')
+        }
+      }
+    }
+    
+    router.push(`?${params.toString()}`, { shallow: true })
+  }
+
   const handleSelectSuggestion = (suggestion) => {
     setInput(suggestion)
     setShowSuggestions(false)
@@ -271,6 +308,43 @@ const RecipeSearchForm = ({
     )
     router.push(`?q=${suggestion}`)
   }
+
+  // Update the radio button handler
+  const handleMealTypeChange = (value) => {
+    setSelectedMealType(value)
+    const params = new URLSearchParams(window.location.search)
+    
+    if (value) {
+      params.set('mealType', value)
+    } else {
+      params.delete('mealType')
+    }
+    router.push(`?${params.toString()}`, { shallow: true })
+  }
+
+  useEffect(() => {
+    // Get URL parameters
+    const params = new URLSearchParams(window.location.search)
+    
+    // Load health options
+    const healthParam = params.get('health')
+    if (healthParam) {
+      const healthArray = healthParam.split(',')
+      setSelectedHealthOptions(healthArray)
+    }
+
+    // Load meal type
+    const mealTypeParam = params.get('mealType')
+    if (mealTypeParam) {
+      setSelectedMealType(mealTypeParam)
+    }
+
+    // Load excluded ingredients
+    const excludedParams = params.getAll('excluded')
+    if (excludedParams.length > 0) {
+      setExcludedIngredients(excludedParams)
+    }
+  }, []) // Empty dependency array means this runs once on mount
 
   return (
     <div className="mx-0 flex justify-center rounded-md ">
@@ -351,6 +425,9 @@ const RecipeSearchForm = ({
                     {selectedHealthOptions.length > 0 && (
                       <Button
                       onClick={() => {
+                        const params = new URLSearchParams(window.location.search)
+                        params.delete('health')
+                        router.push(`?${params.toString()}`, { shallow: true })
                         setSelectedHealthOptions([]) // Reset selected health options
                       }}
                       variant="outline"
@@ -367,7 +444,7 @@ const RecipeSearchForm = ({
                     {isMobile && (
                       <ArrowDown className="flex size-3.5 w-full animate-move-down-up items-center justify-center repeat-infinite" />
                     ) }
-                      <div className="p-4">
+                      <div className="py-3 px-4">
                         <div className="grid grid-cols-2 gap-2 pl-1">
                       {healthOptions.map((option) => (
                         <div key={option} className="flex items-center space-x-2">
@@ -375,11 +452,7 @@ const RecipeSearchForm = ({
                             id={option}
                             checked={selectedHealthOptions.includes(option)}
                             onCheckedChange={(checked) => {
-                              setSelectedHealthOptions(prev => 
-                                checked 
-                                  ? [...prev, option]
-                                  : prev.filter(item => item !== option)
-                              )
+                              handleHealthOptionChange(option, checked)
                             }}
                           />
                           <label
@@ -399,23 +472,27 @@ const RecipeSearchForm = ({
                 <div className="grid gap-1">
                   <div className=" flex items-center justify-between">
                     <label>Meal Type</label>
-{selectedMealType && (
-  <Button
-    onClick={() => setSelectedMealType("")}
-    variant="outline"
-    size="sm"
-    className="h-6 w-20 gap-1 text-base"
-    
+                    {selectedMealType && (
+                      <Button
+                        onClick={() => {
+                          const params = new URLSearchParams(window.location.search)
+                          params.delete('mealType')
+                          router.push(`?${params.toString()}`, { shallow: true })
+                          setSelectedMealType("")
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="h-6 w-20 gap-1 text-base"
                       >
                         Clear
                         <X className="size-5"/>
                       </Button>
                     )}
                   </div>
-                  <ScrollArea className="h-22 rounded-md border p-4">
+                  <ScrollArea className="h-24 rounded-md border py-3 px-4">
                     <RadioGroup
                       value={selectedMealType}
-                      onValueChange={setSelectedMealType}
+                      onValueChange={handleMealTypeChange}
                       className="grid grid-cols-2 gap-2 pl-1"
                     >
                       {mealTypes.map((type) => (
