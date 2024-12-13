@@ -14,6 +14,8 @@ export const metadata = {
 }
 
 const Page = async () => {
+
+
   return (
     <Animation>
       <main className="mx-auto flex w-full max-w-full flex-col gap-6 p-4 lg:max-w-[90%]">

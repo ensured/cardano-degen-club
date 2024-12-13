@@ -1,57 +1,70 @@
-import { SignedIn, SignedOut, SignInButton, SignOutButton, GoogleOneTap } from "@clerk/nextjs"
-import Image from "next/image"
-import { currentUser } from "@clerk/nextjs/server"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+"use client";
+import { SignedIn, SignedOut, SignIn, SignInButton, UserButton as ClerkUserButton } from "@clerk/nextjs"
+import { UserIcon } from "lucide-react"
+import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button"
-import { User } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
 
+const UserButton = () => {
+  const [open, setOpen] = useState(false);
+  const [clicked, setClicked] = useState(false);
+  const tooltipRef = useRef(null);
+  const buttonRef = useRef(null);
 
-const UserButton = async () => {
-  const user = await currentUser()
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (tooltipRef.current && 
+          !tooltipRef.current.contains(event.target) && 
+          !buttonRef.current.contains(event.target)) {
+        setOpen(false);
+        setClicked(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleClick = () => {
+    setClicked(!clicked);
+    setOpen(!open);
+  };
+
+  const handleOpenChange = (newOpen) => {
+    if (!clicked) {
+      setOpen(newOpen);
+    }
+  };
 
   return (
     <div className="flex shrink-0 items-center justify-center">  
       <SignedIn>
-        <DropdownMenu>
-          <DropdownMenuTrigger className="rounded-full outline-none hover:ring-2 hover:ring-gray-200">
-            <Image 
-              src={user?.imageUrl} 
-              alt="User Image" 
-              width={32} 
-              height={32} 
-              className="rounded-full"
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <SignOutButton redirectUrl={"/recipe-fren"}>
-              <DropdownMenuItem className="cursor-pointer">
-                Sign out
-              </DropdownMenuItem>
-            </SignOutButton>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ClerkUserButton userProfileMode="modal" />
       </SignedIn>
       
       <SignedOut>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <User className="size-6" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <SignInButton>
-              <DropdownMenuItem className="cursor-pointer">
-                Sign in
-              </DropdownMenuItem>
-            </SignInButton>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <SignInButton>
+          <TooltipProvider delayDuration={400}>
+            <Tooltip open={open} onOpenChange={handleOpenChange}>
+              <TooltipTrigger asChild onClick={handleClick}>
+                <Button ref={buttonRef} className="flex items-center gap-2 px-2" variant={"ghost"} size="sm">
+                  <UserIcon className="size-6 text-primary-foreground" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent ref={tooltipRef} onClick={() => {
+                setClicked(false);
+                setOpen(false);
+              }}>
+                <div>
+                  <SignIn className="size-6 text-primary-foreground" mode="modal" />
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </SignInButton>
       </SignedOut>
     </div>
   )
