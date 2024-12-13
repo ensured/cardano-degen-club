@@ -59,7 +59,7 @@ const RecipeFrenPage = async () => {
     <Animation>
       <main className="min-h-screen">
         <h1 className="sr-only">Recipe Fren - Your Recipe Fren</h1>
-        <SearchRecipes userEmail={user?.email} />
+        <SearchRecipes userEmail={email} />
         <Toaster toastOptions={TOAST_OPTIONS} />
       </main>
     </Animation>
