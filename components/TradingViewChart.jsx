@@ -369,7 +369,7 @@ function TradingViewChart() {
   // Update FullscreenChartControls component
   const FullscreenChartControls = ({ onClose }) => (
     <div className="absolute inset-x-0 -top-2 z-10">
-      <div className="flex items-center justify-between bg-black/30 p-4 backdrop-blur-sm">
+      <div className="flex items-center justify-between bg-black/30 p-4 backdrop-blur-sm overflow-x-auto">
         <div className="flex items-center gap-3">
           {/* Add chart selector dropdown */}
           <div className="relative">
@@ -597,9 +597,9 @@ function TradingViewChart() {
   // Update fullscreen modal in return statement
   return (
     <div className="">
-      <div className="relative overflow-hidden rounded-lg border-x border-t border-border bg-black/5">
+      <div className="relative h-[460px] rounded-lg border-x border-t border-border bg-black/5">
         <ChartControls containerId={activeChart} />
-        <div id={activeChart} className={`${activeChart === "fullscreen_chart" ? "h-[calc(100vh-120px)]" : "h-[calc(100vh-460px)]"} w-full`} />
+        <div id={activeChart} className={` w-full`} />
       </div>
 
       {fullscreenChart && (
