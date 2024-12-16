@@ -5,8 +5,6 @@ import { FileText, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 
@@ -37,9 +35,9 @@ export function ConfirmPreviewAlertDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <VisuallyHidden.Root>
-          <DialogTitle className="flex w-full justify-center text-xl font-bold">
+          <div className="flex w-full justify-center text-xl font-bold">
             Preview
-          </DialogTitle>
+          </div>
         </VisuallyHidden.Root>
         <div className="mt-8 flex h-8 w-full justify-center pb-4 font-serif text-lg italic">
           {loading ? (
@@ -59,7 +57,7 @@ export function ConfirmPreviewAlertDialog({
           )}
         </div>
 
-        <DialogDescription className="relative w-full pb-5">
+        <div className="relative w-full pb-5">
           <Button
             className="w-full"
             size={"sm"}
@@ -78,7 +76,7 @@ export function ConfirmPreviewAlertDialog({
               Preview
             </div>
           </Button>
-        </DialogDescription>
+        </div>
       </DialogContent>
     </Dialog>
   )
