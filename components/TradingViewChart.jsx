@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState, useCallback, useRef, act } from "react"
 import {
   EnterFullScreenIcon,
   ExitFullScreenIcon,
@@ -8,6 +8,8 @@ import {
   MinusIcon,
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
+import { ChevronDown } from "lucide-react"
+import { useWindowSize } from "@uidotdev/usehooks"
 
 // Move chart configuration outside component to prevent recreating on each render
 const CHART_CONFIG = [
@@ -60,6 +62,8 @@ function TradingViewChart() {
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
+
+  const {width} = useWindowSize()
 
   // Add a ref to track the last updated chart
   const lastUpdatedChartRef = useRef(null)
@@ -133,16 +137,23 @@ function TradingViewChart() {
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
-          <div className="flex shrink-0 items-center gap-2">
-            <select
-              value={activeChart}
-              onChange={(e) => handleChartChange(e.target.value)}
-              className="shrink-0 rounded bg-black/40 px-2 py-1 text-sm text-white"
-            >
-              {CHART_CONFIG.map(({ containerId, title }) => (
-                <option key={containerId} value={containerId}>{title}</option>
-              ))}
-            </select>
+          <div className="flex shrink-0 items-center gap-1">
+            <div className="relative">
+              <select
+                value={activeChart}
+                onChange={(e) => handleChartChange(e.target.value)}
+                className={`${width > 520 ? "px-2 text-white" : "appearance-none text-transparent"} h-7 min-w-32 shrink-0 rounded bg-black/40 hover:bg-black/60`}
+              >
+                {CHART_CONFIG.map(({ containerId, title }) => (
+                  <option key={containerId} value={containerId} className="text-white">
+                    {title}
+                  </option>
+                ))}
+              </select>
+              {width <= 520 && (
+                <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
+              )}
+            </div>
             <select
               value={chartSettings[containerId].interval}
               onChange={(e) => {
@@ -157,7 +168,7 @@ function TradingViewChart() {
             <button
               onClick={() => initializeChart(containerId)}
               className="shrink-0 rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
-              aria-label="Refresh chart"
+              aria-label="Refresh chart"f
             >
               <ReloadIcon className="size-4" />
             </button>
@@ -364,51 +375,58 @@ function TradingViewChart() {
   const FullscreenChartControls = ({ onClose }) => (
     <div className="absolute inset-x-0 -top-2 z-10">
       <div className="flex items-center justify-between bg-black/30 p-4 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           {/* Add chart selector dropdown */}
-          <select
-            value={fullscreenChart}
-            onChange={(e) => {
-              const newChartId = e.target.value;
-              setFullscreenChart(newChartId);
-              // Reinitialize with the new chart
-              setTimeout(() => {
-                const config = CHART_CONFIG.find(c => c.containerId === newChartId);
-                if (!config) return;
+          <div className="relative">
+            <select
+              value={fullscreenChart}
+              onChange={(e) => {
+                const newChartId = e.target.value;
+                setFullscreenChart(newChartId);
+                // Reinitialize with the new chart
+                setTimeout(() => {
+                  const config = CHART_CONFIG.find(c => c.containerId === newChartId);
+                  if (!config) return;
 
-                if (chartInstancesRef.current["fullscreen_chart"]) {
-                  try {
-                    chartInstancesRef.current["fullscreen_chart"].remove();
-                  } catch (error) {
-                    console.log('Chart cleanup failed:', error);
+                  if (chartInstancesRef.current["fullscreen_chart"]) {
+                    try {
+                      chartInstancesRef.current["fullscreen_chart"].remove();
+                    } catch (error) {
+                      console.log('Chart cleanup failed:', error);
+                    }
+                    delete chartInstancesRef.current["fullscreen_chart"];
                   }
-                  delete chartInstancesRef.current["fullscreen_chart"];
-                }
 
-                chartInstancesRef.current["fullscreen_chart"] = new window.TradingView.widget({
-                  symbol: config.symbol,
-                  interval: chartSettings[newChartId].interval,
-                  theme: chartSettings[newChartId].theme,
-                  style: "1",
-                  locale: "en",
-                  container_id: "fullscreen_chart",
-                  width: window.innerWidth,
-                  height: window.innerHeight - 64,
-                  toolbar_bg: "#f1f3f6",
-                  enable_publishing: false,
-                  hide_top_toolbar: false,
-                  save_image: true,
-                  studies: chartSettings[newChartId].indicators,
-                  drawings_access: { type: "all", tools: [ { name: "Regression Trend" } ] },
-                });
-              }, 100);
-            }}
-            className="rounded bg-black/40 px-2 py-1 text-white"
-          >
-            {CHART_CONFIG.map(({ containerId, title }) => (
-              <option key={containerId} value={containerId}>{title}</option>
-            ))}
-          </select>
+                  chartInstancesRef.current["fullscreen_chart"] = new window.TradingView.widget({
+                    symbol: config.symbol,
+                    interval: chartSettings[newChartId].interval,
+                    theme: chartSettings[newChartId].theme,
+                    style: "1",
+                    locale: "en",
+                    container_id: "fullscreen_chart",
+                    width: window.innerWidth,
+                    height: window.innerHeight - 64,
+                    toolbar_bg: "#f1f3f6",
+                    enable_publishing: false,
+                    hide_top_toolbar: false,
+                    save_image: true,
+                    studies: chartSettings[newChartId].indicators,
+                    drawings_access: { type: "all", tools: [ { name: "Regression Trend" } ] },
+                  });
+                }, 100);
+              }}
+              className={`${width > 520 ? "px-2 text-white" : "appearance-none text-transparent"} h-7 w-2 shrink-0 rounded bg-black/40 hover:bg-black/60`}
+            >
+              {CHART_CONFIG.map(({ containerId, title }) => (
+                <option key={containerId} value={containerId} className="text-white">
+                  {title}
+                </option>
+              ))}
+            </select>
+            {width <= 520 && (
+              <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-white" />
+            )}
+          </div>
 
           <select
             value={chartSettings[fullscreenChart].interval}
@@ -585,10 +603,10 @@ function TradingViewChart() {
 
   // Update fullscreen modal in return statement
   return (
-    <div className="h-screen">
+    <div className="">
       <div className="relative overflow-hidden rounded-lg border-x border-t border-border bg-black/5">
         <ChartControls containerId={activeChart} />
-        <div id={activeChart} className="h-[calc(100vh-120px)] w-full" />
+        <div id={activeChart} className={`${activeChart === "fullscreen_chart" ? "h-[calc(100vh-120px)]" : "h-[calc(100vh-460px)]"} w-full`} />
       </div>
 
       {fullscreenChart && (
