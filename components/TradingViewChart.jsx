@@ -136,6 +136,7 @@ function TradingViewChart() {
         >
           <div className="flex shrink-0 items-center gap-2">
             <div className="relative">
+              
               <select
                 value={activeChart}
                 onChange={(e) => handleChartChange(e.target.value)}
@@ -149,6 +150,22 @@ function TradingViewChart() {
               </select>
               <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
             </div>
+            <Button
+              onClick={() => openFullscreen(containerId)}
+              size={"icon"}
+              variant={"ghost"}
+              className="h-6 w-6"
+              aria-label="Enter fullscreen"
+            >
+              <EnterFullScreenIcon className="size-5" />
+            </Button>
+            <button
+              onClick={() => initializeChart(containerId)}
+              className="shrink-0 rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
+              aria-label="Refresh chart"
+            >
+              <ReloadIcon className="size-4" />
+            </button>
             <select
               value={chartSettings[containerId].interval}
               onChange={(e) => {
@@ -160,13 +177,7 @@ function TradingViewChart() {
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
-            <button
-              onClick={() => initializeChart(containerId)}
-              className="shrink-0 rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
-              aria-label="Refresh chart"f
-            >
-              <ReloadIcon className="size-4" />
-            </button>
+          
             <select
               value=""
               onChange={(e) => {
@@ -206,15 +217,7 @@ function TradingViewChart() {
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
-            <Button
-              onClick={() => openFullscreen(containerId)}
-              size={"icon"}
-              variant={"ghost"}
-              className="h-6 w-6"
-              aria-label="Enter fullscreen"
-            >
-              <EnterFullScreenIcon className="size-5" />
-            </Button>
+           
             <div className="flex shrink-0 flex-nowrap gap-1">
               {chartSettings[containerId].indicators.map((indicator) => (
                 <button
@@ -421,6 +424,16 @@ function TradingViewChart() {
             <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
           </div>
 
+          <Button
+            onClick={onClose}
+            size={"icon"}
+            variant={"ghost"}
+            className="h-6 w-6"
+            aria-label="Exit fullscreen"
+          >
+            <ExitFullScreenIcon className="size-5" />
+          </Button>
+
           <select
             value={chartSettings[fullscreenChart].interval}
             onChange={(e) => {
@@ -543,15 +556,7 @@ function TradingViewChart() {
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          <Button
-            onClick={onClose}
-            size={"icon"}
-            variant={"ghost"}
-            className="h-6 w-6"
-            aria-label="Exit fullscreen"
-          >
-            <ExitFullScreenIcon className="size-5" />
-          </Button>
+         
         </div>
       </div>
     </div>
