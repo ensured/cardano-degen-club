@@ -23,7 +23,7 @@ const CardanoLinksPage = () => {
             Cardano Resources Directory
           </h1>
           <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Explore essential tools and platforms in the Cardano ecosystem
+            Explore essential resources for the Cardano ecosystem
           </p>
         </section>
         
