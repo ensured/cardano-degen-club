@@ -9,7 +9,6 @@ import {
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
 import { ChevronDown } from "lucide-react"
-import { useWindowSize } from "@uidotdev/usehooks"
 
 // Move chart configuration outside component to prevent recreating on each render
 const CHART_CONFIG = [
@@ -62,8 +61,6 @@ function TradingViewChart() {
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
-
-  const {width} = useWindowSize()
 
   // Add a ref to track the last updated chart
   const lastUpdatedChartRef = useRef(null)
@@ -137,12 +134,12 @@ function TradingViewChart() {
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 items-center gap-2">
             <div className="relative">
               <select
                 value={activeChart}
                 onChange={(e) => handleChartChange(e.target.value)}
-                className={`${width > 520 ? "px-2 text-white" : "appearance-none text-transparent"} h-7 min-w-32 shrink-0 rounded bg-black/40 hover:bg-black/60`}
+                className="appearance-none h-7 w-7 shrink-0 rounded bg-black/40 text-transparent hover:bg-black/60"
               >
                 {CHART_CONFIG.map(({ containerId, title }) => (
                   <option key={containerId} value={containerId} className="text-white">
@@ -150,9 +147,7 @@ function TradingViewChart() {
                   </option>
                 ))}
               </select>
-              {width <= 520 && (
-                <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
-              )}
+              <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
             </div>
             <select
               value={chartSettings[containerId].interval}
@@ -375,7 +370,7 @@ function TradingViewChart() {
   const FullscreenChartControls = ({ onClose }) => (
     <div className="absolute inset-x-0 -top-2 z-10">
       <div className="flex items-center justify-between bg-black/30 p-4 backdrop-blur-sm">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           {/* Add chart selector dropdown */}
           <div className="relative">
             <select
@@ -415,7 +410,7 @@ function TradingViewChart() {
                   });
                 }, 100);
               }}
-              className={`${width > 520 ? "px-2 text-white" : "appearance-none text-transparent"} h-7 w-2 shrink-0 rounded bg-black/40 hover:bg-black/60`}
+              className="appearance-none h-7 w-7 shrink-0 rounded bg-black/40 text-transparent hover:bg-black/60"
             >
               {CHART_CONFIG.map(({ containerId, title }) => (
                 <option key={containerId} value={containerId} className="text-white">
@@ -423,9 +418,7 @@ function TradingViewChart() {
                 </option>
               ))}
             </select>
-            {width <= 520 && (
-              <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-white" />
-            )}
+            <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
           </div>
 
           <select
