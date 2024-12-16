@@ -1,10 +1,12 @@
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { motion } from "framer-motion"
 import { FileText, Loader2 } from "lucide-react"
-
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 
@@ -35,9 +37,9 @@ export function ConfirmPreviewAlertDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <VisuallyHidden.Root>
-          <div className="flex w-full justify-center text-xl font-bold">
+          <DialogTitle className="flex w-full justify-center text-xl font-bold">
             Preview
-          </div>
+          </DialogTitle>
         </VisuallyHidden.Root>
         <div className="mt-8 flex h-8 w-full justify-center pb-4 font-serif text-lg italic">
           {loading ? (
@@ -57,7 +59,7 @@ export function ConfirmPreviewAlertDialog({
           )}
         </div>
 
-        <div className="relative w-full pb-5">
+        <DialogDescription className="relative w-full pb-5">
           <Button
             className="w-full"
             size={"sm"}
@@ -76,7 +78,7 @@ export function ConfirmPreviewAlertDialog({
               Preview
             </div>
           </Button>
-        </div>
+        </DialogDescription>
       </DialogContent>
     </Dialog>
   )
