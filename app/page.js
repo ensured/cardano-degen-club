@@ -1,5 +1,5 @@
 import { DividerVerticalIcon } from "@radix-ui/react-icons"
-import HeroLandingPage from "../../components/HeroLandingPage"
+import HeroLandingPage from "../components/HeroLandingPage"
 
 export const metadata = {
   title: "Cardano Resources | Learn About Web3 and Blockchain",

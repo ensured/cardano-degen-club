@@ -1,16 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client"
-
 import { useEffect, useState, useCallback, useRef } from "react"
 import {
   EnterFullScreenIcon,
   ExitFullScreenIcon,
   ReloadIcon,
   MinusIcon,
-  PlusIcon,
-
 } from "@radix-ui/react-icons"
-import { useWindowSize } from "@uidotdev/usehooks"
+import { Button } from "./ui/button"
 
 // Move chart configuration outside component to prevent recreating on each render
 const CHART_CONFIG = [
@@ -59,7 +56,7 @@ function TradingViewChart() {
       }
     }), {})
   )
-  const [hiddenCharts, setHiddenCharts] = useState(new Set())
+  const [activeChart, setActiveChart] = useState(CHART_CONFIG[0].containerId)
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
@@ -108,6 +105,22 @@ function TradingViewChart() {
       containerRef.current.scrollLeft = scrollLeft - walk;
     };
 
+    // Add chart change handler
+    const handleChartChange = (newChartId) => {
+      // Clean up current chart
+      if (chartInstancesRef.current[activeChart]) {
+        try {
+          chartInstancesRef.current[activeChart].remove()
+        } catch (error) {
+          console.log('Chart cleanup failed:', error)
+        }
+        delete chartInstancesRef.current[activeChart]
+      }
+      
+      setActiveChart(newChartId)
+      // Chart will be initialized by the useEffect
+    }
+
     return (
       <div className="flex bg-secondary p-2 dark:bg-black/40">
         <div
@@ -121,7 +134,15 @@ function TradingViewChart() {
           onMouseMove={handleMouseMove}
         >
           <div className="flex shrink-0 items-center gap-2">
-            <h3 className="text-sm font-medium text-white">{CHART_CONFIG.find(c => c.containerId === containerId)?.title}</h3>
+            <select
+              value={activeChart}
+              onChange={(e) => handleChartChange(e.target.value)}
+              className="shrink-0 rounded bg-black/40 px-2 py-1 text-sm text-white"
+            >
+              {CHART_CONFIG.map(({ containerId, title }) => (
+                <option key={containerId} value={containerId}>{title}</option>
+              ))}
+            </select>
             <select
               value={chartSettings[containerId].interval}
               onChange={(e) => {
@@ -179,13 +200,15 @@ function TradingViewChart() {
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
-            <button
+            <Button
               onClick={() => openFullscreen(containerId)}
-              className="shrink-0 rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
+              size={"icon"}
+              variant={"ghost"}
+              className="h-6 w-6"
               aria-label="Enter fullscreen"
             >
               <EnterFullScreenIcon className="size-5" />
-            </button>
+            </Button>
             <div className="flex shrink-0 flex-nowrap gap-1">
               {chartSettings[containerId].indicators.map((indicator) => (
                 <button
@@ -215,28 +238,6 @@ function TradingViewChart() {
       </div>
     );
   }
-
-  // Add hidden charts menu
-  const HiddenChartsMenu = () => (
-    <div className="fixed bottom-4 right-4 rounded-lg bg-black/80 p-2">
-      <div className="flex flex-col gap-2">
-        {Array.from(hiddenCharts).map((chartId) => (
-          <button
-            key={chartId}
-            onClick={() => setHiddenCharts(prev => {
-              const next = new Set(prev)
-              next.delete(chartId)
-              return next
-            })}
-            className="flex items-center gap-2 text-sm text-white hover:text-gray-300"
-          >
-            <PlusIcon className="size-4" />
-            {CHART_CONFIG.find(c => c.containerId === chartId)?.title}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
 
   // Update initializeChart to only depend on the specific chart's settings
   const initializeChart = useCallback((containerId) => {
@@ -282,32 +283,26 @@ function TradingViewChart() {
     document.body.appendChild(script)
 
     script.onload = () => {
-      CHART_CONFIG.forEach(({ containerId }) => {
-        if (!hiddenCharts.has(containerId)) {
-          initializeChart(containerId)
-        }
-      })
+      initializeChart(activeChart)
     }
 
     return () => {
-      // Copy the current chart instances to a variable for cleanup
-      const currentChartInstances = { ...chartInstancesRef.current }
-
       // Cleanup chart instances
-      Object.values(currentChartInstances).forEach(chart => {
+      if (chartInstancesRef.current[activeChart]) {
         try {
-          if (chart && chart.remove && document.getElementById(chart._options.container_id)) {
-            chart.remove()
+          if (chartInstancesRef.current[activeChart].remove) {
+            chartInstancesRef.current[activeChart].remove()
           }
         } catch (error) {
           console.log('Chart cleanup failed:', error)
         }
-      })
+        delete chartInstancesRef.current[activeChart]
+      }
       if (document.body.contains(script)) {
         document.body.removeChild(script)
       }
     }
-  }, [hiddenCharts, initializeChart])
+  }, [activeChart, initializeChart])
 
   // Update the chart settings handler
   const updateChartSetting = useCallback((containerId, updates) => {
@@ -322,41 +317,6 @@ function TradingViewChart() {
     // Initialize only the specific chart after a short delay
     setTimeout(() => initializeChart(containerId), 0)
   }, [initializeChart])
-
-  // Initial chart setup
-  useEffect(() => {
-    const script = document.createElement("script")
-    script.src = "https://s3.tradingview.com/tv.js"
-    script.async = true
-    document.body.appendChild(script)
-
-    script.onload = () => {
-      CHART_CONFIG.forEach(({ containerId }) => {
-        if (!hiddenCharts.has(containerId)) {
-          initializeChart(containerId)
-        }
-      })
-    }
-
-    return () => {
-      // Copy the current chart instances to a variable for cleanup
-      const currentChartInstances = { ...chartInstancesRef.current }
-
-      // Cleanup chart instances
-      Object.values(currentChartInstances).forEach(chart => {
-        try {
-          if (chart && chart.remove && document.getElementById(chart._options.container_id)) {
-            chart.remove()
-          }
-        } catch (error) {
-          console.log('Chart cleanup failed:', error)
-        }
-      })
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
-      }
-    }
-  }, [hiddenCharts, initializeChart])
 
   // Update the reinitializeChart function to ensure proper cleanup and initialization
   const reinitializeChart = (containerId, settings) => {
@@ -388,7 +348,7 @@ function TradingViewChart() {
         locale: "en",
         container_id: containerId,
         width: "100%",
-        height: containerId === "fullscreen_chart" ? window.innerHeight : "460",
+        height: containerId === "fullscreen_chart" ? window.innerHeight - 64 : "460",
         toolbar_bg: "#f1f3f6",
         enable_publishing: false,
         hide_top_toolbar: false,
@@ -400,14 +360,56 @@ function TradingViewChart() {
     }, 50)
   }
 
-  // Add FullscreenChartControls component
+  // Update FullscreenChartControls component
   const FullscreenChartControls = ({ onClose }) => (
-    <div className="absolute inset-x-0 top-0 z-10">
+    <div className="absolute inset-x-0 -top-2 z-10">
       <div className="flex items-center justify-between bg-black/30 p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <h3 className="text-lg font-medium text-white">
-            {CHART_CONFIG.find(c => c.containerId === fullscreenChart)?.title}
-          </h3>
+          {/* Add chart selector dropdown */}
+          <select
+            value={fullscreenChart}
+            onChange={(e) => {
+              const newChartId = e.target.value;
+              setFullscreenChart(newChartId);
+              // Reinitialize with the new chart
+              setTimeout(() => {
+                const config = CHART_CONFIG.find(c => c.containerId === newChartId);
+                if (!config) return;
+
+                if (chartInstancesRef.current["fullscreen_chart"]) {
+                  try {
+                    chartInstancesRef.current["fullscreen_chart"].remove();
+                  } catch (error) {
+                    console.log('Chart cleanup failed:', error);
+                  }
+                  delete chartInstancesRef.current["fullscreen_chart"];
+                }
+
+                chartInstancesRef.current["fullscreen_chart"] = new window.TradingView.widget({
+                  symbol: config.symbol,
+                  interval: chartSettings[newChartId].interval,
+                  theme: chartSettings[newChartId].theme,
+                  style: "1",
+                  locale: "en",
+                  container_id: "fullscreen_chart",
+                  width: window.innerWidth,
+                  height: window.innerHeight - 64,
+                  toolbar_bg: "#f1f3f6",
+                  enable_publishing: false,
+                  hide_top_toolbar: false,
+                  save_image: true,
+                  studies: chartSettings[newChartId].indicators,
+                  drawings_access: { type: "all", tools: [ { name: "Regression Trend" } ] },
+                });
+              }, 100);
+            }}
+            className="rounded bg-black/40 px-2 py-1 text-white"
+          >
+            {CHART_CONFIG.map(({ containerId, title }) => (
+              <option key={containerId} value={containerId}>{title}</option>
+            ))}
+          </select>
+
           <select
             value={chartSettings[fullscreenChart].interval}
             onChange={(e) => {
@@ -514,7 +516,7 @@ function TradingViewChart() {
                   locale: "en",
                   container_id: "fullscreen_chart",
                   width: window.innerWidth,
-                  height: window.innerHeight,
+                  height: window.innerHeight - 64,
                   toolbar_bg: "#f1f3f6",
                   enable_publishing: false,
                   hide_top_toolbar: false,
@@ -530,13 +532,15 @@ function TradingViewChart() {
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          <button
+          <Button
             onClick={onClose}
-            className="rounded-full bg-red-500/30 p-2 transition-colors hover:bg-red-500/50"
+            size={"icon"}
+            variant={"ghost"}
+            className="h-6 w-6"
             aria-label="Exit fullscreen"
           >
-            <ExitFullScreenIcon className="size-6" />
-          </button>
+            <ExitFullScreenIcon className="size-5" />
+          </Button>
         </div>
       </div>
     </div>
@@ -568,7 +572,7 @@ function TradingViewChart() {
         locale: "en",
         container_id: "fullscreen_chart",
         width: window.innerWidth,
-        height: window.innerHeight,
+        height: window.innerHeight - 64,
         toolbar_bg: "#f1f3f6",
         enable_publishing: false,
         hide_top_toolbar: false,
@@ -581,23 +585,16 @@ function TradingViewChart() {
 
   // Update fullscreen modal in return statement
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
-      {CHART_CONFIG.filter(({ containerId }) => !hiddenCharts.has(containerId)).map(({ containerId }) => (
-        <div key={containerId} className="relative overflow-hidden rounded-lg border-x border-t border-border bg-black/5">
-          <ChartControls 
-            containerId={containerId}
-            onHide={(chartId) => setHiddenCharts(prev => new Set([...prev, chartId]))}
-          />
-          <div id={containerId} className="h-[460px] w-full" />
-        </div>
-      ))}
-
-      {hiddenCharts.size > 0 && <HiddenChartsMenu />}
+    <div className="h-screen">
+      <div className="relative overflow-hidden rounded-lg border-x border-t border-border bg-black/5">
+        <ChartControls containerId={activeChart} />
+        <div id={activeChart} className="h-[calc(100vh-120px)] w-full" />
+      </div>
 
       {fullscreenChart && (
         <div className="fixed inset-0 z-50 bg-black/90">
           <FullscreenChartControls onClose={() => setFullscreenChart(null)} />
-          <div className="h-[calc(100vh-72px)] w-screen pt-[72px]">
+          <div className="absolute inset-x-0 bottom-0 top-[64px] w-full">
             <div id="fullscreen_chart" className="size-full" />
           </div>
         </div>

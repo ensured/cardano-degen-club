@@ -16,7 +16,6 @@ const UserButton = () => {
 
   useEffect(() => {
     setCurrentPath(pathname);
-    console.log(pathname);
   }, [pathname]);
   
   return (
