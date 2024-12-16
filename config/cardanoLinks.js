@@ -101,6 +101,11 @@ const contentCreators = [
     url: "",
   },
   {
+    name: "CardanoNoodz",
+    twitter: "https://x.com/CardanoNoodz",
+    url: "https://every5days.com/",
+  },
+  {
     name: "DappCentral",
     twitter: "https://x.com/dapp_central",
     url: "http://youtube.com/dappcentral",
