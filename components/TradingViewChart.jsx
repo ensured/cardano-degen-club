@@ -8,8 +8,9 @@ import {
   MinusIcon,
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
-import { ChevronDown } from "lucide-react"
-
+import { ChevronDown} from "lucide-react"
+import { MoonIcon, SunIcon } from "lucide-react"
+import { useTheme } from "next-themes"
 // Move chart configuration outside component to prevent recreating on each render
 const CHART_CONFIG = [
   { symbol: "BINANCE:ADAUSD", containerId: "tradingview_ada_usd", title: "ADA/USD" },
@@ -32,10 +33,7 @@ const INTERVALS = [
   { label: "1W", value: "W" },
 ]
 
-const THEMES = [
-  { label: "Dark", value: "dark" },
-  { label: "Light", value: "light" },
-]
+
 
 // Update the INDICATORS constant
 const INDICATORS = [
@@ -58,6 +56,8 @@ function TradingViewChart() {
     }), {})
   )
   const [activeChart, setActiveChart] = useState(CHART_CONFIG[0].containerId)
+
+  const { theme, setTheme } = useTheme()
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
@@ -140,7 +140,7 @@ function TradingViewChart() {
               <select
                 value={activeChart}
                 onChange={(e) => handleChartChange(e.target.value)}
-                className="appearance-none h-7 w-7 shrink-0 rounded bg-black/40 text-transparent hover:bg-black/60"
+                className="size-7 shrink-0 appearance-none rounded bg-black/40 text-transparent hover:bg-black/60"
               >
                 {CHART_CONFIG.map(({ containerId, title }) => (
                   <option key={containerId} value={containerId} className="text-white">
@@ -148,7 +148,7 @@ function TradingViewChart() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
+              <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-white" />
             </div>
             <Button
               onClick={() => openFullscreen(containerId)}
@@ -205,18 +205,18 @@ function TradingViewChart() {
             </select>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <select
-              value={chartSettings[containerId].theme}
-              onChange={(e) => {
-                updateChartSetting(containerId, { theme: e.target.value })
+            <Button
+              onClick={() => {
+                const newTheme = chartSettings[containerId].theme === "dark" ? "light" : "dark";
+                updateChartSetting(containerId, { theme: newTheme });
                 setTimeout(() => initializeChart(containerId), 0);
               }}
+              variant={"ghost"}
               className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
+              aria-label="Toggle theme"
             >
-              {THEMES.map(({ label, value }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
+              {chartSettings[containerId].theme === "dark" ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
+            </Button>
            
             <div className="flex shrink-0 flex-nowrap gap-1">
               {chartSettings[containerId].indicators.map((indicator) => (
@@ -372,7 +372,7 @@ function TradingViewChart() {
   // Update FullscreenChartControls component
   const FullscreenChartControls = ({ onClose }) => (
     <div className="absolute inset-x-0 -top-2 z-10">
-      <div className="flex items-center justify-between bg-black/30 p-4 backdrop-blur-sm overflow-x-auto">
+      <div className="flex items-center justify-between overflow-x-auto bg-black/30 p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           {/* Add chart selector dropdown */}
           <div className="relative">
@@ -413,7 +413,7 @@ function TradingViewChart() {
                   });
                 }, 100);
               }}
-              className="appearance-none h-7 w-7 shrink-0 rounded bg-black/40 text-transparent hover:bg-black/60"
+              className="size-7 shrink-0 appearance-none rounded bg-black/40 text-transparent hover:bg-black/60"
             >
               {CHART_CONFIG.map(({ containerId, title }) => (
                 <option key={containerId} value={containerId} className="text-white">
@@ -421,7 +421,7 @@ function TradingViewChart() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 size-4 text-white" />
+            <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-white" />
           </div>
 
           <Button
@@ -433,6 +433,16 @@ function TradingViewChart() {
           >
             <ExitFullScreenIcon className="size-5" />
           </Button>
+          <button
+            onClick={() => {
+              const currentSettings = chartSettings[fullscreenChart]
+              setTimeout(() => reinitializeChart("fullscreen_chart", currentSettings), 0)
+            }}
+            className="rounded bg-black/40 p-2 transition-colors hover:bg-black/60"
+            aria-label="Refresh chart"
+          >
+            <ReloadIcon className="size-5" />
+          </button>
 
           <select
             value={chartSettings[fullscreenChart].interval}
@@ -453,16 +463,7 @@ function TradingViewChart() {
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
-          <button
-            onClick={() => {
-              const currentSettings = chartSettings[fullscreenChart]
-              setTimeout(() => reinitializeChart("fullscreen_chart", currentSettings), 0)
-            }}
-            className="rounded bg-black/40 p-2 transition-colors hover:bg-black/60"
-            aria-label="Refresh chart"
-          >
-            <ReloadIcon className="size-5" />
-          </button>
+       
           <select
             value=""
             onChange={(e) => {
