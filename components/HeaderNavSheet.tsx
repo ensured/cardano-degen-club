@@ -94,7 +94,7 @@ export function HeaderNavSheet() {
       <SheetContent className="">
         <div className="flex w-full items-center gap-2 pr-8">
           {latestCommitDates[0] && (
-            <div className="w-full max-w-md mx-auto p-4 rounded-lg shadow-md">
+            <div className="w-full max-w-md mx-auto px-2 rounded-lg shadow-md">
               <div className="flex flex-col justify-center text-sm text-muted-foreground bg-secondary p-3 rounded-md shadow cursor-pointer mb-2">
                 <span className="font-semibold text-lg">Last updated</span>
                 <span className="line-clamp-2 w-full text-muted-foreground/60">{timeAgo(latestCommitDates[0].date)} ago</span>
@@ -132,7 +132,7 @@ export function HeaderNavSheet() {
             </SheetTitle>
           </VisuallyHidden.Root>
         </div>
-        <div className="relative mt-6 flex h-full flex-col gap-1 overflow-auto pb-4"> 
+        <div className="relative mt-4 flex h-full flex-col gap-1 overflow-auto pb-4"> 
           <SelectSeparator />
   
           <div className="text-2xl font-semibold text-sky-500">Crypto</div>
