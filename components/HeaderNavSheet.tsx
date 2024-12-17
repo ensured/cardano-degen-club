@@ -26,6 +26,8 @@ export function HeaderNavSheet() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [latestCommitDates, setLatestCommitDates] = useState<any[]>([]);
+  const [formattedTime, setFormattedTime] = useState<string>("");
+
   useEffect(() => {
     async function fetchCommits() {
       setLoading(true);
@@ -54,6 +56,19 @@ export function HeaderNavSheet() {
     const interval = setInterval(fetchCommits, 120000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const updateFormattedTime = () => {
+      if (latestCommitDates[0]) {
+        setFormattedTime(timeAgo(latestCommitDates[0].date));
+      }
+    };
+
+    updateFormattedTime(); // Initial update
+    const interval = setInterval(updateFormattedTime, 1000); // Update every minute
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [latestCommitDates]);
 
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
@@ -97,7 +112,7 @@ export function HeaderNavSheet() {
             <div className="w-full max-w-md mx-auto px-2 rounded-lg shadow-md">
               <div className="flex flex-col justify-center text-sm text-muted-foreground bg-secondary p-3 rounded-md shadow cursor-pointer mb-2">
                 <span className="font-semibold text-lg">Last updated</span>
-                <span className="line-clamp-2 w-full text-muted-foreground/60">{timeAgo(latestCommitDates[0].date)} ago</span>
+                <span className="line-clamp-2 w-full text-muted-foreground/60">{formattedTime} ago</span>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
