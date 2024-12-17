@@ -14,9 +14,9 @@ import {
   Network,
   Loader2,
 } from "lucide-react"
-
+import { Dialog, DialogContent, DialogTitle, DialogTrigger, DialogDescription } from "./ui/dialog"
 import { SheetContent } from "./SheetContent"
-import { ThemeToggle } from "./theme-toggle"
+// import { ThemeToggle } from "./theme-toggle"
 import { Button } from "./ui/button"
 import { SelectSeparator } from "./ui/select"
 import { Sheet, SheetDescription, SheetTitle, SheetTrigger } from "./ui/sheet"
@@ -91,18 +91,29 @@ export function HeaderNavSheet() {
         </Button>
        </div>
       </SheetTrigger>
-      <SheetContent>
-        <div className="flex w-full items-center gap-2">
-          {/* <Button variant="outline" size="icon">
-            <ThemeToggle />
-          </Button> */}
+      <SheetContent className="">
+        <div className="flex w-full items-center gap-2 pr-8">
           {latestCommitDates[0] && (
-            <span className="text-sm text-gray-500">
-              <span className="font-semibold">Site Last Updated:</span> 
-              <span className="ml-1">{timeAgo(latestCommitDates[0].date)} ago</span>
-              <span className="font-semibold">Commit Message:</span> 
-              <span className="ml-1">{latestCommitDates[0].message}</span>
-            </span>
+            <div className="w-full max-w-md mx-auto p-4 rounded-lg shadow-md">
+              <div className="flex flex-col justify-center text-sm text-muted-foreground bg-secondary p-3 rounded-md shadow cursor-pointer mb-2">
+                <span className="font-semibold text-lg">Last updated</span>
+                <span className="line-clamp-2 w-full text-muted-foreground/60">{timeAgo(latestCommitDates[0].date)} ago</span>
+              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="flex flex-col justify-center text-sm text-muted-foreground bg-secondary p-3 rounded-md shadow cursor-pointer hover:bg-secondary/80 transition duration-100 hover:text-white hover:outline hover:outline-white/20">
+                    <span className="font-semibold text-lg">Commit Message</span>
+                    <span className="line-clamp-2 w-full text-muted-foreground/60">{latestCommitDates[0].message}</span>
+                  </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogTitle className="text-xl font-bold">Full Commit Message</DialogTitle>
+                  <DialogDescription className="text-muted-foreground">
+                    {latestCommitDates[0].message}
+                  </DialogDescription>
+                </DialogContent>
+              </Dialog>
+            </div>
           )}
           <span className="text-sm text-gray-500">
             {error && <span className="text-red-500">{error}</span>}
@@ -134,7 +145,7 @@ export function HeaderNavSheet() {
             <Globe className="size-5" />
             Punycode Converter
             {commits.find(c => c.folder === "punycode") && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="ml-2 text-sm text-gray-500">
                 ({timeAgo(commits.find(c => c.folder === "punycode").lastCommitDate)})
               </span>
             )}
@@ -148,7 +159,7 @@ export function HeaderNavSheet() {
             <LinkIcon className="size-5" />
             Cardano Links
             {commits.find(c => c.folder === "cardano-links") && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="ml-2 text-sm text-gray-500">
                 ({timeAgo(commits.find(c => c.folder === "cardano-links").lastCommitDate)})
               </span>
             )}
@@ -161,7 +172,7 @@ export function HeaderNavSheet() {
             <LineChart className="size-5" />
             Crypto Tracker
             {commits.find(c => c.folder === "crypto-tracker") && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="ml-2 text-sm text-gray-500">
                 ({timeAgo(commits.find(c => c.folder === "crypto-tracker").lastCommitDate)})
               </span>
             )}
@@ -181,7 +192,7 @@ export function HeaderNavSheet() {
             <Smartphone className="size-5" />
             Phone backup app (Android)
             {latestCommitDates[1] && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="ml-2 text-sm text-gray-500">
                 ({timeAgo(latestCommitDates[1].date)})
               </span>
             )}
@@ -194,7 +205,7 @@ export function HeaderNavSheet() {
             <Monitor className="size-5" />
             Tradingview Script: Auto-Close Ads
             {commits.find(c => c.folder === "tradingview-script") && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="ml-2 text-sm text-gray-500">
                 ({timeAgo(commits.find(c => c.folder === "tradingview-script").lastCommitDate)})
               </span>
             )}
@@ -210,7 +221,7 @@ export function HeaderNavSheet() {
             <UtensilsCrossed className="size-5" />
             Recipe Fren
             {commits.find(c => c.folder === "recipe-fren") && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="ml-2 text-sm text-gray-500">
                 ({timeAgo(commits.find(c => c.folder === "recipe-fren").lastCommitDate)})
               </span>
             )}
@@ -223,7 +234,7 @@ export function HeaderNavSheet() {
             <Network className="size-5" />
             <span>Port Checker</span>
             {commits.find(c => c.folder === "port-checker") && (
-              <span className="text-sm text-gray-500 ml-2">
+              <span className="ml-2 text-sm text-gray-500">
                 ({timeAgo(commits.find(c => c.folder === "port-checker").lastCommitDate)})
               </span>
             )}
