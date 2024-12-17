@@ -99,7 +99,7 @@ export function HeaderNavSheet() {
           {latestCommitDates[0] && (
             <span className="text-sm text-gray-500">
               <span className="font-semibold">Site Last Updated:</span> 
-              <span className="ml-1">{timeAgo(latestCommitDates[0].date)}</span>
+              <span className="ml-1">{timeAgo(latestCommitDates[0].date)} ago</span>
             </span>
           )}
           <span className="text-sm text-gray-500">
