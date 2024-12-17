@@ -88,15 +88,14 @@ export function HeaderNavSheet() {
        <div className="flex items-center">
        <Button variant="outline" className="flex items-center p-2 transition duration-200">
           <Menu className="text-lg" />
-        
         </Button>
        </div>
       </SheetTrigger>
       <SheetContent>
-        <div className="absolute top-3 flex w-full items-center gap-2">
-          <Button variant="outline" size="icon">
+        <div className="flex w-full items-center gap-2">
+          {/* <Button variant="outline" size="icon">
             <ThemeToggle />
-          </Button>
+          </Button> */}
           {latestCommitDates[0] && (
             <span className="text-sm text-gray-500">
               <span className="font-semibold">Site Last Updated:</span> 
@@ -112,7 +111,7 @@ export function HeaderNavSheet() {
             )}
           </span>
         </div>
-        <div className="py-2">
+        <div>
           
           <VisuallyHidden.Root>
             <SheetTitle className="flex w-full justify-center text-xl font-bold">
@@ -123,7 +122,7 @@ export function HeaderNavSheet() {
         <div className="relative mt-6 flex h-full flex-col gap-1 overflow-auto pb-4"> 
           <SelectSeparator />
   
-          <div className="py-2 text-2xl font-semibold text-sky-500">Crypto</div>
+          <div className="text-2xl font-semibold text-sky-500">Crypto</div>
 
           <Link
             href="/punycode"
