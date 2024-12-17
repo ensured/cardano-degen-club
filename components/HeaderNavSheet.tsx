@@ -44,7 +44,7 @@ export function HeaderNavSheet() {
         }
       } catch (err) {
         console.error("Error fetching commits:", err);
-        setError("Failed to load commit messages.");
+        setError("Failed to load commit data.");
       } finally {
         setLoading(false);
       }
