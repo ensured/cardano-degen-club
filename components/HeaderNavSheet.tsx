@@ -100,6 +100,8 @@ export function HeaderNavSheet() {
             <span className="text-sm text-gray-500">
               <span className="font-semibold">Site Last Updated:</span> 
               <span className="ml-1">{timeAgo(latestCommitDates[0].date)} ago</span>
+              <span className="font-semibold">Commit Message:</span> 
+              <span className="ml-1">{latestCommitDates[0].message}</span>
             </span>
           )}
           <span className="text-sm text-gray-500">
