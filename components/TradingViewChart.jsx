@@ -34,7 +34,6 @@ const INTERVALS = [
 ]
 
 
-
 // Update the INDICATORS constant
 const INDICATORS = [
   { label: "MACD", value: "MACD@tv-basicstudies" },
@@ -514,51 +513,7 @@ function TradingViewChart() {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={chartSettings[fullscreenChart].theme}
-            onChange={(e) => {
-              updateChartSetting(fullscreenChart, { theme: e.target.value })
-              // Reinitialize fullscreen chart
-              setTimeout(() => {
-                const config = CHART_CONFIG.find(c => c.containerId === fullscreenChart)
-                if (!config) return
-
-                if (chartInstancesRef.current["fullscreen_chart"]) {
-                  try {
-                    chartInstancesRef.current["fullscreen_chart"].remove()
-                  } catch (error) {
-                    console.log('Chart cleanup failed:', error)
-                  }
-                  delete chartInstancesRef.current["fullscreen_chart"]
-                }
-
-                chartInstancesRef.current["fullscreen_chart"] = new window.TradingView.widget({
-                  symbol: config.symbol,
-                  interval: chartSettings[fullscreenChart].interval,
-                  theme: e.target.value,
-                  style: "1",
-                  locale: "en",
-                  container_id: "fullscreen_chart",
-                  width: window.innerWidth,
-                  height: window.innerHeight - 64,
-                  toolbar_bg: "#f1f3f6",
-                  enable_publishing: false,
-                  hide_top_toolbar: false,
-                  save_image: true,
-                  studies: chartSettings[fullscreenChart].indicators,
-                  drawings_access: { type: "all", tools: [ { name: "Regression Trend" } ] },
-                })
-              }, 100)
-            }}
-            className="rounded bg-black/40 px-2 py-1 text-white"
-          >
-            {THEMES.map(({ label, value }) => (
-              <option key={value} value={value}>{label}</option>
-            ))}
-          </select>
-         
-        </div>
+     
       </div>
     </div>
   )
