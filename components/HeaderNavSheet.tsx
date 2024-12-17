@@ -107,6 +107,8 @@ export function HeaderNavSheet() {
        </div>
       </SheetTrigger>
       <SheetContent className="">
+      <div className="relative mt-4 flex max-h-full flex-col gap-1 overflow-auto pb-4"> 
+
         <div className="flex w-full items-center gap-2 pr-8">
           {latestCommitDates[0] && (
             <div className="w-full max-w-md mx-auto px-2 rounded-lg shadow-md">
@@ -147,7 +149,6 @@ export function HeaderNavSheet() {
             </SheetTitle>
           </VisuallyHidden.Root>
         </div>
-        <div className="relative mt-4 flex h-full flex-col gap-1 overflow-auto pb-4"> 
           <SelectSeparator />
   
           <div className="text-2xl font-semibold text-sky-500">Crypto</div>
