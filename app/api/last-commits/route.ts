@@ -10,7 +10,7 @@ const fetchJson = async (url: string) => {
   const response = await fetch(url, {
     headers: GITHUB_HEADERS,
     next: {
-      revalidate: 0,
+      revalidate: 60,
     },
   })
   if (!response.ok) {
