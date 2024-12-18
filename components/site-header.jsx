@@ -2,24 +2,10 @@ import { MainNav } from "@/components/main-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { HeaderNavSheet } from "./HeaderNavSheet"
 import UserButton from "./UserButton"
-import { HeaderTimeAgo } from "./HeaderTimeAgo"
+import { EpochTime } from "./EpochTime"
+import { getEpochData } from "./actions"
 
 export async function SiteHeader() {
-  const blockfrostApiKey = process.env.BLOCKFROST_API_KEY
-  const getEpochData = async () => {
-    const url = `https://cardano-mainnet.blockfrost.io/api/v0/epochs/latest`
-    const response = await fetch(url, {
-      headers: {
-        project_id: blockfrostApiKey,
-      },
-      next: {
-        revalidate: 0,
-      },
-    })
-    const data = await response.json()
-    return data
-  }
-
   const epochData = await getEpochData()
 
   return (
@@ -34,7 +20,7 @@ export async function SiteHeader() {
           </nav>
         </div>
       </div>
-      <HeaderTimeAgo epochData={epochData} />
+      <EpochTime epochData={epochData} />
     </header>
   )
 }

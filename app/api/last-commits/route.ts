@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 
-export const runtime = "edge"
-
 const GITHUB_API_URL = "https://api.github.com/repos"
 const GITHUB_HEADERS = {
   Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
@@ -9,7 +7,12 @@ const GITHUB_HEADERS = {
 }
 
 const fetchJson = async (url: string) => {
-  const response = await fetch(url, { headers: GITHUB_HEADERS })
+  const response = await fetch(url, {
+    headers: GITHUB_HEADERS,
+    next: {
+      revalidate: 0,
+    },
+  })
   if (!response.ok) {
     throw new Error(`Failed to fetch from ${url}`)
   }
@@ -63,7 +66,6 @@ export async function GET() {
   try {
     const folderCommits = await Promise.all(repos.map(fetchFolderCommits))
     const latestRepoCommit = await Promise.all(repos.map(fetchLatestRepoCommit))
-    console.log(latestRepoCommit[0])
 
     return NextResponse.json({ folderCommits, latestRepoCommit })
   } catch (error: any) {

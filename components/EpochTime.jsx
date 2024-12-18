@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Progress } from "./ui/progress"
 
-export function HeaderTimeAgo({ epochData }) {
+export function EpochTime({ epochData }) {
   const [timeLeftDisplay, setTimeLeftDisplay] = useState("")
   const [percentageLeft, setPercentageLeft] = useState(0)
 

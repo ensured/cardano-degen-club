@@ -22,7 +22,6 @@ export async function removeItemsFirebase(keys) {
   }
   const userEmail = user?.emailAddresses[0].emailAddress
 
-
   // remove all keys from firebase db
   await Promise.all(
     // @ts-ignore
@@ -287,12 +286,14 @@ const handleSetMaxImagesCount = async (
 }
 
 // Add this new server action
-export async function addItemsFirebase(items: Array<{
-  name: string;
-  url: string;
-  link: string;
-  metadata: any;
-}>) {
+export async function addItemsFirebase(
+  items: Array<{
+    name: string
+    url: string
+    link: string
+    metadata: any
+  }>
+) {
   const user = await currentUser()
   if (!user) {
     return { error: "Not authenticated, please login" }
@@ -304,17 +305,17 @@ export async function addItemsFirebase(items: Array<{
     const userDocRef = doc(db, "users", userEmail)
     const userDoc = await getDoc(userDocRef)
     const currentImageCount = userDoc.exists() ? userDoc.data().imageCount : 0
-    
+
     // Calculate how many items we can actually add
     const remainingSlots = MAX_FAVORITES - currentImageCount
     if (remainingSlots <= 0) {
-      return { 
+      return {
         error: `Maximum limit of ${MAX_FAVORITES} favorites reached.`,
-        results: items.map(item => ({
+        results: items.map((item) => ({
           success: false,
           link: item.link,
-          error: 'Maximum favorites limit reached'
-        }))
+          error: "Maximum favorites limit reached",
+        })),
       }
     }
 
@@ -334,35 +335,41 @@ export async function addItemsFirebase(items: Array<{
     // Process uploads in batches of 5 to avoid overwhelming the server
     const batchSize = 5
     const results = []
-    
+
     for (let i = 0; i < itemsToProcess.length; i += batchSize) {
       const batch = itemsToProcess.slice(i, i + batchSize)
       const batchBlobs = imageBlobs.slice(i, i + batchSize)
 
-      const batchPromises = batch.map(async ({ name, link, metadata }, index) => {
-        try {
-          const imageRef = storageRef(
-            storage,
-            `images/${userEmail}/${extractRecipeId(link)}`
-          )
+      const batchPromises = batch.map(
+        async ({ name, link, metadata }, index) => {
+          try {
+            const imageRef = storageRef(
+              storage,
+              `images/${userEmail}/${extractRecipeId(link)}`
+            )
 
-          const uploadResult = await uploadBytes(imageRef, batchBlobs[index], metadata)
-          const downloadUrl = await getDownloadURL(uploadResult.ref)
+            const uploadResult = await uploadBytes(
+              imageRef,
+              batchBlobs[index],
+              metadata
+            )
+            const downloadUrl = await getDownloadURL(uploadResult.ref)
 
-          return {
-            success: true,
-            link,
-            url: downloadUrl,
-            name,
-          }
-        } catch (error) {
-          return {
-            success: false,
-            link,
-            error: "Failed to upload image",
+            return {
+              success: true,
+              link,
+              url: downloadUrl,
+              name,
+            }
+          } catch (error) {
+            return {
+              success: false,
+              link,
+              error: "Failed to upload image",
+            }
           }
         }
-      })
+      )
 
       const batchResults = await Promise.all(batchPromises)
       results.push(...batchResults)
@@ -371,15 +378,15 @@ export async function addItemsFirebase(items: Array<{
     // Add failed results for items that weren't processed due to limit
     const allResults = [
       ...results,
-      ...items.slice(remainingSlots).map(item => ({
+      ...items.slice(remainingSlots).map((item) => ({
         success: false,
         link: item.link,
-        error: 'Exceeded maximum favorites limit'
-      }))
+        error: "Exceeded maximum favorites limit",
+      })),
     ]
-    
+
     // Update the image count in a single operation
-    const successfulUploads = results.filter(r => r.success).length
+    const successfulUploads = results.filter((r) => r.success).length
     if (successfulUploads > 0) {
       await setDoc(
         userDocRef,
@@ -392,19 +399,20 @@ export async function addItemsFirebase(items: Array<{
       results: allResults,
       successCount: successfulUploads,
       partialSuccess: itemsToProcess.length < items.length,
-      message: itemsToProcess.length < items.length 
-        ? `Only ${successfulUploads} items were added due to favorites limit`
-        : undefined
+      message:
+        itemsToProcess.length < items.length
+          ? `Only ${successfulUploads} items were added due to favorites limit`
+          : undefined,
     }
   } catch (error) {
     console.error("Error in batch upload:", error)
-    return { 
+    return {
       error: "Failed to process batch upload",
-      results: items.map(item => ({
+      results: items.map((item) => ({
         success: false,
         link: item.link,
-        error: 'Batch upload failed'
-      }))
+        error: "Batch upload failed",
+      })),
     }
   }
 }
@@ -417,36 +425,51 @@ export async function getImagesBase64(urls: string[]) {
       try {
         const response = await fetch(url, {
           headers: {
-            'Accept': 'image/webp,image/jpeg,image/png,image/*',
+            Accept: "image/webp,image/jpeg,image/png,image/*",
           },
-          cache: 'force-cache',
-        });
+          cache: "force-cache",
+        })
 
         if (!response.ok) {
-          return [url, null];
+          return [url, null]
         }
 
-        const contentType = response.headers.get('content-type') || 'image/jpeg';
-        const buffer = await response.arrayBuffer();
-        const base64 = `data:${contentType};base64,${Buffer.from(buffer).toString('base64')}`;
-        
-        return [url, base64];
+        const contentType = response.headers.get("content-type") || "image/jpeg"
+        const buffer = await response.arrayBuffer()
+        const base64 = `data:${contentType};base64,${Buffer.from(buffer).toString("base64")}`
+
+        return [url, base64]
       } catch (error) {
-        console.error("Error processing image:", url, error);
-        return [url, null];
+        console.error("Error processing image:", url, error)
+        return [url, null]
       }
-    });
+    })
 
     // Wait for all images to be processed
-    const results = await Promise.all(imagePromises);
+    const results = await Promise.all(imagePromises)
 
     // Convert results array to object, filtering out failed images
-    return Object.fromEntries(
-      results.filter(([_, base64]) => base64 !== null)
-    );
-
+    return Object.fromEntries(results.filter(([_, base64]) => base64 !== null))
   } catch (error) {
-    console.error("Error in batch image processing:", error);
-    return {};
+    console.error("Error in batch image processing:", error)
+    return {}
   }
+}
+
+export async function getEpochData() {
+  const blockfrostApiKey = process.env.BLOCKFROST_API_KEY
+  if (!blockfrostApiKey) {
+    return { error: "Blockfrost API key not found" }
+  }
+  const url = `https://cardano-mainnet.blockfrost.io/api/v0/epochs/latest`
+  const response = await fetch(url, {
+    headers: {
+      project_id: blockfrostApiKey,
+    },
+    next: {
+      revalidate: 0,
+    },
+  })
+  const data = await response.json()
+  return data
 }

@@ -23,12 +23,13 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card"
+import { useWindowWidth } from "@wojtekmaj/react-hooks"
 
 export const dynamic = "force-dynamic"
 
 export function MainNav() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()
-
+  const width = useWindowWidth()
   // New state to hold the current time
   const [currentTime, setCurrentTime] = useState(Date.now())
 
@@ -74,6 +75,11 @@ export function MainNav() {
                 <div className="font-mono text-xs tracking-tighter">
                   ({timeAgo(latestRepoCommit[0]?.date)} ago)
                 </div>
+                {width && width > 600 && (
+                  <div className="font-mono text-xs tracking-tighter">
+                    {latestRepoCommit[0]?.message}
+                  </div>
+                )}
                 <div
                   className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
                   style={{
@@ -100,8 +106,8 @@ export function MainNav() {
                 <CardContent className="text-sm text-muted-foreground">
                   <Link
                     href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}`}
-                    target="_blank"
                     className="text-sky-600 underline hover:text-sky-800"
+                    target="_blank"
                   >
                     Visit Repository
                   </Link>
@@ -126,6 +132,7 @@ export function MainNav() {
   return (
     <Link
       href="/"
+      target="_blank"
       className="flex items-center rounded-full transition-all duration-100 hover:bg-zinc-500/10"
     >
       <Icons.ada className="size-8 md:size-10" />
