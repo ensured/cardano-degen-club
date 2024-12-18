@@ -63,7 +63,7 @@ export function MainNav() {
 
   const latestCommit = () => {
     return loading ? (
-      <Skeleton className="mt-0.5 flex h-5 w-24 items-center justify-center">
+      <Skeleton className="flex w-24 items-center justify-center p-1 sm:w-44">
         <Loader2 className="size-4 animate-spin text-muted-foreground" />
       </Skeleton>
     ) : (
@@ -71,21 +71,21 @@ export function MainNav() {
         {latestRepoCommit[0]?.date ? (
           <Dialog>
             <DialogTrigger>
-              <div className="flex cursor-pointer items-center gap-x-1">
-                <div className="font-mono text-xs tracking-tighter">
-                  ({timeAgo(latestRepoCommit[0]?.date)} ago)
-                </div>
-                {width && width > 600 && (
-                  <div className="font-mono text-xs tracking-tighter">
-                    {latestRepoCommit[0]?.message}
-                  </div>
-                )}
+              <div className="flex cursor-pointer items-center gap-x-1 overflow-x-auto rounded-md p-1 hover:bg-zinc-500/90">
                 <div
                   className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
                   style={{
                     backgroundColor: getColor(latestRepoCommit[0]?.date),
                   }}
                 />
+                <div className="font-mono text-xs tracking-tighter">
+                  ({timeAgo(latestRepoCommit[0]?.date)} ago)
+                </div>
+                {width && width > 600 && (
+                  <div className="line-clamp-1 max-w-40 font-mono text-xs tracking-tighter">
+                    {latestRepoCommit[0]?.message}
+                  </div>
+                )}
               </div>
             </DialogTrigger>
             <DialogContent>
@@ -130,16 +130,19 @@ export function MainNav() {
   }
 
   return (
-    <Link
-      href="/"
-      target="_blank"
-      className="flex items-center rounded-full transition-all duration-100 hover:bg-zinc-500/10"
-    >
-      <Icons.ada className="size-8 md:size-10" />
+    <div className="flex items-center gap-1.5 text-xs">
+      <Link
+        href="/"
+        target="_blank"
+        className="flex items-center rounded-full transition-all duration-100 hover:bg-zinc-500/10"
+      >
+        <Icons.ada className="size-8 md:size-10" />
+      </Link>
+
       <div className="mx-2 flex items-center gap-1 sm:mx-3">
         {latestCommit()}
         {error && <div className="text-xs text-red-500">{error}</div>}
       </div>
-    </Link>
+    </div>
   )
 }
