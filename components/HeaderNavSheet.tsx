@@ -86,7 +86,7 @@ export function HeaderNavSheet() {
 
         <div className="relative flex h-full flex-col gap-1 overflow-auto pb-4"> 
         <SelectSeparator />
-          <div className="text-xl font-semibold dark:text-[hsl(276,70%,60%)] text-[hsl(276,70%,40)]">Crypto</div>
+          <div className="text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">Crypto</div>
 
           <Link
             href="/punycode"
@@ -132,7 +132,7 @@ export function HeaderNavSheet() {
           </Link>
           <SelectSeparator />
 
-          <div className="py-2 text-xl font-semibold dark:text-[hsl(276,70%,60%)] text-[hsl(276,70%,40)]">
+          <div className="py-2 text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">
             Scripts/Apps
           </div>
 
@@ -165,7 +165,7 @@ export function HeaderNavSheet() {
           </Link>
           <SelectSeparator />
 
-          <div className="py-2 text-xl font-semibold dark:text-[hsl(276,70%,60%)] text-[hsl(276,70%,40)]">Misc</div>
+          <div className="py-2 text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">Misc</div>
           <Link
             href="/recipe-fren"
             onClick={handleOpenChange}

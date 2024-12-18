@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Inter } from "next/font/google"
 import CustomClerkProvider from "./clerk/Provider"
 import {GoogleOneTap } from "@clerk/nextjs"
+import { CommitProvider } from "@/components/CommitContext" 
 
 export const metadata = {
   title: "Home",
@@ -35,6 +36,7 @@ const inter = Inter({
 export default async function RootLayout({ children }) {
   return (
     <CustomClerkProvider>
+
       <html lang="en" suppressHydrationWarning>
         <body className={cn(
           "min-h-screen bg-background font-sans antialiased",
@@ -54,6 +56,7 @@ export default async function RootLayout({ children }) {
               className: "break-all",
             }}
           />
+          <CommitProvider>
           <div className="flex min-h-screen flex-col">
             <div className="relative">
                 <SiteHeader />
@@ -61,7 +64,9 @@ export default async function RootLayout({ children }) {
             <main className="grow">{children}</main>
             <Footer />
           </div>
-          <TailwindIndicator />
+              <TailwindIndicator />
+            </CommitProvider>
+
         </ThemeProvider>
         <ScrollToTopButton />
       </body>
