@@ -71,7 +71,7 @@ export function MainNav() {
         {latestRepoCommit[0]?.date ? (
           <Dialog>
             <DialogTrigger>
-              <div className="flex cursor-pointer items-center gap-x-1 overflow-x-auto rounded-md p-1.5 hover:bg-secondary">
+              <div className="flex cursor-pointer items-center overflow-x-auto rounded-md p-1 hover:bg-secondary">
                 <div
                   className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
                   style={{
