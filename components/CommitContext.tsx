@@ -10,8 +10,6 @@ interface CommitContextType {
 
 const CommitContext = createContext<CommitContextType | undefined>(undefined)
 
-export const dynamic = "force-dynamic"
-
 export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {

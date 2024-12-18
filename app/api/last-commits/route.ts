@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
 const GITHUB_API_URL = "https://api.github.com/repos"
 const GITHUB_HEADERS = {
