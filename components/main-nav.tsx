@@ -133,7 +133,6 @@ export function MainNav() {
     <div className="flex items-center gap-1.5 text-xs">
       <Link
         href="/"
-        target="_blank"
         className="flex items-center rounded-full transition-all duration-100 hover:bg-zinc-500/10"
       >
         <Icons.ada className="size-8 md:size-10" />
