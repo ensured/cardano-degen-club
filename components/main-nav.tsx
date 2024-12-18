@@ -118,11 +118,9 @@ export function MainNav() {
                 </CardContent>
               </Card>
               <DialogFooter>
-                <div>
-                  <Button variant="outline" className="w-full">
-                    Close
-                  </Button>
-                </div>
+                <DialogClose asChild className="flex w-full justify-center">
+                  <Button variant="outline">Close</Button>
+                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>
