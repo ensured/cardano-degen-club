@@ -10,6 +10,8 @@ interface CommitContextType {
 
 const CommitContext = createContext<CommitContextType | undefined>(undefined)
 
+export const dynamic = "force-dynamic"
+
 export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -24,7 +26,7 @@ export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const response = await fetch("/api/last-commits", {
           next: {
-            revalidate: 10,
+            revalidate: 0,
           },
         })
         const data = await response.json()
@@ -47,7 +49,7 @@ export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchCommits()
 
     // Poll every 10 seconds for updates
-    const interval = setInterval(fetchCommits, 10000)
+    const interval = setInterval(fetchCommits, 60000)
     return () => clearInterval(interval)
   }, [])
 

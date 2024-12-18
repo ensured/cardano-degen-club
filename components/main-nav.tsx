@@ -24,6 +24,8 @@ import {
   CardContent,
 } from "@/components/ui/card"
 
+export const dynamic = "force-dynamic"
+
 export function MainNav() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()
 
