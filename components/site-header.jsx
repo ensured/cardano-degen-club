@@ -3,9 +3,11 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 import { HeaderNavSheet } from "./HeaderNavSheet"
 import UserButton from "./UserButton"
+import { CommitProvider } from "./CommitContext" 
 
 export function SiteHeader() {
   return (
+    <CommitProvider>
     <header className="sticky top-0 z-40 w-full overflow-x-auto border-b bg-background">
       <div className="m-1 flex h-16 w-full items-center gap-3 px-4 md:px-3">
         <MainNav />
@@ -18,5 +20,6 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
+    </CommitProvider>
   )
 }
