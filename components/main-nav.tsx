@@ -9,7 +9,6 @@ export function MainNav() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits();
 
   const date = latestRepoCommit[0]?.date
-  const message = latestRepoCommit[0]?.message
 
   // Function to interpolate color based on time difference
   const getColor = (date: any) => {
@@ -47,6 +46,7 @@ export function MainNav() {
     >
       <Icons.ada className="size-8 p-0.5 md:size-10" />
         {latestCommit()}
+        {error && <div className="text-xs text-red-500">{error}</div>}
     </Link>
   )
 }
