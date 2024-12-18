@@ -63,7 +63,7 @@ export function MainNav() {
 
   const latestCommit = () => {
     return loading ? (
-      <Skeleton className="flex w-24 items-center justify-center p-1 sm:w-44">
+      <Skeleton className="flex w-24 items-center justify-center p-1.5 sm:w-44">
         <Loader2 className="size-4 animate-spin text-muted-foreground" />
       </Skeleton>
     ) : (
@@ -71,7 +71,7 @@ export function MainNav() {
         {latestRepoCommit[0]?.date ? (
           <Dialog>
             <DialogTrigger>
-              <div className="flex cursor-pointer items-center gap-x-1 overflow-x-auto rounded-md p-1 hover:bg-zinc-500/90">
+              <div className="flex cursor-pointer items-center gap-x-1 overflow-x-auto rounded-md p-1.5 hover:bg-secondary">
                 <div
                   className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
                   style={{
