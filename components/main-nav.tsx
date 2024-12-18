@@ -4,6 +4,7 @@ import { Icons } from "@/components/icons"
 import { useCommits } from "./CommitContext";
 import { timeAgo } from "@/utils/timeAgo";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
 
 export function MainNav() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits();
@@ -31,7 +32,7 @@ export function MainNav() {
   };
 
   const latestCommit = ()=> {
-    return loading ? <Loader2 className="size-4 animate-spin" /> : <span style={{ color: date ? getColor(date) : '' }}>
+    return loading ? <Skeleton className="h-5 w-16" /> : <span style={{ color: date ? getColor(date) : '' }}>
     {date ? <div className="flex items-center gap-0.5">
       ({timeAgo(date)} ago)
      </div> : ''}
