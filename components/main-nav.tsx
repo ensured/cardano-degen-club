@@ -89,9 +89,13 @@ export function MainNav() {
               </div>
             </DialogTrigger>
             <DialogContent>
+              <DialogDescription>
+                <VisuallyHidden>yeet</VisuallyHidden>
+              </DialogDescription>
               <DialogTitle>
                 <VisuallyHidden>yeet</VisuallyHidden>
               </DialogTitle>
+
               <Card className="flex items-center gap-4 rounded-md bg-background p-4 shadow-md">
                 <div className="flex flex-col gap-2">
                   <CardTitle className="text-lg font-semibold text-foreground">
@@ -114,11 +118,11 @@ export function MainNav() {
                 </CardContent>
               </Card>
               <DialogFooter>
-                <DialogClose>
+                <div>
                   <Button variant="outline" className="w-full">
                     Close
                   </Button>
-                </DialogClose>
+                </div>
               </DialogFooter>
             </DialogContent>
           </Dialog>
