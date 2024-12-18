@@ -5,17 +5,44 @@ import { useCommits } from "./CommitContext"
 import { timeAgo } from "@/utils/timeAgo"
 import { Loader2 } from "lucide-react"
 import { Skeleton } from "./ui/skeleton"
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "./ui/dialog"
+import { Button } from "./ui/button"
+import { useEffect, useState } from "react"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import {
+  Card,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card"
 
 export function MainNav() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()
 
-  const date = latestRepoCommit[0]?.date
+  // New state to hold the current time
+  const [currentTime, setCurrentTime] = useState(Date.now())
+
+  // Effect to update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now())
+    }, 60000) // Update every minute
+
+    return () => clearInterval(interval) // Cleanup on unmount
+  }, [])
 
   // Function to interpolate color based on time difference
   const getColor = (date: any) => {
-    const now = Date.now() // Get the current time in milliseconds
     const commitTime = date ? new Date(date) : new Date() // Fallback to current date if date is invalid
-    const timeDiff = (now - commitTime.getTime()) / 1000 // time difference in seconds
+    const timeDiff = (currentTime - commitTime.getTime()) / 1000 // Use currentTime for difference
 
     // Define the maximum time for color mapping (1 year in seconds)
     const maxTime = 365 * 24 * 60 * 60 // 1 year in seconds
@@ -33,19 +60,60 @@ export function MainNav() {
 
   const latestCommit = () => {
     return loading ? (
-      <Skeleton className="flex h-5 w-16 items-center justify-center">
+      <Skeleton className="mt-0.5 flex h-5 w-24 items-center justify-center">
         <Loader2 className="size-4 animate-spin text-muted-foreground" />
       </Skeleton>
     ) : (
       <span className="text-sm text-muted-foreground">
-        {date ? (
-          <div className="flex items-center gap-x-0.5">
-            <div className="text-xs">({timeAgo(date)} ago)</div>
-            <div
-              className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
-              style={{ backgroundColor: getColor(date) }}
-            />
-          </div>
+        {latestRepoCommit[0]?.date ? (
+          <Dialog>
+            <DialogTrigger>
+              <div className="flex cursor-pointer items-center gap-x-1">
+                <div className="font-mono text-xs tracking-tighter">
+                  ({timeAgo(latestRepoCommit[0]?.date)} ago)
+                </div>
+                <div
+                  className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
+                  style={{
+                    backgroundColor: getColor(latestRepoCommit[0]?.date),
+                  }}
+                />
+              </div>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>
+                <VisuallyHidden>yeet</VisuallyHidden>
+              </DialogTitle>
+              <Card className="flex items-center gap-4 rounded-md bg-background p-4 shadow-md">
+                <div className="flex flex-col gap-2">
+                  <CardTitle className="text-lg font-semibold text-foreground">
+                    {latestRepoCommit[0]?.message ||
+                      "No commit message available."}
+                  </CardTitle>
+                  <CardDescription className="text-sm text-muted-foreground">
+                    {timeAgo(latestRepoCommit[0]?.date) + " ago" ||
+                      "No date available."}
+                  </CardDescription>
+                </div>
+                <CardContent className="text-sm text-muted-foreground">
+                  <Link
+                    href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}`}
+                    target="_blank"
+                    className="text-sky-600 underline hover:text-sky-800"
+                  >
+                    Visit Repository
+                  </Link>
+                </CardContent>
+              </Card>
+              <DialogFooter>
+                <DialogClose>
+                  <Button variant="outline" className="w-full">
+                    Close
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         ) : (
           ""
         )}
