@@ -34,7 +34,7 @@ export function MainNav() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now())
-    }, 60000) // Update every minute
+    }, 10000) // Update every minute
 
     return () => clearInterval(interval) // Cleanup on unmount
   }, [])
