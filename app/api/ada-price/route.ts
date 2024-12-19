@@ -48,6 +48,11 @@ export async function GET(request: NextRequest) {
       "s-maxage=10, stale-while-revalidate=59"
     )
 
+    // Add CORS headers
+    res.headers.append("Access-Control-Allow-Origin", "*") // Allow all origins
+    res.headers.append("Access-Control-Allow-Methods", "GET, OPTIONS") // Allow specific methods
+    res.headers.append("Access-Control-Allow-Headers", "Content-Type") // Allow specific headers
+
     return res
   } catch (error) {
     return NextResponse.json(
