@@ -96,8 +96,8 @@ export function MainNav() {
                 <VisuallyHidden>yeet</VisuallyHidden>
               </DialogTitle>
 
-              <Card className="grid grid-cols-2 gap-4 rounded-lg bg-background px-6 pb-4 pt-6 shadow-lg transition-shadow duration-200 hover:shadow-xl">
-                <div className="flex flex-col gap-1">
+              <Card className="grid grid-cols-2 rounded-lg bg-background shadow-lg transition-shadow duration-200 hover:shadow-xl">
+                <div className="flex flex-col gap-1 p-4">
                   <CardTitle className="font-mono text-xl font-semibold tracking-tight">
                     {latestRepoCommit[0]?.message ||
                       "No commit message available."}
@@ -107,7 +107,7 @@ export function MainNav() {
                       "No date available."}
                   </CardDescription>
                 </div>
-                <CardContent className="flex w-full flex-col gap-1 overflow-hidden text-sm text-muted-foreground">
+                <CardContent className="flex w-full flex-col p-4 text-sm text-muted-foreground">
                   <Link
                     href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}/commit/${latestRepoCommit[0]?.hash}`}
                     className="truncate rounded-md p-1 text-sky-600 underline shadow-sm transition duration-200 ease-in-out hover:text-sky-800 hover:shadow-md"
