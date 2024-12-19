@@ -351,13 +351,6 @@ const useRecipeSearch = () => {
     }
   }, [searchResults, handleLoadNextPage, lastFoodItemRef, loadingMore])
 
-  const debouncedReplace = useCallback(
-    debounce((value) => {
-      router.push(`?q=${value}`)
-    }, 300), // Adjust delay as needed
-    [router]
-  )
-
   const handleStarIconHover = (index) => () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
@@ -371,12 +364,12 @@ const useRecipeSearch = () => {
 
       try {
         await removeItemsFirebase(itemsToRemove) // Call your server action
-        toast.success(`${itemsToRemove.length} favorites removed!`, {
-          onClick: (t) => toast.dismiss(t.id),
-        })
+        // toast.success(`${itemsToRemove.length} favorites removed!`, {
+        //   onClick: (t) => toast.dismiss(t.id),
+        // })
       } catch (error) {
         console.error("Batch removal failed:", error)
-        toast.error("Failed to remove some favorites")
+        toast.error(`Failed to remove ${itemsToRemove.length} favorites`)
       }
     }, 800),
     []

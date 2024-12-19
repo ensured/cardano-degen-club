@@ -90,61 +90,73 @@ const RecipesMenu = ({
       >
         {Object.keys(favorites).length > 0 ? (
           <div className="mb-1.5 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
-              {/* Preview PDF Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isFavoritesLoading || isLoadingPdfPreview || isLoadingPdfDownload}
-                className="hover:scale-102 relative w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
-                onClick={handlePreviewPDF}
-              >
-                {isLoadingPdfPreview ? (
-                  <>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-sm font-medium">{Math.round(pdfProgress)}%</span>
-                    </div>
-                    <Progress 
-                      value={Math.round(pdfProgress)} 
-                      className="absolute inset-x-0 bottom-0 h-1 rounded-none rounded-b-lg bg-secondary transition-all duration-300"
-                    />
-                  </>
-                ) : (
-                  <>
-                    <FileText className="size-5 md:size-6" />
-                    <div className="md:text-md line-clamp-2 items-center text-sm">
-                      Preview PDF
-                    </div>
-                  </>
-                )}
-              </Button>
+            {/* Preview PDF Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={
+                isFavoritesLoading ||
+                isLoadingPdfPreview ||
+                isLoadingPdfDownload
+              }
+              className="hover:scale-102 relative w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
+              onClick={handlePreviewPDF}
+            >
+              {isLoadingPdfPreview ? (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-medium">
+                      {Math.round(pdfProgress)}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={Math.round(pdfProgress)}
+                    className="absolute inset-x-0 bottom-0 h-1 rounded-none rounded-b-lg bg-secondary transition-all duration-300"
+                  />
+                </>
+              ) : (
+                <>
+                  <FileText className="size-5 md:size-6" />
+                  <div className="md:text-md line-clamp-2 items-center text-sm">
+                    Preview PDF
+                  </div>
+                </>
+              )}
+            </Button>
 
-              {/* Download PDF Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isFavoritesLoading || isLoadingPdfDownload || isLoadingPdfPreview}
-                className="hover:scale-102 relative w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
-                onClick={handleDownloadPDF}
-              >
-                {isLoadingPdfDownload  ? (
-                  <>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-sm font-medium">{Math.round(pdfProgress)}%</span>
-                    </div>
-                    <Progress 
-                      value={Math.round(pdfProgress)} 
-                      className="absolute inset-x-0 bottom-0 h-1 rounded-none rounded-b-lg bg-secondary transition-all duration-300"
-                    />
-                  </>
-                ) : (
-                  <>
-                    <DownloadIcon className="size-5 md:size-6" />
-                    <div className="md:text-md line-clamp-2 items-center text-sm">
-                      Download PDF
-                    </div>
-                  </>
-                )}
-              </Button>
+            {/* Download PDF Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={
+                isFavoritesLoading ||
+                isLoadingPdfDownload ||
+                isLoadingPdfPreview
+              }
+              className="hover:scale-102 relative w-full gap-2 rounded-lg bg-white/50 shadow-lg transition-all duration-200 hover:bg-white/80 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/80"
+              onClick={handleDownloadPDF}
+            >
+              {isLoadingPdfDownload ? (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-sm font-medium">
+                      {Math.round(pdfProgress)}%
+                    </span>
+                  </div>
+                  <Progress
+                    value={Math.round(pdfProgress)}
+                    className="absolute inset-x-0 bottom-0 h-1 rounded-none rounded-b-lg bg-secondary transition-all duration-300"
+                  />
+                </>
+              ) : (
+                <>
+                  <DownloadIcon className="size-5 md:size-6" />
+                  <div className="md:text-md line-clamp-2 items-center text-sm">
+                    Download PDF
+                  </div>
+                </>
+              )}
+            </Button>
 
             <div className="col-span-full">
               <DeleteAllAlert
@@ -174,9 +186,13 @@ const RecipesMenu = ({
         )}
 
         <div className="flex h-full flex-col gap-3">
-          <div className={`animate-fade-in custom-scrollbar max-h-[64%] overflow-auto rounded-lg border bg-white/50 shadow-inner dark:bg-zinc-900/50 ${
-            Object.keys(favorites).length ? "border-zinc-200 dark:border-zinc-800" : ""
-          }`}>
+          <div
+            className={`animate-fade-in custom-scrollbar max-h-[64%] overflow-auto rounded-lg border bg-white/50 shadow-inner dark:bg-zinc-900/50 ${
+              Object.keys(favorites).length
+                ? "border-zinc-200 dark:border-zinc-800"
+                : ""
+            }`}
+          >
             {isFavoritesLoading ? (
               <FavoritesSkeleton />
             ) : (
@@ -247,19 +263,20 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
   try {
     const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" })
     const recipes = Object.entries(favorites)
-    
+
     // First, collect all unique image URLs
     const imageUrls = recipes.map(([_, { url }]) => url)
-    
+
     onProgress?.(5) // Start progress
-    
+
     // Try to get images from cache first (5-30%)
     let processedCacheItems = 0
     const cachedImages = await Promise.all(
-      imageUrls.map(async url => {
+      imageUrls.map(async (url) => {
         const base64 = await imageCache.get(url)
         processedCacheItems++
-        const cacheProgress = 5 + Math.round((processedCacheItems / imageUrls.length) * 25)
+        const cacheProgress =
+          5 + Math.round((processedCacheItems / imageUrls.length) * 25)
         onProgress?.(cacheProgress)
         return { url, base64 }
       })
@@ -267,7 +284,7 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
 
     // Filter out URLs that need fetching
     const urlsToFetch = imageUrls.filter(
-      url => !cachedImages.find(img => img.url === url && img.base64)
+      (url) => !cachedImages.find((img) => img.url === url && img.base64)
     )
 
     // Fetch missing images in a single batch if needed (30-70%)
@@ -276,14 +293,16 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
       onProgress?.(30) // Start fetch phase
       fetchedImages = await getImagesBase64(urlsToFetch)
       onProgress?.(70) // End fetch phase
-      
+
       // Cache the newly fetched images (70-75%)
       let cacheCount = 0
       await Promise.all(
         Object.entries(fetchedImages).map(async ([url, base64]) => {
           await imageCache.set(url, base64)
           cacheCount++
-          const cacheProgress = 70 + Math.round((cacheCount / Object.keys(fetchedImages).length) * 5)
+          const cacheProgress =
+            70 +
+            Math.round((cacheCount / Object.keys(fetchedImages).length) * 5)
           onProgress?.(cacheProgress)
         })
       )
@@ -292,17 +311,20 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
     }
 
     // Combine cached and fetched images
-    const allImages = cachedImages.reduce((acc, { url, base64 }) => {
-      if (base64) acc[url] = base64
-      return acc
-    }, { ...fetchedImages })
+    const allImages = cachedImages.reduce(
+      (acc, { url, base64 }) => {
+        if (base64) acc[url] = base64
+        return acc
+      },
+      { ...fetchedImages }
+    )
 
     // PDF Generation setup (75-80%)
     const PAGE = {
       width: doc.internal.pageSize.width,
       height: doc.internal.pageSize.height,
       margin: 12,
-      columns: 2
+      columns: 2,
     }
 
     const CARD = {
@@ -310,10 +332,12 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
       imageSize: 30,
       spacing: 6,
       height: 42,
-      borderRadius: 4
+      borderRadius: 4,
     }
 
-    const cardWidth = (PAGE.width - (PAGE.margin * 2) - (CARD.spacing * (PAGE.columns - 1))) / PAGE.columns
+    const cardWidth =
+      (PAGE.width - PAGE.margin * 2 - CARD.spacing * (PAGE.columns - 1)) /
+      PAGE.columns
     let yPos = PAGE.margin
     let currentPosition = 0
 
@@ -322,13 +346,13 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
     // Process recipes and track progress (80-95%)
     const totalSteps = recipes.length
     const progressStep = 15 / totalSteps // Distribute 15% (80-95%) across all recipes
-    
+
     for (const [link, { name, url }] of recipes) {
       const column = currentPosition % PAGE.columns
       const xPos = PAGE.margin + column * (cardWidth + CARD.spacing)
 
       // Update progress before processing each recipe
-      const currentProgress = 80 + (progressStep * currentPosition)
+      const currentProgress = 80 + progressStep * currentPosition
       onProgress?.(Math.round(currentProgress))
 
       const imageBase64 = allImages[url]
@@ -345,16 +369,17 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
 
       // Add recipe text and link
       const textX = xPos + CARD.padding + CARD.imageSize + CARD.padding
-      const textWidth = cardWidth - (CARD.padding * 2) - CARD.imageSize
+      const textWidth = cardWidth - CARD.padding * 2 - CARD.imageSize
       const lines = doc.splitTextToSize(name, textWidth)
       const displayLines = lines.slice(0, 3)
-      
+
       if (lines.length > 3) {
-        displayLines[2] = displayLines[2].substring(0, displayLines[2].length - 3) + "..."
+        displayLines[2] =
+          displayLines[2].substring(0, displayLines[2].length - 3) + "..."
       }
 
       displayLines.forEach((line, i) => {
-        const textY = yPos + (CARD.padding * 1.6) + (i * 12)
+        const textY = yPos + CARD.padding * 1.6 + i * 12
         doc.textWithLink(line, textX, textY, { url: link })
       })
 
@@ -372,16 +397,15 @@ const generatePDF = async (favorites, forDownload = false, onProgress) => {
 
     // Final steps (95-100%)
     onProgress?.(95)
-    const result = forDownload ? doc : URL.createObjectURL(doc.output('blob'))
-    
+    const result = forDownload ? doc : URL.createObjectURL(doc.output("blob"))
+
     // Ensure we hit 100% before returning
     onProgress?.(98)
-    await new Promise(resolve => setTimeout(resolve, 100)) // Small delay for visual feedback
+    await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay for visual feedback
     onProgress?.(100)
-    await new Promise(resolve => setTimeout(resolve, 100)) // Small delay at 100%
-    
-    return result
+    await new Promise((resolve) => setTimeout(resolve, 100)) // Small delay at 100%
 
+    return result
   } catch (error) {
     console.error("Error generating PDF:", error)
     toast.error("Failed to generate PDF")
