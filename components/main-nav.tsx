@@ -24,6 +24,7 @@ import {
   CardContent,
 } from "@/components/ui/card"
 import { useWindowWidth } from "@wojtekmaj/react-hooks"
+import { Badge } from "./ui/badge"
 
 export const dynamic = "force-dynamic"
 
@@ -94,40 +95,50 @@ export function MainNav() {
                 <VisuallyHidden>yeet</VisuallyHidden>
               </DialogTitle>
 
-              <Card className="mb-4 grid grid-cols-2 rounded-lg bg-background shadow-lg transition-shadow duration-200 hover:shadow-xl">
-                <div className="flex flex-col gap-1 p-4">
-                  <CardTitle className="font-mono text-xl font-semibold tracking-tight">
+              <Card className="mx-5 flex flex-col rounded-lg border-none bg-background shadow-lg transition-shadow duration-200 hover:shadow-xl">
+                <div className="flex max-w-[90%] flex-col gap-1 p-4">
+                  <CardTitle className="p-1 font-mono text-xl font-semibold tracking-tight">
                     {latestRepoCommit[0]?.message ||
                       "No commit message available."}
                   </CardTitle>
-                  <CardDescription className="text-sm">
-                    {timeAgo(latestRepoCommit[0]?.date) + " ago" ||
-                      "No date available."}
-                  </CardDescription>
                 </div>
-                <CardContent className="flex w-full flex-col p-4 pl-0 text-sm text-muted-foreground">
-                  <Link
-                    href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}/commit/${latestRepoCommit[0]?.hash}`}
-                    className="truncate rounded-md p-1 text-sky-600 underline shadow-sm transition duration-200 ease-in-out hover:text-sky-800 hover:shadow-md"
-                    target="_blank"
-                  >
-                    View Commit
-                  </Link>
-                  <Link
-                    href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}`}
-                    className="truncate rounded-md p-1 text-sky-600 underline shadow-sm transition duration-200 ease-in-out hover:text-sky-800 hover:shadow-md"
-                    target="_blank"
-                  >
-                    Visit Repository
-                  </Link>
+                <CardContent className="flex flex-col gap-1 p-4">
+                  <div className="flex justify-between">
+                    <div className="flex gap-2">
+                      <Button variant={"outline"}>
+                        <Link
+                          href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}/commit/${latestRepoCommit[0]?.hash}`}
+                          target="_blank"
+                        >
+                          View Commit
+                        </Link>
+                      </Button>
+                      <Button variant={"outline"}>
+                        <Link
+                          href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}`}
+                          target="_blank"
+                        >
+                          Visit Repository
+                        </Link>
+                      </Button>
+                    </div>
+                    <CardDescription className="flex justify-end">
+                      <Badge variant={"outline"}>
+                        {timeAgo(latestRepoCommit[0]?.date) + " ago" ||
+                          "No date available."}
+                      </Badge>
+                    </CardDescription>
+                  </div>
                 </CardContent>
               </Card>
-              <DialogFooter className="relative">
+              <DialogFooter className="relative px-9">
                 <DialogClose
                   asChild
                   className="mx-auto flex w-full justify-center"
                 >
-                  <Button variant="outline">Close</Button>
+                  <Button variant="ghost" className="border border-border/40">
+                    Close
+                  </Button>
                 </DialogClose>
               </DialogFooter>
             </DialogContent>
