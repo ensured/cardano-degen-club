@@ -96,7 +96,7 @@ export function MainNav() {
                 <VisuallyHidden>yeet</VisuallyHidden>
               </DialogTitle>
 
-              <Card className="grid grid-cols-2 rounded-lg bg-background shadow-lg transition-shadow duration-200 hover:shadow-xl">
+              <Card className="mb-4 grid grid-cols-2 rounded-lg bg-background shadow-lg transition-shadow duration-200 hover:shadow-xl">
                 <div className="flex flex-col gap-1 p-4">
                   <CardTitle className="font-mono text-xl font-semibold tracking-tight">
                     {latestRepoCommit[0]?.message ||
@@ -107,13 +107,13 @@ export function MainNav() {
                       "No date available."}
                   </CardDescription>
                 </div>
-                <CardContent className="flex w-full flex-col p-4 text-sm text-muted-foreground">
+                <CardContent className="flex w-full flex-col p-4 pl-0 text-sm text-muted-foreground">
                   <Link
                     href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}/commit/${latestRepoCommit[0]?.hash}`}
                     className="truncate rounded-md p-1 text-sky-600 underline shadow-sm transition duration-200 ease-in-out hover:text-sky-800 hover:shadow-md"
                     target="_blank"
                   >
-                    View Commit {latestRepoCommit[0]?.hash}
+                    View Commit
                   </Link>
                   <Link
                     href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}`}
@@ -124,8 +124,11 @@ export function MainNav() {
                   </Link>
                 </CardContent>
               </Card>
-              <DialogFooter>
-                <DialogClose asChild className="flex w-full justify-center">
+              <DialogFooter className="relative">
+                <DialogClose
+                  asChild
+                  className="mx-auto flex w-full justify-center"
+                >
                   <Button variant="outline">Close</Button>
                 </DialogClose>
               </DialogFooter>
