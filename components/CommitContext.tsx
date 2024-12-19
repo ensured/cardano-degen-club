@@ -22,11 +22,7 @@ export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
     async function fetchCommits() {
       setLoading(true)
       try {
-        const response = await fetch("/api/last-commits", {
-          next: {
-            revalidate: 30,
-          },
-        })
+        const response = await fetch("/api/last-commits")
         const data = await response.json()
 
         if (response.ok) {
