@@ -41,6 +41,11 @@ export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     fetchCommits()
+
+    const interval = setInterval(fetchCommits, 1000 * 60 * 5) // 5 minutes
+    return () => {
+      clearInterval(interval)
+    }
   }, [])
 
   return (

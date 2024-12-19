@@ -22,7 +22,6 @@ import { SelectSeparator } from "./ui/select"
 import { Sheet, SheetDescription, SheetTitle, SheetTrigger } from "./ui/sheet"
 import { useCommits } from "./CommitContext"
 import { timeAgoCompact } from "../lib/helper"
-import { GitHubLogoIcon } from "@radix-ui/react-icons"
 
 export function HeaderNavSheet() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()

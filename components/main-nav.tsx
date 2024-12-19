@@ -70,18 +70,18 @@ export function MainNav() {
         {latestRepoCommit[0]?.date ? (
           <Dialog>
             <DialogTrigger>
-              <div className="flex cursor-pointer items-center gap-x-1.5 overflow-x-auto rounded-md p-1.5 hover:bg-secondary">
+              <div className="flex cursor-pointer items-center gap-x-1.5 overflow-x-auto rounded-md p-1.5 font-mono hover:bg-secondary">
                 <div
                   className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
                   style={{
                     backgroundColor: getColor(latestRepoCommit[0]?.date),
                   }}
                 />
-                <div className="font-mono text-xs tracking-tighter">
+                <div className="text-xs tracking-tighter">
                   ({timeAgo(latestRepoCommit[0]?.date)} ago)
                 </div>
                 {width && width > 600 && (
-                  <div className="line-clamp-1 max-w-40 font-mono text-xs tracking-tighter">
+                  <div className="line-clamp-1 max-w-[200px] text-left text-xs tracking-tighter md:max-w-[269px]">
                     {latestRepoCommit[0]?.message}
                   </div>
                 )}

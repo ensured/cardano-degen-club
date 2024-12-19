@@ -6,6 +6,7 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import { SheetOverlay, SheetPortal, sheetVariants } from "./ui/sheet"
+import { Button } from "./ui/button"
 
 const SheetClose = SheetPrimitive.Close
 interface SheetContentProps
@@ -24,9 +25,14 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity data-[state=open]:bg-secondary hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-        <X className="size-7" />
-        <span className="sr-only">Close</span>
+      <SheetPrimitive.Close
+        className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity data-[state=open]:bg-secondary hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+        asChild
+      >
+        <Button variant="ghost" size="icon">
+          <X className="size-7" />
+          <span className="sr-only">Close</span>
+        </Button>
       </SheetPrimitive.Close>
     </SheetPrimitive.Content>
   </SheetPortal>
