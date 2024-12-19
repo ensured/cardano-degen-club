@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
-import { 
+import {
   Menu,
   Globe,
   Link as LinkIcon,
@@ -20,10 +20,11 @@ import { ThemeToggle } from "./theme-toggle"
 import { Button } from "./ui/button"
 import { SelectSeparator } from "./ui/select"
 import { Sheet, SheetDescription, SheetTitle, SheetTrigger } from "./ui/sheet"
-import { useCommits } from "./CommitContext" 
+import { useCommits } from "./CommitContext"
+import { timeAgoCompact } from "../lib/helper"
 
 export function HeaderNavSheet() {
-  const { folderCommits, latestRepoCommit, loading, error } = useCommits();
+  const { folderCommits, latestRepoCommit, loading, error } = useCommits()
 
   const [isSheetOpen, setIsSheetOpen] = useState(false)
 
@@ -31,38 +32,21 @@ export function HeaderNavSheet() {
     setIsSheetOpen(!isSheetOpen)
   }
 
-  const timeAgo = (date: string) => {
-    const now = new Date();
-    const past = new Date(date);
-    const diff = now.getTime() - past.getTime();
-
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const months = Math.floor(days / 30);
-    const years = Math.floor(days / 365);
-
-    if (years > 0) return `${years}Y`;
-    if (months > 0) return `${months}M`;
-    if (days > 0) return `${days}d`;
-    if (hours > 0) return `${hours}h`;
-    if (minutes > 0) return `${minutes}min`;
-    if (seconds > 0) return `~${seconds}s`;
-    return 'just now';
-  }
-
   return (
     <Sheet key={"left"} open={isSheetOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-       <div className="flex items-center">
-       <Button variant="outline" size="icon" className="flex items-center transition duration-200">
-          <Menu className="text-lg" />
-        </Button>
-       </div>
+        <div className="flex items-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="flex items-center transition duration-200"
+          >
+            <Menu className="text-lg" />
+          </Button>
+        </div>
       </SheetTrigger>
-      <SheetContent className="">
-        <div className="relative -top-2 right-2">
+      <SheetContent className="p-3">
+        <div className="text-">
           <ThemeToggle />
         </div>
         <div className="grid grid-cols-2 pr-8">
@@ -71,136 +55,157 @@ export function HeaderNavSheet() {
               <span className="text-red-500">{error}</span>
             </span>
           )}
-          {loading && (
-              <Loader2 className="animate-spin" />
-          )}
+          {loading && <Loader2 className="animate-spin" />}
+        </div>
+
+        <VisuallyHidden.Root>
+          <SheetTitle className="flex w-full justify-center text-xl font-bold">
+            null
+          </SheetTitle>
+        </VisuallyHidden.Root>
+
+        <div className="relative flex h-full flex-col gap-1 overflow-auto pb-4">
+          <SelectSeparator className="my-2" />
+          <div className="text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">
+            Crypto
           </div>
-          
-          <VisuallyHidden.Root>
-            <SheetTitle className="flex w-full justify-center text-xl font-bold">
-              null
-            </SheetTitle>
-          </VisuallyHidden.Root>
-      
-      
 
-        <div className="relative flex h-full flex-col gap-1 overflow-auto pb-4"> 
-        <SelectSeparator />
-          <div className="text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">Crypto</div>
-
-          <Link
-            href="/punycode"
-            onClick={handleOpenChange}
-            className="flex items-center gap-2 py-1 text-lg"
-          >
-            <Globe className="size-5" />
-            Punycode Converter
-            {folderCommits.find(c => c.folder === "punycode") && (
-              <span className="ml-2 text-sm text-gray-500">
-                ({timeAgo(folderCommits.find(c => c.folder === "punycode").lastCommitDate)})
+          <CustomLink href="/punycode" onClick={handleOpenChange}>
+            <Globe className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>Punycode Converter</CustomLinkText>
+            {folderCommits.find((c) => c.folder === "punycode") && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === "punycode")
+                    .lastCommitDate
+                )}
+                )
               </span>
             )}
-        
-          </Link>
-          <Link
-            className="flex items-center gap-2 py-1 text-lg"
-            href="/cardano-links"
-            onClick={handleOpenChange}
-          >
-            <LinkIcon className="size-5" />
-            Cardano Links
-            {folderCommits.find(c => c.folder === "cardano-links") && (
-              <span className="ml-2 text-sm text-gray-500">
-                ({timeAgo(folderCommits.find(c => c.folder === "cardano-links").lastCommitDate)})
+          </CustomLink>
+          <CustomLink href="/cardano-links" onClick={handleOpenChange}>
+            <LinkIcon className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>Cardano Links</CustomLinkText>
+            {folderCommits.find((c) => c.folder === "cardano-links") && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === "cardano-links")
+                    .lastCommitDate
+                )}
+                )
               </span>
             )}
-          </Link>
-          <Link
-            className="flex items-center gap-2 py-1 text-lg"
-            href="/crypto-tracker"
-            onClick={handleOpenChange}
-          >
-            <LineChart className="size-5" />
-            Crypto Tracker
-            {folderCommits.find(c => c.folder === "crypto-tracker") && (
-              <span className="ml-2 text-sm text-gray-500">
-                ({timeAgo(
-                  folderCommits.find(c => c.folder === "crypto-tracker")?.lastCommitDate
-                )})
+          </CustomLink>
+          <CustomLink href="/crypto-tracker" onClick={handleOpenChange}>
+            <LineChart className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>Crypto Tracker</CustomLinkText>
+            {folderCommits.find((c) => c.folder === "crypto-tracker") && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === "crypto-tracker")
+                    ?.lastCommitDate
+                )}
+                )
               </span>
             )}
-          </Link>
-          <SelectSeparator />
+          </CustomLink>
 
-          <div className="py-2 text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">
+          <div className="py-2 font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)] sm:text-xl">
             Scripts/Apps
           </div>
 
-          <Link
-            className="flex items-center gap-2 py-2 text-lg"
-            target="_blank"
+          <CustomLink
             href={"https://github.com/ensured/phone-backup-app-android"}
             onClick={handleOpenChange}
           >
-            <Smartphone className="size-5" />
-            Phone backup app (Android)
+            <Smartphone className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>Android Fren</CustomLinkText>
             {latestRepoCommit[1] && (
-              <span className="ml-2 text-sm text-gray-500">
-                ({timeAgo(latestRepoCommit[1].date)})
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                ({timeAgoCompact(latestRepoCommit[1].date)})
               </span>
             )}
-          </Link>
-          <Link
-            href="/tradingview-script"
-            onClick={handleOpenChange}
-            className="flex items-center gap-2 py-1 text-lg"
-          >
-            <Monitor className="size-5" />
-            Tradingview Script: Auto-Close Ads
-            {folderCommits.find(c => c.folder === "tradingview-script") && (
-              <span className="ml-2 text-sm text-gray-500">
-                ({timeAgo(folderCommits.find(c => c.folder === "tradingview-script").lastCommitDate)})
+          </CustomLink>
+          <CustomLink href="/tradingview-script" onClick={handleOpenChange}>
+            <Monitor className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>TradingView Adblocker</CustomLinkText>
+            {folderCommits.find((c) => c.folder === "tradingview-script") && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === "tradingview-script")
+                    .lastCommitDate
+                )}
+                )
               </span>
             )}
-          </Link>
-          <SelectSeparator />
+          </CustomLink>
 
-          <div className="py-2 text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">Misc</div>
-          <Link
-            href="/recipe-fren"
-            onClick={handleOpenChange}
-            className="flex items-center gap-2 py-1 text-lg"
-          >
-            <UtensilsCrossed className="size-5" />
-            Recipe Fren
-            {folderCommits.find(c => c.folder === "recipe-fren") && (
-              <span className="ml-2 text-sm text-gray-500">
-                ({timeAgo(folderCommits.find(c => c.folder === "recipe-fren").lastCommitDate)})
+          <div className="py-2 text-xl font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)]">
+            Misc
+          </div>
+          <CustomLink href="/recipe-fren" onClick={handleOpenChange}>
+            <UtensilsCrossed className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>Recipe Fren</CustomLinkText>
+            {folderCommits.find((c) => c.folder === "recipe-fren") && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === "recipe-fren")
+                    .lastCommitDate
+                )}
+                )
               </span>
             )}
-          </Link>
-          <Link
-            href="/port-checker"
-            onClick={handleOpenChange}
-            className="flex items-center gap-2 py-1 text-lg"
-          >
-            <Network className="size-5" />
-            <span>Port Checker</span>
-            {folderCommits.find(c => c.folder === "port-checker") && (
-              <span className="ml-2 text-sm text-gray-500">
-                ({timeAgo(folderCommits.find(c => c.folder === "port-checker").lastCommitDate)})
+          </CustomLink>
+          <CustomLink href="/port-checker" onClick={handleOpenChange}>
+            <Network className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>Port Checker</CustomLinkText>
+            {folderCommits.find((c) => c.folder === "port-checker") && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === "port-checker")
+                    .lastCommitDate
+                )}
+                )
               </span>
             )}
-          </Link>
-          <SelectSeparator />
+          </CustomLink>
         </div>
-            
+
         <VisuallyHidden.Root>
           <SheetDescription>Description</SheetDescription>
         </VisuallyHidden.Root>
-       
       </SheetContent>
-      
     </Sheet>
   )
+}
+
+function CustomLink({
+  children,
+  href,
+  onClick,
+}: {
+  children: React.ReactNode
+  href: string
+  onClick: () => void
+}) {
+  return (
+    <Link
+      className="flex items-center gap-2 rounded-md border border-secondary/50 bg-secondary/20 p-2 text-lg"
+      href={href}
+      onClick={onClick}
+      target="_blank"
+    >
+      {children}
+    </Link>
+  )
+}
+
+function CustomLinkText({ children }: { children: React.ReactNode }) {
+  return <span className="text-sm sm:text-base md:text-lg">{children}</span>
 }

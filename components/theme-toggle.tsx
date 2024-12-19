@@ -12,6 +12,7 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
+      className="h-8 text-[#000000]/70 dark:text-[#ffffff]/70"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
       <Moon className="hidden size-6 dark:block" />
