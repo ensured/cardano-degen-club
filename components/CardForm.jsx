@@ -206,6 +206,7 @@ const CardForm = () => {
         <CardContent>
           <div className="flex flex-col">
             <Input
+              autoFocus={true}
               type="text"
               placeholder="Enter text here..."
               onChange={handleInputChange}
