@@ -96,21 +96,28 @@ export function MainNav() {
                 <VisuallyHidden>yeet</VisuallyHidden>
               </DialogTitle>
 
-              <Card className="flex items-center gap-4 rounded-md bg-background p-4 shadow-md">
-                <div className="flex flex-col gap-2">
-                  <CardTitle className="text-lg font-semibold text-foreground">
+              <Card className="grid grid-cols-2 gap-4 rounded-lg bg-background px-6 pt-6 shadow-lg transition-shadow duration-200 hover:shadow-xl">
+                <div className="flex flex-col gap-1">
+                  <CardTitle className="font-mono text-xl font-semibold tracking-tight">
                     {latestRepoCommit[0]?.message ||
                       "No commit message available."}
                   </CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground">
+                  <CardDescription className="text-sm">
                     {timeAgo(latestRepoCommit[0]?.date) + " ago" ||
                       "No date available."}
                   </CardDescription>
                 </div>
-                <CardContent className="text-sm text-muted-foreground">
+                <CardContent className="flex w-full flex-col gap-1 overflow-hidden text-sm text-muted-foreground">
+                  <Link
+                    href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}/commit/${latestRepoCommit[0]?.hash}`}
+                    className="truncate rounded-md p-1 text-sky-600 underline shadow-sm transition duration-200 ease-in-out hover:text-sky-800 hover:shadow-md"
+                    target="_blank"
+                  >
+                    View Commit {latestRepoCommit[0]?.hash}
+                  </Link>
                   <Link
                     href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}`}
-                    className="text-sky-600 underline hover:text-sky-800"
+                    className="truncate rounded-md p-1 text-sky-600 underline shadow-sm transition duration-200 ease-in-out hover:text-sky-800 hover:shadow-md"
                     target="_blank"
                   >
                     Visit Repository

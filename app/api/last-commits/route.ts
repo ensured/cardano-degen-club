@@ -32,6 +32,7 @@ const fetchLatestRepoCommit = async ({
     repo: repo,
     message: commits[0]?.commit?.message,
     date: commits[0]?.commit?.committer?.date,
+    hash: commits[0]?.sha,
   }
 }
 
