@@ -96,7 +96,7 @@ export function MainNav() {
                 <VisuallyHidden>yeet</VisuallyHidden>
               </DialogTitle>
 
-              <Card className="grid grid-cols-2 gap-4 rounded-lg bg-background px-6 pt-6 shadow-lg transition-shadow duration-200 hover:shadow-xl">
+              <Card className="grid grid-cols-2 gap-4 rounded-lg bg-background px-6 pb-4 pt-6 shadow-lg transition-shadow duration-200 hover:shadow-xl">
                 <div className="flex flex-col gap-1">
                   <CardTitle className="font-mono text-xl font-semibold tracking-tight">
                     {latestRepoCommit[0]?.message ||
