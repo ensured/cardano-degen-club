@@ -120,6 +120,7 @@ export function HeaderNavSheet() {
           <CustomLink
             href={"https://github.com/ensured/phone-backup-app-android"}
             onClick={handleOpenChange}
+            target={true}
           >
             <Smartphone className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
             <CustomLinkText>Android Fren</CustomLinkText>
@@ -189,17 +190,26 @@ function CustomLink({
   children,
   href,
   onClick,
+  target = false,
 }: {
   children: React.ReactNode
   href: string
   onClick: () => void
+  target?: boolean
 }) {
   return (
     <Link
       className="flex items-center gap-2 rounded-md border border-secondary/50 bg-secondary/20 p-2 text-lg"
       href={href}
-      onClick={onClick}
-      target="_blank"
+      onClick={(e) => {
+        if (target) {
+          e.preventDefault()
+          window.open(href, "_blank")
+          return
+        }
+        onClick()
+      }}
+      target={target ? "_blank" : undefined}
     >
       {children}
     </Link>
