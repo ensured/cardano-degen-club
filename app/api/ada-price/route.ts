@@ -42,6 +42,12 @@ export async function GET(request: NextRequest) {
     const res = NextResponse.json(data)
     res.headers.append("Set-Cookie", cookie)
 
+    // Add cache control headers
+    res.headers.append(
+      "Cache-Control",
+      "s-maxage=10, stale-while-revalidate=59"
+    )
+
     return res
   } catch (error) {
     return NextResponse.json(
