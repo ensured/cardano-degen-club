@@ -39,7 +39,7 @@ function getCodePoints(input) {
   return codePoints
 }
 
-const CardForm = ({ autoFocus }) => {
+const CardForm = () => {
   const [searchInput, setSearchInput] = useState("")
   const [output, setOutput] = useState("")
   const searchParams = useSearchParams()
@@ -52,14 +52,12 @@ const CardForm = ({ autoFocus }) => {
       if (codePoints.length === 1) {
         setOutput(
           <div>
-            <Badge variant="outline" className=" mb-2">
-              Converted
-            </Badge>
+            <Badge variant="outline">Converted</Badge>
             <p className="white-space:nowrap flex w-full flex-col flex-wrap">
               {converted}
             </p>
 
-            <Badge variant="outline" className="mb-2">
+            <Badge variant="outline">
               {codePoints.length} Code Point{codePoints.length > 1 && "s"}
             </Badge>
             <Badge variant="outline">Pure</Badge>
@@ -71,19 +69,17 @@ const CardForm = ({ autoFocus }) => {
       } else if (codePoints.length > 1 && codePoints.length < 40) {
         setOutput(
           <div>
-            <Badge variant="outline" className="mb-2 mt-4">
-              Converted
-            </Badge>
+            <Badge variant="outline">Converted</Badge>
             <p className="white-space:nowrap flex w-full flex-col flex-wrap">
               {converted}
             </p>
 
-            <Badge variant="outline" className="mb-2">
+            <Badge variant="outline">
               {codePoints.length} Code Point{codePoints.length > 1 && "s"}
             </Badge>
 
             {codePoints.map((codePoint, index) => (
-              <p key={index} className=" text-lg font-semibold">
+              <p key={index} className="text-lg font-semibold">
                 {`U+${codePoint.toUpperCase()} `}
               </p>
             ))}
@@ -102,14 +98,12 @@ const CardForm = ({ autoFocus }) => {
     if (codePoints.length === 1) {
       setOutput(
         <div>
-          <Badge variant="outline" className="mb-2 mt-4">
-            Converted
-          </Badge>
+          <Badge variant="outline">Converted</Badge>
           <p className="white-space:nowrap flex w-full flex-col flex-wrap">
             {converted}
           </p>
           <br />
-          <Badge variant="outline" className="mb-2">
+          <Badge variant="outline">
             {codePoints.length} Code Point{codePoints.length > 1 && "s"}
           </Badge>
           <Badge variant="outline">Pure</Badge>
@@ -121,15 +115,13 @@ const CardForm = ({ autoFocus }) => {
     } else if (codePoints.length > 1) {
       setOutput(
         <div>
-          <Badge variant="outline" className="mb-2 mt-4">
-            Converted
-          </Badge>
+          <Badge variant="outline">Converted</Badge>
           <p className="white-space:nowrap flex w-full flex-col flex-wrap">
             {converted}
           </p>
 
           <br />
-          <Badge variant="outline" className="mb-2">
+          <Badge variant="outline">
             {codePoints.length} Code Point{codePoints.length > 1 && "s"}
           </Badge>
           {codePoints.map((codePoint, index) => (
@@ -184,10 +176,10 @@ const CardForm = ({ autoFocus }) => {
 
   const inputRef = useRef()
   return (
-    <div className="container items-center justify-center">
-      <Card className="rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800">
+    <div className="mx-4 flex items-center justify-center sm:container">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex justify-center rounded-md p-4 text-sky-600 dark:text-sky-400">
+          <CardTitle className="flex justify-center">
             Punycode Converter
           </CardTitle>
           <CardDescription className="text-md text-gray-700 dark:text-gray-300">
@@ -212,9 +204,8 @@ const CardForm = ({ autoFocus }) => {
         </CardHeader>
 
         <CardContent>
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col">
             <Input
-              autoFocus={autoFocus}
               type="text"
               placeholder="Enter text here..."
               onChange={handleInputChange}
