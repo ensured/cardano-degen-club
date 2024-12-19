@@ -20,10 +20,12 @@ export function EpochTime({ epochData }) {
       const days = Math.floor(timeLeftUntilEnd / 86400)
       const hours = Math.floor((timeLeftUntilEnd % 86400) / 3600)
       const minutes = Math.floor((timeLeftUntilEnd % 3600) / 60)
+      const seconds = timeLeftUntilEnd % 60
 
       if (days > 0) timeDisplay.push(`${days}d`)
       if (hours > 0) timeDisplay.push(`${hours}h`)
       if (minutes > 0) timeDisplay.push(`${minutes}m`)
+      if (seconds > 0) timeDisplay.push(`${seconds}s`)
 
       // If no time left, show seconds
       if (timeLeftUntilEnd < 60) {
@@ -57,7 +59,7 @@ export function EpochTime({ epochData }) {
     >
       <div className="flex h-4 items-center gap-2 text-center text-muted-foreground">
         {loading ? (
-          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-3 w-[200px]" />
         ) : (
           <span className="flex items-center justify-center text-xs">
             epoch {epochData.epoch} ends in {timeLeftDisplay}
