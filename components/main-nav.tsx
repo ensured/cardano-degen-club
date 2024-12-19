@@ -63,9 +63,7 @@ export function MainNav() {
 
   const latestCommit = () => {
     return loading ? (
-      <Skeleton className="flex w-24 items-center justify-center p-1.5 sm:w-44">
-        <Loader2 className="size-4 animate-spin text-muted-foreground" />
-      </Skeleton>
+      <Skeleton className="flex w-24 items-center justify-center p-1.5 sm:w-44" />
     ) : (
       <span className="text-sm text-muted-foreground">
         {latestRepoCommit[0]?.date ? (

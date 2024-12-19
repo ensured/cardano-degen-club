@@ -1,11 +1,14 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
 import { useEffect, useState } from "react"
 import { Progress } from "./ui/progress"
+import { Skeleton } from "./ui/skeleton"
 
 export function EpochTime({ epochData }) {
   const [timeLeftDisplay, setTimeLeftDisplay] = useState("")
   const [percentageLeft, setPercentageLeft] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const updateTime = () => {
@@ -37,6 +40,7 @@ export function EpochTime({ epochData }) {
       const totalEpochDuration = epochData.end_time - epochData.start_time
       const percentage = (timeLeftUntilEnd / totalEpochDuration) * 100
       setPercentageLeft(Math.max(0, Math.min(100, percentage))) // Ensure between 0 and 100
+      setLoading(false)
     }
 
     // Update immediately and then every second
@@ -44,15 +48,21 @@ export function EpochTime({ epochData }) {
     const interval = setInterval(updateTime, 1000)
 
     return () => clearInterval(interval)
-  }, [epochData])
+  }, [])
 
   return (
     <div
       id="epoch-time-cardano"
       className="flex w-full flex-col items-center overflow-hidden font-mono text-xs"
     >
-      <div className="text-center text-muted-foreground">
-        epoch {epochData.epoch} ends in {timeLeftDisplay}
+      <div className="flex h-4 items-center gap-2 text-center text-muted-foreground">
+        {loading ? (
+          <Skeleton className="h-4 w-48" />
+        ) : (
+          <span className="flex items-center justify-center">
+            epoch {epochData.epoch} ends in {timeLeftDisplay}
+          </span>
+        )}
       </div>
       <div className="relative h-0.5 w-full rounded-full bg-purple-200">
         <Progress
