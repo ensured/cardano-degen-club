@@ -15,8 +15,8 @@ export function ThemeToggle() {
       className="text-[#000000]/70 hover:text-[#000000] dark:text-[#ffffff]/70 dark:hover:text-[#ffffff]"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
-      <Moon className="hidden size-7 dark:block" />
-      <Sun className="block size-7 dark:hidden" />
+      <Moon className="hidden size-6 dark:block" />
+      <Sun className="block size-6 dark:hidden" />
     </Button>
   )
 }
