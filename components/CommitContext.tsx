@@ -41,10 +41,6 @@ export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     fetchCommits()
-
-    // Poll every 10 seconds for updates
-    const interval = setInterval(fetchCommits, 60000)
-    return () => clearInterval(interval)
   }, [])
 
   return (
