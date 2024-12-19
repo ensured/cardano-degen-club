@@ -4,8 +4,6 @@ import { NextRequest } from "next/server"
 export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
-  const currentTime = Date.now()
-
   try {
     const response = await fetch(
       process.env.COIN_GECKO_API_URL ||
