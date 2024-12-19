@@ -4,13 +4,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { extractRecipeId, extractRecipeName } from "@/utils/helper"
 import { debounce } from "lodash"
 // Import debounce from lodash
-import { toast, useToasterStore } from 'react-hot-toast'
+import { toast, useToasterStore } from "react-hot-toast"
 
 import { MAX_FAVORITES } from "../utils/consts"
-import {
-  removeItemsFirebase,
-  addItemsFirebase,
-} from "./actions"
+import { removeItemsFirebase, addItemsFirebase } from "../components/actions"
 import { useTheme } from "next-themes"
 
 const useRecipeSearch = () => {
@@ -43,169 +40,173 @@ const useRecipeSearch = () => {
 
   useEffect(() => {
     toasts
-      .filter(t => t.visible)
+      .filter((t) => t.visible)
       .filter((_, i) => i >= TOAST_LIMIT)
-      .forEach(t => toast.dismiss(t.id))
+      .forEach((t) => toast.dismiss(t.id))
   }, [toasts])
 
-  const searchRecipes = useCallback(async (e, q, selectedHealth, excludedIngredients, selectedMealType) => {
-    setSearchResults({
-      hits: [],
-      count: 0,
-      nextPage: "",
-    })
-    setLoading(true)
-    if (q) {
+  const searchRecipes = useCallback(
+    async (e, q, selectedHealth, excludedIngredients, selectedMealType) => {
+      setSearchResults({
+        hits: [],
+        count: 0,
+        nextPage: "",
+      })
+      setLoading(true)
+      if (q) {
+        try {
+          // Build the query URL with filters
+          let queryUrl = `/api/search?q=${q}`
+          if (selectedHealth) {
+            queryUrl += `&health=${selectedHealth}`
+          }
+          if (excludedIngredients?.length > 0) {
+            excludedIngredients.forEach((item) => {
+              queryUrl += `&excluded=${encodeURIComponent(item)}`
+            })
+          }
+          if (selectedMealType) {
+            queryUrl += `&mealType=${selectedMealType}`
+          }
+          const res = await fetch(queryUrl)
+
+          const data = await res.json()
+          if (data.success === false) {
+            toast.dismiss() // Dismiss any existing toasts
+            toast(data.message, {
+              type: "error",
+              duration: 1000,
+              position: "top-center",
+              onClick: (t) => toast.dismiss(t.id),
+            })
+            return
+          }
+
+          setSearchResults((prevSearchResults) => ({
+            ...prevSearchResults,
+            hits: data.data.hits,
+            count: data.data.count,
+            nextPage: data?.data?._links?.next?.href || "",
+          }))
+          setLastInputSearched(q)
+          setLoading(false)
+
+          toast.success(`Found ${data.data.count} recipes`, {
+            duration: 1500,
+            position: "top-center",
+            onClick: (t) => toast.dismiss(t.id),
+            style: {
+              background: theme === "dark" ? "#121212" : "#fff",
+              color: theme === "dark" ? "#fff" : "#000",
+            },
+          })
+
+          return
+        } catch (error) {
+          setLoading(false)
+          toast(error.message, {
+            type: "error",
+          })
+        } finally {
+          setLoading(false)
+          router.replace(`?q=${q}`)
+        }
+      }
+
       try {
-        // Build the query URL with filters
-        let queryUrl = `/api/search?q=${q}`
+        // Build the query URL with filters for the input case
+        let queryUrl = `/api/search?q=${input}`
         if (selectedHealth) {
           queryUrl += `&health=${selectedHealth}`
         }
         if (excludedIngredients?.length > 0) {
-          excludedIngredients.forEach(item => {
+          excludedIngredients.forEach((item) => {
             queryUrl += `&excluded=${encodeURIComponent(item)}`
           })
         }
-        if (selectedMealType) {
-          queryUrl += `&mealType=${selectedMealType}`
-        }
-        const res = await fetch(queryUrl)
 
+        const res = await fetch(queryUrl)
         const data = await res.json()
         if (data.success === false) {
           toast.dismiss() // Dismiss any existing toasts
-          toast(data.message, { 
+          toast(data.message, {
             type: "error",
-            duration: 1000,
-            position: "top-center",
+            duration: 3000,
             onClick: (t) => toast.dismiss(t.id),
           })
           return
+        } else {
+          setSearchResults((prevSearchResults) => ({
+            ...prevSearchResults,
+            hits: data.data.hits,
+            count: data.data.count,
+            nextPage: data.data._links.next?.href || "",
+          }))
+          setLastInputSearched(input)
         }
-
-        setSearchResults((prevSearchResults) => ({
-          ...prevSearchResults,
-          hits: data.data.hits,
-          count: data.data.count,
-          nextPage: data?.data?._links?.next?.href || "",
-        }))
-        setLastInputSearched(q)
-        setLoading(false)
-
-        toast.success(`Found ${data.data.count} recipes`, {
-          duration: 1500,
-          position: "top-center",
-          onClick: (t) => toast.dismiss(t.id),
-          style: {
-            background: theme === "dark" ? "#121212" : "#fff",
-            color: theme === "dark" ? "#fff" : "#000",
-          }
-        })
-       
-        return
-      } catch (error) {
-        setLoading(false)
-        toast(error.message, {
-          type: "error",
-        })
+      } catch (err) {
+        console.log(err)
       } finally {
         setLoading(false)
-        router.replace(`?q=${q}`)
+        router.replace(`?q=${input}`)
       }
-    }
+    },
+    []
+  )
 
-    try {
-      // Build the query URL with filters for the input case
-      let queryUrl = `/api/search?q=${input}`
-      if (selectedHealth) {
-        queryUrl += `&health=${selectedHealth}`
-      }
-      if (excludedIngredients?.length > 0) {
-        excludedIngredients.forEach(item => {
-          queryUrl += `&excluded=${encodeURIComponent(item)}`
-        })
-      }
-
-      const res = await fetch(queryUrl)
-      const data = await res.json()
-      if (data.success === false) {
-        toast.dismiss() // Dismiss any existing toasts
-        toast(data.message, { 
-          type: "error",
-          duration: 3000,
-          onClick: (t) => toast.dismiss(t.id)
-        })
-        return
-      } else {
-        setSearchResults((prevSearchResults) => ({
-          ...prevSearchResults,
-          hits: data.data.hits,
-          count: data.data.count,
-          nextPage: data.data._links.next?.href || "",
-        }))
-        setLastInputSearched(input)
-      }
-    } catch (err) {
-      console.log(err)
-    } finally {
-      setLoading(false)
-      router.replace(`?q=${input}`)
-    }
-  }, [])
-  
   const debouncedAddItemsFirebase = useCallback(
     debounce(async () => {
-      if (pendingAdditions.current.size === 0) return;
+      if (pendingAdditions.current.size === 0) return
 
-      const itemsToAdd = Array.from(pendingAdditions.current);
-      pendingAdditions.current.clear();
+      const itemsToAdd = Array.from(pendingAdditions.current)
+      pendingAdditions.current.clear()
 
       try {
-        const response = await addItemsFirebase(itemsToAdd);
-        
+        const response = await addItemsFirebase(itemsToAdd)
+
         if (response.error) {
-          toast.error(response.error);
-          return;
+          toast.error(response.error)
+          return
         }
 
         // Update favorites with successful uploads
-        setFavorites(prev => {
-          const updatedFavorites = { ...prev };
-          response.results.forEach(result => {
+        setFavorites((prev) => {
+          const updatedFavorites = { ...prev }
+          response.results.forEach((result) => {
             if (result.success) {
               updatedFavorites[result.link] = {
                 name: result.name,
                 url: result.url,
                 link: result.link,
-              };
+              }
             } else {
-              delete updatedFavorites[result.link];
+              delete updatedFavorites[result.link]
             }
-          });
-          return updatedFavorites;
-        });
-        
+          })
+          return updatedFavorites
+        })
+
         if (response.successCount < itemsToAdd.length) {
-          toast.error(`Failed to add ${itemsToAdd.length - response.successCount} items`);
+          toast.error(
+            `Failed to add ${itemsToAdd.length - response.successCount} items`
+          )
         }
       } catch (error) {
-        console.error("Batch addition failed:", error);
-        toast.error("Failed to add some favorites");
-        
+        console.error("Batch addition failed:", error)
+        toast.error("Failed to add some favorites")
+
         // Revert optimistic updates on complete failure
-        setFavorites(prev => {
-          const newFavorites = { ...prev };
-          itemsToAdd.forEach(item => {
-            delete newFavorites[item.link];
-          });
-          return newFavorites;
-        });
+        setFavorites((prev) => {
+          const newFavorites = { ...prev }
+          itemsToAdd.forEach((item) => {
+            delete newFavorites[item.link]
+          })
+          return newFavorites
+        })
       }
     }, 800),
     []
-  );
-
+  )
 
   const handleLoadNextPage = useCallback(async () => {
     const { nextPage } = searchResults
@@ -215,7 +216,10 @@ const useRecipeSearch = () => {
         const response = await fetch(`/api/search?nextPage=${nextPage}`)
         const data = await response.json()
         if (data.success === false) {
-          toast(data.message, { type: "error", onClick: (t) => toast.dismiss(t.id) })
+          toast(data.message, {
+            type: "error",
+            onClick: (t) => toast.dismiss(t.id),
+          })
           return
         }
 
@@ -269,29 +273,31 @@ const useRecipeSearch = () => {
   }, [])
 
   useEffect(() => {
-    if (Object.keys(favorites).length === 0) return;
+    if (Object.keys(favorites).length === 0) return
     try {
-      const favoritesString = JSON.stringify(favorites);
+      const favoritesString = JSON.stringify(favorites)
       // Check size before attempting to save
-      const size = new Blob([favoritesString]).size;
+      const size = new Blob([favoritesString]).size
       // 5MB = 5 * 1024 * 1024 bytes (adjust if needed)
-      const MAX_SIZE = 5 * 1024 * 1024;
-      
+      const MAX_SIZE = 5 * 1024 * 1024
+
       if (size > MAX_SIZE) {
-        toast.error('Favorites storage limit reached. Some items may not be saved.');
-        return;
+        toast.error(
+          "Favorites storage limit reached. Some items may not be saved."
+        )
+        return
       }
-      
-      localStorage.setItem('favorites', favoritesString);
+
+      localStorage.setItem("favorites", favoritesString)
     } catch (error) {
-      if (error.name === 'QuotaExceededError' || error.code === 22) {
-        toast.error('Storage limit reached. Please remove some favorites.');
+      if (error.name === "QuotaExceededError" || error.code === 22) {
+        toast.error("Storage limit reached. Please remove some favorites.")
       } else {
-        console.error('Error saving favorites:', error);
-        toast.error('Failed to save favorites');
+        console.error("Error saving favorites:", error)
+        toast.error("Failed to save favorites")
       }
     }
-  }, [favorites]);
+  }, [favorites])
 
   useEffect(() => {
     const onScroll = () => {
@@ -352,7 +358,6 @@ const useRecipeSearch = () => {
     [router]
   )
 
-
   const handleStarIconHover = (index) => () => {
     setHoveredRecipeIndex(index) // Update hover state on enter/leave
   }
@@ -366,11 +371,9 @@ const useRecipeSearch = () => {
 
       try {
         await removeItemsFirebase(itemsToRemove) // Call your server action
-        toast.success(
-          `${itemsToRemove.length} favorites removed!`, {
-            onClick: (t) => toast.dismiss(t.id),
-          }
-        )
+        toast.success(`${itemsToRemove.length} favorites removed!`, {
+          onClick: (t) => toast.dismiss(t.id),
+        })
       } catch (error) {
         console.error("Batch removal failed:", error)
         toast.error("Failed to remove some favorites")
@@ -381,13 +384,13 @@ const useRecipeSearch = () => {
 
   const removeFromFavorites = async (link) => {
     // If this exact removal request is already pending, don't duplicate it
-    if (pendingRequests.has(link)) return;
+    if (pendingRequests.has(link)) return
 
     const key = extractRecipeId(link)
     pendingRemovals.current.add(key)
 
     // Optimistically update the favorites state immediately
-    setFavorites(prev => {
+    setFavorites((prev) => {
       const updatedFavorites = { ...prev }
       delete updatedFavorites[link] // Remove the item from the new favorites state
       return updatedFavorites
@@ -395,7 +398,7 @@ const useRecipeSearch = () => {
 
     try {
       // Add this request to pending set
-      setPendingRequests(prev => new Set(prev).add(link))
+      setPendingRequests((prev) => new Set(prev).add(link))
 
       // Trigger the debounced removal
       debouncedRemoveItemsFirebase()
@@ -405,7 +408,7 @@ const useRecipeSearch = () => {
       toast.error(error.message)
     } finally {
       // Remove this request from pending set
-      setPendingRequests(prev => {
+      setPendingRequests((prev) => {
         const newSet = new Set(prev)
         newSet.delete(link)
         return newSet
@@ -415,7 +418,7 @@ const useRecipeSearch = () => {
 
   const handleStarIconClick = (index) => (e) => {
     e.preventDefault()
-    
+
     const recipe = searchResults.hits[index].recipe
     const recipeLink = recipe.shareAs
     const recipeName = extractRecipeName(recipe.shareAs)
@@ -429,7 +432,7 @@ const useRecipeSearch = () => {
     }
 
     // Optimistically update UI immediately
-    setFavorites(prev => {
+    setFavorites((prev) => {
       const updatedFavorites = { ...prev }
       if (isFavorited) {
         delete updatedFavorites[recipeLink]

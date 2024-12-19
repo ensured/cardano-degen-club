@@ -59,7 +59,7 @@ export function EpochTime({ epochData }) {
         {loading ? (
           <Skeleton className="h-4 w-48" />
         ) : (
-          <span className="flex items-center justify-center">
+          <span className="flex items-center justify-center text-xs">
             epoch {epochData.epoch} ends in {timeLeftDisplay}
           </span>
         )}

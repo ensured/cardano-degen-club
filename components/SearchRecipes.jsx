@@ -4,7 +4,7 @@ import { Loader2, Loader2Icon } from "lucide-react"
 
 import { RecipeCards } from "./RecipeCard"
 import RecipeSearchForm from "./RecipeSearchForm"
-import useRecipeSearch from "./useRecipeSearch"
+import useRecipeSearch from "../hooks/useRecipeSearch"
 
 const SearchRecipes = ({ userEmail }) => {
   const {

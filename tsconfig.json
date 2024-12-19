@@ -36,7 +36,11 @@
     "app/**/*.js",
     "app/**/*.jsx",
     "app/**/*.ts",
-    "app/**/*.tsx"
-, "hooks/useIsMobile.jsx"  ],
+    "app/**/*.tsx",
+    "hooks/**/*.js",
+    "hooks/**/*.jsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }
