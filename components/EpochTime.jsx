@@ -66,7 +66,7 @@ export function EpochTime({ epochData }) {
       </div>
       <div className="relative h-0.5 w-full rounded-full bg-purple-200">
         <Progress
-          value={percentageLeft}
+          value={100 - percentageLeft}
           className="bg-green-500 h-full rounded-full"
         />
       </div>
