@@ -96,16 +96,20 @@ export function MainNav() {
               </DialogTitle>
 
               <Card className="mx-5 flex flex-col rounded-lg border-none bg-background shadow-lg transition-shadow duration-200 hover:shadow-xl">
-                <div className="flex max-w-[90%] flex-col gap-1 p-4">
+                <div className="flex w-full flex-row items-center gap-1 p-1">
                   <CardTitle className="p-1 font-mono text-xl font-semibold tracking-tight">
                     {latestRepoCommit[0]?.message ||
                       "No commit message available."}
                   </CardTitle>
                 </div>
-                <CardContent className="flex flex-col gap-1 p-4">
-                  <div className="flex justify-between">
-                    <div className="flex gap-2">
-                      <Button variant={"outline"}>
+                <CardContent className="flex flex-col gap-1 p-2">
+                  <div className="flex flex-row gap-2">
+                    <div className="flex flex-row gap-2">
+                      <Button
+                        variant={"outline"}
+                        className="text-xs sm:text-sm"
+                        size={"sm"}
+                      >
                         <Link
                           href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}/commit/${latestRepoCommit[0]?.hash}`}
                           target="_blank"
@@ -113,7 +117,11 @@ export function MainNav() {
                           View Commit
                         </Link>
                       </Button>
-                      <Button variant={"outline"}>
+                      <Button
+                        variant={"outline"}
+                        className="text-xs sm:text-sm"
+                        size={"sm"}
+                      >
                         <Link
                           href={`https://github.com/ensured/${latestRepoCommit[0]?.repo}`}
                           target="_blank"
@@ -122,16 +130,14 @@ export function MainNav() {
                         </Link>
                       </Button>
                     </div>
-                    <CardDescription className="flex justify-end">
-                      <Badge variant={"outline"}>
-                        {timeAgo(latestRepoCommit[0]?.date) + " ago" ||
-                          "No date available."}
-                      </Badge>
-                    </CardDescription>
                   </div>
                 </CardContent>
               </Card>
-              <DialogFooter className="relative px-9">
+              <CardDescription className="flex justify-end">
+                {timeAgo(latestRepoCommit[0]?.date) + " ago" ||
+                  "No date available."}
+              </CardDescription>
+              {/* <DialogFooter className="relative px-7">
                 <DialogClose
                   asChild
                   className="mx-auto flex w-full justify-center"
@@ -140,7 +146,7 @@ export function MainNav() {
                     Close
                   </Button>
                 </DialogClose>
-              </DialogFooter>
+              </DialogFooter> */}
             </DialogContent>
           </Dialog>
         ) : (
