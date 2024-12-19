@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import {
@@ -22,6 +22,7 @@ import { SelectSeparator } from "./ui/select"
 import { Sheet, SheetDescription, SheetTitle, SheetTrigger } from "./ui/sheet"
 import { useCommits } from "./CommitContext"
 import { timeAgoCompact } from "../lib/helper"
+import { GitHubLogoIcon } from "@radix-ui/react-icons"
 
 export function HeaderNavSheet() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()
@@ -46,16 +47,16 @@ export function HeaderNavSheet() {
         </div>
       </SheetTrigger>
       <SheetContent className="p-3">
-        <div className="text-">
+        <div className="flex flex-row gap-1">
           <ThemeToggle />
-        </div>
-        <div className="grid grid-cols-2 pr-8">
-          {error && (
-            <span className="text-sm text-gray-500">
-              <span className="text-red-500">{error}</span>
-            </span>
-          )}
-          {loading && <Loader2 className="animate-spin" />}
+          <div className="flex w-4/5 flex-col items-center justify-center gap-1">
+            {error && (
+              <span className="text-sm text-gray-500">
+                <span className="text-red-500">{error}</span>
+              </span>
+            )}
+            {loading && <Loader2 className="animate-spin" />}
+          </div>
         </div>
 
         <VisuallyHidden.Root>
@@ -113,7 +114,7 @@ export function HeaderNavSheet() {
             )}
           </CustomLink>
 
-          <div className="py-2 font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)] sm:text-xl">
+          <div className="flex items-center gap-1.5 py-2 font-semibold text-[hsl(276,70%,40)] dark:text-[hsl(276,70%,60%)] sm:text-xl">
             Scripts/Apps
           </div>
 
