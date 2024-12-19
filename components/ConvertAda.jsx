@@ -42,8 +42,8 @@ const ConvertAda = () => {
       isNaN(newAmount)
         ? ""
         : newAmount.length > 20
-        ? newAmount.slice(0, 20)
-        : newAmount
+          ? newAmount.slice(0, 20)
+          : newAmount
     )
   }
 
@@ -160,7 +160,6 @@ const ConvertAda = () => {
               </div>
             )}
           </Label>
-
           {currency === "ADA" ? (
             <Icons.ada className="size-32" />
           ) : (
@@ -169,13 +168,11 @@ const ConvertAda = () => {
           <Input
             type="number"
             min={"1"}
-            max={"20"}
             value={amount}
             onChange={handleAmountChange}
             className=""
             placeholder={`Enter ${currency} amount`}
           />
-
           {amount.length >= 20 ? <div className="inline">Too long!</div> : ""}
         </div>
 
