@@ -1,4 +1,3 @@
-
 import Image from "next/image"
 import { currentUser } from "@clerk/nextjs/server"
 import { Toaster } from "react-hot-toast"
@@ -10,11 +9,14 @@ import SearchRecipes from "@/components/SearchRecipes"
 
 export const metadata = {
   title: "Recipe Fren | Recipe Search and Collection",
-  description: "Discover and save your favorite recipes with our recipe search. Create personalized collections and get cooking inspiration.",
-  keywords: "recipes, cooking, meal planning, recipe search, food, recipes, recipe collection",
+  description:
+    "Discover and save your favorite recipes with our recipe search. Create personalized collections and get cooking inspiration.",
+  keywords:
+    "recipes, cooking, meal planning, recipe search, food, recipes, recipe collection",
   openGraph: {
     title: "Recipe Fren | Recipe Search",
-    description: "Discover and save your favorite recipes with our recipe search.",
+    description:
+      "Discover and save your favorite recipes with our recipe search.",
     type: "website",
   },
 }
@@ -41,14 +43,13 @@ const RecipeFrenPage = async () => {
     return (
       <Animation>
         <div className="flex w-full justify-center pt-6 text-center">
-          <div className=" flex flex-col items-center justify-center gap-2 p-2 text-xl sm:text-2xl">
+          <div className="flex flex-col items-center justify-center gap-2 p-2 text-xl sm:text-2xl">
             👋 Welcome to Recipe Fren!
-            <div className="max-w-[22rem] p-8 text-sm dark:text-gray-400/60 md:max-w-[26rem]">
+            <div className="max-w-[22rem] p-4 text-sm dark:text-gray-400/60 md:max-w-[26rem]">
               Sign in to unlock all the delicious recipes and the ability to
               save your favorite recipes and even download them as a formatted
               PDF file!
             </div>
-            
           </div>
         </div>
       </Animation>

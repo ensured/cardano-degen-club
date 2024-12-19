@@ -5,11 +5,14 @@ import ConvertAda from "../../components/ConvertAda"
 
 export const metadata = {
   title: "Crypto Price Tracker | Real-time ADA & BTC Conversion",
-  description: "Track cryptocurrency prices and convert between ADA, BTC, and USD in real-time. Live price charts and market data.",
-  keywords: "crypto tracker, Cardano, ADA price, Bitcoin, BTC price, cryptocurrency converter, real-time prices",
+  description:
+    "Track cryptocurrency prices and convert between ADA, BTC, and USD in real-time. Live price charts and market data.",
+  keywords:
+    "crypto tracker, Cardano, ADA price, Bitcoin, BTC price, cryptocurrency converter, real-time prices",
   openGraph: {
     title: "Crypto Price Tracker | Real-time ADA & BTC Conversion",
-    description: "Track cryptocurrency prices and convert between ADA, BTC, and USD in real-time.",
+    description:
+      "Track cryptocurrency prices and convert between ADA, BTC, and USD in real-time.",
     type: "website",
   },
 }
@@ -21,9 +24,11 @@ const Page = async () => {
     return (
       <Animation>
         <div className="flex w-full justify-center pt-6 text-center">
-          <div className=" flex flex-col items-center justify-center gap-2 p-2 text-xl sm:text-2xl">
+          <div className="flex flex-col items-center justify-center gap-2 p-2 text-xl sm:text-2xl">
             👋 Welcome to Crypto Tracker!
-            <p className="text-sm">Sign in to get started</p>
+            <div className="max-w-[22rem] p-4 text-sm dark:text-gray-400/60 md:max-w-[26rem]">
+              Sign in to get started
+            </div>
           </div>
         </div>
       </Animation>
@@ -36,9 +41,8 @@ const Page = async () => {
         <h1 className="sr-only">Cryptocurrency Price Tracker and Converter</h1>
         <TradingViewChart className="h-[600px]" />
         <ConvertAda />
-
       </main>
-    </Animation>    
+    </Animation>
   )
 }
 
