@@ -1,12 +1,8 @@
-import Image from "next/image"
 import { currentUser } from "@clerk/nextjs/server"
 import { Toaster } from "react-hot-toast"
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
 import Animation from "@/components/Animation"
 import SearchRecipes from "@/components/SearchRecipes"
-import { GoogleOneTap, SignInButton } from "@clerk/nextjs"
 import GoogleOneTapLogin from "@/components/GoogleOneTap"
 
 export const metadata = {

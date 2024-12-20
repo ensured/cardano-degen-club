@@ -1,8 +1,5 @@
 "use client"
-import { useEffect } from "react"
 import { useClerk } from "@clerk/nextjs"
-import { Button } from "./ui/button"
-import { FaGoogle } from "react-icons/fa"
 import "../styles/GoogleOneTapStyles.css"
 
 const GoogleOneTapLogin = () => {
