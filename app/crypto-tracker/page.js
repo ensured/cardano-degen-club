@@ -1,6 +1,8 @@
 import Animation from "@/components/Animation"
+import GoogleOneTapLogin from "@/components/GoogleOneTap"
 import TradingViewChart from "@/components/TradingViewChart"
 import { currentUser } from "@clerk/nextjs/server"
+import { Suspense } from "react"
 import ConvertAda from "../../components/ConvertAda"
 
 export const metadata = {
@@ -27,8 +29,11 @@ const Page = async () => {
           <div className="flex flex-col items-center justify-center gap-2 p-2 text-xl sm:text-2xl">
             👋 Welcome to Crypto Tracker!
             <div className="max-w-[22rem] p-4 text-sm dark:text-gray-400/60 md:max-w-[26rem]">
-              Sign in to get started
+              Sign in to get access to the Crypto Tracker
             </div>
+            <Suspense fallback={<div>Loading...</div>}>
+              <GoogleOneTapLogin />
+            </Suspense>
           </div>
         </div>
       </Animation>

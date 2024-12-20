@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import Animation from "@/components/Animation"
 import SearchRecipes from "@/components/SearchRecipes"
+import { GoogleOneTap, SignInButton } from "@clerk/nextjs"
+import GoogleOneTapLogin from "@/components/GoogleOneTap"
 
 export const metadata = {
   title: "Recipe Fren | Recipe Search and Collection",
@@ -50,6 +52,7 @@ const RecipeFrenPage = async () => {
               save your favorite recipes and even download them as a formatted
               PDF file!
             </div>
+            <GoogleOneTapLogin />
           </div>
         </div>
       </Animation>
