@@ -61,10 +61,10 @@ export async function GET() {
       })
     )
 
-    const adaBtcPrice = await fetchAdabtcPrice()
-    console.log({ prices, adaBtcPrice })
+    const adaBtcPriceData = await fetchAdabtcPrice()
+    console.log({ prices, adaBtcPriceData })
 
-    return NextResponse.json({ prices, adaBtcPrice }, { status: 200 })
+    return NextResponse.json({ prices, adaBtcPriceData }, { status: 200 })
   } catch (error) {
     console.error("Error fetching prices:", error)
     const errorMessage =
