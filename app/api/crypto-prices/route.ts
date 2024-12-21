@@ -17,7 +17,7 @@ export async function GET() {
           `https://api.coingecko.com/api/v3/simple/price?ids=${pair}&vs_currencies=usd&include_24hr_change=true`,
           {
             headers,
-            next: { revalidate: 120 },
+            next: { revalidate: 20 },
           }
         )
 
