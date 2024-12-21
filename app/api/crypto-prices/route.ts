@@ -5,11 +5,34 @@ const PRICES_CONFIG = [
   { symbol: "GATEIO:IAGUSDT", pair: "iagon", name: "IAG/USDT" },
 ]
 
-export async function GET() {
-  const headers = {
-    accept: "application/json",
-    "x-cg-demo-api-key": process.env.COINGECKO_API_KEY || "",
+const headers = {
+  accept: "application/json",
+  "x-cg-demo-api-key": process.env.COINGECKO_API_KEY || "",
+}
+
+const fetchAdabtcPrice = async () => {
+  try {
+    const response = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=btc&include_24hr_change=true`,
+      { headers }
+    )
+
+    // Check if the response is OK
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(
+        `Error fetching ADA/BTC price: ${response.statusText} - ${errorText}`
+      )
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error("Error fetching ADA/BTC price:", error)
   }
+}
+
+export async function GET() {
   try {
     const prices = await Promise.all(
       PRICES_CONFIG.map(async ({ symbol, pair, name }) => {
@@ -38,7 +61,10 @@ export async function GET() {
       })
     )
 
-    return NextResponse.json(prices, { status: 200 })
+    const adaBtcPrice = await fetchAdabtcPrice()
+    console.log({ prices, adaBtcPrice })
+
+    return NextResponse.json({ prices, adaBtcPrice }, { status: 200 })
   } catch (error) {
     console.error("Error fetching prices:", error)
     const errorMessage =

@@ -82,6 +82,7 @@ function TradingViewChart() {
   )
   const [activeChart, setActiveChart] = useState(CHART_CONFIG[0].containerId)
   const [prices, setPrices] = useState([])
+  const [adaBtcPrice, setAdaBtcPrice] = useState({})
   const [loading, setLoading] = useState(true)
 
   // Add a ref to track mounted charts
@@ -651,8 +652,9 @@ function TradingViewChart() {
     const fetchPrices = async () => {
       try {
         const response = await fetch("/api/crypto-prices")
-        const data = await response.json()
-        setPrices(data)
+        const { prices, adaBtcPrice } = await response.json()
+        setPrices(prices)
+        setAdaBtcPrice(adaBtcPrice)
       } catch (error) {
         console.error("Error fetching prices:", error)
       } finally {
@@ -706,10 +708,14 @@ function TradingViewChart() {
                 <div className="text-sm">
                   {title === "IAG/USDT"
                     ? title.replace("/USDT", "/USD")
-                    : title}
+                    : title === "ADA/BTC"
+                      ? "ADA/BTC"
+                      : title}
                 </div>
                 <div className="text-sm">
-                  {priceData?.price.toFixed(3) || ""}
+                  {title === "ADA/BTC"
+                    ? adaBtcPrice.cardano.btc.toFixed(8)
+                    : priceData?.price.toFixed(3) || ""}
                 </div>
                 <div className="flex w-full items-center justify-end gap-1">
                   <div
@@ -719,7 +725,9 @@ function TradingViewChart() {
                         : "text-[rgb(207,32,47)]"
                     }`}
                   >
-                    {priceData?.percentChange24h.toFixed(2) || ""}
+                    {title === "ADA/BTC"
+                      ? adaBtcPrice.cardano.btc_24h_change.toFixed(2)
+                      : priceData?.percentChange24h.toFixed(2) || ""}
                     {priceData?.percentChange24h ? "%" : ""}
                   </div>
                 </div>
