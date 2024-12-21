@@ -708,7 +708,9 @@ function TradingViewChart() {
                     ? title.replace("/USDT", "/USD")
                     : title}
                 </div>
-                <div className="text-sm">{priceData?.price || ""}</div>
+                <div className="text-sm">
+                  {priceData?.price.toFixed(3) || ""}
+                </div>
                 <div className="flex w-full items-center justify-end gap-1">
                   <div
                     className={`${
