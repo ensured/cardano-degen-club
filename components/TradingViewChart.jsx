@@ -703,7 +703,11 @@ function TradingViewChart() {
                 className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
                 aria-label={`Open ${title} chart`}
               >
-                <div className="text-sm">{title}</div>
+                <div className="text-sm">
+                  {title === "IAG/USDT"
+                    ? title.replace("/USDT", "/USD")
+                    : title}
+                </div>
                 <div className="text-sm">{priceData?.price || ""}</div>
                 <div className="flex w-full items-center justify-end gap-1">
                   <div
