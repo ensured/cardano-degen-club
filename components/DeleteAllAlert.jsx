@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-import { deleteAllFavorites, deleteAllFavoritesFirebase } from "./actions"
+import { deleteAllFavorites, deleteAllFavoritesFirebase } from "../app/actions"
 // ShadCN UI Dialog
 import { Button } from "./ui/button"
 

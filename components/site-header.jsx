@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { HeaderNavSheet } from "./HeaderNavSheet"
 import UserButton from "./UserButton"
 import { EpochTime } from "./EpochTime"
-import { getEpochData } from "./actions"
+import { getEpochData } from "../app/actions"
 
 export async function SiteHeader() {
   const epochData = await getEpochData()

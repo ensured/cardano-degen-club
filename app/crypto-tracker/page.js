@@ -42,7 +42,6 @@ const Page = async () => {
       <main className="mx-auto flex w-full max-w-full flex-col gap-6 p-4 sm:max-w-[600px]">
         <h1 className="sr-only">Cryptocurrency Price Tracker and Converter</h1>
         <TradingViewChart className="h-[600px]" />
-        <ConvertAda />
       </main>
     </Animation>
   )

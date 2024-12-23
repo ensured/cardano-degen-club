@@ -2,10 +2,17 @@
 import { useEffect, useState } from "react"
 import { MAX_FAVORITES } from "@/utils/consts"
 import { useWindowSize } from "@uidotdev/usehooks"
-import { Heart, Loader2, StarIcon, Database, Trash2, Settings } from "lucide-react"
+import {
+  Heart,
+  Loader2,
+  StarIcon,
+  Database,
+  Trash2,
+  Settings,
+} from "lucide-react"
 import { toast } from "react-hot-toast"
 
-import { getFavoritesFirebase, removeItemsFirebase } from "./actions"
+import { getFavoritesFirebase, removeItemsFirebase } from "../app/actions"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import {
@@ -32,7 +39,7 @@ const FavoritesSheet = ({
 }) => {
   const size = useWindowSize()
   const [lastFetchTime, setLastFetchTime] = useState(0)
-  const [isHovered, setIsHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
     const getFavs = async () => {
@@ -67,9 +74,12 @@ const FavoritesSheet = ({
 
   return (
     <div className="flex justify-center">
-      <Sheet open={isOpen} onOpenChange={() => {
-        setOpen(!isOpen)
-      }}>
+      <Sheet
+        open={isOpen}
+        onOpenChange={() => {
+          setOpen(!isOpen)
+        }}
+      >
         <SheetTrigger asChild>
           <Button
             disabled={isFavoritesLoading}
@@ -94,14 +104,14 @@ const FavoritesSheet = ({
                 <div className="flex items-center gap-1.5">
                   <Heart
                     style={{
-                      fill: isHovered ? 'currentColor' : 'none',
-                      color: isHovered ? 'red' : 'currentColor',
-                      transition: 'all 0.3s ease',
-                      willChange: 'transform',
-                      position: 'relative',
+                      fill: isHovered ? "currentColor" : "none",
+                      color: isHovered ? "red" : "currentColor",
+                      transition: "all 0.3s ease",
+                      willChange: "transform",
+                      position: "relative",
                       zIndex: 1,
                       strokeWidth: 2,
-                      stroke: isHovered ? 'black' : 'currentColor'
+                      stroke: isHovered ? "black" : "currentColor",
                     }}
                     className="size-4 md:size-5"
                     fill="none"
@@ -121,30 +131,23 @@ const FavoritesSheet = ({
         <SheetContent side="right">
           <SheetHeader className="space-y-1.5">
             <SheetTitle className="select-none">
-              <div
-                className="animate-gradient relative flex flex-wrap items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2.5 text-2xl transition-all ease-in-out
-              
-              dark:from-[#3d91c9] dark:to-[#583aa8] md:p-4 md:text-3xl"
-              >
-                <div className=" flex flex-row items-center justify-center gap-2 ">
+              <div className="animate-gradient relative flex flex-wrap items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-[#a3e5ff] to-[#a371ff] bg-[length:400%_400%] p-2.5 text-2xl transition-all ease-in-out dark:from-[#3d91c9] dark:to-[#583aa8] md:p-4 md:text-3xl">
+                <div className="flex flex-row items-center justify-center gap-2">
                   <StarIcon
                     size={size?.width < 768 ? 28 : 32}
                     color="#FFD700" // Use gold color for the star icon
                   />
-                  <span className="font-semibold text-gray-800 dark:text-gray-200 ">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">
                     Favorites
                   </span>
-                  
                 </div>
                 <Badge
                   className="mt-1 flex border border-primary text-sm md:mt-1.5"
                   variant="outline"
                 >
-                    
                   {Object.keys(favorites).length}/{MAX_FAVORITES}
                   <StorageIndicator />
                 </Badge>
-                
               </div>
             </SheetTitle>
             <div className="flex items-center justify-between">
@@ -152,7 +155,6 @@ const FavoritesSheet = ({
             </div>
           </SheetHeader>
           {children}
-         
         </SheetContent>
       </Sheet>
     </div>

@@ -11,8 +11,7 @@ import {
   ref as storageRef,
   uploadBytes,
 } from "firebase/storage"
-
-import { db, deleteObject, storage } from "./firebase/firebase"
+import { db, deleteObject, storage } from "../components/firebase/firebase"
 
 // @ts-ignore
 export async function removeItemsFirebase(keys) {
@@ -472,4 +471,100 @@ export async function getEpochData() {
   })
   const data = await response.json()
   return data
+}
+
+export const fetchAdaHandlesFromAddress = async (address: string) => {
+  // adahandle policyID
+  const policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
+
+  // Fetch data about an address.
+  const data = await fetch(
+    `https://cardano-mainnet.blockfrost.io/api/v0/addresses/${stakeAddress}`,
+    {
+      headers: {
+        project_id: "mainnetsh2KDyn78Z8UcKe3N7WEp6K1UaLCNRki",
+        "Content-Type": "application/json",
+      },
+    }
+  ).then((res) => res.json())
+
+  if (data?.error) {
+    // Handle error.
+  }
+
+  const handles = data.amount
+    .filter(({ unit }: { unit: string }) => unit.includes(policyID))
+    .map(({ unit }: { unit: string }) => {
+      const hexName = unit.replace(policyID, "")
+      const utf8Name = Buffer.from(hexName, "hex").toString("utf8")
+      let utf8NameString = utf8Name.toString()
+      return utf8NameString.split("@")[1]
+    })
+
+  console.log(handles) // ['handle1', 'handle2', ...]
+}
+
+const policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
+
+const rateLimit = {
+  lastRequestTime: 0,
+  requestCount: 0,
+  limit: 5, // Number of allowed requests
+  interval: 60000, // Time window in milliseconds (1 minute)
+}
+
+export const getAddressFromHandle = async (handleName: string) => {
+  // Rate limiting logic
+  const currentTime = Date.now()
+  if (currentTime - rateLimit.lastRequestTime < rateLimit.interval) {
+    rateLimit.requestCount++
+    const timeLeft =
+      rateLimit.interval - (currentTime - rateLimit.lastRequestTime)
+    if (rateLimit.requestCount > rateLimit.limit) {
+      return {
+        error: `Rate limit exceeded. Please try again in ${(timeLeft / 1000).toFixed(0)} seconds`,
+      }
+    }
+  } else {
+    rateLimit.lastRequestTime = currentTime
+    rateLimit.requestCount = 1 // Reset count
+  }
+
+  // A blank Handle name should always be ignored.
+  if (handleName.length === 0) {
+    console.log("Handle name is empty")
+    return
+  }
+
+  // Convert handleName to hex encoding.
+  const assetName = Buffer.from(handleName).toString("hex")
+  console.log(`${policyID}${assetName}`)
+
+  // Fetch matching address for the asset.
+  const data = await fetch(
+    `https://cardano-mainnet.blockfrost.io/api/v0/assets/${policyID}${assetName}/addresses`,
+    {
+      headers: {
+        project_id: "mainnetsh2KDyn78Z8UcKe3N7WEp6K1UaLCNRki",
+        "Content-Type": "application/json",
+      },
+    }
+  ).then((res) => res.json())
+
+  if (data?.error) {
+    console.log(data.error)
+    return
+  }
+
+  try {
+    const [{ address }] = data
+    return address
+  } catch (e) {
+    if (e instanceof TypeError) {
+      console.log("No address found for handle")
+      return []
+    } else {
+      console.log(e)
+    }
+  }
 }

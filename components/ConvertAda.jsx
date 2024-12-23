@@ -23,10 +23,10 @@ const adaPriceApiUrl =
 const btcPriceApiUrl =
   "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
 
-const ConvertAda = () => {
+const ConvertAda = ({ adaPrice, btcPrice }) => {
   const [cryptoPrices, setCryptoPrices] = useState({
-    ADA: 0,
-    BTC: 0,
+    ADA: adaPrice,
+    BTC: btcPrice,
   })
 
   const [currency, setCurrency] = useState("ADA")
@@ -54,46 +54,6 @@ const ConvertAda = () => {
   const convertToSats = (amount, conversionRate) => {
     return Math.floor(amount * conversionRate * 1e8)
   }
-
-  const fetchCryptoPrices = useCallback(async () => {
-    try {
-      const [adaRes, btcRes] = await Promise.all([
-        fetch(adaPriceApiUrl).then((res) => res.json()),
-        fetch(btcPriceApiUrl).then((res) => res.json()),
-      ])
-
-      setCryptoPrices({
-        ADA: adaRes.cardano.usd,
-        BTC: btcRes.bitcoin.usd,
-      })
-    } catch (error) {
-      let errorMessage = `${error.message}. Coingecko api down/rate limited. Please try again soon.`
-      if (error.response && error.response.status) {
-        toast(`${errorMessage}`, {
-          type: "error",
-        })
-      }
-      toast(errorMessage, {
-        type: "error",
-      })
-      console.error("Error fetching prices:", error)
-    }
-  }, [])
-
-  useEffect(() => {
-    const fetchPricesAndSetState = async () => {
-      await fetchCryptoPrices()
-    }
-
-    // Fetch crypto prices initially
-    fetchPricesAndSetState()
-
-    // Fetch prices every minute
-    const intervalId = setInterval(fetchPricesAndSetState, 60000)
-
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId)
-  }, [fetchCryptoPrices])
 
   const convertedLovelaces =
     currency === "ADA" && convertToLovelaces(amount, 1000000).toLocaleString()

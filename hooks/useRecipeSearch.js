@@ -7,7 +7,7 @@ import { debounce } from "lodash"
 import { toast, useToasterStore } from "react-hot-toast"
 
 import { MAX_FAVORITES } from "../utils/consts"
-import { removeItemsFirebase, addItemsFirebase } from "../components/actions"
+import { removeItemsFirebase, addItemsFirebase } from "../app/actions"
 import { useTheme } from "next-themes"
 
 const useRecipeSearch = () => {

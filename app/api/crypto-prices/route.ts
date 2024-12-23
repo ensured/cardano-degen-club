@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 const PRICES_CONFIG = [
   { symbol: "BINANCE:ADAUSD", pair: "cardano", name: "ADA/USD" },
   { symbol: "GATEIO:IAGUSDT", pair: "iagon", name: "IAG/USDT" },
+  { symbol: "BINANCE:BTCUSDT", pair: "bitcoin", name: "BTC/USDT" },
 ]
 
 const headers = {
@@ -31,6 +32,10 @@ const fetchAdabtcPrice = async () => {
     console.error("Error fetching ADA/BTC price:", error)
   }
 }
+
+const fetchAdaDominance = async () => {}
+
+const fetchBtcDominance = async () => {}
 
 export async function GET() {
   try {
@@ -62,7 +67,8 @@ export async function GET() {
     )
 
     const adaBtcPriceData = await fetchAdabtcPrice()
-    console.log({ prices, adaBtcPriceData })
+    // const adaDominance = await fetchAdaDominance()
+    // const btcDominance = await fetchBtcDominance()
 
     return NextResponse.json({ prices, adaBtcPriceData }, { status: 200 })
   } catch (error) {

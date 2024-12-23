@@ -8,10 +8,19 @@ import {
   MinusIcon,
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, CopyIcon, InfoIcon, Loader2 } from "lucide-react"
 import { MoonIcon, SunIcon } from "lucide-react"
 import { Skeleton } from "./ui/skeleton"
-// Move chart configuration outside component to prevent recreating on each render
+import ConvertAda from "./ConvertAda"
+import { getAddressFromHandle } from "@/app/actions"
+import { Input } from "./ui/input"
+import { toast } from "sonner"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const CHART_CONFIG = [
   {
@@ -84,6 +93,9 @@ function TradingViewChart() {
   const [prices, setPrices] = useState([])
   const [adaBtcPriceData, setAdaBtcPriceData] = useState({})
   const [loading, setLoading] = useState(true)
+  const [handleName, setHandleName] = useState("")
+  const [walletAddress, setWalletAddress] = useState("")
+  const [showInfo, setShowInfo] = useState(false)
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
@@ -92,212 +104,12 @@ function TradingViewChart() {
   const lastUpdatedChartRef = useRef(null)
 
   // Add chart controls component
-  const ChartControls = ({ containerId }) => {
-    const containerRef = useRef(null)
-    const [isDragging, setIsDragging] = useState(false)
-    const [startX, setStartX] = useState(0)
-    const [scrollLeft, setScrollLeft] = useState(0)
-    const [isScrollable, setIsScrollable] = useState(false)
-
-    // Check if content is scrollable
-    const checkScrollable = useCallback(() => {
-      if (containerRef.current) {
-        const isContentScrollable =
-          containerRef.current.scrollWidth > containerRef.current.clientWidth
-        setIsScrollable(isContentScrollable)
-      }
-    }, [])
-
-    // Check on mount and window resize
-    useEffect(() => {
-      checkScrollable()
-      window.addEventListener("resize", checkScrollable)
-      return () => window.removeEventListener("resize", checkScrollable)
-    }, [checkScrollable])
-
-    const handleMouseDown = (e) => {
-      if (!isScrollable) return
-      setIsDragging(true)
-      setStartX(e.pageX - containerRef.current.offsetLeft)
-      setScrollLeft(containerRef.current.scrollLeft)
-    }
-
-    const handleMouseLeave = () => setIsDragging(false)
-    const handleMouseUp = () => setIsDragging(false)
-
-    const handleMouseMove = (e) => {
-      if (!isDragging) return
-      e.preventDefault()
-      const x = e.pageX - containerRef.current.offsetLeft
-      const walk = (x - startX) * 2
-      containerRef.current.scrollLeft = scrollLeft - walk
-    }
-
-    // Add chart change handler
-    const handleChartChange = (newChartId) => {
-      // Clean up current chart
-      if (chartInstancesRef.current[activeChart]) {
-        try {
-          chartInstancesRef.current[activeChart].remove()
-        } catch (error) {
-          console.log("Chart cleanup failed:", error)
-        }
-        delete chartInstancesRef.current[activeChart]
-      }
-
-      setActiveChart(newChartId)
-      // Chart will be initialized by the useEffect
-    }
-
-    return (
-      <div className="flex bg-secondary p-2 dark:bg-black/40">
-        <div
-          ref={containerRef}
-          className={`scrollable-container custom-scrollbar flex w-full items-center gap-2 overflow-x-auto ${
-            isScrollable ? "is-scrollable" : ""
-          }`}
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeave}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-        >
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="relative">
-              <select
-                value={activeChart}
-                onChange={(e) => handleChartChange(e.target.value)}
-                className="size-7 shrink-0 appearance-none rounded bg-black/40 text-transparent hover:bg-black/60"
-              >
-                {CHART_CONFIG.map(({ containerId, title }) => (
-                  <option
-                    key={containerId}
-                    value={containerId}
-                    className="text-white"
-                  >
-                    {title}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-white" />
-            </div>
-            <Button
-              onClick={() => openFullscreen(containerId)}
-              size={"icon"}
-              variant={"ghost"}
-              className="h-6 w-6"
-              aria-label="Enter fullscreen"
-            >
-              <EnterFullScreenIcon className="size-5" />
-            </Button>
-            <button
-              onClick={() => initializeChart(containerId)}
-              className="shrink-0 rounded bg-black/40 p-1 transition-colors hover:bg-black/60"
-              aria-label="Refresh chart"
-            >
-              <ReloadIcon className="size-4" />
-            </button>
-            <select
-              value={chartSettings[containerId].interval}
-              onChange={(e) => {
-                updateChartSetting(containerId, { interval: e.target.value })
-              }}
-              className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
-            >
-              {INTERVALS.map(({ label, value }) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value=""
-              onChange={(e) => {
-                const indicator = e.target.value
-                if (!indicator) return
-
-                const updatedSettings = {
-                  ...chartSettings[containerId],
-                  indicators: [
-                    ...new Set([
-                      ...chartSettings[containerId].indicators,
-                      indicator,
-                    ]),
-                  ],
-                }
-
-                setChartSettings((prev) => ({
-                  ...prev,
-                  [containerId]: updatedSettings,
-                }))
-
-                reinitializeChart(containerId, updatedSettings)
-              }}
-              className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
-            >
-              <option value="">+ Add Indicator</option>
-              {INDICATORS.map(({ label, value }) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              onClick={() => {
-                const newTheme =
-                  chartSettings[containerId].theme === "dark" ? "light" : "dark"
-                updateChartSetting(containerId, { theme: newTheme })
-                setTimeout(() => initializeChart(containerId), 0)
-              }}
-              variant={"ghost"}
-              className="shrink-0 rounded bg-black/40 px-1 py-0.5 text-xs text-white"
-              aria-label="Toggle theme"
-            >
-              {chartSettings[containerId].theme === "dark" ? (
-                <SunIcon className="size-4" />
-              ) : (
-                <MoonIcon className="size-4" />
-              )}
-            </Button>
-
-            <div className="flex shrink-0 flex-nowrap gap-1">
-              {chartSettings[containerId].indicators.map((indicator) => (
-                <button
-                  key={indicator}
-                  onClick={() => {
-                    const updatedSettings = {
-                      ...chartSettings[containerId],
-                      indicators: chartSettings[containerId].indicators.filter(
-                        (i) => i !== indicator
-                      ),
-                    }
-
-                    setChartSettings((prev) => ({
-                      ...prev,
-                      [containerId]: updatedSettings,
-                    }))
-
-                    reinitializeChart(containerId, updatedSettings)
-                  }}
-                  className="flex items-center gap-1 rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
-                >
-                  {INDICATORS.find((i) => i.value === indicator)?.label ||
-                    indicator}
-                  <MinusIcon className="size-3" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // Update initializeChart to only depend on the specific chart's settings
   const initializeChart = useCallback(
     (containerId) => {
+      if (typeof window === "undefined") return // Check if running in the browser
+
       const config = CHART_CONFIG.find((c) => c.containerId === containerId)
       if (!config || !document.getElementById(containerId)) return
 
@@ -336,6 +148,8 @@ function TradingViewChart() {
 
   // Update useEffect to initialize charts
   useEffect(() => {
+    if (typeof window === "undefined") return // Check if running in the browser
+
     const script = document.createElement("script")
     script.src = "https://s3.tradingview.com/tv.js"
     script.async = true
@@ -415,7 +229,9 @@ function TradingViewChart() {
         container_id: containerId,
         width: "100%",
         height:
-          containerId === "fullscreen_chart" ? window.innerHeight - 64 : "460",
+          containerId === "fullscreen_chart" && typeof window !== "undefined"
+            ? window.innerHeight - 64
+            : "460",
         toolbar_bg: "#f1f3f6",
         enable_publishing: false,
         hide_top_toolbar: false,
@@ -463,8 +279,14 @@ function TradingViewChart() {
                       style: "1",
                       locale: "en",
                       container_id: "fullscreen_chart",
-                      width: window.innerWidth,
-                      height: window.innerHeight - 64,
+                      width:
+                        typeof window !== "undefined"
+                          ? window.innerWidth
+                          : "100%",
+                      height:
+                        typeof window !== "undefined"
+                          ? window.innerHeight - 64
+                          : "460",
                       toolbar_bg: "#f1f3f6",
                       enable_publishing: false,
                       hide_top_toolbar: false,
@@ -631,8 +453,9 @@ function TradingViewChart() {
             style: "1",
             locale: "en",
             container_id: "fullscreen_chart",
-            width: window.innerWidth,
-            height: window.innerHeight - 64,
+            width: typeof window !== "undefined" ? window.innerWidth : "100%",
+            height:
+              typeof window !== "undefined" ? window.innerHeight - 64 : "460",
             toolbar_bg: "#f1f3f6",
             enable_publishing: false,
             hide_top_toolbar: false,
@@ -650,6 +473,7 @@ function TradingViewChart() {
 
   useEffect(() => {
     const fetchPrices = async () => {
+      setLoading(true)
       try {
         const response = await fetch("/api/crypto-prices")
         const { prices, adaBtcPriceData } = await response.json()
@@ -670,6 +494,19 @@ function TradingViewChart() {
 
     return () => clearInterval(interval) // Cleanup on unmount
   }, [])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const walletAddress = await getAddressFromHandle(handleName)
+
+    // Check for rate limit error
+    if (walletAddress?.error) {
+      toast.error(walletAddress.error) // Show toast notification
+      return
+    }
+
+    setWalletAddress(walletAddress)
+  }
 
   // Update fullscreen modal in return statement
   return (
@@ -695,45 +532,157 @@ function TradingViewChart() {
             ))}
           </div>
         ) : (
-          CHART_CONFIG.map(({ containerId, title }) => {
-            const priceData = prices.find((p) => p.name === title)
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+            {/* Left Column */}
+            <div className="flex flex-col gap-1">
+              {CHART_CONFIG.slice(0, 3).map(({ containerId, title }) => {
+                const priceData = prices.find((p) => p.name === title)
 
-            return (
-              <div
-                key={containerId}
-                onClick={() => openFullscreen(containerId)} // Open fullscreen on card click
-                className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
-                aria-label={`Open ${title} chart`}
-              >
-                <div className="text-sm">
-                  {title === "IAG/USDT"
-                    ? title.replace("/USDT", "/USD")
-                    : title === "ADA/BTC"
-                      ? "ADA/BTC"
-                      : title}
-                </div>
-                <div className="text-sm">
-                  {title === "ADA/BTC"
-                    ? adaBtcPriceData.cardano.btc.toFixed(8)
-                    : priceData?.price.toFixed(3) || ""}
-                </div>
-                <div className="flex w-full items-center justify-end gap-1">
+                return (
                   <div
-                    className={`${
-                      priceData?.percentChange24h > 0
-                        ? "text-[rgb(9,133,81)]"
-                        : "text-[rgb(207,32,47)]"
-                    }`}
+                    key={containerId}
+                    onClick={() => openFullscreen(containerId)} // Open fullscreen on card click
+                    className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
+                    aria-label={`Open ${title} chart`}
                   >
-                    {title === "ADA/BTC"
-                      ? adaBtcPriceData.cardano.btc_24h_change.toFixed(2) + "%"
-                      : priceData?.percentChange24h.toFixed(2) || ""}
-                    {priceData?.percentChange24h ? "%" : ""}
+                    <div className="text-sm">
+                      {title === "IAG/USDT"
+                        ? title.replace("/USDT", "/USD")
+                        : title}
+                    </div>
+                    <div className="text-sm">
+                      {title === "ADA/BTC"
+                        ? adaBtcPriceData.cardano.btc.toFixed(8)
+                        : priceData?.price.toFixed(3) || ""}
+                    </div>
+                    <div className="flex w-full items-center justify-end gap-1">
+                      <div
+                        className={`text-[${
+                          ((title === "ADA/BTC" &&
+                            adaBtcPriceData.cardano.btc_24h_change.toFixed(
+                              2
+                            )) ||
+                            priceData?.percentChange24h) > 0
+                            ? "rgb(9,133,81)"
+                            : "rgb(207,32,47)"
+                        }]`}
+                      >
+                        {title === "ADA/BTC"
+                          ? adaBtcPriceData.cardano.btc_24h_change.toFixed(2) +
+                            "%"
+                          : priceData?.percentChange24h.toFixed(2) || ""}
+                        {priceData?.percentChange24h ? "%" : ""}
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )
+              })}
+            </div>
+            {/* Right Column */}
+            <div className="flex flex-col gap-1">
+              {CHART_CONFIG.slice(3, 6).map(({ containerId, title }) => {
+                const priceData = prices.find((p) => p.name === title)
+
+                return (
+                  <div
+                    key={containerId}
+                    onClick={() => openFullscreen(containerId)} // Open fullscreen on card click
+                    className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
+                    aria-label={`Open ${title} chart`}
+                  >
+                    <div className="text-sm">
+                      {title === "IAG/USDT"
+                        ? title.replace("/USDT", "/USD")
+                        : title}
+                    </div>
+                    <div className="text-sm">
+                      {title === "ADA/BTC"
+                        ? adaBtcPriceData.cardano.btc.toFixed(8)
+                        : priceData?.price.toFixed(3) || ""}
+                    </div>
+                    <div className="flex w-full items-center justify-end">
+                      <div
+                        className={`text-[${
+                          ((title === "ADA/BTC" &&
+                            adaBtcPriceData.cardano.btc_24h_change.toFixed(
+                              2
+                            )) ||
+                            priceData?.percentChange24h) > 0
+                            ? "text-[rgb(9,133,81)]"
+                            : "text-[rgb(207,32,47)]"
+                        }]`}
+                      >
+                        {title === "ADA/BTC"
+                          ? adaBtcPriceData.cardano.btc_24h_change.toFixed(2) +
+                            "%"
+                          : priceData?.percentChange24h.toFixed(2) || ""}
+                        {priceData?.percentChange24h ? "%" : ""}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 gap-2 rounded-md border border-border">
+        <form
+          className="col-span-1 flex w-full flex-col gap-2 p-5 sm:px-20"
+          onSubmit={handleSubmit}
+        >
+          <h1 className="flex w-full items-center justify-center gap-2 text-center text-2xl font-bold">
+            <TooltipProvider>
+              <div className="flex w-full items-center justify-center gap-2 text-center text-2xl font-bold">
+                <Tooltip>
+                  <TooltipTrigger asChild className="hover:cursor-pointer">
+                    <div className="flex flex-row items-center justify-center gap-2">
+                      <InfoIcon className="size-4" />
+                      Find Wallet Address
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>only resolves old cip handles for now</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
-            )
-          })
+            </TooltipProvider>
+          </h1>
+          <Input
+            type="text"
+            placeholder="Enter $adahandle"
+            value={handleName}
+            className="w-full"
+            onChange={(e) => setHandleName(e.target.value)}
+            autoComplete="on"
+          />
+          <Button type="submit" className="w-1/2">
+            Fetch Wallet Address
+          </Button>
+        </form>
+        {walletAddress && (
+          <div className="col-span-1 overflow-hidden break-all border-t border-border bg-secondary/50 p-5 text-center">
+            <div className="relative flex flex-row items-center justify-center gap-2">
+              <span className="text-sm text-muted-foreground sm:text-lg">
+                {walletAddress.length === 0
+                  ? "No wallet address found"
+                  : walletAddress}
+              </span>
+              {walletAddress.length > 0 && (
+                <Button
+                  size="icon"
+                  className="absolute right-0 top-0 h-9 w-9"
+                  onClick={() => {
+                    navigator.clipboard.writeText(walletAddress)
+                    toast.success("Copied to clipboard")
+                  }}
+                >
+                  <CopyIcon className="size-4" />
+                </Button>
+              )}
+            </div>
+          </div>
         )}
       </div>
 
@@ -745,6 +694,14 @@ function TradingViewChart() {
           </div>
         </div>
       )}
+
+      <div className="flex flex-col items-center justify-center gap-1">
+        {prices[0] && !loading ? (
+          <ConvertAda adaPrice={prices[0].price} btcPrice={prices[2].price} />
+        ) : (
+          <Loader2 className="mt-20 size-10 animate-spin" />
+        )}
+      </div>
     </div>
   )
 }
