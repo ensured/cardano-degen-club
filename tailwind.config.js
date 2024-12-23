@@ -147,6 +147,17 @@ module.exports = {
           "88%": { transform: "rotate(1080deg)" },
           "100%": { transform: "rotate(1080deg)" },
         },
+        "hover-up-down": {
+          "0%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-5%)",
+          },
+          "100%": {
+            transform: "translateY(0)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -155,6 +166,7 @@ module.exports = {
         "gradient-x": "gradient-x 15s ease infinite",
         "move-down-up": "move-down-up 3s ease-in",
         "spin-3-times": "spin-3-times 4.4s ease-in-out",
+        "hover-up-down": "hover-up-down 1s ease-in-out infinite",
       },
     },
   },

@@ -453,11 +453,8 @@ const RecipeSearchForm = ({
                     )}
                   </div>
                   <ScrollArea className="h-44 rounded-md border">
-                    {isMobile && (
-                      <ArrowDown className="flex size-3.5 w-full animate-move-down-up items-center justify-center repeat-infinite" />
-                    )}
                     <div className="px-4 py-3">
-                      <div className="grid grid-cols-2 gap-2 pl-1">
+                      <div className="relative grid grid-cols-2 gap-2 pl-1">
                         {healthOptions.map((option) => (
                           <div
                             key={option}
@@ -479,6 +476,9 @@ const RecipeSearchForm = ({
                           </div>
                         ))}
                       </div>
+                      {isMobile && (
+                        <ArrowDown className="absolute bottom-0 right-0 z-50 flex size-3.5 w-full animate-move-down-up repeat-infinite" />
+                      )}
                     </div>
                   </ScrollArea>
                 </div>
