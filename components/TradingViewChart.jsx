@@ -261,48 +261,47 @@ function TradingViewChart() {
                 const newChartId = e.target.value
                 setFullscreenChart(newChartId)
                 // Reinitialize with the new chart
-                setTimeout(() => {
-                  const config = CHART_CONFIG.find(
-                    (c) => c.containerId === newChartId
-                  )
-                  if (!config) return
+                const config = CHART_CONFIG.find(
+                  (c) => c.containerId === newChartId
+                )
+                if (!config) return
 
-                  if (chartInstancesRef.current["fullscreen_chart"]) {
-                    try {
-                      chartInstancesRef.current["fullscreen_chart"].remove()
-                    } catch (error) {
-                      console.log("Chart cleanup failed:", error)
-                    }
-                    delete chartInstancesRef.current["fullscreen_chart"]
+                // Clean up existing fullscreen chart instance
+                if (chartInstancesRef.current["fullscreen_chart"]) {
+                  try {
+                    chartInstancesRef.current["fullscreen_chart"].remove()
+                  } catch (error) {
+                    console.log("Chart cleanup failed:", error)
                   }
+                  delete chartInstancesRef.current["fullscreen_chart"]
+                }
 
-                  chartInstancesRef.current["fullscreen_chart"] =
-                    new window.TradingView.widget({
-                      symbol: config.symbol,
-                      interval: chartSettings[newChartId].interval,
-                      theme: chartSettings[newChartId].theme,
-                      style: "1",
-                      locale: "en",
-                      container_id: "fullscreen_chart",
-                      width:
-                        typeof window !== "undefined"
-                          ? window.innerWidth
-                          : "100%",
-                      height:
-                        typeof window !== "undefined"
-                          ? window.innerHeight - 64
-                          : "460",
-                      toolbar_bg: "#f1f3f6",
-                      enable_publishing: false,
-                      hide_top_toolbar: false,
-                      save_image: true,
-                      studies: chartSettings[newChartId].indicators,
-                      drawings_access: {
-                        type: "all",
-                        tools: [{ name: "Regression Trend" }],
-                      },
-                    })
-                }, 100)
+                chartInstancesRef.current["fullscreen_chart"] =
+                  new window.TradingView.widget({
+                    symbol: config.symbol,
+                    interval: chartSettings[newChartId].interval,
+                    theme: chartSettings[newChartId].theme,
+                    style: "1",
+                    locale: "en",
+                    container_id: "fullscreen_chart",
+                    width:
+                      typeof window !== "undefined"
+                        ? window.innerWidth
+                        : "100%",
+                    height:
+                      typeof window !== "undefined"
+                        ? window.innerHeight - 64
+                        : "460",
+                    toolbar_bg: "#f1f3f6",
+                    enable_publishing: false,
+                    hide_top_toolbar: false,
+                    save_image: true,
+                    studies: chartSettings[newChartId].indicators,
+                    drawings_access: {
+                      type: "all",
+                      tools: [{ name: "Regression Trend" }],
+                    },
+                  })
               }}
               className="size-7 shrink-0 appearance-none rounded bg-black/40 text-transparent hover:bg-black/60"
             >
@@ -430,20 +429,21 @@ function TradingViewChart() {
     (chartId) => {
       setFullscreenChart(chartId)
       // Reinitialize the chart in the fullscreen modal with all features
-      setTimeout(() => {
-        const config = CHART_CONFIG.find((c) => c.containerId === chartId)
-        if (!config) return
+      const config = CHART_CONFIG.find((c) => c.containerId === chartId)
+      if (!config) return
 
-        // Clean up existing fullscreen chart instance
-        if (chartInstancesRef.current["fullscreen_chart"]) {
-          try {
-            chartInstancesRef.current["fullscreen_chart"].remove()
-          } catch (error) {
-            console.log("Chart cleanup failed:", error)
-          }
-          delete chartInstancesRef.current["fullscreen_chart"]
+      // Clean up existing fullscreen chart instance
+      if (chartInstancesRef.current["fullscreen_chart"]) {
+        try {
+          chartInstancesRef.current["fullscreen_chart"].remove()
+        } catch (error) {
+          console.log("Chart cleanup failed:", error)
         }
+        delete chartInstancesRef.current["fullscreen_chart"]
+      }
 
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
         chartInstancesRef.current["fullscreen_chart"] =
           new window.TradingView.widget({
             symbol: config.symbol,
@@ -465,7 +465,7 @@ function TradingViewChart() {
               tools: [{ name: "Regression Trend" }],
             },
           })
-      }, 100) // Increased delay
+      })
     },
     [chartSettings]
   )
