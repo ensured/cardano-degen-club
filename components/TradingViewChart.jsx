@@ -661,10 +661,10 @@ function TradingViewChart() {
                     ? `https://ipfs.io/ipfs/${walletAddress.image.replace("ipfs://", "")}`
                     : walletAddress.image
                 }
-                width={500}
-                height={500}
+                width={800}
+                height={800}
                 alt="wallet image"
-                className="col-span-1 mx-auto h-32 w-32 object-cover"
+                className="col-span-1 mx-auto mb-1 h-36 w-36 object-cover sm:mb-0"
               />
               <div className="col-span-1 flex flex-col sm:p-2">
                 <span className="flex items-center justify-center gap-1 text-muted-foreground">
