@@ -473,67 +473,52 @@ export async function getEpochData() {
   return data
 }
 
-const policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
-
-const rateLimit = {
-  lastRequestTime: 0,
-  requestCount: 0,
-  limit: 5, // Number of allowed requests
-  interval: 60000, // Time window in milliseconds (1 minute)
-}
+const rateLimitMap = new Map<string, number[]>()
+const cache = new Map<string, any>() // Simple in-memory cache
+const RATE_LIMIT = 15000 // 15 seconds
+const MAX_REQUESTS = 4 // Maximum requests allowed
 
 export const getAddressFromHandle = async (handleName: string) => {
+  // Check if the handleName starts with $
+  if (handleName.startsWith("$")) {
+    handleName = handleName.slice(1)
+  }
+  const lowerCaseHandleName = handleName.toLowerCase()
+
+  // Check cache first
+  if (cache.has(lowerCaseHandleName)) {
+    return cache.get(lowerCaseHandleName) // Return cached data, ignore rate limit
+  }
+
   // Rate limiting logic
   const currentTime = Date.now()
-  if (currentTime - rateLimit.lastRequestTime < rateLimit.interval) {
-    rateLimit.requestCount++
-    const timeLeft =
-      rateLimit.interval - (currentTime - rateLimit.lastRequestTime)
-    if (rateLimit.requestCount > rateLimit.limit) {
-      return {
-        error: `Rate limit exceeded. Please try again in ${(timeLeft / 1000).toFixed(0)} seconds`,
-      }
-    }
-  } else {
-    rateLimit.lastRequestTime = currentTime
-    rateLimit.requestCount = 1 // Reset count
+  const requestTimestamps = rateLimitMap.get(lowerCaseHandleName) || []
+  const validTimestamps = requestTimestamps.filter(
+    (timestamp) => currentTime - timestamp < RATE_LIMIT
+  )
+
+  // Check if the number of valid requests exceeds the limit
+  if (validTimestamps.length >= MAX_REQUESTS) {
+    const timeLeft = Math.ceil(
+      (RATE_LIMIT - (currentTime - validTimestamps[0])) / 1000
+    )
+    return { error: `Please wait ${timeLeft} seconds before submitting again.` }
   }
 
-  // A blank Handle name should always be ignored.
-  if (handleName.length === 0) {
-    console.log("Handle name is empty")
-    return
-  }
+  // Update the last request time
+  validTimestamps.push(currentTime)
+  rateLimitMap.set(lowerCaseHandleName, validTimestamps)
 
-  // Convert handleName to hex encoding.
-  const assetName = Buffer.from(handleName).toString("hex")
-  console.log(`${policyID}${assetName}`)
+  const url = `https://api.handle.me/handles/${lowerCaseHandleName}`
+  const response = await fetch(url, {
+    headers: {
+      accept: "application/json",
+    },
+  })
+  const data = await response.json()
 
-  // Fetch matching address for the asset.
-  const data = await fetch(
-    `https://cardano-mainnet.blockfrost.io/api/v0/assets/${policyID}${assetName}/addresses`,
-    {
-      headers: {
-        project_id: process.env.BLOCKFROST_API_KEY!,
-        "Content-Type": "application/json",
-      },
-    }
-  ).then((res) => res.json())
+  // Cache the result
+  cache.set(lowerCaseHandleName, data)
 
-  if (data?.error) {
-    console.log(data.error)
-    return
-  }
-
-  try {
-    const [{ address }] = data
-    return address
-  } catch (e) {
-    if (e instanceof TypeError) {
-      console.log("No address found for handle")
-      return []
-    } else {
-      console.log(e)
-    }
-  }
+  return data
 }

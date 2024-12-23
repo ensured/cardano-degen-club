@@ -2,25 +2,18 @@
 "use client"
 import { useEffect, useState, useCallback, useRef } from "react"
 import {
-  EnterFullScreenIcon,
   ExitFullScreenIcon,
   ReloadIcon,
   MinusIcon,
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
 import { ChevronDown, CopyIcon, InfoIcon, Loader2 } from "lucide-react"
-import { MoonIcon, SunIcon } from "lucide-react"
 import { Skeleton } from "./ui/skeleton"
 import ConvertAda from "./ConvertAda"
 import { getAddressFromHandle } from "@/app/actions"
 import { Input } from "./ui/input"
 import { toast } from "sonner"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import Image from "next/image"
 
 const CHART_CONFIG = [
   {
@@ -76,6 +69,7 @@ const INDICATORS = [
 
 function TradingViewChart() {
   const [fullscreenChart, setFullscreenChart] = useState(null)
+  const [loadingAdahandle, setLoadingAdahandle] = useState(false)
   const [chartSettings, setChartSettings] = useState(
     CHART_CONFIG.reduce(
       (acc, { containerId }) => ({
@@ -94,7 +88,10 @@ function TradingViewChart() {
   const [loading, setLoading] = useState(true)
   const [headerLoading, setHeaderLoading] = useState(false)
   const [handleName, setHandleName] = useState("")
-  const [walletAddress, setWalletAddress] = useState("")
+  const [walletAddress, setWalletAddress] = useState({})
+  const [lastSubmitTime, setLastSubmitTime] = useState(0)
+  const [remainingTime, setRemainingTime] = useState(0)
+  const RATE_LIMIT = 15000 // 15 seconds
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
@@ -322,7 +319,7 @@ function TradingViewChart() {
             onClick={onClose}
             size={"icon"}
             variant={"ghost"}
-            className="h-6 w-6"
+            className="size-6"
             aria-label="Exit fullscreen"
           >
             <ExitFullScreenIcon className="size-5" />
@@ -504,18 +501,44 @@ function TradingViewChart() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const walletAddress = await getAddressFromHandle(handleName)
+  const handleSubmit = async () => {
+    try {
+      const walletAddress = await getAddressFromHandle(handleName)
+      // Check for rate limit error
+      if (walletAddress?.error || !walletAddress) {
+        toast.error(walletAddress?.error || "No wallet address found") // Show toast notification
+        return
+      }
 
-    // Check for rate limit error
-    if (walletAddress?.error || !walletAddress) {
-      toast.error(walletAddress?.error || "No wallet address found") // Show toast notification
-      return
+      const stakeAddress = walletAddress.holder
+      const image = walletAddress.image
+      const addresses = walletAddress.resolved_addresses.ada
+      setWalletAddress({ stakeAddress, image, addresses })
+      const newHandleName = handleName.toLowerCase()
+      setHandleName(newHandleName)
+    } catch (error) {
+      console.error("Error fetching wallet address:", error)
+    } finally {
+      setLoadingAdahandle(false)
+    }
+  }
+
+  useEffect(() => {
+    let timer
+    if (remainingTime > 0) {
+      timer = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
     }
 
-    setWalletAddress(walletAddress)
-  }
+    return () => clearInterval(timer) // Cleanup on unmount
+  }, [remainingTime])
 
   // Update fullscreen modal in return statement
   return (
@@ -523,7 +546,7 @@ function TradingViewChart() {
       <div className="flex w-full flex-col gap-1">
         <div className="flex items-center justify-center gap-1">
           <h1 className="font-bold">TradingView Charts</h1>
-          <div className="flex h-6 w-6 items-center justify-center">
+          <div className="flex size-6 items-center justify-center">
             {headerLoading && <Loader2 className="size-5 animate-spin" />}
           </div>
         </div>
@@ -605,27 +628,11 @@ function TradingViewChart() {
 
       <div className="mt-8 grid grid-cols-1 gap-2 rounded-md border border-border">
         <form
-          className="col-span-1 flex w-full flex-col gap-2 p-5 sm:px-20"
-          onSubmit={handleSubmit}
+          className="col-span-1 flex w-full flex-col gap-2 p-5 sm:p-8"
+          action={handleSubmit}
         >
-          <h1 className="flex w-full items-center justify-center gap-2 text-center text-2xl font-bold">
-            <TooltipProvider>
-              <div className="flex w-full items-center justify-center gap-2 text-center text-2xl font-bold">
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild className="hover:cursor-pointer">
-                    <div className="flex flex-row items-center justify-center gap-2">
-                      <InfoIcon className="size-4" />
-                      Find Wallet Address
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="p-1 text-sm sm:text-lg">
-                      Only resolves old cip handles for now
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
+          <h1 className="flex w-full items-center gap-2 text-center text-2xl font-bold">
+            <div className="flex flex-row gap-2">Resolve Adahandle</div>
           </h1>
           <Input
             type="text"
@@ -635,30 +642,72 @@ function TradingViewChart() {
             onChange={(e) => setHandleName(e.target.value)}
             autoComplete="on"
           />
-          <Button type="submit" className="w-1/2">
-            Search
+          <Button type="submit" className="w-1/2" disabled={loadingAdahandle}>
+            <span className="flex flex-row items-center gap-2">
+              {loadingAdahandle && (
+                <Loader2 className="size-5 animate-spin text-white" />
+              )}{" "}
+              Search{" "}
+            </span>
           </Button>
         </form>
-        {walletAddress && (
-          <div className="col-span-1 overflow-hidden break-all border-t border-border bg-secondary/50 p-5 text-center">
-            <div className="relative flex flex-row items-center justify-center gap-2">
-              <span className="text-sm text-muted-foreground sm:text-lg">
-                {walletAddress.length === 0
-                  ? "No wallet address found"
-                  : walletAddress}
-              </span>
-              {walletAddress.length > 0 && (
-                <Button
-                  size="icon"
-                  className="absolute right-0 top-0 h-9 w-9"
-                  onClick={() => {
-                    navigator.clipboard.writeText(walletAddress)
-                    toast.success("Copied to clipboard")
-                  }}
-                >
-                  <CopyIcon className="size-4" />
-                </Button>
-              )}
+        {walletAddress.stakeAddress && (
+          <div className="col-span-1 overflow-hidden break-all border-t border-border bg-secondary/40 p-6 text-center shadow-md">
+            <div className="relative grid w-full grid-cols-1 items-center gap-2 sm:grid-cols-3">
+              <Image
+                src={
+                  walletAddress.image &&
+                  walletAddress.image.startsWith("ipfs://")
+                    ? `https://ipfs.io/ipfs/${walletAddress.image.replace("ipfs://", "")}`
+                    : walletAddress.image
+                }
+                width={500}
+                height={500}
+                alt="wallet image"
+                className="col-span-1 mx-auto h-32 w-32 object-cover"
+              />
+              <div className="col-span-1 flex flex-col sm:p-2">
+                <span className="flex items-center justify-center gap-1 text-muted-foreground">
+                  <span className="text-base sm:text-lg">Stake Address</span>{" "}
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="h-5 w-5 sm:h-[1.6rem] sm:w-[1.55rem]"
+                    onClick={() => {
+                      navigator.clipboard.writeText(walletAddress.stakeAddress)
+                      toast.success("Copied stake address")
+                    }}
+                  >
+                    <CopyIcon className="size-3 sm:size-[0.875rem]" />
+                  </Button>
+                </span>
+                <span className="line-clamp-1 text-center sm:line-clamp-3">
+                  {walletAddress.length === 0
+                    ? "No wallet address found"
+                    : walletAddress.stakeAddress}
+                </span>
+              </div>
+              <div className="col-span-1 flex flex-col sm:p-2">
+                <span className="flex items-center justify-center gap-1 text-muted-foreground">
+                  <span className="text-base sm:text-lg">Address</span>{" "}
+                  <Button
+                    size="icon"
+                    className="h-5 w-5 sm:h-[1.55rem] sm:w-[1.55rem]"
+                    variant="secondary"
+                    onClick={() => {
+                      navigator.clipboard.writeText(walletAddress.addresses)
+                      toast.success("Copied address")
+                    }}
+                  >
+                    <CopyIcon className="size-3 sm:size-[0.875rem]" />
+                  </Button>
+                </span>
+                <span className="line-clamp-1 text-center sm:line-clamp-3">
+                  {walletAddress.length === 0
+                    ? "No wallet address found"
+                    : walletAddress.addresses}
+                </span>
+              </div>
             </div>
           </div>
         )}
