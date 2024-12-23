@@ -473,37 +473,6 @@ export async function getEpochData() {
   return data
 }
 
-export const fetchAdaHandlesFromAddress = async (address: string) => {
-  // adahandle policyID
-  const policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
-
-  // Fetch data about an address.
-  const data = await fetch(
-    `https://cardano-mainnet.blockfrost.io/api/v0/addresses/${stakeAddress}`,
-    {
-      headers: {
-        project_id: "mainnetsh2KDyn78Z8UcKe3N7WEp6K1UaLCNRki",
-        "Content-Type": "application/json",
-      },
-    }
-  ).then((res) => res.json())
-
-  if (data?.error) {
-    // Handle error.
-  }
-
-  const handles = data.amount
-    .filter(({ unit }: { unit: string }) => unit.includes(policyID))
-    .map(({ unit }: { unit: string }) => {
-      const hexName = unit.replace(policyID, "")
-      const utf8Name = Buffer.from(hexName, "hex").toString("utf8")
-      let utf8NameString = utf8Name.toString()
-      return utf8NameString.split("@")[1]
-    })
-
-  console.log(handles) // ['handle1', 'handle2', ...]
-}
-
 const policyID = "f0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9a"
 
 const rateLimit = {
@@ -545,7 +514,7 @@ export const getAddressFromHandle = async (handleName: string) => {
     `https://cardano-mainnet.blockfrost.io/api/v0/assets/${policyID}${assetName}/addresses`,
     {
       headers: {
-        project_id: "mainnetsh2KDyn78Z8UcKe3N7WEp6K1UaLCNRki",
+        project_id: process.env.BLOCKFROST_API_KEY!,
         "Content-Type": "application/json",
       },
     }
