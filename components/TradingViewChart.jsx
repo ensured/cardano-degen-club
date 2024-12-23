@@ -473,6 +473,11 @@ function TradingViewChart() {
       try {
         const response = await fetch("/api/crypto-prices")
         const { prices, adaBtcPriceData } = await response.json()
+
+        // Debugging: Log the fetched data
+        console.log("Fetched prices:", prices)
+        console.log("Fetched adaBtcPriceData:", adaBtcPriceData)
+
         setPrices(prices)
         setAdaBtcPriceData(adaBtcPriceData)
       } catch (error) {
@@ -538,6 +543,9 @@ function TradingViewChart() {
               ) : (
                 CHART_CONFIG.slice(0, 3).map(({ containerId, title }) => {
                   const priceData = prices.find((p) => p.name === title)
+                  const btcPrice = adaBtcPriceData.cardano
+                    ? adaBtcPriceData.cardano.btc.toFixed(8)
+                    : "N/A"
 
                   return (
                     <div
@@ -553,23 +561,15 @@ function TradingViewChart() {
                       </div>
                       <div className="text-sm">
                         {title === "ADA/BTC"
-                          ? adaBtcPriceData.cardano.btc.toFixed(8)
+                          ? btcPrice
                           : priceData?.price.toFixed(3) || ""}
                       </div>
                       <div className="flex w-full items-center justify-end gap-1">
                         <div
-                          className={`text-[${
-                            ((title === "ADA/BTC" &&
-                              adaBtcPriceData.cardano.btc_24h_change.toFixed(
-                                2
-                              )) ||
-                              priceData?.percentChange24h) > 0
-                              ? "rgb(9,133,81)"
-                              : "rgb(207,32,47)"
-                          }]`}
+                          className={`text-[${((title === "ADA/BTC" && adaBtcPriceData.cardano?.btc_24h_change.toFixed(2)) || priceData?.percentChange24h) > 0 ? "rgb(9,133,81)" : "rgb(207,32,47)"}]`}
                         >
                           {title === "ADA/BTC"
-                            ? adaBtcPriceData.cardano.btc_24h_change.toFixed(
+                            ? adaBtcPriceData.cardano?.btc_24h_change.toFixed(
                                 2
                               ) + "%"
                             : priceData?.percentChange24h.toFixed(2) || ""}
