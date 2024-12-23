@@ -92,6 +92,7 @@ function TradingViewChart() {
   const [prices, setPrices] = useState([])
   const [adaBtcPriceData, setAdaBtcPriceData] = useState({})
   const [loading, setLoading] = useState(true)
+  const [headerLoading, setHeaderLoading] = useState(false)
   const [handleName, setHandleName] = useState("")
   const [walletAddress, setWalletAddress] = useState("")
 
@@ -469,27 +470,36 @@ function TradingViewChart() {
     [chartSettings]
   )
 
-  useEffect(() => {
-    const fetchPrices = async () => {
+  const fetchPrices = async (initialLoad = false, fromInterval = false) => {
+    if (initialLoad) {
       setLoading(true)
-      try {
-        const response = await fetch("/api/crypto-prices")
-        const { prices, adaBtcPriceData } = await response.json()
+    }
+    if (fromInterval) {
+      setHeaderLoading(true)
+    }
+    try {
+      const response = await fetch("/api/crypto-prices")
+      const { prices, adaBtcPriceData } = await response.json()
 
-        setPrices(prices)
-        setAdaBtcPriceData(adaBtcPriceData)
-      } catch (error) {
-        console.error("Error fetching prices:", error)
-      } finally {
+      setPrices(prices)
+      setAdaBtcPriceData(adaBtcPriceData)
+    } catch (error) {
+      console.error("Error fetching prices:", error)
+    } finally {
+      if (initialLoad) {
         setLoading(false)
       }
+      if (fromInterval) {
+        setHeaderLoading(false)
+      }
     }
+  }
 
+  useEffect(() => {
     // Fetch prices immediately on mount
-    fetchPrices()
-
+    fetchPrices(true)
     // Update interval to 15 seconds instead of 60 seconds
-    const interval = setInterval(fetchPrices, 15000) // 15000 ms = 15 seconds
+    const interval = setInterval(() => fetchPrices(false, true), 15000) // Pass true for fromInterval
 
     return () => clearInterval(interval)
   }, [])
@@ -511,9 +521,12 @@ function TradingViewChart() {
   return (
     <div className="flex flex-col">
       <div className="flex w-full flex-col gap-1">
-        <h1 className="flex w-full justify-center font-bold">
-          TradingView Charts
-        </h1>
+        <div className="flex items-center justify-center gap-1">
+          <h1 className="font-bold">TradingView Charts</h1>
+          <div className="flex h-6 w-6 items-center justify-center">
+            {headerLoading && <Loader2 className="size-5 animate-spin" />}
+          </div>
+        </div>
         {loading ? (
           <div className="flex flex-col gap-1">
             {CHART_CONFIG.map(({ containerId, title }) => (
@@ -532,97 +545,60 @@ function TradingViewChart() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-            {/* Left Column */}
-            <div className="flex flex-col gap-1">
-              {loading || prices.length === 0 ? ( // Check if loading or prices are empty
-                <div className="flex h-14 w-full items-center justify-center">
-                  <Skeleton className="h-5 w-[100px] bg-green/50 text-sm" />
-                </div>
-              ) : (
-                CHART_CONFIG.slice(0, 3).map(({ containerId, title }) => {
-                  const priceData = prices.find((p) => p.name === title)
-                  const btcPrice = adaBtcPriceData.cardano
-                    ? adaBtcPriceData.cardano.btc.toFixed(8)
-                    : "N/A"
+            {[0, 1].map((columnIndex) => (
+              <div key={columnIndex} className="flex flex-col gap-1">
+                {loading || prices.length === 0 ? (
+                  <div className="flex h-14 w-full items-center justify-center">
+                    <Skeleton className="h-5 w-[100px] text-sm" />
+                  </div>
+                ) : (
+                  CHART_CONFIG.slice(
+                    columnIndex * 3,
+                    (columnIndex + 1) * 3
+                  ).map(({ containerId, title }) => {
+                    const priceData = prices.find((p) => p.name === title)
+                    const isAdaBtc = title === "ADA/BTC"
+                    const price = isAdaBtc
+                      ? adaBtcPriceData.cardano?.btc.toFixed(8)
+                      : priceData?.price?.toFixed(3)
+                    const percentChange = isAdaBtc
+                      ? adaBtcPriceData.cardano?.btc_24h_change?.toFixed(2)
+                      : priceData?.percentChange24h?.toFixed(2)
+                    const isPositiveChange = isAdaBtc
+                      ? adaBtcPriceData.cardano?.btc_24h_change > 0
+                      : priceData?.percentChange24h > 0
 
-                  return (
-                    <div
-                      key={containerId}
-                      onClick={() => openFullscreen(containerId)} // Open fullscreen on card click
-                      className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
-                      aria-label={`Open ${title} chart`}
-                    >
-                      <div className="text-sm">
-                        {title === "IAG/USDT"
-                          ? title.replace("/USDT", "/USD")
-                          : title}
-                      </div>
-                      <div className="text-sm">
-                        {title === "ADA/BTC"
-                          ? btcPrice
-                          : priceData?.price.toFixed(3) || ""}
-                      </div>
-                      <div className="flex w-full items-center justify-end gap-1">
+                    return (
+                      <div
+                        key={containerId}
+                        onClick={() => openFullscreen(containerId)}
+                        className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
+                        aria-label={`Open ${title} chart`}
+                      >
+                        <div className="font-sans text-[#333] dark:text-[#c2c2c2]">
+                          {title === "IAG/USDT"
+                            ? title.replace("/USDT", "/USD")
+                            : title}
+                        </div>
                         <div
-                          className={`text-[${((title === "ADA/BTC" && adaBtcPriceData.cardano?.btc_24h_change.toFixed(2)) || priceData?.percentChange24h) > 0 ? "rgb(9,133,81)" : "rgb(207,32,47)"}]`}
+                          className={`font-sans ${columnIndex === 0 ? "text-blue dark:text-sky-500/85" : "text-red-500"}`}
                         >
-                          {title === "ADA/BTC"
-                            ? adaBtcPriceData.cardano?.btc_24h_change.toFixed(
-                                2
-                              ) + "%"
-                            : priceData?.percentChange24h.toFixed(2) || ""}
-                          {priceData?.percentChange24h ? "%" : ""}
+                          {price || ""}
+                        </div>
+                        <div className="flex w-full items-center justify-end gap-1">
+                          <div
+                            className={`text-[${isPositiveChange ? "rgb(9,133,81)" : "rgb(207,32,47)"}]`}
+                          >
+                            {percentChange || ""}
+                            {percentChange ? "%" : ""}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })
-              )}
-            </div>
-            {/* Right Column */}
-            <div className="flex flex-col gap-1">
-              {CHART_CONFIG.slice(3, 6).map(({ containerId, title }) => {
-                const priceData = prices.find((p) => p.name === title)
-
-                return (
-                  <div
-                    key={containerId}
-                    onClick={() => openFullscreen(containerId)}
-                    className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
-                    aria-label={`Open ${title} chart`}
-                  >
-                    <div className="text-sm">
-                      {title === "IAG/USDT"
-                        ? title.replace("/USDT", "/USD")
-                        : title}
-                    </div>
-                    <div className="text-sm">
-                      {title === "ADA/BTC"
-                        ? adaBtcPriceData?.cardano?.btc?.toFixed(8) || "N/A"
-                        : priceData?.price?.toFixed(3) || "N/A"}
-                    </div>
-                    <div className="flex w-full items-center justify-end">
-                      <div
-                        className={`${
-                          (title === "ADA/BTC" &&
-                            adaBtcPriceData?.cardano?.btc_24h_change > 0) ||
-                          priceData?.percentChange24h > 0
-                            ? "text-[rgb(9,133,81)]"
-                            : "text-[rgb(207,32,47)]"
-                        }`}
-                      >
-                        {title === "ADA/BTC"
-                          ? (adaBtcPriceData?.cardano?.btc_24h_change?.toFixed(
-                              2
-                            ) || "0") + "%"
-                          : (priceData?.percentChange24h?.toFixed(2) || "0") +
-                            "%"}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+                    )
+                  })
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
