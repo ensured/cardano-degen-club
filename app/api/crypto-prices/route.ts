@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server"
 
+declare global {
+  const EdgeRuntime: string
+}
+
+export const revalidate = 12
+
+export const runtime = "edge"
+
 const PRICES_CONFIG = [
   { symbol: "BINANCE:ADAUSD", pair: "cardano", name: "ADA/USD" },
   { symbol: "GATEIO:IAGUSDT", pair: "iagon", name: "IAG/USDT" },
@@ -33,10 +41,6 @@ const fetchAdabtcPrice = async () => {
   }
 }
 
-const fetchAdaDominance = async () => {}
-
-const fetchBtcDominance = async () => {}
-
 export async function GET() {
   try {
     const prices = await Promise.all(
@@ -45,7 +49,6 @@ export async function GET() {
           `https://api.coingecko.com/api/v3/simple/price?ids=${pair}&vs_currencies=usd&include_24hr_change=true`,
           {
             headers,
-            next: { revalidate: 20 },
           }
         )
 
@@ -70,7 +73,13 @@ export async function GET() {
     // const adaDominance = await fetchAdaDominance()
     // const btcDominance = await fetchBtcDominance()
 
-    return NextResponse.json({ prices, adaBtcPriceData }, { status: 200 })
+    return NextResponse.json(
+      {
+        prices,
+        adaBtcPriceData,
+      },
+      { status: 200 }
+    )
   } catch (error) {
     console.error("Error fetching prices:", error)
     const errorMessage =
@@ -81,3 +90,7 @@ export async function GET() {
     )
   }
 }
+
+const fetchAdaDominance = async () => {}
+
+const fetchBtcDominance = async () => {}

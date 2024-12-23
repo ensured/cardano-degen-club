@@ -101,7 +101,22 @@ function TradingViewChart() {
   // Add a ref to track the last updated chart
   const lastUpdatedChartRef = useRef(null)
 
+  // Add a ref to store widget reference
+  const widgetRef = useRef(null)
+
   // Add chart controls component
+
+  // Add this helper function near the top of the component
+  const cleanupChart = (chartId) => {
+    if (chartInstancesRef.current[chartId]) {
+      try {
+        chartInstancesRef.current[chartId].remove()
+      } catch (error) {
+        console.log(`Chart cleanup failed for ${chartId}:`, error)
+      }
+      delete chartInstancesRef.current[chartId]
+    }
+  }
 
   // Update initializeChart to only depend on the specific chart's settings
   const initializeChart = useCallback(
@@ -114,14 +129,7 @@ function TradingViewChart() {
       const settings = chartSettings[containerId]
 
       // Clean up existing chart instance if it exists
-      if (chartInstancesRef.current[containerId]) {
-        try {
-          chartInstancesRef.current[containerId].remove()
-        } catch (error) {
-          console.log("Chart cleanup failed:", error)
-        }
-        delete chartInstancesRef.current[containerId]
-      }
+      cleanupChart(containerId)
 
       // Create new chart instance
       chartInstancesRef.current[containerId] = new window.TradingView.widget({
@@ -159,18 +167,14 @@ function TradingViewChart() {
 
     return () => {
       // Cleanup chart instances
-      if (chartInstancesRef.current[CHART_CONFIG[0].containerId]) {
-        try {
-          if (chartInstancesRef.current[CHART_CONFIG[0].containerId].remove) {
-            chartInstancesRef.current[CHART_CONFIG[0].containerId].remove()
-          }
-        } catch (error) {
-          console.log("Chart cleanup failed:", error)
-        }
-        delete chartInstancesRef.current[CHART_CONFIG[0].containerId]
-      }
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
+      cleanupChart(CHART_CONFIG[0].containerId)
+
+      // Cleanup script element
+      const scriptElement = document.querySelector(
+        'script[src="https://s3.tradingview.com/tv.js"]'
+      )
+      if (scriptElement) {
+        scriptElement.remove()
       }
     }
   }, [initializeChart])
@@ -472,10 +476,6 @@ function TradingViewChart() {
         const response = await fetch("/api/crypto-prices")
         const { prices, adaBtcPriceData } = await response.json()
 
-        // Debugging: Log the fetched data
-        console.log("Fetched prices:", prices)
-        console.log("Fetched adaBtcPriceData:", adaBtcPriceData)
-
         setPrices(prices)
         setAdaBtcPriceData(adaBtcPriceData)
       } catch (error) {
@@ -488,10 +488,10 @@ function TradingViewChart() {
     // Fetch prices immediately on mount
     fetchPrices()
 
-    // Set interval to fetch prices every minute
-    const interval = setInterval(fetchPrices, 60000) // 60000 ms = 1 minute
+    // Update interval to 15 seconds instead of 60 seconds
+    const interval = setInterval(fetchPrices, 15000) // 15000 ms = 15 seconds
 
-    return () => clearInterval(interval) // Cleanup on unmount
+    return () => clearInterval(interval)
   }, [])
 
   const handleSubmit = async (e) => {
@@ -587,7 +587,7 @@ function TradingViewChart() {
                 return (
                   <div
                     key={containerId}
-                    onClick={() => openFullscreen(containerId)} // Open fullscreen on card click
+                    onClick={() => openFullscreen(containerId)}
                     className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
                     aria-label={`Open ${title} chart`}
                   >
@@ -598,26 +598,25 @@ function TradingViewChart() {
                     </div>
                     <div className="text-sm">
                       {title === "ADA/BTC"
-                        ? adaBtcPriceData.cardano.btc.toFixed(8)
-                        : priceData?.price.toFixed(3) || ""}
+                        ? adaBtcPriceData?.cardano?.btc?.toFixed(8) || "N/A"
+                        : priceData?.price?.toFixed(3) || "N/A"}
                     </div>
                     <div className="flex w-full items-center justify-end">
                       <div
-                        className={`text-[${
-                          ((title === "ADA/BTC" &&
-                            adaBtcPriceData.cardano.btc_24h_change.toFixed(
-                              2
-                            )) ||
-                            priceData?.percentChange24h) > 0
+                        className={`${
+                          (title === "ADA/BTC" &&
+                            adaBtcPriceData?.cardano?.btc_24h_change > 0) ||
+                          priceData?.percentChange24h > 0
                             ? "text-[rgb(9,133,81)]"
                             : "text-[rgb(207,32,47)]"
-                        }]`}
+                        }`}
                       >
                         {title === "ADA/BTC"
-                          ? adaBtcPriceData.cardano.btc_24h_change.toFixed(2) +
-                            "%"
-                          : priceData?.percentChange24h.toFixed(2) || ""}
-                        {priceData?.percentChange24h ? "%" : ""}
+                          ? (adaBtcPriceData?.cardano?.btc_24h_change?.toFixed(
+                              2
+                            ) || "0") + "%"
+                          : (priceData?.percentChange24h?.toFixed(2) || "0") +
+                            "%"}
                       </div>
                     </div>
                   </div>
