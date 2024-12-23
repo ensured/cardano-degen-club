@@ -501,8 +501,8 @@ function TradingViewChart() {
     const walletAddress = await getAddressFromHandle(handleName)
 
     // Check for rate limit error
-    if (walletAddress?.error) {
-      toast.error(walletAddress.error) // Show toast notification
+    if (walletAddress?.error || !walletAddress) {
+      toast.error(walletAddress?.error || "No wallet address found") // Show toast notification
       return
     }
 
@@ -638,7 +638,7 @@ function TradingViewChart() {
           <h1 className="flex w-full items-center justify-center gap-2 text-center text-2xl font-bold">
             <TooltipProvider>
               <div className="flex w-full items-center justify-center gap-2 text-center text-2xl font-bold">
-                <Tooltip>
+                <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild className="hover:cursor-pointer">
                     <div className="flex flex-row items-center justify-center gap-2">
                       <InfoIcon className="size-4" />
@@ -646,7 +646,9 @@ function TradingViewChart() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>only resolves old cip handles for now</p>
+                    <p className="p-1 text-sm sm:text-lg">
+                      Only resolves old cip handles for now
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -661,7 +663,7 @@ function TradingViewChart() {
             autoComplete="on"
           />
           <Button type="submit" className="w-1/2">
-            Fetch Wallet Address
+            Search
           </Button>
         </form>
         {walletAddress && (
