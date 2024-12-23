@@ -89,13 +89,11 @@ function TradingViewChart() {
       {}
     )
   )
-  const [activeChart, setActiveChart] = useState(CHART_CONFIG[0].containerId)
   const [prices, setPrices] = useState([])
   const [adaBtcPriceData, setAdaBtcPriceData] = useState({})
   const [loading, setLoading] = useState(true)
   const [handleName, setHandleName] = useState("")
   const [walletAddress, setWalletAddress] = useState("")
-  const [showInfo, setShowInfo] = useState(false)
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
@@ -156,26 +154,26 @@ function TradingViewChart() {
     document.body.appendChild(script)
 
     script.onload = () => {
-      initializeChart(activeChart)
+      initializeChart(CHART_CONFIG[0].containerId)
     }
 
     return () => {
       // Cleanup chart instances
-      if (chartInstancesRef.current[activeChart]) {
+      if (chartInstancesRef.current[CHART_CONFIG[0].containerId]) {
         try {
-          if (chartInstancesRef.current[activeChart].remove) {
-            chartInstancesRef.current[activeChart].remove()
+          if (chartInstancesRef.current[CHART_CONFIG[0].containerId].remove) {
+            chartInstancesRef.current[CHART_CONFIG[0].containerId].remove()
           }
         } catch (error) {
           console.log("Chart cleanup failed:", error)
         }
-        delete chartInstancesRef.current[activeChart]
+        delete chartInstancesRef.current[CHART_CONFIG[0].containerId]
       }
       if (document.body.contains(script)) {
         document.body.removeChild(script)
       }
     }
-  }, [activeChart, initializeChart])
+  }, [initializeChart])
 
   // Update the chart settings handler
   const updateChartSetting = useCallback(
