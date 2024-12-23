@@ -531,48 +531,55 @@ function TradingViewChart() {
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
             {/* Left Column */}
             <div className="flex flex-col gap-1">
-              {CHART_CONFIG.slice(0, 3).map(({ containerId, title }) => {
-                const priceData = prices.find((p) => p.name === title)
+              {loading || prices.length === 0 ? ( // Check if loading or prices are empty
+                <div className="flex h-14 w-full items-center justify-center">
+                  <Skeleton className="h-5 w-[100px] bg-green/50 text-sm" />
+                </div>
+              ) : (
+                CHART_CONFIG.slice(0, 3).map(({ containerId, title }) => {
+                  const priceData = prices.find((p) => p.name === title)
 
-                return (
-                  <div
-                    key={containerId}
-                    onClick={() => openFullscreen(containerId)} // Open fullscreen on card click
-                    className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
-                    aria-label={`Open ${title} chart`}
-                  >
-                    <div className="text-sm">
-                      {title === "IAG/USDT"
-                        ? title.replace("/USDT", "/USD")
-                        : title}
-                    </div>
-                    <div className="text-sm">
-                      {title === "ADA/BTC"
-                        ? adaBtcPriceData.cardano.btc.toFixed(8)
-                        : priceData?.price.toFixed(3) || ""}
-                    </div>
-                    <div className="flex w-full items-center justify-end gap-1">
-                      <div
-                        className={`text-[${
-                          ((title === "ADA/BTC" &&
-                            adaBtcPriceData.cardano.btc_24h_change.toFixed(
-                              2
-                            )) ||
-                            priceData?.percentChange24h) > 0
-                            ? "rgb(9,133,81)"
-                            : "rgb(207,32,47)"
-                        }]`}
-                      >
+                  return (
+                    <div
+                      key={containerId}
+                      onClick={() => openFullscreen(containerId)} // Open fullscreen on card click
+                      className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
+                      aria-label={`Open ${title} chart`}
+                    >
+                      <div className="text-sm">
+                        {title === "IAG/USDT"
+                          ? title.replace("/USDT", "/USD")
+                          : title}
+                      </div>
+                      <div className="text-sm">
                         {title === "ADA/BTC"
-                          ? adaBtcPriceData.cardano.btc_24h_change.toFixed(2) +
-                            "%"
-                          : priceData?.percentChange24h.toFixed(2) || ""}
-                        {priceData?.percentChange24h ? "%" : ""}
+                          ? adaBtcPriceData.cardano.btc.toFixed(8)
+                          : priceData?.price.toFixed(3) || ""}
+                      </div>
+                      <div className="flex w-full items-center justify-end gap-1">
+                        <div
+                          className={`text-[${
+                            ((title === "ADA/BTC" &&
+                              adaBtcPriceData.cardano.btc_24h_change.toFixed(
+                                2
+                              )) ||
+                              priceData?.percentChange24h) > 0
+                              ? "rgb(9,133,81)"
+                              : "rgb(207,32,47)"
+                          }]`}
+                        >
+                          {title === "ADA/BTC"
+                            ? adaBtcPriceData.cardano.btc_24h_change.toFixed(
+                                2
+                              ) + "%"
+                            : priceData?.percentChange24h.toFixed(2) || ""}
+                          {priceData?.percentChange24h ? "%" : ""}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              )}
             </div>
             {/* Right Column */}
             <div className="flex flex-col gap-1">
