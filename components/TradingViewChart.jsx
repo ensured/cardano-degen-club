@@ -241,6 +241,8 @@ function TradingViewChart() {
         autosize: true,
       })
     }, 50)
+
+    updateChartSetting(containerId, settings)
   }
 
   // Update FullscreenChartControls component
@@ -344,14 +346,8 @@ function TradingViewChart() {
                 ...chartSettings[fullscreenChart],
                 interval: e.target.value,
               }
-              setChartSettings((prev) => ({
-                ...prev,
-                [fullscreenChart]: updatedSettings,
-              }))
-              setTimeout(
-                () => reinitializeChart("fullscreen_chart", updatedSettings),
-                0
-              )
+              updateChartSetting(fullscreenChart, updatedSettings)
+              reinitializeChart("fullscreen_chart", updatedSettings)
             }}
             className="rounded bg-black/40 px-2 py-1 text-white"
           >
