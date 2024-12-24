@@ -22,6 +22,7 @@ import { Sheet, SheetDescription, SheetTitle, SheetTrigger } from "./ui/sheet"
 import { useCommits } from "./CommitContext"
 import { timeAgoCompact } from "../lib/helper"
 import { Separator } from "./ui/separator"
+import { useTheme } from "next-themes"
 
 export function HeaderNavSheet() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()
@@ -31,6 +32,8 @@ export function HeaderNavSheet() {
   const handleOpenChange = () => {
     setIsSheetOpen(!isSheetOpen)
   }
+
+  const { theme } = useTheme()
 
   return (
     <Sheet key={"left"} open={isSheetOpen} onOpenChange={handleOpenChange}>
@@ -138,7 +141,7 @@ export function HeaderNavSheet() {
                     <text
                       id="Handle.me"
                       transform="translate(23 38)"
-                      fill="#fff"
+                      fill={theme === "dark" ? "#fff" : "#000"}
                       font-size="34"
                       font-family="NotoSans-Bold, Noto Sans"
                       font-weight="700"
@@ -152,7 +155,9 @@ export function HeaderNavSheet() {
               </a>
             </div>
 
-            <CustomLinkText className="text-white">Resolver</CustomLinkText>
+            <CustomLinkText className="font-bold dark:text-white">
+              Checker
+            </CustomLinkText>
             {folderCommits.find((c) => c.folder === "adahandle") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
                 (
