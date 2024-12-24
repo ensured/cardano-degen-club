@@ -53,9 +53,9 @@ function checkPort(ip: string, port: string): Promise<boolean> {
 }
 
 function isValidIp(ip: string): boolean {
-  const regex =
+  const s =
     /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
-  return regex.test(ip)
+  return s.test(ip)
 }
 
 function isValidPort(port: string): boolean {
