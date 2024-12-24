@@ -22,6 +22,9 @@ export async function checkUserAuthentication() {
 // @ts-ignore
 export async function removeItemsFirebase(keys) {
   const userEmail = await checkUserAuthentication()
+  if (!userEmail) {
+    return { error: "User email is required" }
+  }
 
   // remove all keys from firebase db
   await Promise.all(
@@ -47,6 +50,9 @@ export async function removeItemsFirebase(keys) {
 // @ts-ignore
 export async function addToFavoritesFirebase({ name, url, link, metadata }) {
   const userEmail = await checkUserAuthentication()
+  if (!userEmail) {
+    return { error: "User email is required" }
+  }
 
   try {
     // Proceed with the upload after user authentication
@@ -143,6 +149,9 @@ export async function getFavoritesFirebase(userEmail: string) {
 
 export async function deleteAllFavoritesFirebase() {
   const userEmail = await checkUserAuthentication()
+  if (!userEmail) {
+    return { error: "User email is required" }
+  }
 
   const userFolderRef = storageRef(storage, `images/${userEmail}/`)
 
@@ -175,6 +184,9 @@ export async function removeFavoriteFirebase(
   needFormatting: boolean = true
 ) {
   const userEmail = await checkUserAuthentication()
+  if (!userEmail) {
+    return { error: "User email is required" }
+  }
 
   let key
   if (needFormatting) {
@@ -281,6 +293,9 @@ export async function addItemsFirebase(
   }>
 ) {
   const userEmail = await checkUserAuthentication()
+  if (!userEmail) {
+    return { error: "User email is required" }
+  }
 
   try {
     // Get current favorites count
