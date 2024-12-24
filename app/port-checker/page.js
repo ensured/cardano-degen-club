@@ -7,8 +7,8 @@ export const metadata = {
 }
 
 const page = () => {
-  const headersList = headers()
-  const usersIp = headersList.get("x-forwarded-for")
+  const headerList = headers()
+  const usersIp = headerList.get("x-forwarded-for")
   return <PortForwardChecker usersIp={usersIp} />
 }
 

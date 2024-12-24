@@ -78,7 +78,7 @@ export function HeaderNavSheet() {
                 (
                 {timeAgoCompact(
                   folderCommits.find((c) => c.folder === "punycode")
-                    .lastCommitDate
+                    ?.lastCommitDate
                 )}
                 )
               </span>
@@ -92,7 +92,7 @@ export function HeaderNavSheet() {
                 (
                 {timeAgoCompact(
                   folderCommits.find((c) => c.folder === "cardano-links")
-                    .lastCommitDate
+                    ?.lastCommitDate
                 )}
                 )
               </span>
@@ -138,7 +138,7 @@ export function HeaderNavSheet() {
                 (
                 {timeAgoCompact(
                   folderCommits.find((c) => c.folder === "tradingview-script")
-                    .lastCommitDate
+                    ?.lastCommitDate
                 )}
                 )
               </span>
@@ -156,7 +156,7 @@ export function HeaderNavSheet() {
                 (
                 {timeAgoCompact(
                   folderCommits.find((c) => c.folder === "recipe-fren")
-                    .lastCommitDate
+                    ?.lastCommitDate
                 )}
                 )
               </span>
@@ -170,7 +170,7 @@ export function HeaderNavSheet() {
                 (
                 {timeAgoCompact(
                   folderCommits.find((c) => c.folder === "port-checker")
-                    .lastCommitDate
+                    ?.lastCommitDate
                 )}
                 )
               </span>
