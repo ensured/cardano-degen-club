@@ -549,6 +549,25 @@ export const getAddressFromHandle = async (handleName: string) => {
   const image = data.image
   const address = data.resolved_addresses.ada
 
+  const errors: string[] = []
+
+  if (!stakeAddress) {
+    errors.push("No stake address found")
+  }
+
+  if (!address) {
+    errors.push("No address found")
+  }
+
+  if (!image) {
+    errors.push("No image found")
+  }
+
+  // Check if there are any errors
+  if (errors.length > 0) {
+    return { error: "error something went wrong" } // Return all error messages as a single string
+  }
+
   // Cache the result
   cache[lowerCaseHandleName] = {
     data: { stakeAddress, image, address, error },

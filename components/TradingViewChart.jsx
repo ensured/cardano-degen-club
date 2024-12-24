@@ -7,13 +7,12 @@ import {
   MinusIcon,
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
-import { ChevronDown, CopyIcon, Loader2 } from "lucide-react"
+import { ChevronDown, Loader2 } from "lucide-react"
 import { Skeleton } from "./ui/skeleton"
 import ConvertAda from "./ConvertAda"
 import { getAddressFromHandle } from "@/app/actions"
-import { Input } from "./ui/input"
 import { toast } from "sonner"
-import Image from "next/image"
+import ResolveHandleForm from "./ResolveHandleForm"
 
 const CHART_CONFIG = [
   {
@@ -488,12 +487,13 @@ function TradingViewChart() {
     // Fetch prices immediately on mount
     fetchPrices(true)
     // Update interval to 15 seconds instead of 60 seconds
-    const interval = setInterval(() => fetchPrices(false, true), 15000) // Pass true for fromInterval
+    const interval = setInterval(() => fetchPrices(false, true), 20000) // Pass true for fromInterval
 
     return () => clearInterval(interval)
   }, [])
 
   const handleSubmit = async () => {
+    setLoadingAdahandle(true) // Set loading state to true
     try {
       const { stakeAddress, image, address, error } =
         await getAddressFromHandle(handleName)
@@ -504,10 +504,10 @@ function TradingViewChart() {
       }
 
       setWalletAddress({ stakeAddress, image, address })
-      const newHandleName = handleName.toLowerCase()
+      const newHandleName = handleName.toLowerCase().replace("$", "")
       setHandleName(newHandleName)
     } catch (error) {
-      console.error("Error fetching wallet address:", error)
+      toast.error("Something went wrong, please try again with a new handle")
     } finally {
       setLoadingAdahandle(false)
     }
@@ -518,7 +518,6 @@ function TradingViewChart() {
     <div className="flex flex-col">
       <div className="flex w-full flex-col gap-1">
         <div className="flex items-center justify-center gap-1">
-          <h1 className="font-bold">TradingView Charts</h1>
           <div className="flex size-6 items-center justify-center">
             {headerLoading && <Loader2 className="size-5 animate-spin" />}
           </div>
@@ -604,100 +603,14 @@ function TradingViewChart() {
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-2 rounded-md border border-border">
-        <form
-          className="col-span-1 flex w-full flex-col items-center justify-center gap-2 p-5 sm:p-8"
-          onSubmit={(e) => {
-            e.preventDefault() // Prevent default form submission
-            setLoadingAdahandle(true) // Set loading state to true
-            handleSubmit() // Call the handleSubmit function
-          }}
-        >
-          <h1 className="flex items-center gap-2 text-center text-2xl font-bold">
-            <div className="flex flex-col gap-2">Resolve Adahandle</div>
-          </h1>
-          <Input
-            type="text"
-            placeholder="$adahandle"
-            value={handleName}
-            className="w-[15rem]"
-            onChange={(e) => setHandleName(e.target.value)}
-            autoComplete="on"
-          />
-          <Button
-            type="submit"
-            className="w-[15rem]"
-            disabled={loadingAdahandle}
-          >
-            <span className="relative flex flex-row items-center gap-2">
-              <span className="whitespace-nowrap">Search</span>
-              <span className="flex items-center">
-                {loadingAdahandle && (
-                  <Loader2 className="absolute -right-3.5 size-5 animate-spin text-white" />
-                )}
-              </span>
-            </span>
-          </Button>
-        </form>
-        {walletAddress.stakeAddress && (
-          <div className="col-span-1 overflow-hidden break-all border-t border-border bg-secondary/40 p-6 text-center shadow-md">
-            <div className="relative grid w-full grid-cols-1 items-center gap-2 sm:grid-cols-3">
-              <Image
-                src={
-                  walletAddress.image &&
-                  walletAddress.image.startsWith("ipfs://")
-                    ? `https://ipfs.io/ipfs/${walletAddress.image.replace("ipfs://", "")}`
-                    : walletAddress.image
-                }
-                width={800}
-                height={800}
-                alt="wallet image"
-                className="col-span-1 mx-auto mb-1 size-36 object-cover sm:mb-0"
-              />
-              <div className="col-span-1 flex flex-col sm:p-2">
-                <span className="flex items-center justify-center gap-1 text-muted-foreground">
-                  <span className="text-base sm:text-lg">Stake Address</span>{" "}
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-6 w-6 sm:h-[1.6rem] sm:w-[1.55rem]"
-                    onClick={() => {
-                      navigator.clipboard.writeText(walletAddress.stakeAddress)
-                      toast.success("Copied stake address")
-                    }}
-                  >
-                    <CopyIcon className="size-3 sm:size-3.5" />
-                  </Button>
-                </span>
-                <span className="line-clamp-1 text-center sm:line-clamp-3">
-                  {walletAddress.length === 0
-                    ? "No wallet address found"
-                    : walletAddress.stakeAddress}
-                </span>
-              </div>
-              <div className="col-span-1 flex flex-col sm:p-2">
-                <span className="flex items-center justify-center gap-1 text-muted-foreground">
-                  <span className="text-base sm:text-lg">Address</span>{" "}
-                  <Button
-                    size="icon"
-                    className="h-6 w-6 sm:size-[1.55rem]"
-                    variant="secondary"
-                    onClick={() => {
-                      navigator.clipboard.writeText(walletAddress.address)
-                      toast.success("Copied address")
-                    }}
-                  >
-                    <CopyIcon className="size-3 sm:size-3.5" />
-                  </Button>
-                </span>
-                <span className="line-clamp-1 text-center sm:line-clamp-3">
-                  {walletAddress.length === 0
-                    ? "No wallet address found"
-                    : walletAddress.address}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        <ResolveHandleForm
+          handleSubmit={handleSubmit}
+          walletAddress={walletAddress}
+          handleName={handleName}
+          setHandleName={setHandleName}
+          loadingAdahandle={loadingAdahandle}
+          setLoadingAdahandle={setLoadingAdahandle}
+        />
       </div>
 
       {fullscreenChart && ( // Only render the fullscreen chart when a card is clicked
