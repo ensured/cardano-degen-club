@@ -583,7 +583,11 @@ function TradingViewChart() {
                         </div>
                         <div className="flex w-full items-center justify-end gap-1">
                           <div
-                            className={`text-[${isPositiveChange ? "rgb(9,133,81)" : "rgb(207,32,47)"}]`}
+                            style={{
+                              color: isPositiveChange
+                                ? "rgb(9, 133, 81)"
+                                : "rgb(207, 32, 47)",
+                            }}
                           >
                             {percentChange || ""}
                             {percentChange ? "%" : ""}
