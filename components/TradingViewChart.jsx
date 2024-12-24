@@ -676,7 +676,7 @@ function TradingViewChart() {
                   <Button
                     size="icon"
                     variant="secondary"
-                    className="size-5 sm:h-[1.6rem] sm:w-[1.55rem]"
+                    className="h-6 w-6 sm:h-[1.6rem] sm:w-[1.55rem]"
                     onClick={() => {
                       navigator.clipboard.writeText(walletAddress.stakeAddress)
                       toast.success("Copied stake address")
@@ -696,7 +696,7 @@ function TradingViewChart() {
                   <span className="text-base sm:text-lg">Address</span>{" "}
                   <Button
                     size="icon"
-                    className="size-5 sm:size-[1.55rem]"
+                    className="h-6 w-6 sm:size-[1.55rem]"
                     variant="secondary"
                     onClick={() => {
                       navigator.clipboard.writeText(walletAddress.address)
