@@ -155,9 +155,7 @@ export function HeaderNavSheet() {
               </a>
             </div>
 
-            <CustomLinkText className="font-bold dark:text-white">
-              Checker
-            </CustomLinkText>
+            <CustomLinkText className="dark:text-white">Checker</CustomLinkText>
             {folderCommits.find((c) => c.folder === "adahandle") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
                 (
