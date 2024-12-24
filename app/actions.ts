@@ -13,13 +13,15 @@ import {
 } from "firebase/storage"
 import { db, deleteObject, storage } from "../components/firebase/firebase"
 
+export async function checkUserAuthentication() {
+  const user = await currentUser()
+  if (!user) return
+  return user?.emailAddresses[0].emailAddress
+}
+
 // @ts-ignore
 export async function removeItemsFirebase(keys) {
-  const user = await currentUser()
-  if (!user) {
-    return { error: "Not authenticated, please login" }
-  }
-  const userEmail = user?.emailAddresses[0].emailAddress
+  const userEmail = await checkUserAuthentication()
 
   // remove all keys from firebase db
   await Promise.all(
@@ -44,14 +46,7 @@ export async function removeItemsFirebase(keys) {
 
 // @ts-ignore
 export async function addToFavoritesFirebase({ name, url, link, metadata }) {
-  const user = await currentUser()
-
-  // Check if the user is authenticated
-  if (!user) {
-    return { error: "Not authenticated, please login" }
-  }
-
-  const userEmail = user?.emailAddresses[0].emailAddress
+  const userEmail = await checkUserAuthentication()
 
   try {
     // Proceed with the upload after user authentication
@@ -147,11 +142,7 @@ export async function getFavoritesFirebase(userEmail: string) {
 }
 
 export async function deleteAllFavoritesFirebase() {
-  const user = await currentUser()
-  if (!user) {
-    return { error: "Not authenticated, please login" }
-  }
-  const userEmail = user?.emailAddresses[0].emailAddress
+  const userEmail = await checkUserAuthentication()
 
   const userFolderRef = storageRef(storage, `images/${userEmail}/`)
 
@@ -183,11 +174,7 @@ export async function removeFavoriteFirebase(
   recipeName: string,
   needFormatting: boolean = true
 ) {
-  const user = await currentUser()
-  if (!user) {
-    return { error: "Not authenticated, please login" }
-  }
-  const userEmail = user?.emailAddresses[0].emailAddress
+  const userEmail = await checkUserAuthentication()
 
   let key
   if (needFormatting) {
@@ -293,11 +280,7 @@ export async function addItemsFirebase(
     metadata: any
   }>
 ) {
-  const user = await currentUser()
-  if (!user) {
-    return { error: "Not authenticated, please login" }
-  }
-  const userEmail = user?.emailAddresses[0].emailAddress
+  const userEmail = await checkUserAuthentication()
 
   try {
     // Get current favorites count

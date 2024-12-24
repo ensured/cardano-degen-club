@@ -1,8 +1,7 @@
 import Animation from "@/components/Animation"
 import GoogleOneTapLogin from "@/components/GoogleOneTap"
 import TradingViewChart from "@/components/TradingViewChart"
-import { currentUser } from "@clerk/nextjs/server"
-import ConvertAda from "../../components/ConvertAda"
+import { checkUserAuthentication } from "../actions"
 
 export const metadata = {
   title: "Crypto Price Tracker | Real-time ADA & BTC Conversion",
@@ -19,9 +18,8 @@ export const metadata = {
 }
 
 const Page = async () => {
-  const user = await currentUser()
-  const email = user?.emailAddresses[0].emailAddress
-  if (!email) {
+  const userEmail = await checkUserAuthentication()
+  if (!userEmail) {
     return (
       <Animation>
         <div className="flex w-full justify-center pt-6 text-center">

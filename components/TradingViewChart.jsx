@@ -5,6 +5,7 @@ import {
   ExitFullScreenIcon,
   ReloadIcon,
   MinusIcon,
+  EnterFullScreenIcon,
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
 import { ChevronDown, Loader2 } from "lucide-react"
@@ -13,6 +14,7 @@ import ConvertAda from "./ConvertAda"
 import { getAddressFromHandle } from "@/app/actions"
 import { toast } from "sonner"
 import ResolveHandleForm from "./ResolveHandleForm"
+import { Badge } from "./ui/badge"
 
 const CHART_CONFIG = [
   {
@@ -239,7 +241,7 @@ function TradingViewChart() {
   // Update FullscreenChartControls component
   const FullscreenChartControls = ({ onClose }) => (
     <div className="absolute inset-x-0 -top-2 z-10">
-      <div className="flex items-center justify-between overflow-x-auto bg-black/30 p-4 backdrop-blur-sm">
+      <div className="flex items-center justify-between overflow-x-auto p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           {/* Add chart selector dropdown */}
           <div className="relative">
@@ -291,31 +293,26 @@ function TradingViewChart() {
                     },
                   })
               }}
-              className="size-7 shrink-0 appearance-none rounded bg-black/40 text-transparent hover:bg-black/60"
+              className="rounded p-2"
             >
               {CHART_CONFIG.map(({ containerId, title }) => (
-                <option
-                  key={containerId}
-                  value={containerId}
-                  className="text-white"
-                >
+                <option key={containerId} value={containerId}>
                   {title}
                 </option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-white" />
           </div>
 
           <Button
             onClick={onClose}
             size={"icon"}
-            variant={"ghost"}
-            className="size-6"
+            variant={"outline"}
+            className="h-9 w-9 rounded bg-white p-2 transition-colors dark:bg-black/40"
             aria-label="Exit fullscreen"
           >
             <ExitFullScreenIcon className="size-5" />
           </Button>
-          <button
+          <Button
             onClick={() => {
               const currentSettings = chartSettings[fullscreenChart]
               setTimeout(
@@ -323,11 +320,13 @@ function TradingViewChart() {
                 0
               )
             }}
-            className="rounded bg-black/40 p-2 transition-colors hover:bg-black/60"
+            variant={"outline"}
+            size={"icon"}
+            className="h-9 w-9 rounded bg-white p-2 transition-colors dark:bg-black/40"
             aria-label="Refresh chart"
           >
             <ReloadIcon className="size-5" />
-          </button>
+          </Button>
 
           <select
             value={chartSettings[fullscreenChart].interval}
@@ -339,7 +338,7 @@ function TradingViewChart() {
               updateChartSetting(fullscreenChart, updatedSettings)
               reinitializeChart("fullscreen_chart", updatedSettings)
             }}
-            className="rounded bg-black/40 px-2 py-1 text-white"
+            className="rounded border border-border p-1.5"
           >
             {INTERVALS.map(({ label, value }) => (
               <option key={value} value={value}>
@@ -371,9 +370,9 @@ function TradingViewChart() {
 
               reinitializeChart("fullscreen_chart", updatedSettings)
             }}
-            className="rounded bg-black/40 px-2 py-1 text-white"
+            className="rounded border border-border p-1.5"
           >
-            <option value="">+ Add Indicator</option>
+            <option value="">Add Indicator</option>
             {INDICATORS.map(({ label, value }) => (
               <option key={value} value={value}>
                 {label}
@@ -399,7 +398,7 @@ function TradingViewChart() {
 
                   reinitializeChart("fullscreen_chart", updatedSettings)
                 }}
-                className="flex items-center gap-1 rounded bg-black/40 px-2 py-1 text-white hover:bg-black/60"
+                className="flex items-center gap-1 rounded px-2 py-1"
               >
                 {INDICATORS.find((i) => i.value === indicator)?.label ||
                   indicator}
@@ -567,10 +566,10 @@ function TradingViewChart() {
                       <div
                         key={containerId}
                         onClick={() => openFullscreen(containerId)}
-                        className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border p-4 text-center"
+                        className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border bg-secondary p-4 text-center hover:bg-secondary/80"
                         aria-label={`Open ${title} chart`}
                       >
-                        <div className="font-sans text-[#333] dark:text-[#c2c2c2]">
+                        <div className="background-primary font-sans text-[#333] dark:text-[#c2c2c2]">
                           {title === "IAG/USDT"
                             ? title.replace("/USDT", "/USD")
                             : title}
@@ -581,16 +580,21 @@ function TradingViewChart() {
                           {price || ""}
                         </div>
                         <div className="flex w-full items-center justify-end gap-1">
-                          <div
-                            style={{
-                              color: isPositiveChange
-                                ? "rgb(9, 133, 81)"
-                                : "rgb(207, 32, 47)",
-                            }}
-                          >
-                            {percentChange || ""}
-                            {percentChange ? "%" : ""}
-                          </div>
+                          {percentChange && (
+                            <Badge
+                              style={{
+                                color: isPositiveChange
+                                  ? "rgb(9, 133, 81)"
+                                  : "rgb(207, 32, 47)",
+                              }}
+                              className="border border-border bg-white hover:bg-inherit dark:bg-black/40"
+                            >
+                              <span>
+                                {percentChange || ""}
+                                {percentChange ? "%" : ""}
+                              </span>
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     )
@@ -609,7 +613,6 @@ function TradingViewChart() {
           handleName={handleName}
           setHandleName={setHandleName}
           loadingAdahandle={loadingAdahandle}
-          setLoadingAdahandle={setLoadingAdahandle}
         />
       </div>
 

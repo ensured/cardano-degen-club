@@ -13,7 +13,6 @@ const ResolveHandleForm = ({
   loadingAdahandle,
   handleName,
   setHandleName,
-  setLoadingAdahandle,
 }) => {
   return (
     <div>

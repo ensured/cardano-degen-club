@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast"
 import Animation from "@/components/Animation"
 import SearchRecipes from "@/components/SearchRecipes"
 import GoogleOneTapLogin from "@/components/GoogleOneTap"
+import { checkUserAuthentication } from "../actions"
 
 export const metadata = {
   title: "Recipe Fren | Recipe Search and Collection",
@@ -35,9 +36,8 @@ const TOAST_OPTIONS = {
 }
 
 const RecipeFrenPage = async () => {
-  const user = await currentUser()
-  const email = user?.emailAddresses[0].emailAddress
-  if (!email) {
+  const userEmail = await checkUserAuthentication()
+  if (!userEmail) {
     return (
       <Animation>
         <div className="flex w-full justify-center pt-6 text-center">
@@ -59,7 +59,7 @@ const RecipeFrenPage = async () => {
     <Animation>
       <main className="min-h-screen">
         <h1 className="sr-only">Recipe Fren - Your Recipe Fren</h1>
-        <SearchRecipes userEmail={email} />
+        <SearchRecipes userEmail={userEmail} />
         <Toaster toastOptions={TOAST_OPTIONS} />
       </main>
     </Animation>

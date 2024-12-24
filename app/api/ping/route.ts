@@ -1,24 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
 import net from "net"
 
+function errorResponse(status: number, message: string) {
+  return NextResponse.json({ status, message })
+}
+
 export async function GET(req: NextRequest, res: NextResponse) {
   const searchParams = req.nextUrl.searchParams
-  const ip = searchParams.get("ip")
-  const port = searchParams.get("port")
+  const ip = searchParams.get("ip")?.trim()
+  const port = searchParams.get("port")?.trim()
 
-  if (!ip || !isValidIp(ip)) {
-    return NextResponse.json({
-      status: 400,
-      message: !ip ? "Please provide an IP address" : "Invalid IP",
-    })
-  }
-
-  if (!port || !isValidPort(port)) {
-    return NextResponse.json({
-      status: 400,
-      message: !port ? "Please provide a port number" : "Invalid port",
-    })
-  }
+  if (!ip) return errorResponse(400, "Please provide an IP address")
+  if (!port) return errorResponse(400, "Please provide a port number")
+  if (!isValidIp(ip)) return errorResponse(400, "Invalid IP")
+  if (!isValidPort(port)) return errorResponse(400, "Invalid port")
 
   try {
     const isOpen = await checkPort(ip, port)

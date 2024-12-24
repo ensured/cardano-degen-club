@@ -116,7 +116,19 @@ export function HeaderNavSheet() {
           <div className="flex items-center gap-1.5 py-2 text-xl font-semibold text-[hsl(275,70%,60%)] dark:text-[hsl(276,70%,60%)]">
             Scripts/Apps
           </div>
-
+          <CustomLink
+            href={"https://github.com/ensured/phone-backup-app-android"}
+            onClick={handleOpenChange}
+            target={true}
+          >
+            <Smartphone className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <CustomLinkText>Adahandle Resolver</CustomLinkText>
+            {latestRepoCommit[1] && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                ({timeAgoCompact(latestRepoCommit[1].date)})
+              </span>
+            )}
+          </CustomLink>
           <CustomLink
             href={"https://github.com/ensured/phone-backup-app-android"}
             onClick={handleOpenChange}
