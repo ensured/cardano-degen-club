@@ -1,3 +1,4 @@
+/* eslint-disable tailwindcss/enforces-shorthand */
 "use client"
 
 import { Input } from "@/components/ui/input"
@@ -7,13 +8,21 @@ import { CopyIcon } from "lucide-react"
 import { toast } from "sonner"
 import Image from "next/image"
 
+type ResolveHandleFormProps = {
+  handleSubmit: () => void
+  walletAddress: { stakeAddress: string; image: string; address: string } | null
+  loadingAdahandle: boolean
+  handleName: string
+  setHandleName: (name: string) => void
+}
+
 const ResolveHandleForm = ({
   handleSubmit,
   walletAddress,
   loadingAdahandle,
   handleName,
   setHandleName,
-}) => {
+}: ResolveHandleFormProps) => {
   return (
     <div>
       <form
@@ -23,16 +32,17 @@ const ResolveHandleForm = ({
           handleSubmit()
         }}
       >
-        <h1 className="flex items-center gap-2 text-center text-2xl font-bold">
-          <div className="flex flex-col gap-2">Resolve Adahandle</div>
+        <h1 className="flex items-center gap-2 text-center font-bold">
+          <div className="flex flex-col gap-2 text-xl md:text-2xl">
+            Adahandle Resolver
+          </div>
         </h1>
         <Input
           type="text"
           placeholder="$adahandle"
           value={handleName}
-          className="w-[15rem]"
+          className="w-60 text-base md:text-xl"
           onChange={(e) => setHandleName(e.target.value)}
-          autoComplete="on"
         />
         <Button type="submit" className="w-[15rem]" disabled={loadingAdahandle}>
           <span className="relative flex flex-row items-center gap-2">
@@ -45,7 +55,7 @@ const ResolveHandleForm = ({
           </span>
         </Button>
       </form>
-      {walletAddress.stakeAddress && (
+      {walletAddress?.stakeAddress && (
         <div className="col-span-1 overflow-hidden break-all border-t border-border bg-secondary/40 p-6 text-center shadow-md">
           <div className="relative grid w-full grid-cols-1 items-center gap-2 sm:grid-cols-3">
             <Image
@@ -75,9 +85,7 @@ const ResolveHandleForm = ({
                 </Button>
               </span>
               <span className="line-clamp-1 text-center sm:line-clamp-3">
-                {walletAddress.length === 0
-                  ? "No wallet address found"
-                  : walletAddress.stakeAddress}
+                {walletAddress.stakeAddress}
               </span>
             </div>
             <div className="col-span-1 flex flex-col sm:p-2">
@@ -96,9 +104,9 @@ const ResolveHandleForm = ({
                 </Button>
               </span>
               <span className="line-clamp-1 text-center sm:line-clamp-3">
-                {walletAddress.length === 0
-                  ? "No wallet address found"
-                  : walletAddress.address}
+                {walletAddress
+                  ? walletAddress.address
+                  : "No wallet address found"}
               </span>
             </div>
           </div>

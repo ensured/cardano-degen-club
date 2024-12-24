@@ -13,7 +13,7 @@ import { Skeleton } from "./ui/skeleton"
 import ConvertAda from "./ConvertAda"
 import { getAddressFromHandle } from "@/app/actions"
 import { toast } from "sonner"
-import ResolveHandleForm from "./ResolveHandleForm"
+
 import { Badge } from "./ui/badge"
 
 const CHART_CONFIG = [
@@ -293,7 +293,7 @@ function TradingViewChart() {
                     },
                   })
               }}
-              className="rounded p-2"
+              className="rounded border border-border p-2"
             >
               {CHART_CONFIG.map(({ containerId, title }) => (
                 <option key={containerId} value={containerId}>
@@ -307,10 +307,10 @@ function TradingViewChart() {
             onClick={onClose}
             size={"icon"}
             variant={"outline"}
-            className="h-9 w-9 rounded bg-white p-2 transition-colors dark:bg-black/40"
+            className="size-9 rounded bg-white p-2 transition-colors dark:bg-[#141414]/90"
             aria-label="Exit fullscreen"
           >
-            <ExitFullScreenIcon className="size-5" />
+            <EnterFullScreenIcon className="size-5" />
           </Button>
           <Button
             onClick={() => {
@@ -322,7 +322,7 @@ function TradingViewChart() {
             }}
             variant={"outline"}
             size={"icon"}
-            className="h-9 w-9 rounded bg-white p-2 transition-colors dark:bg-black/40"
+            className="size-9 rounded bg-white p-2 transition-colors dark:bg-[#141414]/90"
             aria-label="Refresh chart"
           >
             <ReloadIcon className="size-5" />
@@ -491,27 +491,6 @@ function TradingViewChart() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleSubmit = async () => {
-    setLoadingAdahandle(true) // Set loading state to true
-    try {
-      const { stakeAddress, image, address, error } =
-        await getAddressFromHandle(handleName)
-      // Check for rate limit error
-      if (error || !stakeAddress) {
-        toast.error(error || "No wallet address found") // Show toast notification
-        return
-      }
-
-      setWalletAddress({ stakeAddress, image, address })
-      const newHandleName = handleName.toLowerCase().replace("$", "")
-      setHandleName(newHandleName)
-    } catch (error) {
-      toast.error("Something went wrong, please try again with a new handle")
-    } finally {
-      setLoadingAdahandle(false)
-    }
-  }
-
   // Update fullscreen modal in return statement
   return (
     <div className="flex flex-col">
@@ -538,9 +517,14 @@ function TradingViewChart() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-5">
             {[0, 1].map((columnIndex) => (
-              <div key={columnIndex} className="flex flex-col gap-1">
+              <div
+                key={columnIndex}
+                className={`flex flex-col gap-1 ${
+                  columnIndex === 0 ? "sm:col-span-3" : "sm:col-span-2"
+                }`}
+              >
                 {loading || prices.length === 0 ? (
                   <div className="flex h-14 w-full items-center justify-center">
                     <Skeleton className="h-5 w-[100px] text-sm" />
@@ -566,36 +550,53 @@ function TradingViewChart() {
                       <div
                         key={containerId}
                         onClick={() => openFullscreen(containerId)}
-                        className="flex h-14 w-full cursor-pointer items-center gap-4 rounded border border-border bg-secondary p-4 text-center hover:bg-secondary/80"
+                        className="flex h-14 w-full cursor-pointer gap-4 rounded border border-border p-4 text-center font-sans transition-colors duration-75 hover:bg-secondary/20"
                         aria-label={`Open ${title} chart`}
                       >
-                        <div className="background-primary font-sans text-[#333] dark:text-[#c2c2c2]">
-                          {title === "IAG/USDT"
-                            ? title.replace("/USDT", "/USD")
-                            : title}
-                        </div>
                         <div
-                          className={`font-sans ${columnIndex === 0 ? "text-blue dark:text-sky-500/85" : "text-red-500"}`}
+                          className={`${
+                            columnIndex === 0
+                              ? ""
+                              : "sm:flex sm:w-full sm:items-center sm:justify-center sm:text-center"
+                          } `}
                         >
-                          {price || ""}
+                          <Badge
+                            size={"sm"}
+                            variant={"outline"}
+                            className="font-sans text-sm text-muted-foreground md:text-base"
+                          >
+                            {title === "IAG/USDT"
+                              ? title.replace("/USDT", "/USD")
+                              : title}
+                          </Badge>
                         </div>
-                        <div className="flex w-full items-center justify-end gap-1">
-                          {percentChange && (
+                        {percentChange && (
+                          <Badge
+                            className="border-none font-sans text-sm text-muted-foreground md:text-base"
+                            variant={"link"}
+                          >
+                            {price || ""}
+                          </Badge>
+                        )}
+                        {percentChange && (
+                          <div className="flex w-full items-center justify-end gap-1">
                             <Badge
+                              variant={"outline"}
+                              size={"sm"}
+                              className="font-sans text-sm text-muted-foreground md:text-base"
                               style={{
                                 color: isPositiveChange
                                   ? "rgb(9, 133, 81)"
                                   : "rgb(207, 32, 47)",
                               }}
-                              className="border border-border bg-white hover:bg-inherit dark:bg-black/40"
                             >
                               <span>
                                 {percentChange || ""}
                                 {percentChange ? "%" : ""}
                               </span>
                             </Badge>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     )
                   })
@@ -604,16 +605,6 @@ function TradingViewChart() {
             ))}
           </div>
         )}
-      </div>
-
-      <div className="mt-8 grid grid-cols-1 gap-2 rounded-md border border-border">
-        <ResolveHandleForm
-          handleSubmit={handleSubmit}
-          walletAddress={walletAddress}
-          handleName={handleName}
-          setHandleName={setHandleName}
-          loadingAdahandle={loadingAdahandle}
-        />
       </div>
 
       {fullscreenChart && ( // Only render the fullscreen chart when a card is clicked

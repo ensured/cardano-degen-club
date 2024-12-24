@@ -37,9 +37,9 @@ const Page = async () => {
 
   return (
     <Animation>
-      <main className="mx-auto flex w-full max-w-full flex-col gap-6 p-4 sm:max-w-[600px]">
+      <main className="mx-auto flex w-full max-w-full flex-col gap-6 p-4 sm:max-w-[800px]">
         <h1 className="sr-only">Cryptocurrency Price Tracker and Converter</h1>
-        <TradingViewChart className="h-[600px]" />
+        <TradingViewChart className="h-[600px] sm:max-w-[600px]" />
       </main>
     </Animation>
   )

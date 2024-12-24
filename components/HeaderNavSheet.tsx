@@ -117,15 +117,20 @@ export function HeaderNavSheet() {
             Scripts/Apps
           </div>
           <CustomLink
-            href={"https://github.com/ensured/phone-backup-app-android"}
+            href={"/adahandle"}
             onClick={handleOpenChange}
-            target={true}
+            target={false}
           >
             <Smartphone className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
             <CustomLinkText>Adahandle Resolver</CustomLinkText>
-            {latestRepoCommit[1] && (
+            {folderCommits.find((c) => c.folder === "adahandle") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
-                ({timeAgoCompact(latestRepoCommit[1].date)})
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === "adahandle")
+                    ?.lastCommitDate
+                )}
+                )
               </span>
             )}
           </CustomLink>
