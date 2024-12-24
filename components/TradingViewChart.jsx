@@ -7,7 +7,7 @@ import {
   MinusIcon,
 } from "@radix-ui/react-icons"
 import { Button } from "./ui/button"
-import { ChevronDown, CopyIcon, InfoIcon, Loader2 } from "lucide-react"
+import { ChevronDown, CopyIcon, Loader2 } from "lucide-react"
 import { Skeleton } from "./ui/skeleton"
 import ConvertAda from "./ConvertAda"
 import { getAddressFromHandle } from "@/app/actions"
@@ -89,20 +89,12 @@ function TradingViewChart() {
   const [headerLoading, setHeaderLoading] = useState(false)
   const [handleName, setHandleName] = useState("")
   const [walletAddress, setWalletAddress] = useState({})
-  const [lastSubmitTime, setLastSubmitTime] = useState(0)
-  const [remainingTime, setRemainingTime] = useState(0)
-  const RATE_LIMIT = 15000 // 15 seconds
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({})
 
   // Add a ref to track the last updated chart
   const lastUpdatedChartRef = useRef(null)
-
-  // Add a ref to store widget reference
-  const widgetRef = useRef(null)
-
-  // Add chart controls component
 
   // Add this helper function near the top of the component
   const cleanupChart = (chartId) => {
@@ -521,23 +513,6 @@ function TradingViewChart() {
     }
   }
 
-  useEffect(() => {
-    let timer
-    if (remainingTime > 0) {
-      timer = setInterval(() => {
-        setRemainingTime((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer)
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-    }
-
-    return () => clearInterval(timer) // Cleanup on unmount
-  }, [remainingTime])
-
   // Update fullscreen modal in return statement
   return (
     <div className="flex flex-col">
@@ -640,11 +615,15 @@ function TradingViewChart() {
             type="text"
             placeholder="$adahandle"
             value={handleName}
-            className="w-[44.44%]"
+            className="w-[15rem]"
             onChange={(e) => setHandleName(e.target.value)}
             autoComplete="on"
           />
-          <Button type="submit" className="w-[25%]" disabled={loadingAdahandle}>
+          <Button
+            type="submit"
+            className="w-[15rem]"
+            disabled={loadingAdahandle}
+          >
             <span className="relative flex flex-row items-center gap-2">
               <span className="whitespace-nowrap">Search</span>
               <span className="flex items-center">

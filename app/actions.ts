@@ -473,13 +473,15 @@ export async function getEpochData() {
   return data
 }
 
-const rateLimitMap = new Map<string, number[]>()
-const cache = new Map<string, any>() // Simple in-memory cache
-const RATE_LIMIT = 15000 // 15 seconds
-const MAX_REQUESTS = 4 // Maximum requests allowed
+const cache: { [key: string]: { data: any; timestamp: number } } = {}
+const RATE_LIMIT = 3 // Maximum number of requests allowed
+const RATE_LIMIT_WINDOW_MS = 12000 // Time window in milliseconds (20 seconds)
+let requestCount = 0 // Counter for requests
+let firstRequestTime: number | null = null // Timestamp of the first request in the current window
 
 export const getAddressFromHandle = async (handleName: string) => {
   let error = null
+
   // Check if the handleName starts with $
   if (handleName.startsWith("$")) {
     handleName = handleName.slice(1)
@@ -487,28 +489,35 @@ export const getAddressFromHandle = async (handleName: string) => {
   const lowerCaseHandleName = handleName.toLowerCase()
 
   // Check cache first
-  if (cache.has(lowerCaseHandleName)) {
-    return cache.get(lowerCaseHandleName) // Return cached data, ignore rate limit
+  if (cache[lowerCaseHandleName]) {
+    const cachedData = cache[lowerCaseHandleName]
+    // Return cached data if it's still valid
+    return cachedData.data
   }
 
   // Rate limiting logic
-  const currentTime = Date.now()
-  const requestTimestamps = rateLimitMap.get(lowerCaseHandleName) || []
-  const validTimestamps = requestTimestamps.filter(
-    (timestamp) => currentTime - timestamp < RATE_LIMIT
-  )
-
-  // Check if the number of valid requests exceeds the limit
-  if (validTimestamps.length >= MAX_REQUESTS) {
-    const timeLeft = Math.ceil(
-      (RATE_LIMIT - (currentTime - validTimestamps[0])) / 1000
-    )
-    return { error: `Please wait ${timeLeft} seconds before submitting again.` }
+  const now = Date.now()
+  if (
+    firstRequestTime === null ||
+    now - firstRequestTime > RATE_LIMIT_WINDOW_MS
+  ) {
+    // Reset the counter and timestamp if the time window has passed
+    firstRequestTime = now
+    requestCount = 0
   }
 
-  // Update the last request time
-  validTimestamps.push(currentTime)
-  rateLimitMap.set(lowerCaseHandleName, validTimestamps)
+  if (requestCount >= RATE_LIMIT) {
+    // Calculate time left until the next request can be made
+    const timeLeft = RATE_LIMIT_WINDOW_MS - (now - firstRequestTime)
+    return {
+      error: `Rate limit exceeded. Please try again in ${Math.ceil(
+        timeLeft / 1000
+      )} seconds.`,
+    }
+  }
+
+  // Increment the request count
+  requestCount++
 
   const url = `https://api.handle.me/handles/${lowerCaseHandleName}`
   const response = await fetch(url, {
@@ -519,6 +528,17 @@ export const getAddressFromHandle = async (handleName: string) => {
       revalidate: 120,
     },
   })
+
+  // Check if the response indicates a rate limit error
+  if (response.status === 429) {
+    // Rate limit exceeded
+    const retryAfter = response.headers.get("Retry-After") // Get the retry time from headers if available
+    return {
+      error: "Rate limit exceeded. Please try again later.",
+      timeLeft: retryAfter ? parseInt(retryAfter, 10) : null, // Return time left if provided
+    }
+  }
+
   const data = await response.json()
 
   if (data.error) {
@@ -530,7 +550,10 @@ export const getAddressFromHandle = async (handleName: string) => {
   const address = data.resolved_addresses.ada
 
   // Cache the result
-  cache.set(lowerCaseHandleName, { stakeAddress, image, address, error })
+  cache[lowerCaseHandleName] = {
+    data: { stakeAddress, image, address, error },
+    timestamp: Date.now(),
+  }
 
   return { stakeAddress, image, address, error }
 }
