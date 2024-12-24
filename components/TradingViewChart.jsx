@@ -240,7 +240,7 @@ function TradingViewChart() {
 
   // Update FullscreenChartControls component
   const FullscreenChartControls = ({ onClose }) => (
-    <div className="absolute inset-x-0 -top-2 z-10">
+    <div className="absolute inset-x-0 -top-1 z-10">
       <div className="flex items-center justify-between overflow-x-auto p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           {/* Add chart selector dropdown */}
