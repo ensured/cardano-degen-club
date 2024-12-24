@@ -479,6 +479,7 @@ const RATE_LIMIT = 15000 // 15 seconds
 const MAX_REQUESTS = 4 // Maximum requests allowed
 
 export const getAddressFromHandle = async (handleName: string) => {
+  let error = null
   // Check if the handleName starts with $
   if (handleName.startsWith("$")) {
     handleName = handleName.slice(1)
@@ -514,11 +515,22 @@ export const getAddressFromHandle = async (handleName: string) => {
     headers: {
       accept: "application/json",
     },
+    next: {
+      revalidate: 120,
+    },
   })
   const data = await response.json()
 
-  // Cache the result
-  cache.set(lowerCaseHandleName, data)
+  if (data.error) {
+    error = data.error
+  }
 
-  return data
+  const stakeAddress = data.holder
+  const image = data.image
+  const address = data.resolved_addresses.ada
+
+  // Cache the result
+  cache.set(lowerCaseHandleName, { stakeAddress, image, address, error })
+
+  return { stakeAddress, image, address, error }
 }

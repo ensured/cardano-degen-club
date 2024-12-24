@@ -503,17 +503,15 @@ function TradingViewChart() {
 
   const handleSubmit = async () => {
     try {
-      const walletAddress = await getAddressFromHandle(handleName)
+      const { stakeAddress, image, address, error } =
+        await getAddressFromHandle(handleName)
       // Check for rate limit error
-      if (walletAddress?.error || !walletAddress) {
-        toast.error(walletAddress?.error || "No wallet address found") // Show toast notification
+      if (error || !stakeAddress) {
+        toast.error(error || "No wallet address found") // Show toast notification
         return
       }
 
-      const stakeAddress = walletAddress.holder
-      const image = walletAddress.image
-      const addresses = walletAddress.resolved_addresses.ada
-      setWalletAddress({ stakeAddress, image, addresses })
+      setWalletAddress({ stakeAddress, image, address })
       const newHandleName = handleName.toLowerCase()
       setHandleName(newHandleName)
     } catch (error) {
@@ -628,26 +626,32 @@ function TradingViewChart() {
 
       <div className="mt-8 grid grid-cols-1 gap-2 rounded-md border border-border">
         <form
-          className="col-span-1 flex w-full flex-col gap-2 p-5 sm:p-8"
-          action={handleSubmit}
+          className="col-span-1 flex w-full flex-col items-center justify-center gap-2 p-5 sm:p-8"
+          onSubmit={(e) => {
+            e.preventDefault() // Prevent default form submission
+            setLoadingAdahandle(true) // Set loading state to true
+            handleSubmit() // Call the handleSubmit function
+          }}
         >
-          <h1 className="flex w-full items-center gap-2 text-center text-2xl font-bold">
-            <div className="flex flex-row gap-2">Resolve Adahandle</div>
+          <h1 className="flex items-center gap-2 text-center text-2xl font-bold">
+            <div className="flex flex-col gap-2">Resolve Adahandle</div>
           </h1>
           <Input
             type="text"
-            placeholder="Enter $adahandle"
+            placeholder="$adahandle"
             value={handleName}
-            className="w-full"
+            className="w-[44.44%]"
             onChange={(e) => setHandleName(e.target.value)}
             autoComplete="on"
           />
-          <Button type="submit" className="w-1/2" disabled={loadingAdahandle}>
-            <span className="flex flex-row items-center gap-2">
-              {loadingAdahandle && (
-                <Loader2 className="size-5 animate-spin text-white" />
-              )}{" "}
-              Search{" "}
+          <Button type="submit" className="w-[25%]" disabled={loadingAdahandle}>
+            <span className="relative flex flex-row items-center gap-2">
+              <span className="whitespace-nowrap">Search</span>
+              <span className="flex items-center">
+                {loadingAdahandle && (
+                  <Loader2 className="absolute -right-3.5 size-5 animate-spin text-white" />
+                )}
+              </span>
             </span>
           </Button>
         </form>
@@ -664,7 +668,7 @@ function TradingViewChart() {
                 width={800}
                 height={800}
                 alt="wallet image"
-                className="col-span-1 mx-auto mb-1 h-36 w-36 object-cover sm:mb-0"
+                className="col-span-1 mx-auto mb-1 size-36 object-cover sm:mb-0"
               />
               <div className="col-span-1 flex flex-col sm:p-2">
                 <span className="flex items-center justify-center gap-1 text-muted-foreground">
@@ -672,13 +676,13 @@ function TradingViewChart() {
                   <Button
                     size="icon"
                     variant="secondary"
-                    className="h-5 w-5 sm:h-[1.6rem] sm:w-[1.55rem]"
+                    className="size-5 sm:h-[1.6rem] sm:w-[1.55rem]"
                     onClick={() => {
                       navigator.clipboard.writeText(walletAddress.stakeAddress)
                       toast.success("Copied stake address")
                     }}
                   >
-                    <CopyIcon className="size-3 sm:size-[0.875rem]" />
+                    <CopyIcon className="size-3 sm:size-3.5" />
                   </Button>
                 </span>
                 <span className="line-clamp-1 text-center sm:line-clamp-3">
@@ -692,20 +696,20 @@ function TradingViewChart() {
                   <span className="text-base sm:text-lg">Address</span>{" "}
                   <Button
                     size="icon"
-                    className="h-5 w-5 sm:h-[1.55rem] sm:w-[1.55rem]"
+                    className="size-5 sm:size-[1.55rem]"
                     variant="secondary"
                     onClick={() => {
-                      navigator.clipboard.writeText(walletAddress.addresses)
+                      navigator.clipboard.writeText(walletAddress.address)
                       toast.success("Copied address")
                     }}
                   >
-                    <CopyIcon className="size-3 sm:size-[0.875rem]" />
+                    <CopyIcon className="size-3 sm:size-3.5" />
                   </Button>
                 </span>
                 <span className="line-clamp-1 text-center sm:line-clamp-3">
                   {walletAddress.length === 0
                     ? "No wallet address found"
-                    : walletAddress.addresses}
+                    : walletAddress.address}
                 </span>
               </div>
             </div>
