@@ -24,11 +24,14 @@ import {
   CardContent,
 } from "@/components/ui/card"
 import { useWindowWidth } from "@wojtekmaj/react-hooks"
-import { Badge } from "./ui/badge"
 
 export const dynamic = "force-dynamic"
 
-export function MainNav() {
+export function MainNav({
+  HeaderNavSheet,
+}: {
+  HeaderNavSheet: React.ReactNode
+}) {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()
   const width = useWindowWidth()
   // New state to hold the current time
@@ -157,13 +160,14 @@ export function MainNav() {
   }
 
   return (
-    <div className="flex items-center gap-1.5 text-xs">
+    <div className="flex items-center gap-4 text-xs">
       <Link
         href="/"
         className="flex items-center rounded-full transition-all duration-100 hover:bg-zinc-500/10"
       >
         <Icons.ada className="size-8 md:size-10" />
       </Link>
+      {HeaderNavSheet}
 
       <div className="mx-2 flex items-center gap-1 sm:mx-3">
         {latestCommit()}

@@ -11,10 +11,10 @@ export async function SiteHeader() {
   return (
     <header className="z-40 w-full overflow-x-auto border-b bg-background">
       <div className="flex w-full items-center gap-3 px-4 pt-4 md:px-3">
-        <HeaderNavSheet />
-        <MainNav />
+        <MainNav HeaderNavSheet={<HeaderNavSheet />} />
+
         <div className="flex flex-1 items-center justify-end space-x-4 overflow-hidden">
-          <nav className="flex items-center gap-1.5 text-xs">
+          <nav className="flex items-center gap-2 text-xs">
             <UserButton />
             <ThemeToggle />
           </nav>
