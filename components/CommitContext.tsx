@@ -34,7 +34,7 @@ export const CommitProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } catch (err) {
         console.error("Error fetching commits:", err)
-        setError("Failed to load github commits")
+        setError("error")
       } finally {
         setLoading(false)
       }

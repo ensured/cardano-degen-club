@@ -1,9 +1,9 @@
 {
-  "name": "next-template",
-  "version": "0.0.2",
+  "name": "cardano-degen-app",
+  "version": "0.0.3",
   "private": true,
   "scripts": {
-    "dev": "next dev --experimental-https",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -16,6 +16,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.9.1",
     "@clerk/themes": "^2.2.1",
+    "@emurgo/cardano-serialization-lib-asmjs": "^13.2.0",
     "@firebase/messaging": "^0.12.8",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-accordion": "^1.1.2",
@@ -47,7 +48,10 @@
     "@vercel/speed-insights": "^1.0.10",
     "@wojtekmaj/react-hooks": "^1.19.0",
     "axios": "^1.6.8",
+    "bech32": "^2.0.0",
     "buffer": "^6.0.3",
+    "cbor": "^10.0.3",
+    "cbor-js": "^0.1.0",
     "class-variance-authority": "^0.4.0",
     "clsx": "^1.2.1",
     "cmdk": "^1.0.0",
@@ -87,6 +91,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/cbor-js": "^0.1.1",
     "@types/memory-cache": "^0.2.5",
     "@types/node": "^17.0.45",
     "@types/punycode": "^2.1.4",

@@ -542,10 +542,15 @@ export const getAddressFromHandle = async (handleName: string) => {
   if (data.error) {
     error = data.error
   }
-
-  const stakeAddress = data.holder
-  const image = data.image
-  const address = data.resolved_addresses.ada
+  let stakeAddress, image, address
+  try {
+    stakeAddress = data.holder
+    image = data.image
+    address = data.resolved_addresses.ada
+  } catch (error) {
+    console.log("Error in getAddressFromHandle:", error)
+    return { error: "Error in getAddressFromHandle" }
+  }
 
   const errors: string[] = []
 

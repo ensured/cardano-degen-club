@@ -1,11 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (
-    config,
-    { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
-  ) => {
+  webpack: (config) => {
     config.resolve.alias.canvas = false
-    // Important: return the modified config
+    config.experiments = {
+      asyncWebAssembly: true,
+      layers: true,
+    }
+    // Transpile the cardano serialization library
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: "webassembly/async",
+    })
+
     return config
   },
   experimental: {
