@@ -2,20 +2,17 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Loader2, XCircle, XIcon, XSquareIcon } from "lucide-react"
+import { Loader2, XSquareIcon } from "lucide-react"
 import { CopyIcon } from "lucide-react"
 import { toast } from "sonner"
 import Image from "next/image"
-import { useTheme } from "next-themes"
 import { useState } from "react"
-import * as cbor from "cbor-js"
+import { decode as cborDecode } from "cbor-js"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -53,7 +50,7 @@ declare global {
 }
 
 // Function to decode hexadecimal address to Bech32
-const decodeHexAddress = (hexAddress: string, networkId: number): string => {
+const decodeHexAddress = (hexAddress: string): string => {
   try {
     // Convert the hex string to a byte array
     const bytes = Buffer.from(hexAddress, "hex")
@@ -87,6 +84,7 @@ const WalletConnect = () => {
     walletIcon: string | null
     walletName: string | null
     walletAddress: string | null
+    walletAddresses: string[]
     balance: string | null
     walletImages: string[]
   }>({
@@ -96,6 +94,7 @@ const WalletConnect = () => {
     walletIcon: null,
     walletName: null,
     walletAddress: "",
+    walletAddresses: [],
     balance: null,
     walletImages: [],
   })
@@ -145,7 +144,7 @@ const WalletConnect = () => {
         const uint8Array = new Uint8Array(balanceBytes)
         const arrayBuffer = uint8Array.buffer
         const decodedBalance = (
-          cbor.decode(arrayBuffer)[0] / 1000000
+          cborDecode(arrayBuffer)[0] / 1000000
         ).toLocaleString()
 
         // wallet addresses
@@ -154,14 +153,11 @@ const WalletConnect = () => {
         // Process each address and try both formats
         const humanReadableAddresses = walletAddresses
           .slice(0, 136)
-          .map((address: string, index: number) => {
+          .map((address: string) => {
             let bech32Address
-            // console.log(
-            //   `Processing address: ${index}: ${decodeHexAddress(address, 1)}`
-            // ) // Log the address being processed
             if (/^[0-9a-fA-F]+$/.test(address)) {
               // If the address is in hexadecimal format
-              bech32Address = decodeHexAddress(address, 1)
+              bech32Address = decodeHexAddress(address)
             } else {
               // If the address is already in bech32 format
               bech32Address = address
@@ -169,14 +165,13 @@ const WalletConnect = () => {
             return bech32Address
           })
 
-        // console.log(humanReadableAddresses)
-
         setWalletState((prev) => ({
           ...prev,
           wallet: walletInstance,
           walletIcon,
           walletName,
           walletAddress: humanReadableAddresses[0],
+          walletAddresses: humanReadableAddresses,
           dropdownVisible: false,
           balance: decodedBalance,
           walletImages: walletIcon
@@ -301,7 +296,6 @@ const ResolveHandleForm = ({
   handleName,
   setHandleName,
 }: ResolveHandleFormProps) => {
-  const { theme } = useTheme()
   return (
     <div>
       <WalletConnect />
@@ -312,11 +306,11 @@ const ResolveHandleForm = ({
           handleSubmit()
         }}
       >
+       <div className="flex flex-row items-center justify-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="169"
-          height="28"
-          viewBox="0 7 250 34"
+          height="36"
+          viewBox="0 0 28 44"
         >
           <path
             id="logo_S"
@@ -325,18 +319,7 @@ const ResolveHandleForm = ({
             transform="translate(0 9.487)"
             fill="#0cd15b"
           ></path>
-          <text
-            id="Handle.me"
-            transform="translate(23 38)"
-            fill={theme ? (theme === "dark" ? "#fff" : "#000") : "#ccc"}
-            fontSize="34"
-            fontFamily="NotoSans-Bold, Noto Sans"
-            fontWeight="700"
-          >
-            <tspan x="0" y="0">
-              handle checker
-            </tspan>
-          </text>
+   
         </svg>
         <Input
           type="text"
@@ -345,9 +328,10 @@ const ResolveHandleForm = ({
           className="w-60 text-base md:text-xl"
           onChange={(e) => setHandleName(e.target.value)}
         />
+        </div>
         <Button
           type="submit"
-          className="w-[15rem]"
+          className="w-[16.23rem]"
           disabled={
             loadingAdahandle || handleName === "" || handleName.length < 2
           }

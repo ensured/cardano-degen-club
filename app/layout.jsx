@@ -11,6 +11,9 @@ import { Inter } from "next/font/google"
 import CustomClerkProvider from "./clerk/Provider"
 import {GoogleOneTap } from "@clerk/nextjs"
 import { CommitProvider } from "@/components/CommitContext" 
+import { Suspense } from "react"
+import { Loader2 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export const metadata = {
   title: "Home",
