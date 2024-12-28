@@ -185,7 +185,7 @@ const WalletConnect = () => {
   };
 
   return (
-    <div className=" my-2 flex w-full flex-col items-center justify-center gap-2 p-2 rounded-md">
+    <div className="my-2 flex w-full flex-col items-center justify-center gap-2 rounded-md p-2">
       <div className="relative">
         <Button
           variant="outline"
@@ -297,10 +297,10 @@ const ResolveHandleForm = ({
   setHandleName,
 }: ResolveHandleFormProps) => {
   return (
-    <div className="container">
+    <div className="mx-4 sm:container">
       <WalletConnect />
       <form
-        className="col-span-1 flex w-full flex-col items-center justify-center gap-2 bg-secondary/40 p-5 sm:p-8 "
+        className="col-span-1 flex w-full flex-col items-center justify-center gap-2 bg-secondary/40 p-4"
         onSubmit={(e) => {
           e.preventDefault();
           handleSubmit();
