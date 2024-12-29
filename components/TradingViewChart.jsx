@@ -1,20 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-"use client"
-import { useEffect, useState, useCallback, useRef } from "react"
+"use client";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   ExitFullScreenIcon,
   ReloadIcon,
   MinusIcon,
   EnterFullScreenIcon,
-} from "@radix-ui/react-icons"
-import { Button } from "./ui/button"
-import { ChevronDown, Loader2 } from "lucide-react"
-import { Skeleton } from "./ui/skeleton"
-import ConvertAda from "./ConvertAda"
-import { getAddressFromHandle } from "@/app/actions"
-import { toast } from "sonner"
+} from "@radix-ui/react-icons";
+import { Button } from "./ui/button";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
+import ConvertAda from "./ConvertAda";
+import { getAddressFromHandle } from "@/app/actions";
+import { toast } from "sonner";
 
-import { Badge } from "./ui/badge"
+import { Badge } from "./ui/badge";
 
 const CHART_CONFIG = [
   {
@@ -47,7 +47,7 @@ const CHART_CONFIG = [
     containerId: "tradingview_ada_eth",
     title: "ADA/ETH",
   },
-]
+];
 
 // Add chart intervals and themes configuration
 const INTERVALS = [
@@ -58,7 +58,7 @@ const INTERVALS = [
   { label: "4h", value: "240" },
   { label: "1D", value: "D" },
   { label: "1W", value: "W" },
-]
+];
 
 // Update the INDICATORS constant
 const INDICATORS = [
@@ -66,11 +66,11 @@ const INDICATORS = [
   { label: "RSI", value: "RSI@tv-basicstudies" },
   { label: "Volume", value: "Volume@tv-basicstudies" },
   { label: "MA 20", value: "MA@tv-basicstudies,20" },
-]
+];
 
 function TradingViewChart() {
-  const [fullscreenChart, setFullscreenChart] = useState(null)
-  const [loadingAdahandle, setLoadingAdahandle] = useState(false)
+  const [fullscreenChart, setFullscreenChart] = useState(null);
+  const [loadingAdahandle, setLoadingAdahandle] = useState(false);
   const [chartSettings, setChartSettings] = useState(
     CHART_CONFIG.reduce(
       (acc, { containerId }) => ({
@@ -81,46 +81,46 @@ function TradingViewChart() {
           indicators: [],
         },
       }),
-      {}
-    )
-  )
-  const [prices, setPrices] = useState([])
-  const [adaBtcPriceData, setAdaBtcPriceData] = useState({})
-  const [loading, setLoading] = useState(true)
-  const [headerLoading, setHeaderLoading] = useState(false)
-  const [handleName, setHandleName] = useState("")
-  const [walletAddress, setWalletAddress] = useState({})
+      {},
+    ),
+  );
+  const [prices, setPrices] = useState([]);
+  const [adaBtcPriceData, setAdaBtcPriceData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [headerLoading, setHeaderLoading] = useState(false);
+  const [handleName, setHandleName] = useState("");
+  const [walletAddress, setWalletAddress] = useState({});
 
   // Add a ref to track mounted charts
-  const chartInstancesRef = useRef({})
+  const chartInstancesRef = useRef({});
 
   // Add a ref to track the last updated chart
-  const lastUpdatedChartRef = useRef(null)
+  const lastUpdatedChartRef = useRef(null);
 
   // Add this helper function near the top of the component
   const cleanupChart = (chartId) => {
     if (chartInstancesRef.current[chartId]) {
       try {
-        chartInstancesRef.current[chartId].remove()
+        chartInstancesRef.current[chartId].remove();
       } catch (error) {
-        console.log(`Chart cleanup failed for ${chartId}:`, error)
+        console.log(`Chart cleanup failed for ${chartId}:`, error);
       }
-      delete chartInstancesRef.current[chartId]
+      delete chartInstancesRef.current[chartId];
     }
-  }
+  };
 
   // Update initializeChart to only depend on the specific chart's settings
   const initializeChart = useCallback(
     (containerId) => {
-      if (typeof window === "undefined") return // Check if running in the browser
+      if (typeof window === "undefined") return; // Check if running in the browser
 
-      const config = CHART_CONFIG.find((c) => c.containerId === containerId)
-      if (!config || !document.getElementById(containerId)) return
+      const config = CHART_CONFIG.find((c) => c.containerId === containerId);
+      if (!config || !document.getElementById(containerId)) return;
 
-      const settings = chartSettings[containerId]
+      const settings = chartSettings[containerId];
 
       // Clean up existing chart instance if it exists
-      cleanupChart(containerId)
+      cleanupChart(containerId);
 
       // Create new chart instance
       chartInstancesRef.current[containerId] = new window.TradingView.widget({
@@ -138,79 +138,79 @@ function TradingViewChart() {
         save_image: true,
         studies: settings.indicators,
         drawings_access: { type: "all", tools: [{ name: "Regression Trend" }] },
-      })
+      });
     },
-    [chartSettings]
-  )
+    [chartSettings],
+  );
 
   // Update useEffect to initialize charts
   useEffect(() => {
-    if (typeof window === "undefined") return // Check if running in the browser
+    if (typeof window === "undefined") return; // Check if running in the browser
 
-    const script = document.createElement("script")
-    script.src = "https://s3.tradingview.com/tv.js"
-    script.async = true
-    document.body.appendChild(script)
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/tv.js";
+    script.async = true;
+    document.body.appendChild(script);
 
     script.onload = () => {
-      initializeChart(CHART_CONFIG[0].containerId)
-    }
+      initializeChart(CHART_CONFIG[0].containerId);
+    };
 
     return () => {
       // Cleanup chart instances
-      cleanupChart(CHART_CONFIG[0].containerId)
+      cleanupChart(CHART_CONFIG[0].containerId);
 
       // Cleanup script element
       const scriptElement = document.querySelector(
-        'script[src="https://s3.tradingview.com/tv.js"]'
-      )
+        'script[src="https://s3.tradingview.com/tv.js"]',
+      );
       if (scriptElement) {
-        scriptElement.remove()
+        scriptElement.remove();
       }
-    }
-  }, [initializeChart])
+    };
+  }, [initializeChart]);
 
   // Update the chart settings handler
   const updateChartSetting = useCallback(
     (containerId, updates) => {
-      lastUpdatedChartRef.current = containerId
+      lastUpdatedChartRef.current = containerId;
       setChartSettings((prev) => ({
         ...prev,
         [containerId]: {
           ...prev[containerId],
           ...updates,
         },
-      }))
+      }));
       // Initialize only the specific chart after a short delay
-      setTimeout(() => initializeChart(containerId), 0)
+      setTimeout(() => initializeChart(containerId), 0);
     },
-    [initializeChart]
-  )
+    [initializeChart],
+  );
 
   // Update the reinitializeChart function to ensure proper cleanup and initialization
   const reinitializeChart = (containerId, settings) => {
-    if (!document.getElementById(containerId)) return
+    if (!document.getElementById(containerId)) return;
 
     const config = CHART_CONFIG.find(
       (c) =>
         c.containerId ===
-        (containerId === "fullscreen_chart" ? fullscreenChart : containerId)
-    )
-    if (!config) return
+        (containerId === "fullscreen_chart" ? fullscreenChart : containerId),
+    );
+    if (!config) return;
 
     // Clean up existing chart instance
     if (chartInstancesRef.current[containerId]) {
       try {
-        chartInstancesRef.current[containerId].remove()
+        chartInstancesRef.current[containerId].remove();
       } catch (error) {
-        console.log("Chart cleanup failed:", error)
+        console.log("Chart cleanup failed:", error);
       }
-      delete chartInstancesRef.current[containerId]
+      delete chartInstancesRef.current[containerId];
     }
 
     // Wait for DOM to be ready
     setTimeout(() => {
-      if (!document.getElementById(containerId)) return
+      if (!document.getElementById(containerId)) return;
 
       // Create new chart instance
       chartInstancesRef.current[containerId] = new window.TradingView.widget({
@@ -232,11 +232,11 @@ function TradingViewChart() {
         studies: settings.indicators,
         drawings_access: { type: "all", tools: [{ name: "Regression Trend" }] },
         autosize: true,
-      })
-    }, 50)
+      });
+    }, 50);
 
-    updateChartSetting(containerId, settings)
-  }
+    updateChartSetting(containerId, settings);
+  };
 
   // Update FullscreenChartControls component
   const FullscreenChartControls = ({ onClose }) => (
@@ -248,22 +248,22 @@ function TradingViewChart() {
             <select
               value={fullscreenChart}
               onChange={(e) => {
-                const newChartId = e.target.value
-                setFullscreenChart(newChartId)
+                const newChartId = e.target.value;
+                setFullscreenChart(newChartId);
                 // Reinitialize with the new chart
                 const config = CHART_CONFIG.find(
-                  (c) => c.containerId === newChartId
-                )
-                if (!config) return
+                  (c) => c.containerId === newChartId,
+                );
+                if (!config) return;
 
                 // Clean up existing fullscreen chart instance
                 if (chartInstancesRef.current["fullscreen_chart"]) {
                   try {
-                    chartInstancesRef.current["fullscreen_chart"].remove()
+                    chartInstancesRef.current["fullscreen_chart"].remove();
                   } catch (error) {
-                    console.log("Chart cleanup failed:", error)
+                    console.log("Chart cleanup failed:", error);
                   }
-                  delete chartInstancesRef.current["fullscreen_chart"]
+                  delete chartInstancesRef.current["fullscreen_chart"];
                 }
 
                 chartInstancesRef.current["fullscreen_chart"] =
@@ -291,7 +291,7 @@ function TradingViewChart() {
                       type: "all",
                       tools: [{ name: "Regression Trend" }],
                     },
-                  })
+                  });
               }}
               className="rounded border border-border p-2"
             >
@@ -314,11 +314,11 @@ function TradingViewChart() {
           </Button>
           <Button
             onClick={() => {
-              const currentSettings = chartSettings[fullscreenChart]
+              const currentSettings = chartSettings[fullscreenChart];
               setTimeout(
                 () => reinitializeChart("fullscreen_chart", currentSettings),
-                0
-              )
+                0,
+              );
             }}
             variant={"outline"}
             size={"icon"}
@@ -334,9 +334,9 @@ function TradingViewChart() {
               const updatedSettings = {
                 ...chartSettings[fullscreenChart],
                 interval: e.target.value,
-              }
-              updateChartSetting(fullscreenChart, updatedSettings)
-              reinitializeChart("fullscreen_chart", updatedSettings)
+              };
+              updateChartSetting(fullscreenChart, updatedSettings);
+              reinitializeChart("fullscreen_chart", updatedSettings);
             }}
             className="rounded border border-border p-1.5"
           >
@@ -350,8 +350,8 @@ function TradingViewChart() {
           <select
             value=""
             onChange={(e) => {
-              const indicator = e.target.value
-              if (!indicator) return
+              const indicator = e.target.value;
+              if (!indicator) return;
 
               const updatedSettings = {
                 ...chartSettings[fullscreenChart],
@@ -361,14 +361,14 @@ function TradingViewChart() {
                     indicator,
                   ]),
                 ],
-              }
+              };
 
               setChartSettings((prev) => ({
                 ...prev,
                 [fullscreenChart]: updatedSettings,
-              }))
+              }));
 
-              reinitializeChart("fullscreen_chart", updatedSettings)
+              reinitializeChart("fullscreen_chart", updatedSettings);
             }}
             className="rounded border border-border p-1.5"
           >
@@ -389,14 +389,14 @@ function TradingViewChart() {
                     indicators: chartSettings[
                       fullscreenChart
                     ].indicators.filter((i) => i !== indicator),
-                  }
+                  };
 
                   setChartSettings((prev) => ({
                     ...prev,
                     [fullscreenChart]: updatedSettings,
-                  }))
+                  }));
 
-                  reinitializeChart("fullscreen_chart", updatedSettings)
+                  reinitializeChart("fullscreen_chart", updatedSettings);
                 }}
                 className="flex items-center gap-1 rounded px-2 py-1"
               >
@@ -409,24 +409,24 @@ function TradingViewChart() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Update openFullscreen function
   const openFullscreen = useCallback(
     (chartId) => {
-      setFullscreenChart(chartId)
+      setFullscreenChart(chartId);
       // Reinitialize the chart in the fullscreen modal with all features
-      const config = CHART_CONFIG.find((c) => c.containerId === chartId)
-      if (!config) return
+      const config = CHART_CONFIG.find((c) => c.containerId === chartId);
+      if (!config) return;
 
       // Clean up existing fullscreen chart instance
       if (chartInstancesRef.current["fullscreen_chart"]) {
         try {
-          chartInstancesRef.current["fullscreen_chart"].remove()
+          chartInstancesRef.current["fullscreen_chart"].remove();
         } catch (error) {
-          console.log("Chart cleanup failed:", error)
+          console.log("Chart cleanup failed:", error);
         }
-        delete chartInstancesRef.current["fullscreen_chart"]
+        delete chartInstancesRef.current["fullscreen_chart"];
       }
 
       // Use requestAnimationFrame to ensure DOM is ready
@@ -451,45 +451,45 @@ function TradingViewChart() {
               type: "all",
               tools: [{ name: "Regression Trend" }],
             },
-          })
-      })
+          });
+      });
     },
-    [chartSettings]
-  )
+    [chartSettings],
+  );
 
   const fetchPrices = async (initialLoad = false, fromInterval = false) => {
     if (initialLoad) {
-      setLoading(true)
+      setLoading(true);
     }
     if (fromInterval) {
-      setHeaderLoading(true)
+      setHeaderLoading(true);
     }
     try {
-      const response = await fetch("/api/crypto-prices")
-      const { prices, adaBtcPriceData } = await response.json()
+      const response = await fetch("/api/crypto-prices");
+      const { prices, adaBtcPriceData } = await response.json();
 
-      setPrices(prices)
-      setAdaBtcPriceData(adaBtcPriceData)
+      setPrices(prices);
+      setAdaBtcPriceData(adaBtcPriceData);
     } catch (error) {
-      console.error("Error fetching prices:", error)
+      console.error("Error fetching prices:", error);
     } finally {
       if (initialLoad) {
-        setLoading(false)
+        setLoading(false);
       }
       if (fromInterval) {
-        setHeaderLoading(false)
+        setHeaderLoading(false);
       }
     }
-  }
+  };
 
   useEffect(() => {
     // Fetch prices immediately on mount
-    fetchPrices(true)
+    fetchPrices(true);
     // Update interval to 15 seconds instead of 60 seconds
-    const interval = setInterval(() => fetchPrices(false, true), 20000) // Pass true for fromInterval
+    const interval = setInterval(() => fetchPrices(false, true), 20000); // Pass true for fromInterval
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   // Update fullscreen modal in return statement
   return (
@@ -532,73 +532,82 @@ function TradingViewChart() {
                 ) : (
                   CHART_CONFIG.slice(
                     columnIndex * 3,
-                    (columnIndex + 1) * 3
+                    (columnIndex + 1) * 3,
                   ).map(({ containerId, title }) => {
-                    const priceData = prices.find((p) => p.name === title)
-                    const isAdaBtc = title === "ADA/BTC"
-                    const price = isAdaBtc
-                      ? adaBtcPriceData.cardano?.btc.toFixed(8)
-                      : priceData?.price?.toFixed(3)
-                    const percentChange = isAdaBtc
-                      ? adaBtcPriceData.cardano?.btc_24h_change?.toFixed(2)
-                      : priceData?.percentChange24h?.toFixed(2)
-                    const isPositiveChange = isAdaBtc
-                      ? adaBtcPriceData.cardano?.btc_24h_change > 0
-                      : priceData?.percentChange24h > 0
-
-                    return (
-                      <div
-                        key={containerId}
-                        onClick={() => openFullscreen(containerId)}
-                        className="flex h-14 w-full cursor-pointer gap-4 rounded border border-border p-4 text-center font-sans transition-colors duration-75 hover:bg-secondary/20"
-                        aria-label={`Open ${title} chart`}
-                      >
+                    try {
+                      const priceData = prices.find((p) => p.name === title);
+                      const isAdaBtc = title === "ADA/BTC";
+                      const price = isAdaBtc
+                        ? adaBtcPriceData.cardano?.btc.toFixed(8)
+                        : priceData?.price
+                          ? priceData?.price?.toFixed(3)
+                          : null;
+                      const percentChange = isAdaBtc
+                        ? adaBtcPriceData.cardano?.btc_24h_change?.toFixed(2)
+                        : priceData?.percentChange24h
+                          ? priceData?.percentChange24h?.toFixed(2)
+                          : null;
+                      const isPositiveChange = isAdaBtc
+                        ? adaBtcPriceData.cardano?.btc_24h_change > 0
+                        : priceData?.percentChange24h
+                          ? priceData?.percentChange24h > 0
+                          : false;
+                      return (
                         <div
-                          className={`${
-                            columnIndex === 0
-                              ? ""
-                              : "sm:flex sm:w-full sm:items-center sm:justify-center sm:text-center"
-                          } `}
+                          key={containerId}
+                          onClick={() => openFullscreen(containerId)}
+                          className="flex h-14 w-full cursor-pointer gap-4 rounded border border-border p-4 text-center font-sans transition-colors duration-75 hover:bg-secondary/20"
+                          aria-label={`Open ${title} chart`}
                         >
-                          <Badge
-                            size={"sm"}
-                            variant={"outline"}
-                            className="font-sans text-sm text-muted-foreground md:text-base"
+                          <div
+                            className={`${
+                              columnIndex === 0
+                                ? ""
+                                : "sm:flex sm:w-full sm:items-center sm:justify-center sm:text-center"
+                            } `}
                           >
-                            {title === "IAG/USDT"
-                              ? title.replace("/USDT", "/USD")
-                              : title}
-                          </Badge>
-                        </div>
-                        {percentChange && (
-                          <Badge
-                            className="border-none font-sans text-sm text-muted-foreground md:text-base"
-                            variant={"link"}
-                          >
-                            {price || ""}
-                          </Badge>
-                        )}
-                        {percentChange && (
-                          <div className="flex w-full items-center justify-end gap-1">
                             <Badge
-                              variant={"outline"}
                               size={"sm"}
+                              variant={"outline"}
                               className="font-sans text-sm text-muted-foreground md:text-base"
-                              style={{
-                                color: isPositiveChange
-                                  ? "rgb(9, 133, 81)"
-                                  : "rgb(207, 32, 47)",
-                              }}
                             >
-                              <span>
-                                {percentChange || ""}
-                                {percentChange ? "%" : ""}
-                              </span>
+                              {title === "IAG/USDT"
+                                ? title.replace("/USDT", "/USD")
+                                : title}
                             </Badge>
                           </div>
-                        )}
-                      </div>
-                    )
+                          {percentChange && (
+                            <Badge
+                              className="border-none font-sans text-sm text-muted-foreground md:text-base"
+                              variant={"link"}
+                            >
+                              {price || ""}
+                            </Badge>
+                          )}
+                          {percentChange && (
+                            <div className="flex w-full items-center justify-end gap-1">
+                              <Badge
+                                variant={"outline"}
+                                size={"sm"}
+                                className="font-sans text-sm text-muted-foreground md:text-base"
+                                style={{
+                                  color: isPositiveChange
+                                    ? "rgb(9, 133, 81)"
+                                    : "rgb(207, 32, 47)",
+                                }}
+                              >
+                                <span>
+                                  {percentChange || ""}
+                                  {percentChange ? "%" : ""}
+                                </span>
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } catch (error) {
+                      console.error("Error fetching prices:", error);
+                    }
                   })
                 )}
               </div>
@@ -624,7 +633,7 @@ function TradingViewChart() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default TradingViewChart
+export default TradingViewChart;
