@@ -1,7 +1,7 @@
-import Animation from "@/components/Animation"
-import GoogleOneTapLogin from "@/components/GoogleOneTap"
-import TradingViewChart from "@/components/TradingViewChart"
-import { checkUserAuthentication } from "../actions"
+import Animation from "@/components/Animation";
+import GoogleOneTapLogin from "@/components/GoogleOneTap";
+import TradingViewChart from "@/components/TradingViewChart";
+import { checkUserAuthentication } from "../actions";
 
 export const metadata = {
   title: "Crypto Price Tracker | Real-time ADA & BTC Conversion",
@@ -15,10 +15,10 @@ export const metadata = {
       "Track cryptocurrency prices and convert between ADA, BTC, and USD in real-time.",
     type: "website",
   },
-}
+};
 
 const Page = async () => {
-  const userEmail = await checkUserAuthentication()
+  const userEmail = await checkUserAuthentication();
   if (!userEmail) {
     return (
       <Animation>
@@ -32,17 +32,19 @@ const Page = async () => {
           </div>
         </div>
       </Animation>
-    )
+    );
   }
 
   return (
     <Animation>
       <main className="mx-auto flex w-full max-w-full flex-col gap-6 p-4 sm:max-w-[800px]">
-        <h1 className="sr-only">Cryptocurrency Price Tracker and Converter</h1>
+        {/* <div className="flex items-center justify-center text-center text-xl font-bold">
+          Coming soon
+        </div> */}
         <TradingViewChart className="h-[600px] sm:max-w-[600px]" />
       </main>
     </Animation>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

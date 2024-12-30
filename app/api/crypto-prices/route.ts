@@ -33,68 +33,76 @@ const fetchAdabtcPrice = async () => {
   }
 };
 
+let cachedPrices: any = null; // Cache for prices
+let lastFetchTime: number = 0; // Timestamp of the last fetch
+
 export async function GET() {
-  try {
-    const prices = await Promise.all(
-      PRICES_CONFIG.map(async ({ symbol, pair, name }) => {
-        const response = await fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${pair}&vs_currencies=usd&include_24hr_change=true`,
-          {
-            headers,
-            next: { revalidate: 60 },
-          },
-        );
+  const currentTime = Date.now();
 
-        // check for status 429
-        if (response.status === 429) {
-          throw new Error("Too many requests");
-        }
-
-        // Check if the response is OK
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `Error fetching symbol ${symbol}: ${response.statusText} - ${errorText}`,
+  // Check if we should fetch new data (30 seconds)
+  if (!cachedPrices || currentTime - lastFetchTime > 30000) {
+    try {
+      const prices = await Promise.all(
+        PRICES_CONFIG.map(async ({ symbol, pair, name }) => {
+          const response = await fetch(
+            `https://api.coingecko.com/api/v3/simple/price?ids=${pair}&vs_currencies=usd&include_24hr_change=true`,
+            {
+              headers,
+              next: { revalidate: 60 },
+            },
           );
-        }
 
-        const data = await response.json();
+          // check for status 429
+          if (response.status === 429) {
+            throw new Error("Too many requests");
+          }
 
-        // Extract the price and 24h change from the response
-        const price: number | undefined = data[pair]?.usd;
-        const percentChange24h: string | undefined = data[pair]?.usd_24h_change;
-        return { symbol, name, price, percentChange24h }; // Return price and percent change
-      }),
-    );
+          // Check if the response is OK
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Error fetching symbol ${symbol}: ${response.statusText} - ${errorText}`,
+            );
+          }
 
-    const adaBtcPriceData = await fetchAdabtcPrice();
-    // const adaDominance = await fetchAdaDominance()
-    // const btcDominance = await fetchBtcDominance()
+          const data = await response.json();
 
-    return NextResponse.json(
-      {
-        prices,
-        adaBtcPriceData,
-      },
-      { status: 200 },
-    );
-  } catch (error) {
-    console.error("Error fetching prices:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
+          // Extract the price and 24h change from the response
+          const price: number | undefined = data[pair]?.usd;
+          const percentChange24h: string | undefined =
+            data[pair]?.usd_24h_change;
+          return { symbol, name, price, percentChange24h }; // Return price and percent change
+        }),
+      );
 
-    if (error instanceof Error && error.message.includes("429")) {
+      const adaBtcPriceData = await fetchAdabtcPrice();
+
+      // Update cache
+      cachedPrices = { prices, adaBtcPriceData };
+      lastFetchTime = currentTime; // Update last fetch time
+
+      return NextResponse.json(cachedPrices, { status: 200 });
+    } catch (error) {
+      console.error("Error fetching prices:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
+      if (error instanceof Error && error.message.includes("429")) {
+        return NextResponse.json(
+          { error: "Too many requests", details: errorMessage },
+          { status: 429 },
+        );
+      }
+
       return NextResponse.json(
-        { error: "Too many requests", details: errorMessage },
-        { status: 429 },
+        { error: "Failed to fetch prices", details: errorMessage },
+        { status: 500 },
       );
     }
-
-    return NextResponse.json(
-      { error: "Failed to fetch prices", details: errorMessage },
-      { status: 500 },
-    );
   }
+
+  // Return cached prices if within 30 seconds
+  return NextResponse.json(cachedPrices, { status: 200 });
 }
 
 const fetchAdaDominance = async () => {};

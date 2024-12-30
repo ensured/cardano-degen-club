@@ -2,14 +2,17 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
+  ExitFullScreenIcon,
   ReloadIcon,
   MinusIcon,
   EnterFullScreenIcon,
 } from "@radix-ui/react-icons";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import ConvertAda from "./ConvertAda";
+import { getAddressFromHandle } from "@/app/actions";
+import { toast } from "sonner";
 
 import { Badge } from "./ui/badge";
 
@@ -67,7 +70,7 @@ const INDICATORS = [
 
 function TradingViewChart() {
   const [fullscreenChart, setFullscreenChart] = useState(null);
-  // const [loadingAdahandle, setLoadingAdahandle] = useState(false);
+  const [loadingAdahandle, setLoadingAdahandle] = useState(false);
   const [chartSettings, setChartSettings] = useState(
     CHART_CONFIG.reduce(
       (acc, { containerId }) => ({
@@ -83,8 +86,10 @@ function TradingViewChart() {
   );
   const [prices, setPrices] = useState([]);
   const [adaBtcPriceData, setAdaBtcPriceData] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [headerLoading, setHeaderLoading] = useState(false);
+  const [handleName, setHandleName] = useState("");
+  const [walletAddress, setWalletAddress] = useState({});
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({});
@@ -460,9 +465,7 @@ function TradingViewChart() {
       setHeaderLoading(true);
     }
     try {
-      const response = await fetch("/api/crypto-prices", {
-        next: { revalidate: 45 },
-      });
+      const response = await fetch("/api/crypto-prices");
       const { prices, adaBtcPriceData } = await response.json();
 
       setPrices(prices);
@@ -622,16 +625,13 @@ function TradingViewChart() {
         </div>
       )}
 
-      {/* <div className="flex flex-col items-center justify-center gap-1">
+      <div className="flex flex-col items-center justify-center gap-1">
         {prices[0] && !loading ? (
-          <ConvertAda
-            adaPrice={prices[0].price ? prices[0].price : null}
-            btcPrice={prices[2].price ? prices[2].price : null}
-          />
+          <ConvertAda adaPrice={prices[0].price} btcPrice={prices[2].price} />
         ) : (
           <Loader2 className="mt-20 size-10 animate-spin" />
         )}
-      </div> */}
+      </div>
     </div>
   );
 }
