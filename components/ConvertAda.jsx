@@ -13,8 +13,8 @@ const SATOSHIS_PER_BITCOIN = 1e8;
 
 const ConvertAda = ({ adaPrice, btcPrice }) => {
   const [cryptoPrices, setCryptoPrices] = useState({
-    ADA: adaPrice,
-    BTC: btcPrice,
+    ADA: adaPrice || 0,
+    BTC: btcPrice || 0,
   });
 
   const [currency, setCurrency] = useState("ADA");

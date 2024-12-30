@@ -626,11 +626,10 @@ function TradingViewChart() {
       )}
 
       <div className="flex flex-col items-center justify-center gap-1">
-        {prices[0] && !loading ? (
-          <ConvertAda adaPrice={prices[0].price} btcPrice={prices[2].price} />
-        ) : (
-          <Loader2 className="mt-20 size-10 animate-spin" />
-        )}
+        <ConvertAda
+          adaPrice={prices[0].price || null}
+          btcPrice={prices[2].price || null}
+        />
       </div>
     </div>
   );

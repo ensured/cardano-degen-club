@@ -87,7 +87,7 @@ export async function GET() {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
 
-      if (error instanceof Error && error.message.includes("429")) {
+      if (errorMessage.includes("Too many requests")) {
         return NextResponse.json(
           { error: "Too many requests", details: errorMessage },
           { status: 429 },
