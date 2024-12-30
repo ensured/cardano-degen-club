@@ -74,7 +74,7 @@ export function HeaderNavSheet() {
           </div>
 
           <CustomLink href="/punycode" onClick={handleOpenChange}>
-            <Globe className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <Globe className="size-5 min-h-[24px] min-w-[24px] " />
             <CustomLinkText>Punycode Converter</CustomLinkText>
             {folderCommits.find((c) => c.folder === "punycode") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
@@ -88,7 +88,7 @@ export function HeaderNavSheet() {
             )}
           </CustomLink>
           <CustomLink href="/cardano-links" onClick={handleOpenChange}>
-            <LinkIcon className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <LinkIcon className="size-5 min-h-[24px] min-w-[24px] " />
             <CustomLinkText>Cardano Links</CustomLinkText>
             {folderCommits.find((c) => c.folder === "cardano-links") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
@@ -102,7 +102,7 @@ export function HeaderNavSheet() {
             )}
           </CustomLink>
           <CustomLink href="/crypto-tracker" onClick={handleOpenChange}>
-            <LineChart className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <LineChart className="size-5 min-h-[24px] min-w-[24px] " />
             <CustomLinkText>Crypto Tracker</CustomLinkText>
             {folderCommits.find((c) => c.folder === "crypto-tracker") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
@@ -153,7 +153,7 @@ export function HeaderNavSheet() {
               </h1>
             </div>
 
-            <div className="dark:text-white">Checker</div>
+            <CustomLinkText>Checker</CustomLinkText>
             {folderCommits.find((c) => c.folder === "adahandle") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
                 (
@@ -175,7 +175,7 @@ export function HeaderNavSheet() {
             onClick={handleOpenChange}
             target={true}
           >
-            <Smartphone className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <Smartphone className="size-5 min-h-[24px] min-w-[24px] " />
             <CustomLinkText>Android Fren</CustomLinkText>
             {latestRepoCommit[1] && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
@@ -184,7 +184,7 @@ export function HeaderNavSheet() {
             )}
           </CustomLink>
           <CustomLink href="/tradingview-script" onClick={handleOpenChange}>
-            <Monitor className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <Monitor className="size-5 min-h-[24px] min-w-[24px]" />
             <CustomLinkText>TradingView Adblocker</CustomLinkText>
             {folderCommits.find((c) => c.folder === "tradingview-script") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
@@ -202,7 +202,7 @@ export function HeaderNavSheet() {
             Misc
           </div>
           <CustomLink href="/recipe-fren" onClick={handleOpenChange}>
-            <UtensilsCrossed className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <UtensilsCrossed className="size-5 min-h-[24px] min-w-[24px]" />
             <CustomLinkText>Recipe Fren</CustomLinkText>
             {folderCommits.find((c) => c.folder === "recipe-fren") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
@@ -216,7 +216,7 @@ export function HeaderNavSheet() {
             )}
           </CustomLink>
           <CustomLink href="/port-checker" onClick={handleOpenChange}>
-            <Network className="size-5 min-h-[24px] min-w-[24px] text-lg sm:text-base" />
+            <Network className="size-5 min-h-[24px] min-w-[24px]" />
             <CustomLinkText>Port Checker</CustomLinkText>
             {folderCommits.find((c) => c.folder === "port-checker") && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
@@ -252,7 +252,7 @@ function CustomLink({
 }) {
   return (
     <Link
-      className="flex items-center gap-2 rounded-md border border-secondary/50 bg-secondary/20 p-2 text-lg"
+      className="flex items-center gap-2 rounded-md border border-secondary/50 bg-secondary/20 p-2"
       href={href}
       onClick={(e) => {
         if (target) {

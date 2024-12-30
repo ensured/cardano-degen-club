@@ -2,17 +2,14 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
-  ExitFullScreenIcon,
   ReloadIcon,
   MinusIcon,
   EnterFullScreenIcon,
 } from "@radix-ui/react-icons";
 import { Button } from "./ui/button";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import ConvertAda from "./ConvertAda";
-import { getAddressFromHandle } from "@/app/actions";
-import { toast } from "sonner";
 
 import { Badge } from "./ui/badge";
 
@@ -88,8 +85,6 @@ function TradingViewChart() {
   const [adaBtcPriceData, setAdaBtcPriceData] = useState({});
   const [loading, setLoading] = useState(true);
   const [headerLoading, setHeaderLoading] = useState(false);
-  const [handleName, setHandleName] = useState("");
-  const [walletAddress, setWalletAddress] = useState({});
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({});
@@ -627,7 +622,10 @@ function TradingViewChart() {
 
       <div className="flex flex-col items-center justify-center gap-1">
         {prices[0] && !loading ? (
-          <ConvertAda adaPrice={prices[0].price} btcPrice={prices[2].price} />
+          <ConvertAda
+            adaPrice={prices[0].price ? prices[0].price : null}
+            btcPrice={prices[2].price ? prices[2].price : null}
+          />
         ) : (
           <Loader2 className="mt-20 size-10 animate-spin" />
         )}
