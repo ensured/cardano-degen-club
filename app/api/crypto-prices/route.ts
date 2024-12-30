@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 const PRICES_CONFIG = [
   { symbol: "BINANCE:ADAUSD", pair: "cardano", name: "ADA/USD" },
   { symbol: "GATEIO:IAGUSDT", pair: "iagon", name: "IAG/USDT" },
@@ -17,7 +15,7 @@ const fetchAdabtcPrice = async () => {
   try {
     const response = await fetch(
       `https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=btc&include_24hr_change=true`,
-      { headers, next: { revalidate: 45 } },
+      { headers, next: { revalidate: 60 } },
     );
 
     // Check if the response is OK
@@ -43,7 +41,7 @@ export async function GET() {
           `https://api.coingecko.com/api/v3/simple/price?ids=${pair}&vs_currencies=usd&include_24hr_change=true`,
           {
             headers,
-            next: { revalidate: 45 },
+            next: { revalidate: 60 },
           },
         );
 
