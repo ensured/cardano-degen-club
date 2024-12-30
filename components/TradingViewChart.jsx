@@ -598,7 +598,7 @@ function TradingViewChart() {
         </div>
       )}
 
-      <div className="flex flex-col items-center justify-center gap-1">
+      {/* <div className="flex flex-col items-center justify-center gap-1">
         {error ? (
           <p>Error fetching prices. Please try again later.</p>
         ) : (
@@ -607,7 +607,7 @@ function TradingViewChart() {
             btcPrice={prices.length > 2 ? prices[2].price : null}
           />
         )}
-      </div>
+      </div> */}
     </div>
   )
 }
