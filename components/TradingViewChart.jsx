@@ -467,7 +467,7 @@ function TradingViewChart() {
     // Fetch prices immediately on mount
     fetchPrices(true)
     // Update interval to 15 seconds instead of 60 seconds
-    const interval = setInterval(() => fetchPrices(false, true), 20000) // Pass true for fromInterval
+    const interval = setInterval(() => fetchPrices(false, true), 60000) // Pass true for fromInterval
 
     return () => clearInterval(interval)
   }, [])
