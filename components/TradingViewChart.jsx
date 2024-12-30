@@ -627,8 +627,8 @@ function TradingViewChart() {
 
       <div className="flex flex-col items-center justify-center gap-1">
         <ConvertAda
-          adaPrice={prices[0].price || null}
-          btcPrice={prices[2].price || null}
+          adaPrice={prices[0].price ? prices[0].price : null}
+          btcPrice={prices[2].price ? prices[2].price : null}
         />
       </div>
     </div>
