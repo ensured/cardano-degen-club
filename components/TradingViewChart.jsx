@@ -67,7 +67,7 @@ const INDICATORS = [
 
 function TradingViewChart() {
   const [fullscreenChart, setFullscreenChart] = useState(null);
-  const [loadingAdahandle, setLoadingAdahandle] = useState(false);
+  // const [loadingAdahandle, setLoadingAdahandle] = useState(false);
   const [chartSettings, setChartSettings] = useState(
     CHART_CONFIG.reduce(
       (acc, { containerId }) => ({
@@ -83,7 +83,7 @@ function TradingViewChart() {
   );
   const [prices, setPrices] = useState([]);
   const [adaBtcPriceData, setAdaBtcPriceData] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [headerLoading, setHeaderLoading] = useState(false);
 
   // Add a ref to track mounted charts
@@ -483,7 +483,7 @@ function TradingViewChart() {
     // Fetch prices immediately on mount
     fetchPrices(true);
     // Update interval to 15 seconds instead of 60 seconds
-    const interval = setInterval(() => fetchPrices(false, true), 45000); // Pass true for fromInterval
+    const interval = setInterval(() => fetchPrices(false, true), 20000); // Pass true for fromInterval
 
     return () => clearInterval(interval);
   }, []);

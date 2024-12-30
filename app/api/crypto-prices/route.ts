@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-export const revalidate = 45;
-
 export const runtime = "edge";
 
 const PRICES_CONFIG = [
@@ -19,7 +17,7 @@ const fetchAdabtcPrice = async () => {
   try {
     const response = await fetch(
       `https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=btc&include_24hr_change=true`,
-      { headers },
+      { headers, next: { revalidate: 45 } },
     );
 
     // Check if the response is OK
@@ -45,8 +43,14 @@ export async function GET() {
           `https://api.coingecko.com/api/v3/simple/price?ids=${pair}&vs_currencies=usd&include_24hr_change=true`,
           {
             headers,
+            next: { revalidate: 45 },
           },
         );
+
+        // check for status 429
+        if (response.status === 429) {
+          throw new Error("Too many requests");
+        }
 
         // Check if the response is OK
         if (!response.ok) {
