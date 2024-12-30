@@ -11,7 +11,7 @@ import { Icons } from '@/components/icons'
 
 const SATOSHIS_PER_BITCOIN = 1e8
 
-const ConvertAda = ({ adaPrice = null, btcPrice = null }) => {
+const ConvertAda = ({ adaPrice = 0, btcPrice = 0 }) => {
   const [cryptoPrices, setCryptoPrices] = useState({
     ADA: adaPrice,
     BTC: btcPrice,
@@ -41,21 +41,21 @@ const ConvertAda = ({ adaPrice = null, btcPrice = null }) => {
 
   const convertedADA =
     currency === 'ADA'
-      ? (amount * cryptoPrices.BTC * cryptoPrices.ADA).toLocaleString(undefined, {
+      ? (amount * (cryptoPrices.BTC || 0) * (cryptoPrices.ADA || 0)).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })
-      : (amount / (cryptoPrices.ADA / cryptoPrices.BTC)).toLocaleString(undefined, {
+      : (amount / ((cryptoPrices.ADA || 1) / (cryptoPrices.BTC || 1))).toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })
 
   const convertedSats =
     currency === 'ADA'
-      ? convertToSats(amount, cryptoPrices.BTC * cryptoPrices.ADA).toLocaleString()
+      ? convertToSats(amount, (cryptoPrices.BTC || 0) * (cryptoPrices.ADA || 1)).toLocaleString()
       : (amount * SATOSHIS_PER_BITCOIN).toLocaleString()
 
-  const convertedBTC = currency === 'ADA' && amount / (cryptoPrices.ADA * cryptoPrices.BTC)
+  const convertedBTC = currency === 'ADA' && amount / ((cryptoPrices.ADA || 1) * (cryptoPrices.BTC || 1))
 
   return (
     cryptoPrices.ADA !== 0 && (
