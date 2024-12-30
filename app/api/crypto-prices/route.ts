@@ -1,45 +1,41 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from "next/server";
 
-declare global {
-  const EdgeRuntime: string
-}
+export const revalidate = 45;
 
-export const revalidate = 12
-
-export const runtime = "edge"
+export const runtime = "edge";
 
 const PRICES_CONFIG = [
   { symbol: "BINANCE:ADAUSD", pair: "cardano", name: "ADA/USD" },
   { symbol: "GATEIO:IAGUSDT", pair: "iagon", name: "IAG/USDT" },
   { symbol: "BINANCE:BTCUSDT", pair: "bitcoin", name: "BTC/USDT" },
-]
+];
 
 const headers = {
   accept: "application/json",
   "x-cg-demo-api-key": process.env.COINGECKO_API_KEY || "",
-}
+};
 
 const fetchAdabtcPrice = async () => {
   try {
     const response = await fetch(
       `https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=btc&include_24hr_change=true`,
-      { headers }
-    )
+      { headers },
+    );
 
     // Check if the response is OK
     if (!response.ok) {
-      const errorText = await response.text()
+      const errorText = await response.text();
       throw new Error(
-        `Error fetching ADA/BTC price: ${response.statusText} - ${errorText}`
-      )
+        `Error fetching ADA/BTC price: ${response.statusText} - ${errorText}`,
+      );
     }
 
-    const data = await response.json()
-    return data
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error fetching ADA/BTC price:", error)
+    console.error("Error fetching ADA/BTC price:", error);
   }
-}
+};
 
 export async function GET() {
   try {
@@ -49,27 +45,27 @@ export async function GET() {
           `https://api.coingecko.com/api/v3/simple/price?ids=${pair}&vs_currencies=usd&include_24hr_change=true`,
           {
             headers,
-          }
-        )
+          },
+        );
 
         // Check if the response is OK
         if (!response.ok) {
-          const errorText = await response.text()
+          const errorText = await response.text();
           throw new Error(
-            `Error fetching symbol ${symbol}: ${response.statusText} - ${errorText}`
-          )
+            `Error fetching symbol ${symbol}: ${response.statusText} - ${errorText}`,
+          );
         }
 
-        const data = await response.json()
+        const data = await response.json();
 
         // Extract the price and 24h change from the response
-        const price: number | undefined = data[pair]?.usd
-        const percentChange24h: string | undefined = data[pair]?.usd_24h_change
-        return { symbol, name, price, percentChange24h } // Return price and percent change
-      })
-    )
+        const price: number | undefined = data[pair]?.usd;
+        const percentChange24h: string | undefined = data[pair]?.usd_24h_change;
+        return { symbol, name, price, percentChange24h }; // Return price and percent change
+      }),
+    );
 
-    const adaBtcPriceData = await fetchAdabtcPrice()
+    const adaBtcPriceData = await fetchAdabtcPrice();
     // const adaDominance = await fetchAdaDominance()
     // const btcDominance = await fetchBtcDominance()
 
@@ -78,19 +74,27 @@ export async function GET() {
         prices,
         adaBtcPriceData,
       },
-      { status: 200 }
-    )
+      { status: 200 },
+    );
   } catch (error) {
-    console.error("Error fetching prices:", error)
+    console.error("Error fetching prices:", error);
     const errorMessage =
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error";
+
+    if (error instanceof Error && error.message.includes("429")) {
+      return NextResponse.json(
+        { error: "Too many requests", details: errorMessage },
+        { status: 429 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch prices", details: errorMessage },
-      { status: 500 }
-    )
+      { status: 500 },
+    );
   }
 }
 
-const fetchAdaDominance = async () => {}
+const fetchAdaDominance = async () => {};
 
-const fetchBtcDominance = async () => {}
+const fetchBtcDominance = async () => {};

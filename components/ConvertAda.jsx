@@ -1,62 +1,50 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useState } from "react"
-import { toast } from "sonner"
+import { useState } from "react";
 
-import { cn } from "@/lib/utils"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Icons } from "@/components/icons"
+import { cn } from "@/lib/utils";
 
-const SATOSHIS_PER_BITCOIN = 1e8
-const adaPriceApiUrl =
-  "https://api.coingecko.com/api/v3/simple/price?ids=cardano&vs_currencies=usd"
-const btcPriceApiUrl =
-  "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Icons } from "@/components/icons";
+
+const SATOSHIS_PER_BITCOIN = 1e8;
 
 const ConvertAda = ({ adaPrice, btcPrice }) => {
   const [cryptoPrices, setCryptoPrices] = useState({
     ADA: adaPrice,
     BTC: btcPrice,
-  })
+  });
 
-  const [currency, setCurrency] = useState("ADA")
-  const [amount, setAmount] = useState(1)
+  const [currency, setCurrency] = useState("ADA");
+  const [amount, setAmount] = useState(1);
 
   const handleSwitchChange = () => {
-    setCurrency((prevCurrency) => (prevCurrency === "ADA" ? "BTC" : "ADA"))
-  }
+    setCurrency((prevCurrency) => (prevCurrency === "ADA" ? "BTC" : "ADA"));
+  };
 
   const handleAmountChange = (event) => {
-    const newAmount = event.target.value.toString()
+    const newAmount = event.target.value.toString();
     setAmount(
       isNaN(newAmount)
         ? ""
         : newAmount.length > 20
           ? newAmount.slice(0, 20)
-          : newAmount
-    )
-  }
+          : newAmount,
+    );
+  };
 
   const convertToLovelaces = (amount, conversionRate) => {
-    return Math.floor(amount * conversionRate)
-  }
+    return Math.floor(amount * conversionRate);
+  };
 
   const convertToSats = (amount, conversionRate) => {
-    return Math.floor(amount * conversionRate * 1e8)
-  }
+    return Math.floor(amount * conversionRate * 1e8);
+  };
 
   const convertedLovelaces =
-    currency === "ADA" && convertToLovelaces(amount, 1000000).toLocaleString()
+    currency === "ADA" && convertToLovelaces(amount, 1000000).toLocaleString();
 
   const convertedADA =
     currency === "ADA"
@@ -65,26 +53,26 @@ const ConvertAda = ({ adaPrice, btcPrice }) => {
           {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-          }
+          },
         )
       : (amount / (cryptoPrices.ADA / cryptoPrices.BTC)).toLocaleString(
           undefined,
           {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-          }
-        )
+          },
+        );
 
   const convertedSats =
     currency === "ADA"
       ? convertToSats(
           amount,
-          cryptoPrices.BTC * cryptoPrices.ADA
+          cryptoPrices.BTC * cryptoPrices.ADA,
         ).toLocaleString()
-      : (amount * SATOSHIS_PER_BITCOIN).toLocaleString()
+      : (amount * SATOSHIS_PER_BITCOIN).toLocaleString();
 
   const convertedBTC =
-    currency === "ADA" && amount / (cryptoPrices.ADA * cryptoPrices.BTC)
+    currency === "ADA" && amount / (cryptoPrices.ADA * cryptoPrices.BTC);
 
   return (
     cryptoPrices.ADA !== 0 && (
@@ -157,7 +145,7 @@ const ConvertAda = ({ adaPrice, btcPrice }) => {
         </div>
       </div>
     )
-  )
-}
+  );
+};
 
-export default ConvertAda
+export default ConvertAda;

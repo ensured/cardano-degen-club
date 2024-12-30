@@ -460,7 +460,9 @@ function TradingViewChart() {
       setHeaderLoading(true);
     }
     try {
-      const response = await fetch("/api/crypto-prices");
+      const response = await fetch("/api/crypto-prices", {
+        next: { revalidate: 45 },
+      });
       const { prices, adaBtcPriceData } = await response.json();
 
       setPrices(prices);
@@ -481,7 +483,7 @@ function TradingViewChart() {
     // Fetch prices immediately on mount
     fetchPrices(true);
     // Update interval to 15 seconds instead of 60 seconds
-    const interval = setInterval(() => fetchPrices(false, true), 20000); // Pass true for fromInterval
+    const interval = setInterval(() => fetchPrices(false, true), 45000); // Pass true for fromInterval
 
     return () => clearInterval(interval);
   }, []);
@@ -621,7 +623,7 @@ function TradingViewChart() {
       )}
 
       <div className="flex flex-col items-center justify-center gap-1">
-        {prices[0] && !loading ? (
+        {prices[0].price && prices[2].price && !loading ? (
           <ConvertAda
             adaPrice={prices[0].price ? prices[0].price : null}
             btcPrice={prices[2].price ? prices[2].price : null}
