@@ -2,19 +2,15 @@
 "use client";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
-  ExitFullScreenIcon,
   ReloadIcon,
   MinusIcon,
   EnterFullScreenIcon,
 } from "@radix-ui/react-icons";
 import { Button } from "./ui/button";
-import { ChevronDown, Loader2 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import ConvertAda from "./ConvertAda";
-import { getAddressFromHandle } from "@/app/actions";
-import { toast } from "sonner";
-
 import { Badge } from "./ui/badge";
+import { Loader2 } from "lucide-react";
 
 const CHART_CONFIG = [
   {
@@ -88,8 +84,7 @@ function TradingViewChart() {
   const [adaBtcPriceData, setAdaBtcPriceData] = useState({});
   const [loading, setLoading] = useState(true);
   const [headerLoading, setHeaderLoading] = useState(false);
-  const [handleName, setHandleName] = useState("");
-  const [walletAddress, setWalletAddress] = useState({});
+  const [error, setError] = useState(null);
 
   // Add a ref to track mounted charts
   const chartInstancesRef = useRef({});
@@ -204,6 +199,7 @@ function TradingViewChart() {
         chartInstancesRef.current[containerId].remove();
       } catch (error) {
         console.log("Chart cleanup failed:", error);
+        setError(error.message);
       }
       delete chartInstancesRef.current[containerId];
     }
@@ -471,7 +467,7 @@ function TradingViewChart() {
       setPrices(prices);
       setAdaBtcPriceData(adaBtcPriceData);
     } catch (error) {
-      console.error("Error fetching prices:", error);
+      setError(error.message);
     } finally {
       if (initialLoad) {
         setLoading(false);
@@ -626,10 +622,14 @@ function TradingViewChart() {
       )}
 
       <div className="flex flex-col items-center justify-center gap-1">
-        <ConvertAda
-          adaPrice={prices.length > 0 ? prices[0].price : null}
-          btcPrice={prices.length > 2 ? prices[2].price : null}
-        />
+        {error ? (
+          <p>Error fetching prices. Please try again later.</p>
+        ) : (
+          <ConvertAda
+            adaPrice={prices.length > 0 ? prices[0].price : null}
+            btcPrice={prices.length > 2 ? prices[2].price : null}
+          />
+        )}
       </div>
     </div>
   );

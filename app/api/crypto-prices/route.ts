@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { handleError } from "@/app/utils/errorHandler";
 
 const PRICES_CONFIG = [
   { symbol: "BINANCE:ADAUSD", pair: "cardano", name: "ADA/USD" },
@@ -60,9 +61,7 @@ export async function GET() {
           // Check if the response is OK
           if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(
-              `Error fetching symbol ${symbol}: ${response.statusText} - ${errorText}`,
-            );
+            throw new Error(`Error fetching symbol ${symbol}: ${errorText}`);
           }
 
           const data = await response.json();
@@ -83,21 +82,8 @@ export async function GET() {
 
       return NextResponse.json(cachedPrices, { status: 200 });
     } catch (error) {
-      console.error("Error fetching prices:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-
-      if (errorMessage.includes("Too many requests")) {
-        return NextResponse.json(
-          { error: "Too many requests", details: errorMessage },
-          { status: 429 },
-        );
-      }
-
-      return NextResponse.json(
-        { error: "Failed to fetch prices", details: errorMessage },
-        { status: 500 },
-      );
+      const { message, status } = handleError(error);
+      return NextResponse.json({ error: message }, { status });
     }
   }
 
