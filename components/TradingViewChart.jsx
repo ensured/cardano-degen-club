@@ -191,7 +191,6 @@ function TradingViewChart() {
         chartInstancesRef.current[containerId].remove()
       } catch (error) {
         console.log('Chart cleanup failed:', error)
-        setError(error.message)
       }
       delete chartInstancesRef.current[containerId]
     }
@@ -505,7 +504,11 @@ function TradingViewChart() {
                 key={columnIndex}
                 className={`flex flex-col gap-1 ${columnIndex === 0 ? 'sm:col-span-3' : 'sm:col-span-2'}`}
               >
-                {loading || !prices ? (
+                {!prices ? (
+                  <div className="flex h-14 w-full items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Probably rate limited, please wait a few seconds.</p>
+                  </div>
+                ) : loading || !prices ? (
                   <div className="flex h-14 w-full items-center justify-center">
                     <Skeleton className="h-5 w-[100px] text-sm" />
                   </div>
