@@ -8,80 +8,113 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon } from 'lucide-react'
 
-interface Task {
+interface ShoppingItem {
   id: number
   text: string
   completed: boolean
 }
 
 export default function ToDoList() {
-  // State hooks for managing tasks, new task input, editing task, and component mount status
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [newTask, setNewTask] = useState<string>('')
-  const [editingTaskId, setEditingTaskId] = useState<number | null>(null)
-  const [editedTaskText, setEditedTaskText] = useState<string>('')
+  // State hooks for managing items, new item input, editing item, and component mount status
+  const [items, setItems] = useState<ShoppingItem[]>([])
+  const [newItem, setNewItem] = useState<string>('')
+  const [editingItemId, setEditingItemId] = useState<number | null>(null)
+  const [editedItemText, setEditedItemText] = useState<string>('')
   const [isMounted, setIsMounted] = useState<boolean>(false)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const [newItemValid, setNewItemValid] = useState<boolean>(true)
+  const [editItemValid, setEditItemValid] = useState<boolean>(true)
 
   // Effect hook to run on component mount
   useEffect(() => {
     setIsMounted(true) // Set mounted status to true
-    // Load tasks from local storage
-    const savedTasks = localStorage.getItem('tasks')
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks) as Task[]) // Parse and set tasks from local storage
+    // Load items from local storage
+    const savedItems = localStorage.getItem('shoppingItems')
+    if (savedItems) {
+      setItems(JSON.parse(savedItems) as ShoppingItem[]) // Parse and set items from local storage
     }
   }, [])
 
-  // Effect hook to save tasks to local storage whenever they change
+  // Effect hook to save items to local storage whenever they change
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem('tasks', JSON.stringify(tasks)) // Save tasks to local storage
+      localStorage.setItem('shoppingItems', JSON.stringify(items)) // Save items to local storage
     }
-  }, [tasks, isMounted])
+  }, [items, isMounted])
 
-  // Function to add a new task
-  const addTask = (e: React.FormEvent<HTMLFormElement>): void => {
+  // Add useEffect for click outside handling
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (editingItemId !== null && inputRef.current && !inputRef.current.contains(target)) {
+        setEditingItemId(null)
+        setEditedItemText('')
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [editingItemId])
+
+  // Function to add a new item
+  const addItem = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault()
-    if (newTask.trim() !== '') {
-      // Add the new task to the task list
-      setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }])
-      setNewTask('') // Clear the new task input
-      inputRef.current?.focus()
+    if (newItem.trim().length < 1) {
+      setNewItemValid(false)
+      toast.error('Item name must be at least 1 character')
+      return
     }
+    setNewItemValid(true)
+    setItems([...items, { id: Date.now(), text: newItem, completed: false }])
+    setNewItem('')
+    inputRef.current?.focus()
   }
 
-  // Function to toggle the completion status of a task
-  const toggleTaskCompletion = (id: number): void => {
-    setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)))
-    setEditingTaskId(null)
-    setEditedTaskText('')
+  // Function to toggle the completion status of a item
+  const toggleItemCompletion = (id: number): void => {
+    setItems(items.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item)))
+    setEditingItemId(null)
+    setEditedItemText('')
   }
 
-  // Function to start editing a task
-  const startEditingTask = (id: number, text: string): void => {
-    setEditingTaskId(id) // Set the task ID being edited
-    setEditedTaskText(text) // Set the text of the task being edited
+  // Function to start editing a item
+  const startEditingItem = (id: number, text: string): void => {
+    setEditingItemId(id) // Set the item ID being edited
+    setEditedItemText(text) // Set the text of the item being edited
     setTimeout(() => {
       inputRef.current?.focus()
     }, 0)
   }
 
-  // Function to update an edited task
-  const updateTask = (): void => {
-    if (editedTaskText.trim() === '') {
-      toast.error('Input cannot be empty')
-    } else {
-      // Update the task text
-      setTasks(tasks.map((task) => (task.id === editingTaskId ? { ...task, text: editedTaskText } : task)))
-      setEditingTaskId(null) // Clear the editing task ID
-      setEditedTaskText('') // Clear the edited task text
+  // Function to update an edited item
+  const updateItem = (): void => {
+    if (editedItemText.trim().length < 1) {
+      setEditItemValid(false)
+      toast.error('Item name must be at least 1 character')
+      return
     }
+    setEditItemValid(true)
+    setItems(items.map((item) => (item.id === editingItemId ? { ...item, text: editedItemText } : item)))
+    setEditingItemId(null)
+    setEditedItemText('')
   }
 
-  // Function to delete a task
-  const deleteTask = (id: number): void => {
-    setTasks(tasks.filter((task) => task.id !== id)) // Filter out the task to be deleted
+  // Function to delete a item
+  const deleteItem = (id: number): void => {
+    setItems(items.filter((item) => item.id !== id)) // Filter out the item to be deleted
+  }
+
+  // Add validation handlers for input changes
+  const handleNewItemChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setNewItem(e.target.value)
+    setNewItemValid(e.target.value.trim().length >= 1)
+  }
+
+  const handleEditItemChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEditedItemText(e.target.value)
+    setEditItemValid(e.target.value.trim().length >= 1)
   }
 
   // Avoid rendering on the server to prevent hydration errors
@@ -94,78 +127,77 @@ export default function ToDoList() {
     <div className="w-full max-w-md rounded-lg border border-border p-6 shadow-lg">
       {/* Header with title */}
       <h1 className="mb-4 flex items-center justify-between gap-x-2 text-2xl font-bold text-gray-800 dark:text-gray-200">
-        Shopping List App
+        Shopping List
         <div className="relative rounded-full border border-border p-2">
           <ShoppingCart className="size-6" />
-          {tasks.length > 0 && (
+          {items.length > 0 && (
             <span className="absolute -right-1 -top-1.5 inline-flex size-6 items-center justify-center rounded-full bg-orange text-sm text-white">
-              {tasks.length}
+              {items.length}
             </span>
           )}
         </div>
       </h1>
-      {/* Input for adding new tasks */}
-      <form className="mb-4 flex items-center" onSubmit={addTask}>
+      {/* Input for adding new items */}
+      <form className="mb-4 flex items-center" onSubmit={addItem}>
         <Input
           type="text"
-          placeholder="Add a new task"
-          value={newTask}
-          onChange={
-            (e: ChangeEvent<HTMLInputElement>) => setNewTask(e.target.value) // Update new task input
-          }
-          className="mr-2 flex-1 rounded-md border px-3 py-2"
+          placeholder="Add a new item"
+          value={newItem}
+          onChange={handleNewItemChange}
+          className={`mr-2 flex-1 rounded-md border px-3 py-2 outline-none focus:ring-0 focus-visible:ring-0 ${
+            !newItemValid ? 'border-red-500/60 ring-red-500/60' : 'border-green/60 ring-green/60'
+          }`}
         />
         <Button type="submit" className="rounded-md px-4 py-2 font-medium" variant={'outline'}>
           Add
         </Button>
       </form>
-      {/* List of tasks */}
+      {/* List of items */}
       <div className="space-y-2">
-        {tasks.map((task) => (
-          <div key={task.id} className="flex flex-1 items-center justify-between gap-x-1 rounded-md">
+        {items.map((item) => (
+          <div key={item.id} className="flex flex-1 items-center justify-between gap-x-1 rounded-md">
             <div className="flex flex-1 items-center">
-              {/* Checkbox to toggle task completion */}
+              {/* Checkbox to toggle item completion */}
               <Checkbox
-                checked={task.completed}
+                checked={item.completed}
                 className="mr-2"
-                onCheckedChange={() => toggleTaskCompletion(task.id)}
+                onCheckedChange={() => toggleItemCompletion(item.id)}
               />
-              {editingTaskId === task.id ? (
-                // Input for editing task text
+              {editingItemId === item.id ? (
+                // Input for editing item text
                 <form
                   onSubmit={(e) => {
                     e.preventDefault()
-                    updateTask()
+                    updateItem()
                   }}
                   className="flex-1"
                 >
                   <Input
                     ref={inputRef}
                     type="text"
-                    value={editedTaskText}
-                    className="rounded-md border p-1 text-base"
-                    onChange={
-                      (e: ChangeEvent<HTMLInputElement>) => setEditedTaskText(e.target.value) // Update edited task text
-                    }
+                    value={editedItemText}
+                    className={`rounded-md border p-1 text-base focus:ring-0 focus-visible:ring-0 ${
+                      !editItemValid ? 'border-red-500 ring-red-500' : ''
+                    }`}
+                    onChange={handleEditItemChange}
                   />
                 </form>
               ) : (
-                // Display task text with click to edit functionality
+                // Display item text with click to edit functionality
                 <span
                   className={`ml-1 flex-1 text-gray-800 dark:text-gray-200 ${
-                    task.completed ? 'text-gray-500 line-through dark:text-gray-400' : ''
+                    item.completed ? 'text-gray-500 line-through dark:text-gray-400' : ''
                   }`}
-                  onClick={() => startEditingTask(task.id, task.text)} // Trigger editing on click
+                  onClick={() => startEditingItem(item.id, item.text)} // Trigger editing on click
                 >
-                  {task.text}
+                  {item.text}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-x-1">
-              {editingTaskId === task.id ? (
-                // Button to save edited task
+              {editingItemId === item.id ? (
                 <Button
-                  onClick={updateTask}
+                  onClick={updateItem}
                   className="rounded-md bg-green/80 px-2 py-1 font-medium text-white hover:bg-green hover:text-white"
                   variant="outline"
                 >
@@ -173,7 +205,7 @@ export default function ToDoList() {
                 </Button>
               ) : (
                 <Button
-                  onClick={() => startEditingTask(task.id, task.text)}
+                  onClick={() => startEditingItem(item.id, item.text)}
                   className="rounded-md px-2 py-1 font-medium"
                   variant="outline"
                 >
@@ -181,7 +213,7 @@ export default function ToDoList() {
                 </Button>
               )}
               <Button
-                onClick={() => deleteTask(task.id)}
+                onClick={() => deleteItem(item.id)}
                 className="rounded-md bg-destructive/80 px-2 py-1 font-medium hover:bg-destructive"
                 size={'icon'}
               >
