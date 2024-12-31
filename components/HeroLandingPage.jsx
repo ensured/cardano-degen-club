@@ -157,7 +157,7 @@ export default function HeroLandingPage() {
             </div>
           </AnimatedCard.Content>
 
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link href="https://roadmap.cardano.org/" target="_blank">
               <Button size="lg" variant="outline" className="font-semibold">
                 Visit the Roadmap <ExternalLink className="ml-2 size-4" />
