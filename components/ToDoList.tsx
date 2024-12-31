@@ -195,7 +195,7 @@ export default function ToDoList() {
 
   // JSX return statement rendering the todo list UI
   return (
-    <div className="w-full max-w-md rounded-lg border border-border p-1.5 shadow-lg sm:p-6">
+    <div className="w-full max-w-md rounded-lg border border-border p-6 shadow-lg">
       {/* Header with title */}
       <h1 className="mb-4 flex items-center justify-between gap-x-2 text-2xl font-bold text-gray-800 dark:text-gray-200">
         Shopping List

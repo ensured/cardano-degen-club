@@ -64,7 +64,7 @@ export function MainNav({ HeaderNavSheet }: { HeaderNavSheet: React.ReactNode })
         {latestRepoCommit[0]?.date ? (
           <Dialog>
             <DialogTrigger>
-              <div className="flex cursor-pointer items-center gap-x-1.5 overflow-x-auto rounded-md p-1.5 font-mono hover:bg-secondary">
+              <div className="flex cursor-pointer items-center gap-x-1 overflow-x-auto rounded-md bg-transparent p-1.5 px-0.5 font-mono hover:bg-secondary">
                 <div
                   className="size-3.5 rounded-full opacity-60 dark:opacity-[69%]"
                   style={{
@@ -142,7 +142,7 @@ export function MainNav({ HeaderNavSheet }: { HeaderNavSheet: React.ReactNode })
       </Link>
       {HeaderNavSheet}
 
-      <div className="mx-2 flex items-center gap-1 sm:mx-3">
+      <div className="mx-1 flex items-center gap-1">
         {latestCommit()}
         {error && <div className="text-xs text-red-500">{error}</div>}
       </div>
