@@ -39,7 +39,7 @@ export default function HeroLandingPage() {
                 chivo.className,
               )}
             >
-              <div className="pt-4 text-center sm:pt-0">The Future of Finance is</div>{' '}
+              <div className="w-[280px] pt-4 text-center sm:pt-0">The Future of Finance is</div>
               <div className="rounded-md border border-[hsl(276,30%,42%)]/30 bg-gradient-to-r from-[hsl(276,49%,20%)] via-[hsl(276,30%,42%)] to-[hsl(276,49%,20%)] bg-clip-text px-2 py-1 text-center text-transparent shadow-[0_0_15px_rgba(89,46,109,0.3),0_0_25px_rgba(89,46,109,0.2)] transition-shadow hover:shadow-[0_0_20px_rgba(89,46,109,0.4),0_0_30px_rgba(89,46,109,0.3)] dark:border-[hsl(276,70%,60%)]/20 dark:bg-gradient-to-r dark:from-[hsl(276,70%,60%)] dark:via-[hsl(276,80%,70%)] dark:to-[hsl(276,70%,60%)] dark:shadow-[0_0_20px_rgba(186,104,200,0.5),0_0_30px_rgba(186,104,200,0.3)] dark:hover:border-[hsl(276,70%,60%)]/30 dark:hover:shadow-[0_0_25px_rgba(186,104,200,0.6),0_0_40px_rgba(186,104,200,0.4)]">
                 Decentralized
               </div>
