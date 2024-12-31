@@ -6,7 +6,16 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon } from 'lucide-react'
+import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon, PlusIcon, XIcon } from 'lucide-react'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 
 interface ShoppingItem {
   id: number
@@ -24,6 +33,15 @@ export default function ToDoList() {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [newItemValid, setNewItemValid] = useState<boolean>(true)
   const [editItemValid, setEditItemValid] = useState<boolean>(true)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const itemsPerPage = 25
+
+  // Add constant for max items
+  const MAX_ITEMS = 9999
+
+  // Add new state for input focus
+  const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
+  const newItemInputRef = useRef<HTMLInputElement | null>(null)
 
   // Effect hook to run on component mount
   useEffect(() => {
@@ -58,12 +76,31 @@ export default function ToDoList() {
     }
   }, [editingItemId])
 
+  // Add new useEffect for handling clicks outside the main input
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+      if (newItemInputRef.current && !newItemInputRef.current.contains(target)) {
+        setIsInputFocused(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
   // Function to add a new item
   const addItem = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault()
     if (newItem.trim().length < 1) {
       setNewItemValid(false)
       toast.error('Item name must be at least 1 character')
+      return
+    }
+    if (items.length >= MAX_ITEMS) {
+      toast.error(`Maximum limit of ${MAX_ITEMS.toLocaleString()} items reached`)
       return
     }
     setNewItemValid(true)
@@ -117,6 +154,40 @@ export default function ToDoList() {
     setEditItemValid(e.target.value.trim().length >= 1)
   }
 
+  // Generate dummy items
+  // const addDummyItems = (): void => {
+  //   const remainingSlots = MAX_ITEMS - items.length
+  //   if (remainingSlots <= 0) {
+  //     toast.error(`Maximum limit of ${MAX_ITEMS.toLocaleString()} items reached`)
+  //     return
+  //   }
+
+  //   const itemsToAdd = Math.min(9999, remainingSlots)
+  //   const dummyItems = Array.from({ length: itemsToAdd }, (_, index) => ({
+  //     id: Date.now() + index,
+  //     text: `Item ${index + 1}`,
+  //     completed: Math.random() < 0.5,
+  //   }))
+
+  //   setItems([...items, ...dummyItems])
+  //   toast.success(`Added ${itemsToAdd.toLocaleString()} dummy items`)
+  // }
+
+  // Clear all items
+  const clearAllItems = (): void => {
+    setItems([])
+    toast.success('Cleared all items')
+  }
+
+  // Pagination calculation
+  const totalPages = Math.ceil(items.length / itemsPerPage)
+  const paginatedItems = items.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  // Effect to reset to first page when items length changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [items.length])
+
   // Avoid rendering on the server to prevent hydration errors
   if (!isMounted) {
     return null
@@ -124,28 +195,57 @@ export default function ToDoList() {
 
   // JSX return statement rendering the todo list UI
   return (
-    <div className="w-full max-w-md rounded-lg border border-border p-6 shadow-lg">
+    <div className="w-full max-w-md rounded-lg border border-border p-1.5 shadow-lg sm:p-6">
       {/* Header with title */}
       <h1 className="mb-4 flex items-center justify-between gap-x-2 text-2xl font-bold text-gray-800 dark:text-gray-200">
         Shopping List
-        <div className="relative rounded-full border border-border p-2">
-          <ShoppingCart className="size-6" />
-          {items.length > 0 && (
-            <span className="absolute -right-1 -top-1.5 inline-flex size-6 items-center justify-center rounded-full bg-orange text-sm text-white">
-              {items.length}
-            </span>
-          )}
+        <div className="flex items-center gap-x-2">
+          <Button onClick={clearAllItems} className="flex items-center gap-x-2" variant="outline" size="sm">
+            <XIcon className="size-4" />
+            Clear All
+          </Button>
+          <div className="relative rounded-full border border-border p-2">
+            <ShoppingCart className="size-6" />
+            {items.length > 0 && (
+              <span
+                className={`absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-orange px-1.5 py-0.5 text-xs font-medium text-white ${
+                  items.length > 99 ? 'min-w-[28px]' : ''
+                }`}
+              >
+                {items.length > 99 ? items.length : items.length}
+              </span>
+            )}
+          </div>
         </div>
       </h1>
+
+      {/* testing */}
+      {/* <div className="mb-4 flex gap-2">
+        <Button onClick={addDummyItems} className="flex items-center gap-x-2" variant="outline" size="sm">
+          <PlusIcon className="size-4" />
+          Add 9999 Items
+        </Button>
+        <Button onClick={clearAllItems} className="flex items-center gap-x-2" variant="outline" size="sm">
+          <XIcon className="size-4" />
+          Clear All
+        </Button>
+      </div> */}
+
       {/* Input for adding new items */}
       <form className="mb-4 flex items-center" onSubmit={addItem}>
         <Input
+          ref={newItemInputRef}
           type="text"
           placeholder="Add a new item"
           value={newItem}
           onChange={handleNewItemChange}
+          onFocus={() => setIsInputFocused(true)}
           className={`mr-2 flex-1 rounded-md border px-3 py-2 outline-none focus:ring-0 focus-visible:ring-0 ${
-            !newItemValid ? 'border-red-500/60 ring-red-500/60' : 'border-green/60 ring-green/60'
+            isInputFocused
+              ? !newItemValid
+                ? 'border-red-500/60 ring-red-500/60'
+                : 'border-green/60 ring-green/60'
+              : 'border-border'
           }`}
         />
         <Button type="submit" className="rounded-md px-4 py-2 font-medium" variant={'outline'}>
@@ -154,7 +254,7 @@ export default function ToDoList() {
       </form>
       {/* List of items */}
       <div className="space-y-2">
-        {items.map((item) => (
+        {paginatedItems.map((item) => (
           <div key={item.id} className="flex flex-1 items-center justify-between gap-x-1 rounded-md">
             <div className="flex flex-1 items-center">
               {/* Checkbox to toggle item completion */}
@@ -223,6 +323,64 @@ export default function ToDoList() {
           </div>
         ))}
       </div>
+
+      {/* Add pagination component at the bottom */}
+      {totalPages > 1 && (
+        <div className="mt-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className={currentPage === 1 ? 'pointer-events-none select-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNumber = index + 1
+                // Always show first page, last page, and 3 pages around current
+                if (
+                  pageNumber === 1 ||
+                  pageNumber === totalPages ||
+                  (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                ) {
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(pageNumber)}
+                        isActive={currentPage === pageNumber}
+                        className="cursor-pointer select-none"
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                } else if (
+                  // Show ellipsis only once between gaps
+                  (pageNumber === 2 && currentPage > 4) ||
+                  (pageNumber === totalPages - 1 && currentPage < totalPages - 3)
+                ) {
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )
+                }
+                return null
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  className={
+                    currentPage === totalPages ? 'pointer-events-none select-none opacity-50' : 'cursor-pointer'
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   )
 }
