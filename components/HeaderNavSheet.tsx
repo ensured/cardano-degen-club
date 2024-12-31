@@ -13,6 +13,7 @@ import {
   UtensilsCrossed,
   Network,
   Loader2,
+  ShoppingCart,
 } from 'lucide-react'
 
 import { SheetContent } from './SheetContent'
@@ -153,7 +154,7 @@ export function HeaderNavSheet() {
           </CustomLink>
 
           <CustomLink href="/shopping-list" onClick={handleOpenChange}>
-            <UtensilsCrossed className="size-5 min-h-[24px] min-w-[24px]" />
+            <ShoppingCart className="size-5 min-h-[24px] min-w-[24px]" />
             <CustomLinkText>Shopping List</CustomLinkText>
             {folderCommits.find((c) => c.folder === 'shopping-list') && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
