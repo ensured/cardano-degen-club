@@ -33,8 +33,6 @@ export function HeaderNavSheet() {
     setIsSheetOpen(!isSheetOpen)
   }
 
-  const { theme } = useTheme()
-
   return (
     <Sheet key={'left'} open={isSheetOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
@@ -153,6 +151,17 @@ export function HeaderNavSheet() {
               </span>
             )}
           </CustomLink>
+
+          <CustomLink href="/shopping-list" onClick={handleOpenChange}>
+            <UtensilsCrossed className="size-5 min-h-[24px] min-w-[24px]" />
+            <CustomLinkText>Shopping List</CustomLinkText>
+            {folderCommits.find((c) => c.folder === 'shopping-list') && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                ({timeAgoCompact(folderCommits.find((c) => c.folder === 'shopping-list')?.lastCommitDate)})
+              </span>
+            )}
+          </CustomLink>
+
           <CustomLink href="/port-checker" onClick={handleOpenChange}>
             <Network className="size-5 min-h-[24px] min-w-[24px]" />
             <CustomLinkText>Port Checker</CustomLinkText>

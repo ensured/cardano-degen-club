@@ -601,16 +601,18 @@ function TradingViewChart() {
         </div>
       )}
 
-      {/* <div className="flex flex-col items-center justify-center gap-1">
-        {error ? (
-          <p>Error fetching prices. Please try again later.</p>
-        ) : (
-          <ConvertAda
-            adaPrice={prices.length > 0 ? prices[0].price : null}
-            btcPrice={prices.length > 2 ? prices[2].price : null}
-          />
-        )}
-      </div> */}
+      {prices && prices.length > 0 && (
+        <div className="flex flex-col items-center justify-center gap-1">
+          {error ? (
+            <p>Error fetching prices. Please try again later.</p>
+          ) : (
+            <ConvertAda
+              adaPrice={prices.length > 0 ? prices[0].price : null}
+              btcPrice={prices.length > 2 ? prices[2].price : null}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }
