@@ -28,7 +28,9 @@ export default function UserLoginButtons() {
 	const { isSignedIn } = useUser()
 	const pathname = usePathname()
 	const [currentPath, setCurrentPath] = useState(pathname)
-	const { openUserProfile, signOut } = useClerk()
+	const { openUserProfile, signOut, user } = useClerk()
+
+	const userEmail = user?.externalAccounts[0].emailAddress
 
 	useEffect(() => {
 		setCurrentPath(pathname)
@@ -67,10 +69,13 @@ export default function UserLoginButtons() {
 						{walletState.walletAddress?.slice(0, 6)}...{walletState.walletAddress?.slice(-4)}
 						<Image src={walletState.walletIcon} alt="wallet icon" width={32} height={32} />
 					</Button>
+				) : isSignedIn ? (
+					<div style={{ cursor: 'pointer' }}>
+						<Image src={user?.imageUrl || ''} alt="user avatar" width={32} height={32} />
+					</div>
 				) : (
 					<Button variant="ghost" size="icon" className="rounded-full" aria-label="User login options">
-						<UserIcon className="size-5" />
-						<span className="sr-only">Sign in</span>
+						<UserIcon className="size-6" />
 					</Button>
 				)}
 			</DropdownMenuTrigger>
