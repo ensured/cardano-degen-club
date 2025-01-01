@@ -168,7 +168,7 @@ const WalletConnect = ({
 						<div className="flex flex-col items-center justify-center rounded-t-md border-b-0 border-l border-r border-t border-border p-4 px-6 text-lg outline-none md:text-xl">
 							<div className="flex flex-col items-center justify-center">
 								<div className="flex-1">Select a Wallet</div>
-								<div className="text-xs text-muted-foreground">This doesn't do anything yet lol</div>
+								<div className="text-xs text-muted-foreground">This doesn&apos;t actually do anything currently</div>
 							</div>
 						</div>
 
@@ -179,8 +179,8 @@ const WalletConnect = ({
 								.filter((icon) => icon !== undefined)
 								.map((icon, index) => {
 									const wallet = Object.keys(window.cardano || {}).find((key) => {
-										const cardanoWallet = window.cardano?.[key] as Cardano | undefined
-										return cardanoWallet !== undefined && cardanoWallet.icon === icon
+										const cardanoWallet = window.cardano?.[key]
+										return cardanoWallet?.icon === icon
 									})
 									const walletName = wallet ? wallet.charAt(0).toUpperCase() + wallet.slice(1).toLowerCase() : ''
 
