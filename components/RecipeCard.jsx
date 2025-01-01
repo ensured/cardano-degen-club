@@ -56,7 +56,7 @@ const StarButton = ({
 const RecipeCard = ({ recipe, index, lastFoodItemRef, searchResults }) => (
   <div
     ref={index === searchResults.hits.length - 8 ? lastFoodItemRef : null}
-    className="size-full rounded-sm border bg-card transition-colors hover:bg-muted hover:shadow-sm "
+    className="size-full rounded-sm border border-border bg-card transition-colors hover:bg-muted hover:shadow-sm "
   >
     <Link
       target="_blank"

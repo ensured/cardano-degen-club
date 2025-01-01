@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -60,19 +59,6 @@
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-  .custom-scrollbar::-webkit-scrollbar {
-    @apply scrollbar; /* Apply the scrollbar styles */
-  }
-}
-
 @layer utilities {
   .bg-gradient-radial {
     background-image: radial-gradient(
@@ -82,6 +68,7 @@
     );
   }
 } 
+
 @supports (-webkit-touch-callout: none) {
   .h-screen {
     height: -webkit-fill-available;
@@ -314,11 +301,7 @@
   transform: scale(0.9);
   transition: opacity 200ms, transform 200ms;
 }
-/* Your component's CSS file or global styles */
-.toast {
-  @apply toast-enter toast-enter-active toast-exit toast-exit-active;
-  /* Add additional styles here if needed */
-}
+
 
 .scrollable-container {
   user-select: none;
@@ -369,6 +352,3 @@
   animation: gradient 15s ease infinite;
 }
 
-.bg-300\% {
-  background-size: 300% 300%;
-} 

@@ -67,10 +67,10 @@ module.exports = {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
-        // green: {
-        //   DEFAULT: "hsl(var(--green))",
-        //   foreground: "hsl(var(--green-foreground))",
-        // },
+        green: {
+          DEFAULT: "hsl(var(--green))",
+          foreground: "hsl(var(--green-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -170,5 +170,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwind-scrollbar"), require("tailwindcss-animate")],
+  plugins: [require("tailwind-scrollbar"), require("tailwindcss-animate"), require("lucide-react")],
 }

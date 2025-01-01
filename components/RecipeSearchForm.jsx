@@ -367,7 +367,7 @@ const RecipeSearchForm = ({
 
             {/* Add autocomplete suggestions */}
             {showSuggestions && suggestions.length > 0 && (
-              <Command className="absolute top-full z-50 mt-1 h-44 w-full rounded-lg border shadow-md">
+              <Command className="absolute top-full z-50 mt-1 h-44 w-full rounded-lg border border-border shadow-md">
                 <CommandList>
                   <CommandGroup>
                     {suggestions.map((suggestion, index) => (
@@ -452,7 +452,7 @@ const RecipeSearchForm = ({
                       </Button>
                     )}
                   </div>
-                  <ScrollArea className="h-44 rounded-md border">
+                  <ScrollArea className="h-44 rounded-md border border-border">
                     <div className="px-4 py-3">
                       <div className="relative grid grid-cols-2 gap-2 pl-1">
                         {healthOptions.map((option) => (
@@ -506,7 +506,7 @@ const RecipeSearchForm = ({
                       </Button>
                     )}
                   </div>
-                  <ScrollArea className="h-24 rounded-md border px-4 py-3">
+                  <ScrollArea className="h-24 rounded-md border border-border px-4 py-3">
                     <RadioGroup
                       value={selectedMealType}
                       onValueChange={handleMealTypeChange}

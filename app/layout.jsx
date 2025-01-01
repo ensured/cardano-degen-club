@@ -9,11 +9,8 @@ import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Inter } from "next/font/google"
 import CustomClerkProvider from "./clerk/Provider"
-import {GoogleOneTap } from "@clerk/nextjs"
 import { CommitProvider } from "@/components/CommitContext" 
-import { Suspense } from "react"
-import { Loader2 } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
+
 
 export const metadata = {
   title: "Home",
@@ -38,7 +35,9 @@ const inter = Inter({
 
 export default async function RootLayout({ children }) {
   return (
-    <CustomClerkProvider>
+    <CustomClerkProvider 
+ 
+    >
 
       <html lang="en" suppressHydrationWarning>
         <body className={cn(

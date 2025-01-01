@@ -154,25 +154,6 @@ export default function ToDoList() {
     setEditItemValid(e.target.value.trim().length >= 1)
   }
 
-  // Generate dummy items
-  // const addDummyItems = (): void => {
-  //   const remainingSlots = MAX_ITEMS - items.length
-  //   if (remainingSlots <= 0) {
-  //     toast.error(`Maximum limit of ${MAX_ITEMS.toLocaleString()} items reached`)
-  //     return
-  //   }
-
-  //   const itemsToAdd = Math.min(9999, remainingSlots)
-  //   const dummyItems = Array.from({ length: itemsToAdd }, (_, index) => ({
-  //     id: Date.now() + index,
-  //     text: `Item ${index + 1}`,
-  //     completed: Math.random() < 0.5,
-  //   }))
-
-  //   setItems([...items, ...dummyItems])
-  //   toast.success(`Added ${itemsToAdd.toLocaleString()} dummy items`)
-  // }
-
   // Clear all items
   const clearAllItems = (): void => {
     setItems([])
@@ -218,18 +199,6 @@ export default function ToDoList() {
           </div>
         </div>
       </h1>
-
-      {/* testing */}
-      {/* <div className="mb-4 flex gap-2">
-        <Button onClick={addDummyItems} className="flex items-center gap-x-2" variant="outline" size="sm">
-          <PlusIcon className="size-4" />
-          Add 9999 Items
-        </Button>
-        <Button onClick={clearAllItems} className="flex items-center gap-x-2" variant="outline" size="sm">
-          <XIcon className="size-4" />
-          Clear All
-        </Button>
-      </div> */}
 
       {/* Input for adding new items */}
       <form className="mb-4 flex items-center" onSubmit={addItem}>
