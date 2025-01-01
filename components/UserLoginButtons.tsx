@@ -32,6 +32,8 @@ export default function UserLoginButtons() {
 
 	const userEmail = user?.externalAccounts[0].emailAddress
 
+	const hiddenEmail = userEmail ? userEmail.slice(0, 3) + '...' + userEmail.slice(userEmail.indexOf('@') - 2) : ''
+
 	useEffect(() => {
 		setCurrentPath(pathname)
 	}, [pathname])
@@ -65,7 +67,7 @@ export default function UserLoginButtons() {
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
 			<DropdownMenuTrigger asChild>
 				{walletState.walletIcon !== null ? (
-					<Button variant="ghost" aria-label="User login options">
+					<Button variant="ghost" className="px-2" aria-label="User login options">
 						{walletState.walletAddress?.slice(0, 6)}...{walletState.walletAddress?.slice(-4)}
 						<Image src={walletState.walletIcon} alt="wallet icon" width={32} height={32} />
 					</Button>
@@ -79,50 +81,58 @@ export default function UserLoginButtons() {
 					</Button>
 				)}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-72" align="end">
+			<DropdownMenuContent className="w-80" align="end">
 				<div className="flex flex-col gap-6 rounded-lg p-6 shadow-md">
-					<div className="flex flex-col items-center gap-4 border-b pb-4">
+					<div className="flex flex-col items-center gap-4 border-b border-border/30 pb-6">
+						<h2 className="flex items-center text-lg font-semibold text-foreground/90">
+							<UserIcon className="mr-2 size-5" />
+							Web2 Login
+						</h2>
 						{isSignedIn ? (
-							<>
-								<h2 className="flex items-center text-lg font-bold">
-									<UserIcon className="mr-2" />
-									Web2 Login
-								</h2>
-								<div className="flex w-[60%] items-center justify-between gap-2">
-									<div onClick={handleUserButtonClick} style={{ cursor: 'pointer' }}>
+							<div className="flex w-full flex-col items-center gap-3">
+								<div
+									onClick={handleUserButtonClick}
+									className="w-full cursor-pointer rounded-lg bg-secondary/50 p-2 transition-colors hover:bg-secondary"
+								>
+									<div className="flex items-center gap-3">
 										<ClerkUserButton
 											appearance={{
 												baseTheme: theme === 'dark' ? dark : undefined,
 												elements: {
 													userButtonAvatarBox: {
-														width: '2rem',
-														height: '2rem',
-														transform: 'translateY(3px)',
+														width: '2.5rem',
+														height: '2.5rem',
+													},
+													userButtonBox: {
+														width: '100%',
 													},
 												},
 											}}
 										/>
+										<span className="text-sm text-muted-foreground">{hiddenEmail}</span>
 									</div>
-									<Button variant="destructive" onClick={handleSignOut} size="sm">
-										Logout
-									</Button>
 								</div>
-							</>
+								<Button variant="destructive" onClick={handleSignOut} size="sm" className="w-full">
+									Logout
+								</Button>
+							</div>
 						) : (
 							<Web2LoginButton currentPath={currentPath} />
 						)}
 					</div>
 
 					<div className="flex flex-col items-center gap-4">
-						<h3 className="flex items-center text-lg font-bold">
-							<GlobeIcon className="mr-2" />
-							Web3 Login
+						<h3 className="flex items-center text-lg font-semibold text-foreground/90">
+							<div className="flex items-center gap-2">
+								<GlobeIcon className="size-5" />
+								Web3 Login
+							</div>
 						</h3>
 						<WalletConnect
 							walletState={walletState}
 							setWalletState={setWalletState}
 							handleDisconnect={handleDisconnect}
-							className="rounded-md p-1 transition duration-200"
+							className="w-full rounded-md bg-secondary/50 p-4 transition-colors hover:bg-secondary"
 							aria-label="Web3 Login Button"
 						/>
 					</div>

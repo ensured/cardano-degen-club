@@ -128,34 +128,44 @@ const WalletConnect = ({
 	}
 
 	return (
-		<div className={cn('flex w-full flex-col items-center justify-center rounded-md', className)}>
-			<Button
-				variant="outline"
-				onClick={handleConnect}
-				size={'sm'}
-				className="flex flex-row items-center gap-1 text-xl"
-			>
-				{walletState?.walletName ? (
-					<>
-						<p className="text-sm">{walletState?.balance}</p>
-
+		<div className="flex w-full flex-col items-center justify-center rounded-md">
+			{walletState?.walletName ? (
+				<div className="flex w-full flex-col gap-2">
+					<div className="flex w-full flex-row items-center gap-2 rounded-lg bg-secondary/50 p-2">
 						{walletState?.walletIcon && (
-							<Image src={walletState?.walletIcon} alt="wallet icon" width={28} height={28} />
+							<Image
+								src={walletState?.walletIcon}
+								alt="wallet icon"
+								width={40}
+								height={40}
+								className="size-10 rounded-full"
+							/>
 						)}
-						<div
-							className="flex items-center justify-center rounded-full p-1 hover:bg-destructive"
-							onClick={handleDisconnect}
-						>
-							<XIcon className="size-5" />
-						</div>
-					</>
-				) : (
-					<div className="flex flex-row items-center gap-2">
-						<p className="text-sm">Connect Wallet</p>
-						<Globe className="size-5" />
+
+						<span className="line-clamp-1 text-sm text-muted-foreground">
+							{walletState.walletAddress?.slice(0, 12)}...{walletState.walletAddress?.slice(-4)}
+						</span>
 					</div>
-				)}
-			</Button>
+
+					<Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full">
+						Disconnect
+					</Button>
+				</div>
+			) : (
+				<Button
+					variant="outline"
+					onClick={handleConnect}
+					className={cn(
+						'flex w-full flex-row items-center justify-between gap-3 rounded-lg bg-secondary/50 p-2 text-left transition-colors hover:bg-secondary',
+						className,
+					)}
+				>
+					<div className="flex items-center gap-3">
+						<div className="size-10 rounded-full bg-transparent" />
+						<span className="text-sm text-muted-foreground">Connect Wallet</span>
+					</div>
+				</Button>
+			)}
 
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
 				<SheetTrigger />
@@ -219,6 +229,9 @@ const WalletConnect = ({
 					</div>
 				</SheetContent>
 			</Sheet>
+			{walletState.walletIcon !== null && (
+				<span className="mt-2 text-sm text-muted-foreground">{walletState.balance} ₳</span>
+			)}
 		</div>
 	)
 }
