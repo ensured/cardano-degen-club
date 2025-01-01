@@ -61,7 +61,7 @@ export function HeaderNavSheet() {
 	}, [])
 
 	// Function to interpolate color based on time difference
-	const getColor = (date) => {
+	const getColor = (date: any) => {
 		const commitTime = date ? new Date(date) : new Date() // Fallback to current date if date is invalid
 		const timeDiff = (currentTime - commitTime.getTime()) / 1000 // Use currentTime for difference
 
