@@ -509,7 +509,6 @@ export const getAddressFromHandle = async (handleName: string) => {
 		image = data.image
 		address = data.resolved_addresses.ada
 	} catch (error) {
-		console.log('Error in getAddressFromHandle:', error)
 		return { error: 'Error in getAddressFromHandle' }
 	}
 
@@ -558,13 +557,11 @@ export async function storeWalletAuth(
 			signature,
 		}
 
-		console.log('Storing auth data:', authData)
 		// Store in KV with 120-day expiration (10368000 seconds)
 		await kv.set(`wallet:${address}`, authData)
 
 		// Verify it was stored
 		const stored = await getWalletAuth(address)
-		console.log('Verified stored auth:', stored)
 
 		if (!stored) {
 			return { success: false, error: 'Failed to verify storage' }
@@ -589,10 +586,8 @@ export const removeWalletAuth = async (address: string) => {
 export async function verifyWalletAuth(address: string): Promise<{ isValid: boolean; error?: string }> {
 	try {
 		const walletAuth = await getWalletAuth(address)
-		console.log('Retrieved wallet auth:', walletAuth)
 
 		if (!walletAuth) {
-			console.log('No wallet auth found')
 			return { isValid: false, error: 'No authentication found' }
 		}
 
@@ -601,14 +596,6 @@ export async function verifyWalletAuth(address: string): Promise<{ isValid: bool
 		const currentTime = Date.now()
 		const OneTwentyDays = 120 * 24 * 60 * 60 * 1000
 		const timeDiff = currentTime - auth.timestamp
-
-		console.log({
-			currentTime,
-			authTimestamp: auth.timestamp,
-			timeDiff,
-			OneTwentyDays,
-			isExpired: timeDiff > OneTwentyDays,
-		})
 
 		// Simple existence check first
 		if (auth.address === address) {

@@ -36,7 +36,7 @@ declare global {
 
 const WalletConnect = ({ className }: { className: string }) => {
 	const [isSheetOpen, setIsSheetOpen] = useState(false)
-	const { walletState, setWalletState, handleDisconnect, handleWalletConnect } = useWallet()
+	const { walletState, setWalletState, handleDisconnect, handleWalletConnect, handleUnlink } = useWallet()
 
 	const handleOpenConnectSheet = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
@@ -82,6 +82,9 @@ const WalletConnect = ({ className }: { className: string }) => {
 					<Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full">
 						Disconnect
 					</Button>
+					<Button variant="outline" size="sm" className="w-full" onClick={handleUnlink}>
+						Unlink
+					</Button>
 				</div>
 			) : (
 				<Button
@@ -110,7 +113,9 @@ const WalletConnect = ({ className }: { className: string }) => {
 						<div className="flex flex-col items-center justify-center rounded-t-md border-b-0 border-l border-r border-t border-border p-4 px-6 text-lg outline-none md:text-xl">
 							<div className="flex flex-col items-center justify-center">
 								<div className="flex-1">Select a Wallet</div>
-								<div className="text-xs text-muted-foreground">This doesn&apos;t actually do anything currently</div>
+								<div className="text-xs text-muted-foreground">
+									You can unlink a wallet at any time by clicking the Unlink button. Deletes all associated data.
+								</div>
 							</div>
 						</div>
 

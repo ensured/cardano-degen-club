@@ -45,7 +45,7 @@ interface WalletContextType {
 	walletState: WalletState
 	setWalletState: (state: WalletState) => void
 	handleDisconnect: () => void
-	removeAuthToken: () => void
+	handleUnlink: () => Promise<void>
 	handleWalletConnect: (wallet: string) => Promise<boolean>
 }
 
@@ -56,6 +56,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	// const [authToken, setAuthToken] = useState<string | null>(null)
 
 	const handleWalletConnect = async (wallet: string) => {
+		// check if an instance exists in vercel kv db
+
 		if (window.cardano) {
 			try {
 				const walletInstance = await window.cardano[wallet]?.enable()
@@ -90,6 +92,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 					}
 
 					const address = walletAddresses[0]
+					const walletAuth = await getWalletAuth(humanReadableAddresses[0])
+					if (walletAuth) {
+						setWalletState(newWalletState)
+						return
+					}
 					const message = `Login to cardanodegen.shop`
 					const messageHex = Buffer.from(message).toString('hex')
 					const signedMessage = await walletInstance.signData(address, messageHex)
@@ -145,15 +152,17 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	}, [])
 
 	const handleDisconnect = async () => {
-		// if (walletState.walletAddress) {
-		// 	await removeWalletAuth(walletState.walletAddress)
-		// }
 		localStorage.removeItem('walletState')
 		setWalletState(defaultWalletState)
+		toast.success('Wallet disconnected')
 	}
 
-	const removeAuthToken = () => {
-		localStorage.removeItem('CardanoAuthToken')
+	const handleUnlink = async () => {
+		if (walletState.walletAddress) {
+			await removeWalletAuth(walletState.walletAddress)
+			handleDisconnect()
+			toast.success('Wallet unlinked')
+		}
 	}
 
 	return (
@@ -162,8 +171,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 				walletState,
 				setWalletState,
 				handleDisconnect,
-				removeAuthToken,
 				handleWalletConnect,
+				handleUnlink,
 			}}
 		>
 			{children}
