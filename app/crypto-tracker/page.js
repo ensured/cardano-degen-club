@@ -17,7 +17,7 @@ import { useUser } from '@clerk/nextjs'
 // 	},
 // }
 
-const page = () => {
+const CryptoTrackerPage = () => {
 	const { user } = useUser()
 	const { walletState } = useWallet()
 	const userEmail = user?.emailAddresses[0]?.emailAddress
@@ -47,4 +47,4 @@ const page = () => {
 	)
 }
 
-export default page
+export default CryptoTrackerPage
