@@ -134,16 +134,42 @@ const WalletConnect = ({
 										setIsWalletAddressVisible(!isWalletAddressVisible)
 									}
 								}}
-								className="ml-2"
+								className="group ml-2"
 							>
-								{(adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? <Eye /> : <EyeOff />}
+								{(adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? (
+									<>
+										<div className="group-hover:hidden">
+											<Eye />
+										</div>
+										<div className="hidden group-hover:block">
+											<EyeOff />
+										</div>
+									</>
+								) : (
+									<>
+										<div className="group-hover:hidden">
+											<EyeOff />
+										</div>
+										<div className="hidden group-hover:block">
+											<Eye />
+										</div>
+									</>
+								)}
 							</button>
 						</div>
 					</div>
 					<div className="flex flex-row items-center justify-between gap-2">
-						{walletState.balance && <span className="mt-2 text-sm text-muted-foreground">{walletState.balance} ₳</span>}
+						{walletState.balance && (
+							<span className="mt-2 text-sm text-muted-foreground">
+								{isAdaHandleVisible
+									? walletState.balance + ' ₳'
+									: '*'.repeat(walletState.balance.toString().length + 1) + ' ₳'}
+							</span>
+						)}
 						{walletState.adaHandle.total_handles && (
-							<span className="mt-2 text-sm text-muted-foreground">{walletState.adaHandle.total_handles} handles</span>
+							<span className="mt-2 text-sm text-muted-foreground">
+								{isAdaHandleVisible ? walletState.adaHandle.total_handles + ' handles' : ''}
+							</span>
 						)}
 					</div>
 					<Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full">
