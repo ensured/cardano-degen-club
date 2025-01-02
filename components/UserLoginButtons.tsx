@@ -10,25 +10,17 @@ import WalletConnect from '@/components/WalletConnect'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { dark } from '@clerk/themes'
+import { useWallet } from '@/contexts/WalletContext'
 
 export default function UserLoginButtons() {
 	const [isOpen, setIsOpen] = useState(false)
-	const [walletState, setWalletState] = useState({
-		wallet: null,
-		supportedWallets: [],
-		dropdownVisible: false,
-		walletIcon: null,
-		walletName: null,
-		walletAddress: '',
-		walletAddresses: [],
-		balance: null,
-		walletImages: [],
-	})
 	const { theme } = useTheme()
 	const { isSignedIn } = useUser()
 	const pathname = usePathname()
 	const [currentPath, setCurrentPath] = useState(pathname)
 	const { openUserProfile, signOut, user } = useClerk()
+
+	const { walletState } = useWallet()
 
 	const userEmail = user?.externalAccounts[0].emailAddress
 
@@ -37,21 +29,6 @@ export default function UserLoginButtons() {
 	useEffect(() => {
 		setCurrentPath(pathname)
 	}, [pathname])
-
-	const handleDisconnect = () => {
-		setWalletState({
-			wallet: null,
-			supportedWallets: [],
-			dropdownVisible: false,
-			walletIcon: null,
-			walletName: null,
-			walletAddress: '',
-			walletAddresses: [],
-			balance: null,
-			walletImages: [],
-		})
-		localStorage.removeItem('CardanoAuthToken')
-	}
 
 	const handleUserButtonClick = (e: React.MouseEvent) => {
 		e.stopPropagation()
@@ -130,9 +107,6 @@ export default function UserLoginButtons() {
 							</div>
 						</h3>
 						<WalletConnect
-							walletState={walletState}
-							setWalletState={setWalletState}
-							handleDisconnect={handleDisconnect}
 							className="w-full rounded-md bg-secondary/50 p-4 transition-colors hover:bg-secondary"
 							aria-label="Web3 Login Button"
 						/>

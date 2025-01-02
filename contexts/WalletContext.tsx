@@ -30,7 +30,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
 	const [walletState, setWalletState] = useState<any>({})
-	const [authToken, setAuthToken] = useState<string | null>(null)
+	// const [authToken, setAuthToken] = useState<string | null>(null)
 
 	const handleWalletConnect = async (wallet: string) => {
 		if (window.cardano) {
