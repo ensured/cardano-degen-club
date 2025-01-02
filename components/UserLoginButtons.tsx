@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { GlobeIcon, UserIcon } from 'lucide-react'
+import { Eye, EyeOff, GlobeIcon, UserIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { UserButton as ClerkUserButton, useUser, useClerk } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,8 @@ export default function UserLoginButtons() {
 	const { walletState } = useWallet()
 	const [hiddenEmail, setHiddenEmail] = useState('')
 	const userEmail = user?.externalAccounts[0].emailAddress
+	const [isWalletAddressVisible, setIsWalletAddressVisible] = useState(false)
+	const [isAdaHandleVisible, setIsAdaHandleVisible] = useState(false)
 
 	useEffect(() => {
 		setCurrentPath(pathname)
@@ -49,12 +51,38 @@ export default function UserLoginButtons() {
 
 	const web2Image = user?.imageUrl
 
+	const eyeButton = (
+		<button
+			onClick={(e) => {
+				e.preventDefault()
+				if (walletState.adaHandle?.handle) {
+					setIsAdaHandleVisible(!isAdaHandleVisible)
+				} else {
+					setIsWalletAddressVisible(!isWalletAddressVisible)
+				}
+			}}
+			className="ml-2"
+		>
+			{(walletState.adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? <Eye /> : <EyeOff />}
+		</button>
+	)
 	return (
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
 			<DropdownMenuTrigger asChild>
 				{walletState.walletAddress && walletState.walletIcon ? (
-					<Button variant="ghost" className="px-2" aria-label="User login options">
-						{walletState.walletAddress?.slice(0, 6)}...{walletState.walletAddress?.slice(-4)}
+					<Button variant="ghost" className="flex items-center gap-1.5 px-2" aria-label="User login options">
+						<span className="line-clamp-1 text-sm text-muted-foreground">
+							{walletState.adaHandle?.handle && !isAdaHandleVisible && (
+								<span>
+									${walletState.adaHandle.handle.charAt(0)}
+									{'*'.repeat(walletState.adaHandle.handle.length - 1)}
+								</span>
+							)}
+							{walletState.adaHandle?.handle && isAdaHandleVisible && <span>${walletState.adaHandle.handle}</span>}
+							{(!walletState.adaHandle?.handle || !isAdaHandleVisible) && isWalletAddressVisible
+								? `${walletState?.walletAddress?.slice(0, 10)}...${walletState?.walletAddress?.slice(-4)}`
+								: ''}
+						</span>
 						<Image src={walletState.walletIcon} alt="wallet icon" width={32} height={32} />
 					</Button>
 				) : isSignedIn ? (
@@ -121,6 +149,10 @@ export default function UserLoginButtons() {
 						<WalletConnect
 							className="w-full rounded-md bg-secondary/50 p-4 transition-colors hover:bg-secondary"
 							aria-label="Web3 Login Button"
+							setIsAdaHandleVisible={setIsAdaHandleVisible}
+							setIsWalletAddressVisible={setIsWalletAddressVisible}
+							isAdaHandleVisible={isAdaHandleVisible}
+							isWalletAddressVisible={isWalletAddressVisible}
 						/>
 					</div>
 				</div>

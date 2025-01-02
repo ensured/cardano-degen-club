@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { decode as cborDecode } from 'cbor-js'
 import { Address, BaseAddress } from '@emurgo/cardano-serialization-lib-asmjs'
 import { toast } from 'sonner'
-import { storeWalletAuth, getWalletAuth, removeWalletAuth } from '@/app/actions'
+import { storeWalletAuth, getWalletAuth, removeWalletAuth, getAdaHandle } from '@/app/actions'
 // Function to decode hexadecimal address to Bech32
 const decodeHexAddress = (hexAddress: string): string => {
 	try {
@@ -24,6 +24,11 @@ interface WalletState {
 	walletIcon: string | null
 	walletName: string | null
 	walletAddress: string | null
+	adaHandle: {
+		handle: string | null
+		total_handles: number | null
+	}
+	stakeAddress: string | null
 	walletAddresses: string[]
 	balance: string | null
 	walletImages: string[]
@@ -36,6 +41,11 @@ const defaultWalletState: WalletState = {
 	walletIcon: null,
 	walletName: null,
 	walletAddress: null,
+	adaHandle: {
+		handle: null,
+		total_handles: null,
+	},
+	stakeAddress: null,
 	walletAddresses: [],
 	balance: null,
 	walletImages: [],
@@ -47,13 +57,13 @@ interface WalletContextType {
 	handleDisconnect: () => void
 	handleUnlink: () => Promise<void>
 	handleWalletConnect: (wallet: string) => Promise<boolean>
+	adaHandle: { handle: string | null; total_handles: number | null }
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
 	const [walletState, setWalletState] = useState<WalletState>(defaultWalletState)
-	// const [authToken, setAuthToken] = useState<string | null>(null)
 
 	const handleWalletConnect = async (wallet: string): Promise<boolean> => {
 		if (!window.cardano) return false
@@ -77,6 +87,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 					return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
 				})
 
+				let stakeAddress = await walletInstance.getRewardAddresses()
+				stakeAddress = stakeAddress[0]
+				const stakeAddressBytes = Buffer.from(stakeAddress, 'hex')
+				const stakeAddressAddress = Address.from_bytes(stakeAddressBytes)
+				const stakeAddressBaseAddress = BaseAddress.from_address(stakeAddressAddress)
+				const stakeAddressBech32 = stakeAddressBaseAddress
+					? stakeAddressBaseAddress.to_address().to_bech32()
+					: stakeAddressAddress.to_bech32()
+
+				const adaHandle = await getAdaHandle(stakeAddressBech32)
+				console.log(adaHandle)
+
 				const newWalletState: WalletState = {
 					wallet: walletInstance,
 					walletIcon,
@@ -87,6 +109,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 					balance: decodedBalance,
 					supportedWallets: [],
 					walletImages: [],
+					adaHandle: {
+						handle: adaHandle.default_handle,
+						total_handles: adaHandle.total_handles,
+					},
+					stakeAddress: stakeAddressBech32,
 				}
 
 				const address = walletAddresses[0]
@@ -170,6 +197,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 				handleDisconnect,
 				handleWalletConnect,
 				handleUnlink,
+				adaHandle: walletState.adaHandle,
 			}}
 		>
 			{children}

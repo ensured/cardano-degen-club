@@ -1,13 +1,25 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { Sheet, SheetTrigger, SheetContent, SheetDescription, SheetTitle } from './ui/sheet'
 import Image from 'next/image'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { CheckIcon } from 'lucide-react'
+import { CheckIcon, Eye, EyeOff } from 'lucide-react'
 // import { Blockfrost, Lucid } from 'lucid-cardano'
 import { cn } from '@/lib/utils'
 import { useWallet } from '@/contexts/WalletContext'
+import {
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogTrigger,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogDescription,
+	AlertDialogAction,
+	AlertDialogFooter,
+	AlertDialogCancel,
+} from './ui/alert-dialog'
+import { Input } from './ui/input'
 
 interface Cardano {
 	[key: string]:
@@ -34,9 +46,36 @@ declare global {
 // 	}
 // }
 
-const WalletConnect = ({ className }: { className: string }) => {
+interface WalletConnectProps {
+	className: string
+	setIsAdaHandleVisible: (value: boolean) => void
+	setIsWalletAddressVisible: (value: boolean) => void
+	isAdaHandleVisible: boolean
+	isWalletAddressVisible: boolean
+}
+
+const WalletConnect = ({
+	className,
+	setIsAdaHandleVisible,
+	setIsWalletAddressVisible,
+	isAdaHandleVisible,
+	isWalletAddressVisible,
+}: WalletConnectProps) => {
 	const [isSheetOpen, setIsSheetOpen] = useState(false)
-	const { walletState, setWalletState, handleDisconnect, handleWalletConnect, handleUnlink } = useWallet()
+	const { walletState, setWalletState, handleDisconnect, handleWalletConnect, handleUnlink, adaHandle } = useWallet()
+
+	// Load wallet state from localStorage on component mount
+	useEffect(() => {
+		const savedWalletState = localStorage.getItem('walletState')
+		if (savedWalletState) {
+			setWalletState(JSON.parse(savedWalletState))
+		}
+	}, [setWalletState])
+
+	// Save wallet state to localStorage whenever it changes
+	useEffect(() => {
+		localStorage.setItem('walletState', JSON.stringify(walletState))
+	}, [walletState])
 
 	const handleOpenConnectSheet = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
@@ -63,7 +102,7 @@ const WalletConnect = ({ className }: { className: string }) => {
 		<div className="flex w-full flex-col items-center justify-center rounded-md">
 			{walletState?.walletName ? (
 				<div className="flex w-full flex-col gap-2">
-					<div className="flex w-full flex-row items-center gap-2 rounded-lg bg-secondary/50 p-2">
+					<div className="flex w-full flex-row items-center justify-between gap-2 rounded-lg bg-secondary/50 p-2">
 						{walletState?.walletIcon && (
 							<Image
 								src={walletState?.walletIcon}
@@ -74,17 +113,93 @@ const WalletConnect = ({ className }: { className: string }) => {
 							/>
 						)}
 
-						<span className="line-clamp-1 text-sm text-muted-foreground">
-							{walletState.walletAddress?.slice(0, 12)}...{walletState.walletAddress?.slice(-4)}
-						</span>
+						<div className="flex flex-1 items-center justify-between">
+							<span className="line-clamp-1 text-sm text-muted-foreground">
+								{adaHandle?.handle && !isAdaHandleVisible && (
+									<span>
+										${adaHandle.handle.charAt(0)}
+										{'*'.repeat(adaHandle.handle.length - 1)}
+									</span>
+								)}
+								{adaHandle?.handle && isAdaHandleVisible && <span>${adaHandle.handle}</span>}
+								{(!adaHandle?.handle || !isAdaHandleVisible) && isWalletAddressVisible
+									? `${walletState?.walletAddress?.slice(0, 10)}...${walletState?.walletAddress?.slice(-4)}`
+									: ''}
+							</span>
+							<button
+								onClick={() => {
+									if (adaHandle?.handle) {
+										setIsAdaHandleVisible(!isAdaHandleVisible)
+									} else {
+										setIsWalletAddressVisible(!isWalletAddressVisible)
+									}
+								}}
+								className="ml-2"
+							>
+								{(adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? <Eye /> : <EyeOff />}
+							</button>
+						</div>
 					</div>
-
+					<div className="flex flex-row items-center justify-between gap-2">
+						{walletState.balance && <span className="mt-2 text-sm text-muted-foreground">{walletState.balance} ₳</span>}
+						{walletState.adaHandle.total_handles && (
+							<span className="mt-2 text-sm text-muted-foreground">{walletState.adaHandle.total_handles} handles</span>
+						)}
+					</div>
 					<Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full">
 						Disconnect
 					</Button>
-					<Button variant="outline" size="sm" className="w-full" onClick={handleUnlink}>
-						Unlink
-					</Button>
+					<AlertDialog>
+						<AlertDialogTrigger asChild>
+							<Button variant="outline" size="sm" className="w-full">
+								Unlink
+							</Button>
+						</AlertDialogTrigger>
+						<AlertDialogContent>
+							<AlertDialogHeader>
+								<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+								<AlertDialogDescription>
+									This will permanently delete all wallet data. Type &quot;unlink&quot; to confirm.
+								</AlertDialogDescription>
+							</AlertDialogHeader>
+							<form
+								onSubmit={(e) => {
+									e.preventDefault()
+									const button = document.getElementById('confirmUnlink') as HTMLButtonElement
+									if (!button.disabled) {
+										handleUnlink()
+									}
+								}}
+							>
+								<div className="grid gap-4 py-4">
+									<div className="grid grid-cols-4 items-center gap-4">
+										<Input
+											id="unlinkConfirm"
+											placeholder="Type 'unlink' to confirm"
+											className="col-span-4"
+											onChange={(e) => {
+												const button = document.getElementById('confirmUnlink') as HTMLButtonElement
+												if (button) {
+													button.disabled = e.target.value !== 'unlink'
+												}
+											}}
+										/>
+									</div>
+								</div>
+								<AlertDialogFooter>
+									<AlertDialogCancel>Cancel</AlertDialogCancel>
+									<AlertDialogAction
+										type="submit"
+										id="confirmUnlink"
+										disabled={true}
+										className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+									>
+										Unlink Wallet
+									</AlertDialogAction>
+								</AlertDialogFooter>
+							</form>
+						</AlertDialogContent>
+					</AlertDialog>
 				</div>
 			) : (
 				<Button
@@ -170,7 +285,6 @@ const WalletConnect = ({ className }: { className: string }) => {
 					</div>
 				</SheetContent>
 			</Sheet>
-			{walletState.balance && <span className="mt-2 text-sm text-muted-foreground">{walletState.balance} ₳</span>}
 		</div>
 	)
 }

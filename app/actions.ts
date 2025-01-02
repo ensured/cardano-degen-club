@@ -546,6 +546,16 @@ interface WalletAuth {
 	signature: string
 }
 
+export const getAdaHandle = async (stakeAddress: string) => {
+	const res = await fetch(`https://api.handle.me/holders/${stakeAddress}`, {
+		headers: {
+			accept: 'application/json',
+		},
+	})
+	const data = await res.json()
+	return data
+}
+
 export async function storeWalletAuth(
 	address: string,
 	signature: string,
