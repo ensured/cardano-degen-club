@@ -10,7 +10,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Inter } from 'next/font/google'
 import CustomClerkProvider from './clerk/Provider'
 import { CommitProvider } from '@/components/CommitContext'
-
+import { WalletProvider } from '@/contexts/WalletContext'
 export const metadata = {
 	title: 'Home',
 	description: siteConfig.description,
@@ -36,25 +36,27 @@ export default async function RootLayout({ children }) {
 		<CustomClerkProvider>
 			<html lang="en" suppressHydrationWarning>
 				<body className={cn('min-h-screen bg-background font-sans antialiased', inter.variable, inter.className)}>
-					<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-						<Toaster
-							richColors={true}
-							toastOptions={{
-								style: { minWidth: '20rem', maxWidth: '40rem' },
-								className: 'break-all',
-							}}
-						/>
-						<CommitProvider>
-							<div className="flex min-h-screen flex-col">
-								<div className="relative">
-									<SiteHeader />
+					<WalletProvider>
+						<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+							<Toaster
+								richColors={true}
+								toastOptions={{
+									style: { minWidth: '20rem', maxWidth: '40rem' },
+									className: 'break-all',
+								}}
+							/>
+							<CommitProvider>
+								<div className="flex min-h-screen flex-col">
+									<div className="relative">
+										<SiteHeader />
+									</div>
+									<main className="grow">{children}</main>
+									<Footer />
 								</div>
-								<main className="grow">{children}</main>
-								<Footer />
-							</div>
-							<TailwindIndicator />
-						</CommitProvider>
-					</ThemeProvider>
+								<TailwindIndicator />
+							</CommitProvider>
+						</ThemeProvider>
+					</WalletProvider>
 					<ScrollToTopButton />
 				</body>
 			</html>

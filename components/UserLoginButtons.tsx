@@ -50,6 +50,7 @@ export default function UserLoginButtons() {
 			balance: null,
 			walletImages: [],
 		})
+		localStorage.removeItem('CardanoAuthToken')
 	}
 
 	const handleUserButtonClick = (e: React.MouseEvent) => {

@@ -1,16 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { BaseAddress, Address } from '@emurgo/cardano-serialization-lib-asmjs'
-import { decode as cborDecode } from 'cbor-js'
 import { Button } from './ui/button'
 import { Sheet, SheetTrigger, SheetContent, SheetDescription, SheetTitle } from './ui/sheet'
 import Image from 'next/image'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { Globe, UserIcon, XIcon } from 'lucide-react'
 import { CheckIcon } from 'lucide-react'
-import { toast } from 'sonner'
-import { Blockfrost, Lucid } from 'lucid-cardano'
+// import { Blockfrost, Lucid } from 'lucid-cardano'
 import { cn } from '@/lib/utils'
+import { useWallet } from '@/contexts/WalletContext'
 
 interface Cardano {
 	[key: string]:
@@ -31,39 +28,17 @@ declare global {
 	}
 }
 
-declare global {
-	interface Window {
-		lucid?: Lucid
-	}
-}
+// declare global {
+// 	interface Window {
+// 		lucid?: Lucid
+// 	}
+// }
 
-// Function to decode hexadecimal address to Bech32
-const decodeHexAddress = (hexAddress: string): string => {
-	try {
-		const bytes = Buffer.from(hexAddress, 'hex')
-		const address = Address.from_bytes(bytes)
-		const baseAddress = BaseAddress.from_address(address)
-		return baseAddress ? baseAddress.to_address().to_bech32() : address.to_bech32()
-	} catch (error) {
-		console.error('Error decoding address:', error)
-		return hexAddress
-	}
-}
-
-const WalletConnect = ({
-	walletState,
-	setWalletState,
-	handleDisconnect,
-	className,
-}: {
-	walletState: any
-	setWalletState: any
-	handleDisconnect: () => void
-	className: string
-}) => {
+const WalletConnect = ({ className }: { className: string }) => {
 	const [isSheetOpen, setIsSheetOpen] = useState(false)
+	const { walletState, setWalletState, handleDisconnect, handleWalletConnect } = useWallet()
 
-	const handleConnect = async (e: React.MouseEvent<HTMLButtonElement>) => {
+	const handleOpenConnectSheet = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
 		if (window.cardano) {
 			const walletNames = Object.keys(window.cardano).filter(
@@ -81,49 +56,6 @@ const WalletConnect = ({
 				...prev,
 				supportedWallets: [],
 			}))
-		}
-	}
-
-	const handleWalletConnect = async (wallet: string) => {
-		if (window.cardano) {
-			try {
-				const walletInstance = await window.cardano[wallet]?.enable()
-				const walletData = window.cardano[wallet]
-				const walletName = walletData?.name || null
-				const walletIcon = walletData?.icon || null
-
-				const balanceResponse = await walletInstance.getBalance()
-
-				try {
-					const balanceBytes = Buffer.from(balanceResponse, 'hex')
-					const uint8Array = new Uint8Array(balanceBytes)
-					const arrayBuffer = uint8Array.buffer
-					const decodedBalance = (cborDecode(arrayBuffer)[0] / 1000000).toLocaleString()
-
-					const walletAddresses = await walletInstance.getUsedAddresses()
-					const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
-						return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
-					})
-
-					const newWalletState = {
-						wallet: walletInstance,
-						walletIcon,
-						walletName,
-						walletAddress: humanReadableAddresses[0],
-						walletAddresses: humanReadableAddresses,
-						dropdownVisible: false,
-						balance: decodedBalance,
-						walletImages: walletIcon ? [...walletState.walletImages, walletIcon] : walletState.walletImages,
-					}
-
-					setWalletState(newWalletState)
-					setIsSheetOpen(false)
-				} catch (error) {
-					console.error('Error decoding balance:', error)
-				}
-			} catch (error) {
-				toast.error(error instanceof Error ? error.message : 'Unknown error')
-			}
 		}
 	}
 
@@ -154,7 +86,7 @@ const WalletConnect = ({
 			) : (
 				<Button
 					variant="outline"
-					onClick={handleConnect}
+					onClick={handleOpenConnectSheet}
 					className={cn(
 						'flex w-full flex-row items-center justify-between gap-3 rounded-lg bg-secondary/50 p-2 text-left transition-colors hover:bg-secondary',
 						className,
@@ -197,7 +129,11 @@ const WalletConnect = ({
 									return (
 										<div
 											key={wallet}
-											onClick={() => wallet && handleWalletConnect(wallet)}
+											onClick={(e) => {
+												e.preventDefault()
+												wallet && handleWalletConnect(wallet)
+												setIsSheetOpen(false)
+											}}
 											className={`flex w-full cursor-pointer flex-row items-center justify-between gap-2 border-x border-b border-border p-4 px-6 text-lg md:text-xl ${index === 0 ? 'border-t' : ''} ${index === walletState?.supportedWallets.length - 1 - 1 ? 'rounded-b-md' : ''}`}
 										>
 											<div className="flex flex-row items-center gap-2">
@@ -229,9 +165,7 @@ const WalletConnect = ({
 					</div>
 				</SheetContent>
 			</Sheet>
-			{walletState.walletIcon !== null && (
-				<span className="mt-2 text-sm text-muted-foreground">{walletState.balance} ₳</span>
-			)}
+			{walletState.balance && <span className="mt-2 text-sm text-muted-foreground">{walletState.balance} ₳</span>}
 		</div>
 	)
 }
