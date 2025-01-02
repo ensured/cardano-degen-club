@@ -122,10 +122,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	}, [walletState])
 
 	const handleDisconnect = () => {
-		localStorage.removeItem('walletState')
 		setWalletState({})
-		setAuthToken(null)
-		removeAuthToken()
 	}
 
 	const persistAuthToken = (key: string) => {
