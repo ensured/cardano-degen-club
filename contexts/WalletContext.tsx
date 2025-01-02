@@ -55,78 +55,75 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	const [walletState, setWalletState] = useState<WalletState>(defaultWalletState)
 	// const [authToken, setAuthToken] = useState<string | null>(null)
 
-	const handleWalletConnect = async (wallet: string) => {
-		// check if an instance exists in vercel kv db
+	const handleWalletConnect = async (wallet: string): Promise<boolean> => {
+		if (!window.cardano) return false
+		try {
+			const walletInstance = await window.cardano[wallet]?.enable()
+			const walletData = window.cardano[wallet]
+			const walletName = walletData?.name || null
+			const walletIcon = walletData?.icon || null
 
-		if (window.cardano) {
+			const balanceResponse = await walletInstance.getBalance()
+
 			try {
-				const walletInstance = await window.cardano[wallet]?.enable()
-				const walletData = window.cardano[wallet]
-				const walletName = walletData?.name || null
-				const walletIcon = walletData?.icon || null
+				const balanceBytes = Buffer.from(balanceResponse, 'hex')
+				const uint8Array = new Uint8Array(balanceBytes)
+				const arrayBuffer = uint8Array.buffer
+				const decodedBalance = (cborDecode(arrayBuffer)[0] / 1000000).toLocaleString()
 
-				const balanceResponse = await walletInstance.getBalance()
+				const walletAddresses = await walletInstance.getUsedAddresses()
 
-				try {
-					const balanceBytes = Buffer.from(balanceResponse, 'hex')
-					const uint8Array = new Uint8Array(balanceBytes)
-					const arrayBuffer = uint8Array.buffer
-					const decodedBalance = (cborDecode(arrayBuffer)[0] / 1000000).toLocaleString()
+				const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
+					return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
+				})
 
-					const walletAddresses = await walletInstance.getUsedAddresses()
-
-					const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
-						return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
-					})
-
-					const newWalletState: WalletState = {
-						wallet: walletInstance,
-						walletIcon,
-						walletName,
-						walletAddress: humanReadableAddresses[0],
-						walletAddresses: humanReadableAddresses,
-						dropdownVisible: false,
-						balance: decodedBalance,
-						supportedWallets: [],
-						walletImages: [],
-					}
-
-					const address = walletAddresses[0]
-					const walletAuth = await getWalletAuth(humanReadableAddresses[0])
-					if (walletAuth) {
-						setWalletState(newWalletState)
-						return
-					}
-					const message = `Login to cardanodegen.shop`
-					const messageHex = Buffer.from(message).toString('hex')
-					const signedMessage = await walletInstance.signData(address, messageHex)
-
-					const token = {
-						body: message,
-						signature: signedMessage,
-						key: address,
-					}
-
-					const encodedToken = Buffer.from(JSON.stringify(token)).toString('base64')
-					const decodedToken = JSON.parse(Buffer.from(encodedToken, 'base64').toString())
-
-					if (decodedToken.key) {
-						// Store auth in Vercel KV
-						await storeWalletAuth(humanReadableAddresses[0], decodedToken.signature)
-
-						localStorage.setItem('walletState', JSON.stringify(newWalletState))
-						setWalletState(newWalletState)
-						return true
-					}
-					return false
-				} catch (error: any) {
-					throw error
+				const newWalletState: WalletState = {
+					wallet: walletInstance,
+					walletIcon,
+					walletName,
+					walletAddress: humanReadableAddresses[0],
+					walletAddresses: humanReadableAddresses,
+					dropdownVisible: false,
+					balance: decodedBalance,
+					supportedWallets: [],
+					walletImages: [],
 				}
-			} catch (error) {
-				toast.error(error instanceof Error ? error.message : 'Unknown error')
+
+				const address = walletAddresses[0]
+				const walletAuth = await getWalletAuth(humanReadableAddresses[0])
+				if (walletAuth) {
+					setWalletState(newWalletState)
+					return true
+				}
+				const message = `Login to cardanodegen.shop`
+				const messageHex = Buffer.from(message).toString('hex')
+				const signedMessage = await walletInstance.signData(address, messageHex)
+
+				const token = {
+					body: message,
+					signature: signedMessage,
+					key: address,
+				}
+
+				const encodedToken = Buffer.from(JSON.stringify(token)).toString('base64')
+				const decodedToken = JSON.parse(Buffer.from(encodedToken, 'base64').toString())
+
+				if (decodedToken.key) {
+					// Store auth in Vercel KV
+					await storeWalletAuth(humanReadableAddresses[0], decodedToken.signature)
+
+					localStorage.setItem('walletState', JSON.stringify(newWalletState))
+					setWalletState(newWalletState)
+					return true
+				}
+				return false
+			} catch (error: any) {
+				throw error
 			}
+		} catch (error) {
+			console.error('Wallet connection error:', error)
+			return false
 		}
-		return false
 	}
 
 	// Load saved wallet state on mount
