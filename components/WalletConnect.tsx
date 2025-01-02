@@ -45,17 +45,17 @@ const WalletConnect = ({ className }: { className: string }) => {
 				(key) => (window.cardano as Cardano)[key]?.apiVersion !== undefined,
 			)
 
-			setWalletState((prev: any) => ({
-				...prev,
+			setWalletState({
+				...walletState,
 				supportedWallets: walletNames,
-			}))
+			})
 			setIsSheetOpen(true)
 		} else {
 			console.error('No Cardano object found')
-			setWalletState((prev: any) => ({
-				...prev,
+			setWalletState({
+				...walletState,
 				supportedWallets: [],
-			}))
+			})
 		}
 	}
 
