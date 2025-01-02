@@ -29,7 +29,17 @@ interface WalletContextType {
 const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-	const [walletState, setWalletState] = useState<any>({})
+	const [walletState, setWalletState] = useState<any>({
+		wallet: null,
+		supportedWallets: [],
+		dropdownVisible: false,
+		walletIcon: null,
+		walletName: null,
+		walletAddress: '',
+		walletAddresses: [],
+		balance: null,
+		walletImages: [],
+	})
 	// const [authToken, setAuthToken] = useState<string | null>(null)
 
 	const handleWalletConnect = async (wallet: string) => {

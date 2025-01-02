@@ -15,7 +15,7 @@ export async function SiteHeader() {
 
 				<div className="flex flex-1 items-center justify-end space-x-4 overflow-hidden">
 					<nav className="flex items-center gap-2 text-xs">
-						<div className="relative flex shrink-0 items-center justify-center">
+						<div className="flex shrink-0 items-center justify-center">
 							<UserLoginButtons />
 						</div>
 

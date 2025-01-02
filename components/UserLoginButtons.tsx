@@ -18,17 +18,23 @@ export default function UserLoginButtons() {
 	const { isSignedIn } = useUser()
 	const pathname = usePathname()
 	const [currentPath, setCurrentPath] = useState(pathname)
-	const { openUserProfile, signOut, user } = useClerk()
-
+	const { openUserProfile, signOut } = useClerk()
+	const { user } = useUser()
 	const { walletState } = useWallet()
-
+	const [hiddenEmail, setHiddenEmail] = useState('')
 	const userEmail = user?.externalAccounts[0].emailAddress
-
-	const hiddenEmail = userEmail ? userEmail.slice(0, 3) + '...' + userEmail.slice(userEmail.indexOf('@') - 2) : ''
 
 	useEffect(() => {
 		setCurrentPath(pathname)
 	}, [pathname])
+
+	useEffect(() => {
+		if (userEmail) {
+			setHiddenEmail(userEmail.slice(0, 3) + '...' + userEmail.slice(userEmail.indexOf('@') - 2))
+		} else {
+			setHiddenEmail('')
+		}
+	}, [userEmail])
 
 	const handleUserButtonClick = (e: React.MouseEvent) => {
 		e.stopPropagation()
@@ -41,17 +47,23 @@ export default function UserLoginButtons() {
 		signOut()
 	}
 
+	const web2Image = user?.imageUrl
+
 	return (
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
 			<DropdownMenuTrigger asChild>
-				{walletState.walletIcon !== null ? (
+				{walletState.walletAddress && walletState.walletIcon ? (
 					<Button variant="ghost" className="px-2" aria-label="User login options">
 						{walletState.walletAddress?.slice(0, 6)}...{walletState.walletAddress?.slice(-4)}
 						<Image src={walletState.walletIcon} alt="wallet icon" width={32} height={32} />
 					</Button>
 				) : isSignedIn ? (
 					<div style={{ cursor: 'pointer' }}>
-						<Image src={user?.imageUrl || ''} alt="user avatar" width={32} height={32} />
+						{web2Image ? (
+							<Image src={web2Image} alt="user avatar" width={32} height={32} />
+						) : (
+							<UserIcon className="size-6" />
+						)}
 					</div>
 				) : (
 					<Button variant="ghost" size="icon" className="rounded-full" aria-label="User login options">
@@ -87,7 +99,7 @@ export default function UserLoginButtons() {
 												},
 											}}
 										/>
-										<span className="text-sm text-muted-foreground">{hiddenEmail}</span>
+										{hiddenEmail && <span className="text-sm text-muted-foreground">{hiddenEmail}</span>}
 									</div>
 								</div>
 								<Button variant="destructive" onClick={handleSignOut} size="sm" className="w-full">
