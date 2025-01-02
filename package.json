@@ -45,6 +45,7 @@
     "@types/pdfjs-dist": "^2.10.378",
     "@uidotdev/usehooks": "^2.4.1",
     "@vercel/analytics": "^1.1.2",
+    "@vercel/kv": "^3.0.0",
     "@vercel/speed-insights": "^1.0.10",
     "@wojtekmaj/react-hooks": "^1.19.0",
     "axios": "^1.6.8",

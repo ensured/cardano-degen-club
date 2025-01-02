@@ -6,6 +6,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { getDownloadURL, getMetadata, listAll, ref as storageRef, uploadBytes } from 'firebase/storage'
 import { db, deleteObject, storage } from '../components/firebase/firebase'
+import { kv } from '@vercel/kv'
 
 export async function checkUserAuthentication() {
 	const user = await currentUser()
@@ -538,4 +539,86 @@ export const getAddressFromHandle = async (handleName: string) => {
 	}
 
 	return { stakeAddress, image, address, error }
+}
+
+interface WalletAuth {
+	address: string
+	timestamp: number
+	signature: string
+}
+
+export async function storeWalletAuth(
+	address: string,
+	signature: string,
+): Promise<{ success: boolean; error?: string }> {
+	try {
+		const authData: WalletAuth = {
+			address,
+			timestamp: Date.now(),
+			signature,
+		}
+
+		console.log('Storing auth data:', authData)
+		// Store in KV with 120-day expiration (10368000 seconds)
+		await kv.set(`wallet:${address}`, authData)
+
+		// Verify it was stored
+		const stored = await getWalletAuth(address)
+		console.log('Verified stored auth:', stored)
+
+		if (!stored) {
+			return { success: false, error: 'Failed to verify storage' }
+		}
+
+		return { success: true }
+	} catch (error) {
+		console.error('Error storing wallet auth:', error)
+		return { success: false, error: 'Failed to store wallet authentication' }
+	}
+}
+
+export const getWalletAuth = async (address: string) => {
+	const walletAuth = await kv.get(`wallet:${address}`)
+	return walletAuth
+}
+
+export const removeWalletAuth = async (address: string) => {
+	await kv.del(`wallet:${address}`)
+}
+
+export async function verifyWalletAuth(address: string): Promise<{ isValid: boolean; error?: string }> {
+	try {
+		const walletAuth = await getWalletAuth(address)
+		console.log('Retrieved wallet auth:', walletAuth)
+
+		if (!walletAuth) {
+			console.log('No wallet auth found')
+			return { isValid: false, error: 'No authentication found' }
+		}
+
+		// KV already returns the parsed object
+		const auth = walletAuth as WalletAuth
+		const currentTime = Date.now()
+		const OneTwentyDays = 120 * 24 * 60 * 60 * 1000
+		const timeDiff = currentTime - auth.timestamp
+
+		console.log({
+			currentTime,
+			authTimestamp: auth.timestamp,
+			timeDiff,
+			OneTwentyDays,
+			isExpired: timeDiff > OneTwentyDays,
+		})
+
+		// Simple existence check first
+		if (auth.address === address) {
+			return { isValid: true }
+		}
+
+		await kv.del(`wallet:${address}`)
+		return { isValid: false, error: 'Invalid authentication' }
+	} catch (error) {
+		console.error('Error verifying wallet auth:', error)
+		return { isValid: false, error: 'Failed to verify authentication' }
+	}
 }

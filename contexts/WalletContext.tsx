@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { decode as cborDecode } from 'cbor-js'
 import { Address, BaseAddress } from '@emurgo/cardano-serialization-lib-asmjs'
 import { toast } from 'sonner'
-
+import { storeWalletAuth, getWalletAuth, removeWalletAuth } from '@/app/actions'
 // Function to decode hexadecimal address to Bech32
 const decodeHexAddress = (hexAddress: string): string => {
 	try {
@@ -17,9 +17,33 @@ const decodeHexAddress = (hexAddress: string): string => {
 	}
 }
 
+interface WalletState {
+	wallet: any | null
+	supportedWallets: string[]
+	dropdownVisible: boolean
+	walletIcon: string | null
+	walletName: string | null
+	walletAddress: string | null
+	walletAddresses: string[]
+	balance: string | null
+	walletImages: string[]
+}
+
+const defaultWalletState: WalletState = {
+	wallet: null,
+	supportedWallets: [],
+	dropdownVisible: false,
+	walletIcon: null,
+	walletName: null,
+	walletAddress: null,
+	walletAddresses: [],
+	balance: null,
+	walletImages: [],
+}
+
 interface WalletContextType {
-	walletState: any
-	setWalletState: (state: any) => void
+	walletState: WalletState
+	setWalletState: (state: WalletState) => void
 	handleDisconnect: () => void
 	persistAuthToken: (key: string) => void
 	removeAuthToken: () => void
@@ -29,17 +53,7 @@ interface WalletContextType {
 const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-	const [walletState, setWalletState] = useState<any>({
-		wallet: null,
-		supportedWallets: [],
-		dropdownVisible: false,
-		walletIcon: null,
-		walletName: null,
-		walletAddress: '',
-		walletAddresses: [],
-		balance: null,
-		walletImages: [],
-	})
+	const [walletState, setWalletState] = useState<WalletState>(defaultWalletState)
 	// const [authToken, setAuthToken] = useState<string | null>(null)
 
 	const handleWalletConnect = async (wallet: string) => {
@@ -64,7 +78,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 						return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
 					})
 
-					const newWalletState = {
+					const newWalletState: WalletState = {
 						wallet: walletInstance,
 						walletIcon,
 						walletName,
@@ -72,6 +86,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 						walletAddresses: humanReadableAddresses,
 						dropdownVisible: false,
 						balance: decodedBalance,
+						supportedWallets: [],
+						walletImages: [],
 					}
 
 					const address = walletAddresses[0]
@@ -88,8 +104,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 					const encodedToken = Buffer.from(JSON.stringify(token)).toString('base64')
 					const decodedToken = JSON.parse(Buffer.from(encodedToken, 'base64').toString())
 
-					if (decodedToken.key === address) {
+					if (decodedToken.key) {
+						// Store auth in Vercel KV
+						await storeWalletAuth(humanReadableAddresses[0], decodedToken.signature)
+
 						persistAuthToken(decodedToken.key)
+						localStorage.setItem('walletState', JSON.stringify(newWalletState))
 						setWalletState(newWalletState)
 						return true
 					}
@@ -106,33 +126,33 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
 	// Load saved wallet state on mount
 	useEffect(() => {
-		const savedWallet = localStorage.getItem('walletState')
-		if (savedWallet) {
-			const parsed = JSON.parse(savedWallet)
-			// Attempt to reconnect to the wallet
-			if (window.cardano && parsed.walletName) {
-				window.cardano[parsed.walletName.toLowerCase()]
-					?.enable()
-					.then((walletInstance) => {
-						setWalletState({
-							...parsed,
-							wallet: walletInstance,
-						})
-					})
-					.catch(console.error)
+		const checkStoredWallet = async () => {
+			const savedWallet = localStorage.getItem('walletState')
+			if (savedWallet) {
+				const parsed = JSON.parse(savedWallet) as Partial<WalletState>
+				if (parsed?.walletAddress) {
+					// check if wallet is still valid on server
+					const walletAuth = await getWalletAuth(parsed.walletAddress)
+					if (!walletAuth) {
+						toast.error('Wallet session expired. Please connect again.')
+						handleDisconnect()
+						return
+					}
+					setWalletState(parsed as WalletState)
+				}
 			}
 		}
+
+		checkStoredWallet()
 	}, [])
 
-	// Save wallet state on changes
-	useEffect(() => {
-		if (walletState.walletName) {
-			localStorage.setItem('walletState', JSON.stringify(walletState))
+	const handleDisconnect = async () => {
+		if (walletState.walletAddress) {
+			await removeWalletAuth(walletState.walletAddress)
 		}
-	}, [walletState])
-
-	const handleDisconnect = () => {
-		setWalletState({})
+		localStorage.removeItem('walletState')
+		localStorage.removeItem('CardanoAuthToken')
+		setWalletState(defaultWalletState)
 	}
 
 	const persistAuthToken = (key: string) => {
