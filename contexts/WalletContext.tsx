@@ -45,7 +45,6 @@ interface WalletContextType {
 	walletState: WalletState
 	setWalletState: (state: WalletState) => void
 	handleDisconnect: () => void
-	persistAuthToken: (key: string) => void
 	removeAuthToken: () => void
 	handleWalletConnect: (wallet: string) => Promise<boolean>
 }
@@ -108,7 +107,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 						// Store auth in Vercel KV
 						await storeWalletAuth(humanReadableAddresses[0], decodedToken.signature)
 
-						persistAuthToken(decodedToken.key)
 						localStorage.setItem('walletState', JSON.stringify(newWalletState))
 						setWalletState(newWalletState)
 						return true
@@ -147,16 +145,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	}, [])
 
 	const handleDisconnect = async () => {
-		if (walletState.walletAddress) {
-			await removeWalletAuth(walletState.walletAddress)
-		}
+		// if (walletState.walletAddress) {
+		// 	await removeWalletAuth(walletState.walletAddress)
+		// }
 		localStorage.removeItem('walletState')
-		localStorage.removeItem('CardanoAuthToken')
 		setWalletState(defaultWalletState)
-	}
-
-	const persistAuthToken = (key: string) => {
-		localStorage.setItem('CardanoAuthToken', key)
 	}
 
 	const removeAuthToken = () => {
@@ -169,7 +162,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 				walletState,
 				setWalletState,
 				handleDisconnect,
-				persistAuthToken,
 				removeAuthToken,
 				handleWalletConnect,
 			}}
