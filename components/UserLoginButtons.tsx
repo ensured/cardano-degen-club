@@ -91,7 +91,11 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 				) : (
 					<Button variant="ghost" size={`${!extraText ? 'icon' : 'default'}`} aria-label="User login options">
 						<div className="text-md flex items-center gap-2 sm:text-base">
-							{loading ? <Loader2 className="size-4 animate-spin" /> : <UserIcon className="size-5 sm:size-6" />}
+							{loading ? (
+								<Loader2 className="size-5 animate-spin sm:size-6" />
+							) : (
+								<UserIcon className="size-5 sm:size-6" />
+							)}
 							{extraText ? extraText : ''}
 						</div>
 					</Button>
