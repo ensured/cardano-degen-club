@@ -80,7 +80,9 @@ export default function UserLoginButtons() {
 					</Button>
 				) : isSignedIn ? (
 					<div style={{ cursor: 'pointer' }}>
-						{web2Image ? (
+						{loading ? (
+							<Loader2 className="size-4 animate-spin" />
+						) : web2Image ? (
 							<Image src={web2Image} alt="user avatar" width={32} height={32} />
 						) : (
 							<UserIcon className="size-6" />

@@ -36,10 +36,13 @@ const useRecipeSearch = () => {
 	const pendingAdditions = useRef(new Set())
 
 	const [pendingRequests, setPendingRequests] = useState(new Set())
-
+	const [userEmail, setUserEmail] = useState(null)
 	const { user } = useUser()
 	const { walletState } = useWallet()
-	const userEmail = user?.emailAddresses[0]?.emailAddress
+
+	useEffect(() => {
+		setUserEmail(walletState.walletAddress || user?.emailAddresses[0]?.emailAddress || null)
+	}, [walletState, user])
 
 	const TOAST_LIMIT = 1
 	const { toasts } = useToasterStore()
@@ -157,57 +160,54 @@ const useRecipeSearch = () => {
 		}
 	}, [])
 
-	const debouncedAddItemsFirebase = useCallback(
-		debounce(async () => {
-			if (pendingAdditions.current.size === 0) return
+	const debouncedAddItemsFirebase = debounce(async () => {
+		if (pendingAdditions.current.size === 0) return
 
-			const itemsToAdd = Array.from(pendingAdditions.current)
-			pendingAdditions.current.clear()
+		const itemsToAdd = Array.from(pendingAdditions.current)
+		pendingAdditions.current.clear()
 
-			try {
-				const response = await addItemsFirebase(userEmail ? userEmail : walletState.walletAddress, itemsToAdd)
+		try {
+			const response = await addItemsFirebase(userEmail, itemsToAdd)
 
-				if (response.error) {
-					toast.error(response.error)
-					return
-				}
-
-				// Update favorites with successful uploads
-				setFavorites((prev) => {
-					const updatedFavorites = { ...prev }
-					response.results.forEach((result) => {
-						if (result.success) {
-							updatedFavorites[result.link] = {
-								name: result.name,
-								url: result.url,
-								link: result.link,
-							}
-						} else {
-							delete updatedFavorites[result.link]
-						}
-					})
-					return updatedFavorites
-				})
-
-				if (response.successCount < itemsToAdd.length) {
-					toast.error(`Failed to add ${itemsToAdd.length - response.successCount} items`)
-				}
-			} catch (error) {
-				console.error('Batch addition failed:', error)
-				toast.error('Failed to add some favorites')
-
-				// Revert optimistic updates on complete failure
-				setFavorites((prev) => {
-					const newFavorites = { ...prev }
-					itemsToAdd.forEach((item) => {
-						delete newFavorites[item.link]
-					})
-					return newFavorites
-				})
+			if (response.error) {
+				toast.error(response.error)
+				return
 			}
-		}, 800),
-		[],
-	)
+
+			// Update favorites with successful uploads
+			setFavorites((prev) => {
+				const updatedFavorites = { ...prev }
+				response.results.forEach((result) => {
+					if (result.success) {
+						updatedFavorites[result.link] = {
+							name: result.name,
+							url: result.url,
+							link: result.link,
+						}
+					} else {
+						delete updatedFavorites[result.link]
+					}
+				})
+				return updatedFavorites
+			})
+
+			if (response.successCount < itemsToAdd.length) {
+				toast.error(`Failed to add ${itemsToAdd.length - response.successCount} items`)
+			}
+		} catch (error) {
+			console.error('Batch addition failed:', error)
+			toast.error('Failed to add some favorites')
+
+			// Revert optimistic updates on complete failure
+			setFavorites((prev) => {
+				const newFavorites = { ...prev }
+				itemsToAdd.forEach((item) => {
+					delete newFavorites[item.link]
+				})
+				return newFavorites
+			})
+		}
+	}, 800)
 
 	const handleLoadNextPage = useCallback(async () => {
 		const { nextPage } = searchResults
@@ -347,14 +347,14 @@ const useRecipeSearch = () => {
 	}
 
 	const debouncedRemoveItemsFirebase = useCallback(
-		debounce(async () => {
+		debounce(async (userEmail) => {
 			if (pendingRemovals.current.size === 0) return
 
 			const itemsToRemove = Array.from(pendingRemovals.current) // Convert Set to Array
 			pendingRemovals.current.clear() // Clear the Set for future removals
 
 			try {
-				await removeItemsFirebase(itemsToRemove) // Call your server action
+				await removeItemsFirebase(userEmail, itemsToRemove) // Call your server action
 				// toast.success(`${itemsToRemove.length} favorites removed!`, {
 				//   onClick: (t) => toast.dismiss(t.id),
 				// })
@@ -366,7 +366,7 @@ const useRecipeSearch = () => {
 		[],
 	)
 
-	const removeFromFavorites = async (link) => {
+	const removeFromFavorites = async (link, userEmail) => {
 		// If this exact removal request is already pending, don't duplicate it
 		if (pendingRequests.has(link)) return
 
@@ -385,7 +385,7 @@ const useRecipeSearch = () => {
 			setPendingRequests((prev) => new Set(prev).add(link))
 
 			// Trigger the debounced removal
-			debouncedRemoveItemsFirebase()
+			debouncedRemoveItemsFirebase(userEmail)
 		} catch (error) {
 			console.error('Error removing from favorites:', error)
 			// Optionally, you can revert the state here if needed
@@ -433,7 +433,7 @@ const useRecipeSearch = () => {
 		if (isFavorited) {
 			const key = extractRecipeId(recipeLink)
 			pendingRemovals.current.add(key)
-			debouncedRemoveItemsFirebase()
+			debouncedRemoveItemsFirebase(userEmail)
 		} else {
 			const metadata = {
 				contentType: 'image/jpeg',
@@ -475,6 +475,7 @@ const useRecipeSearch = () => {
 		removeFromFavorites,
 		scrollProgress,
 		currentCardIndex,
+		userEmail,
 		isMobile,
 		setSearchResults,
 		lastInputSearched,

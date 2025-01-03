@@ -15,8 +15,7 @@ export async function checkUserAuthentication() {
 }
 
 // @ts-ignore
-export async function removeItemsFirebase(keys) {
-	const userEmail = await checkUserAuthentication()
+export async function removeItemsFirebase(userEmail, keys) {
 	if (!userEmail) {
 		return { error: 'User email is required' }
 	}
@@ -139,13 +138,13 @@ export async function getFavoritesFirebase(userEmail: string) {
 	return favorites // Return the favorites object
 }
 
-export async function deleteAllFavoritesFirebase() {
-	const userEmail = await checkUserAuthentication()
-	if (!userEmail) {
-		return { error: 'User email is required' }
+export async function deleteAllFavoritesFirebase(userKey: string) {
+	if (!userKey) {
+		return { error: 'No valid address or user email found' }
 	}
 
-	const userFolderRef = storageRef(storage, `images/${userEmail}/`)
+	const key = `images/${userKey}/`
+	const userFolderRef = storageRef(storage, key)
 
 	try {
 		// List all items in the user's folder
@@ -161,7 +160,7 @@ export async function deleteAllFavoritesFirebase() {
 		await Promise.all(deletePromises)
 
 		// Call function to reset image count
-		await handleSetMaxImagesCount(true, userEmail)
+		await handleSetMaxImagesCount(true, userKey)
 
 		// Return an object with total items deleted
 		return { total: itemsCount } // << Change here: return an object
@@ -209,11 +208,11 @@ interface SetMaxImagesCountOptions {
 	amount?: number
 }
 
-const handleSetMaxImagesCount = async (delAll: boolean, userEmail: string, options: SetMaxImagesCountOptions = {}) => {
+const handleSetMaxImagesCount = async (delAll: boolean, userKey: string, options: SetMaxImagesCountOptions = {}) => {
 	const { increment = false, decrement = false, amount = 1 } = options
 
 	// Firestore reference to the user's document
-	const userDocRef = doc(db, 'users', userEmail)
+	const userDocRef = doc(db, 'users', userKey)
 
 	if (delAll) {
 		// If delAll is true, reset the image count to 0
@@ -264,7 +263,7 @@ const handleSetMaxImagesCount = async (delAll: boolean, userEmail: string, optio
 
 // Add this new server action
 export async function addItemsFirebase(
-	userEmail: string,
+	userKey: string,
 	items: Array<{
 		name: string
 		url: string
@@ -272,13 +271,13 @@ export async function addItemsFirebase(
 		metadata: any
 	}>,
 ) {
-	if (!userEmail) {
-		return { error: 'User email is required' }
+	if (!userKey) {
+		return { error: 'User key is required' }
 	}
 
 	try {
 		// Get current favorites count
-		const userDocRef = doc(db, 'users', userEmail)
+		const userDocRef = doc(db, 'users', userKey)
 		const userDoc = await getDoc(userDocRef)
 		const currentImageCount = userDoc.exists() ? userDoc.data().imageCount : 0
 
@@ -318,7 +317,7 @@ export async function addItemsFirebase(
 
 			const batchPromises = batch.map(async ({ name, link, metadata }, index) => {
 				try {
-					const imageRef = storageRef(storage, `images/${userEmail}/${extractRecipeId(link)}`)
+					const imageRef = storageRef(storage, `images/${userKey}/${extractRecipeId(link)}`)
 
 					const uploadResult = await uploadBytes(imageRef, batchBlobs[index], metadata)
 					const downloadUrl = await getDownloadURL(uploadResult.ref)

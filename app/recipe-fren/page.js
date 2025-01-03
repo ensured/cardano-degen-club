@@ -59,7 +59,7 @@ const RecipeFrenPage = () => {
 	return (
 		<Animation>
 			<h1 className="sr-only">Recipe Fren - Your Recipe Fren</h1>
-			<SearchRecipes userEmail={userEmail ? userEmail : walletState.walletAddress} />
+			<SearchRecipes />
 			<Toaster toastOptions={TOAST_OPTIONS} />
 		</Animation>
 	)
