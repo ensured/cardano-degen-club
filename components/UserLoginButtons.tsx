@@ -12,7 +12,7 @@ import { usePathname } from 'next/navigation'
 import { dark } from '@clerk/themes'
 import { useWallet } from '@/contexts/WalletContext'
 
-export default function UserLoginButtons() {
+export default function UserLoginButtons({ extraText }: { extraText?: string }) {
 	const [isOpen, setIsOpen] = useState(false)
 	const { theme } = useTheme()
 	const { isSignedIn } = useUser()
@@ -85,18 +85,44 @@ export default function UserLoginButtons() {
 						) : web2Image ? (
 							<Image src={web2Image} alt="user avatar" width={32} height={32} />
 						) : (
-							<UserIcon className="size-6" />
+							<UserIcon className="size-5 sm:size-6" />
 						)}
 					</div>
 				) : (
-					<Button variant="ghost" size="icon" className="rounded-full" aria-label="User login options">
-						{loading ? <Loader2 className="size-4 animate-spin" /> : <UserIcon className="size-6" />}
+					<Button variant="ghost" size={`${!extraText ? 'icon' : 'default'}`} aria-label="User login options">
+						<div className="text-md flex items-center gap-2 sm:text-base">
+							{loading ? <Loader2 className="size-4 animate-spin" /> : <UserIcon className="size-5 sm:size-6" />}
+							{extraText ? extraText : ''}
+						</div>
 					</Button>
 				)}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-80" align="end">
-				<div className="flex flex-col gap-6 rounded-lg p-6 shadow-md">
-					<div className="flex flex-col items-center gap-4 border-b border-border/30 pb-6">
+			<DropdownMenuContent
+				className="w-[19rem] sm:w-[19.5rem] md:w-[20rem] lg:w-[20.5rem] xl:w-[21rem]"
+				align="center"
+				sideOffset={4}
+				alignOffset={0}
+			>
+				<div className="flex flex-col gap-6 rounded-lg p-6">
+					{/* web3 wallet login */}
+					<div className="flex flex-col items-center gap-4">
+						<h3 className="flex items-center text-lg font-semibold text-foreground/90">
+							<div className="flex items-center gap-2">
+								<GlobeIcon className="size-5" />
+								Web3 Login
+							</div>
+						</h3>
+						<WalletConnect
+							className="w-full rounded-md bg-secondary/50 p-4 transition-colors hover:bg-secondary"
+							aria-label="Web3 Login Button"
+							setIsAdaHandleVisible={setIsAdaHandleVisible}
+							setIsWalletAddressVisible={setIsWalletAddressVisible}
+							isAdaHandleVisible={isAdaHandleVisible}
+							isWalletAddressVisible={isWalletAddressVisible}
+						/>
+					</div>
+					{/* web2 wallet login*/}
+					<div className="flex flex-col items-center gap-4 border-t border-border/30 pt-6">
 						<h2 className="flex items-center text-lg font-semibold text-foreground/90">
 							<UserIcon className="mr-2 size-5" />
 							Web2 Login
@@ -132,23 +158,6 @@ export default function UserLoginButtons() {
 						) : (
 							<Web2LoginButton currentPath={currentPath} />
 						)}
-					</div>
-
-					<div className="flex flex-col items-center gap-4">
-						<h3 className="flex items-center text-lg font-semibold text-foreground/90">
-							<div className="flex items-center gap-2">
-								<GlobeIcon className="size-5" />
-								Web3 Login
-							</div>
-						</h3>
-						<WalletConnect
-							className="w-full rounded-md bg-secondary/50 p-4 transition-colors hover:bg-secondary"
-							aria-label="Web3 Login Button"
-							setIsAdaHandleVisible={setIsAdaHandleVisible}
-							setIsWalletAddressVisible={setIsWalletAddressVisible}
-							isAdaHandleVisible={isAdaHandleVisible}
-							isWalletAddressVisible={isWalletAddressVisible}
-						/>
 					</div>
 				</div>
 			</DropdownMenuContent>

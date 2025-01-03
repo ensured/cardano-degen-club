@@ -6,6 +6,7 @@ import SearchRecipes from '@/components/SearchRecipes'
 import GoogleOneTapLogin from '@/components/GoogleOneTap'
 import { useUser } from '@clerk/nextjs'
 import { useWallet } from '@/contexts/WalletContext'
+import UserLoginButtons from '@/components/UserLoginButtons'
 
 // export const metadata = {
 // 	title: 'Recipe Fren | Recipe Search and Collection',
@@ -49,7 +50,10 @@ const RecipeFrenPage = () => {
 							Sign in to unlock all the delicious recipes and the ability to save your favorite recipes and even
 							download them as a formatted PDF file!
 						</div>
-						<GoogleOneTapLogin />
+						{/* <GoogleOneTapLogin /> */}
+						<div className="flex flex-row items-center justify-center rounded-lg border border-border text-xl sm:text-2xl">
+							<UserLoginButtons extraText="Sign in" />
+						</div>
 					</div>
 				</div>
 			</Animation>

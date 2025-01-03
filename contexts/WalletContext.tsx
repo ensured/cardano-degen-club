@@ -189,8 +189,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	const handleDisconnect = async () => {
 		localStorage.removeItem('walletState')
 		setWalletState(defaultWalletState)
-		toast.success('Wallet disconnected')
 		setLoading(false)
+		toast.success('Wallet unlinked')
 	}
 
 	const handleUnlink = async () => {
@@ -198,7 +198,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 		if (walletState.walletAddress) {
 			await removeWalletAuth(walletState.walletAddress)
 			handleDisconnect()
-			toast.success('Wallet unlinked')
 		}
 		setLoading(false)
 	}

@@ -233,14 +233,11 @@ const WalletConnect = ({
 					variant="outline"
 					onClick={handleOpenConnectSheet}
 					className={cn(
-						'flex w-full flex-row items-center justify-between gap-3 rounded-lg bg-secondary/50 p-2 text-left transition-colors hover:bg-secondary',
+						'flex w-full flex-col items-center justify-center bg-secondary/50 text-muted-foreground transition-colors hover:bg-secondary',
 						className,
 					)}
 				>
-					<div className="flex items-center gap-3">
-						<div className="size-10 rounded-full bg-transparent" />
-						<span className="text-sm text-muted-foreground">Connect Wallet</span>
-					</div>
+					Connect Wallet
 				</Button>
 			)}
 

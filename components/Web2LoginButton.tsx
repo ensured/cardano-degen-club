@@ -6,7 +6,9 @@ import { Globe } from 'lucide-react'
 const Web2LoginButton = ({ currentPath }: { currentPath: string }) => {
 	return (
 		<SignInButton mode="modal" forceRedirectUrl={currentPath}>
-			<Button variant="outline">Login</Button>
+			<Button variant="outline" className="bg-secondary/50 text-muted-foreground">
+				Sign in
+			</Button>
 		</SignInButton>
 	)
 }
