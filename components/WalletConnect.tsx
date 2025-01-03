@@ -4,7 +4,7 @@ import { Button } from './ui/button'
 import { Sheet, SheetTrigger, SheetContent, SheetDescription, SheetTitle } from './ui/sheet'
 import Image from 'next/image'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { CheckIcon, Eye, EyeOff } from 'lucide-react'
+import { CheckIcon, Eye, EyeOff, Loader2 } from 'lucide-react'
 // import { Blockfrost, Lucid } from 'lucid-cardano'
 import { cn } from '@/lib/utils'
 import { useWallet } from '@/contexts/WalletContext'
@@ -114,7 +114,7 @@ const WalletConnect = ({
 						)}
 
 						<div className="flex flex-1 items-center justify-between">
-							<span className="line-clamp-1 text-sm text-muted-foreground">
+							<span className="line-clamp-1 text-sm text-muted-foreground sm:text-base">
 								{adaHandle?.handle && !isAdaHandleVisible && (
 									<span>
 										${adaHandle.handle.charAt(0)}
@@ -175,6 +175,7 @@ const WalletConnect = ({
 					<Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full">
 						Disconnect
 					</Button>
+
 					<AlertDialog>
 						<AlertDialogTrigger asChild>
 							<Button variant="outline" size="sm" className="w-full">

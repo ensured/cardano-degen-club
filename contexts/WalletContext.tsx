@@ -58,15 +58,18 @@ interface WalletContextType {
 	handleUnlink: () => Promise<void>
 	handleWalletConnect: (wallet: string) => Promise<boolean>
 	adaHandle: { handle: string | null; total_handles: number | null }
+	loading: boolean
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
 	const [walletState, setWalletState] = useState<WalletState>(defaultWalletState)
+	const [loading, setLoading] = useState(false)
 
 	const handleWalletConnect = async (wallet: string): Promise<boolean> => {
 		if (!window.cardano) return false
+		setLoading(true)
 		try {
 			const walletInstance = await window.cardano[wallet]?.enable()
 			const walletData = window.cardano[wallet]
@@ -145,17 +148,22 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 				}
 				return false
 			} catch (error: any) {
+				setLoading(false)
 				throw error
 			}
 		} catch (error) {
 			console.error('Wallet connection error:', error)
+			setLoading(false)
 			return false
+		} finally {
+			setLoading(false)
 		}
 	}
 
 	// Load saved wallet state on mount
 	useEffect(() => {
 		const checkStoredWallet = async () => {
+			setLoading(true)
 			const savedWallet = localStorage.getItem('walletState')
 			if (savedWallet) {
 				const parsed = JSON.parse(savedWallet) as Partial<WalletState>
@@ -164,12 +172,15 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 					const walletAuth = await getWalletAuth(parsed.walletAddress)
 					if (!walletAuth) {
 						toast.error('Wallet session expired. Please connect again.')
+						setLoading(false)
 						handleDisconnect()
 						return
 					}
 					setWalletState(parsed as WalletState)
+					setLoading(false)
 				}
 			}
+			setLoading(false)
 		}
 
 		checkStoredWallet()
@@ -179,14 +190,17 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 		localStorage.removeItem('walletState')
 		setWalletState(defaultWalletState)
 		toast.success('Wallet disconnected')
+		setLoading(false)
 	}
 
 	const handleUnlink = async () => {
+		setLoading(true)
 		if (walletState.walletAddress) {
 			await removeWalletAuth(walletState.walletAddress)
 			handleDisconnect()
 			toast.success('Wallet unlinked')
 		}
+		setLoading(false)
 	}
 
 	return (
@@ -197,6 +211,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 				handleDisconnect,
 				handleWalletConnect,
 				handleUnlink,
+				loading,
 				adaHandle: walletState.adaHandle,
 			}}
 		>

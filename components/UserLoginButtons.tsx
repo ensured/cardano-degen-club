@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Eye, EyeOff, GlobeIcon, UserIcon } from 'lucide-react'
+import { Eye, EyeOff, GlobeIcon, Loader2, UserIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { UserButton as ClerkUserButton, useUser, useClerk } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
@@ -20,11 +20,11 @@ export default function UserLoginButtons() {
 	const [currentPath, setCurrentPath] = useState(pathname)
 	const { openUserProfile, signOut } = useClerk()
 	const { user } = useUser()
-	const { walletState } = useWallet()
+	const { walletState, loading } = useWallet()
 	const [hiddenEmail, setHiddenEmail] = useState('')
 	const userEmail = user?.externalAccounts[0].emailAddress
 	const [isWalletAddressVisible, setIsWalletAddressVisible] = useState(false)
-	const [isAdaHandleVisible, setIsAdaHandleVisible] = useState(false)
+	const [isAdaHandleVisible, setIsAdaHandleVisible] = useState(true)
 
 	useEffect(() => {
 		setCurrentPath(pathname)
@@ -51,34 +51,27 @@ export default function UserLoginButtons() {
 
 	const web2Image = user?.imageUrl
 
-	const eyeButton = (
-		<button
-			onClick={(e) => {
-				e.preventDefault()
-				if (walletState.adaHandle?.handle) {
-					setIsAdaHandleVisible(!isAdaHandleVisible)
-				} else {
-					setIsWalletAddressVisible(!isWalletAddressVisible)
-				}
-			}}
-			className="ml-2"
-		>
-			{(walletState.adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? <Eye /> : <EyeOff />}
-		</button>
-	)
 	return (
 		<DropdownMenu open={isOpen} onOpenChange={setIsOpen} modal={false}>
 			<DropdownMenuTrigger asChild>
 				{walletState.walletAddress && walletState.walletIcon ? (
-					<Button variant="ghost" className="flex items-center gap-1.5 px-2" aria-label="User login options">
-						<span className="line-clamp-1 text-sm text-muted-foreground">
+					<Button
+						variant="outline"
+						className="flex items-center gap-1.5 bg-secondary/55 px-2"
+						aria-label="User login options"
+					>
+						<span className="line-clamp-1">
 							{walletState.adaHandle?.handle && !isAdaHandleVisible && (
-								<span>
+								<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
 									${walletState.adaHandle.handle.charAt(0)}
 									{'*'.repeat(walletState.adaHandle.handle.length - 1)}
 								</span>
 							)}
-							{walletState.adaHandle?.handle && isAdaHandleVisible && <span>${walletState.adaHandle.handle}</span>}
+							{walletState.adaHandle?.handle && isAdaHandleVisible && (
+								<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
+									${walletState.adaHandle.handle}
+								</span>
+							)}
 							{(!walletState.adaHandle?.handle || !isAdaHandleVisible) && isWalletAddressVisible
 								? `${walletState?.walletAddress?.slice(0, 10)}...${walletState?.walletAddress?.slice(-4)}`
 								: ''}
@@ -95,7 +88,7 @@ export default function UserLoginButtons() {
 					</div>
 				) : (
 					<Button variant="ghost" size="icon" className="rounded-full" aria-label="User login options">
-						<UserIcon className="size-6" />
+						{loading ? <Loader2 className="size-4 animate-spin" /> : <UserIcon className="size-6" />}
 					</Button>
 				)}
 			</DropdownMenuTrigger>
