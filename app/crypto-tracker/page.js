@@ -2,6 +2,7 @@
 import Animation from '@/components/Animation'
 import GoogleOneTapLogin from '@/components/GoogleOneTap'
 import TradingViewChart from '@/components/TradingViewChart'
+import UserLoginButtons from '@/components/UserLoginButtons'
 import { useWallet } from '@/contexts/WalletContext'
 import { useUser } from '@clerk/nextjs'
 
@@ -31,7 +32,9 @@ const CryptoTrackerPage = () => {
 						<div className="max-w-[22rem] p-4 text-sm dark:text-gray-400/60 md:max-w-[26rem]">
 							Sign in to get access to the Crypto Tracker
 						</div>
-						<GoogleOneTapLogin />
+						<div className="rounded-lg border border-border">
+							<UserLoginButtons extraText="Sign in" />
+						</div>
 					</div>
 				</div>
 			</Animation>
