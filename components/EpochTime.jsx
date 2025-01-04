@@ -14,6 +14,17 @@ export function EpochTime({ epochData }) {
 		const updateTime = () => {
 			const currentTime = Math.floor(Date.now() / 1000)
 			let timeLeftUntilEnd = epochData.end_time - currentTime
+			let currentEpochNumber = epochData.epoch
+
+			// If current epoch has ended, simulate next epoch
+			if (timeLeftUntilEnd < 0) {
+				const epochDuration = epochData.end_time - epochData.start_time
+				// Calculate how many epochs have passed since the original end time
+				const epochsPassed = Math.floor(Math.abs(timeLeftUntilEnd) / epochDuration) + 1
+				currentEpochNumber += epochsPassed
+				// Adjust the time calculation for the current running epoch
+				timeLeftUntilEnd = epochDuration - (Math.abs(timeLeftUntilEnd) % epochDuration)
+			}
 
 			// Format the time left dynamically
 			let timeDisplay = []
@@ -27,20 +38,15 @@ export function EpochTime({ epochData }) {
 			if (minutes > 0) timeDisplay.push(`${minutes}m`)
 			if (seconds > 0) timeDisplay.push(`${seconds}s`)
 
-			// If no time left, show seconds
-			if (timeLeftUntilEnd < 60) {
-				timeDisplay.push(`${timeLeftUntilEnd} seconds`)
-			}
-
 			// Join the display parts
-			const display = timeDisplay.length > 0 ? timeDisplay.join(' ') : 'Time is up'
+			const display = timeDisplay.join(' ')
 
 			setTimeLeftDisplay(display)
 
 			// Calculate percentage
 			const totalEpochDuration = epochData.end_time - epochData.start_time
 			const percentage = (timeLeftUntilEnd / totalEpochDuration) * 100
-			setPercentageLeft(Math.max(0, Math.min(100, percentage))) // Ensure between 0 and 100
+			setPercentageLeft(Math.max(0, Math.min(100, percentage)))
 			setLoading(false)
 		}
 
@@ -61,7 +67,10 @@ export function EpochTime({ epochData }) {
 					<Skeleton className="h-3 w-[200px]" />
 				) : (
 					<span className="flex items-center justify-center text-xs">
-						epoch {epochData.epoch} ends in {timeLeftDisplay}
+						epoch{' '}
+						{epochData.epoch +
+							Math.floor((Date.now() / 1000 - epochData.end_time) / (epochData.end_time - epochData.start_time))}{' '}
+						ends in {timeLeftDisplay}
 					</span>
 				)}
 			</div>
