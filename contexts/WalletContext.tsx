@@ -138,9 +138,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 			const walletIcon = walletData?.icon || null
 
 			const { decodedBalance, walletAddresses, primaryAddress } = await fetchWalletDetails(walletInstance)
-			console.log(primaryAddress)
-			const paymentKeyHash = walletAddresses[0].slice(2, 58)
-
+			const paymentKeyHash = primaryAddress.slice(2, 58)
 			const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
 				return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
 			})
