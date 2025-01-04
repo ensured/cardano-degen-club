@@ -129,9 +129,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 		if (!window.cardano) return false
 		setLoading(true)
 		try {
-			// address 018922c003105c02b2a4f8871dd0a311b1c834045f3e111e47705beb7a84e9d318d2c2f1769ac66e07048993e816d6f734975594217f37f63c
-			// payment key hash 8922c003105c02b2a4f8871dd0a311b1c834045f3e111e47705beb7a
-
 			const walletInstance = await window.cardano[wallet]?.enable()
 			const walletData = window.cardano[wallet]
 			const walletName = walletData?.name || null
