@@ -64,19 +64,6 @@ const WalletConnect = ({
 	const [isSheetOpen, setIsSheetOpen] = useState(false)
 	const { walletState, setWalletState, handleDisconnect, handleWalletConnect, handleUnlink, adaHandle } = useWallet()
 
-	// Load wallet state from localStorage on component mount
-	useEffect(() => {
-		const savedWalletState = localStorage.getItem('walletState')
-		if (savedWalletState) {
-			setWalletState(JSON.parse(savedWalletState))
-		}
-	}, [setWalletState])
-
-	// Save wallet state to localStorage whenever it changes
-	useEffect(() => {
-		localStorage.setItem('walletState', JSON.stringify(walletState))
-	}, [walletState])
-
 	const handleOpenConnectSheet = async (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
 		if (window.cardano) {

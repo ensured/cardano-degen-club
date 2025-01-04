@@ -67,6 +67,36 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	const [walletState, setWalletState] = useState<WalletState>(defaultWalletState)
 	const [loading, setLoading] = useState(true)
 
+	// Load from localStorage only once on mount
+	useEffect(() => {
+		const savedWalletState = localStorage.getItem('walletState')
+		if (savedWalletState) {
+			try {
+				const parsed = JSON.parse(savedWalletState)
+				// Validate the parsed data has required fields before setting
+				if (parsed && typeof parsed === 'object') {
+					setWalletState(parsed)
+				}
+			} catch (error) {
+				console.error('Error parsing wallet state:', error)
+				localStorage.removeItem('walletState') // Clean up invalid data
+			}
+		}
+		setLoading(false) // Move this here to ensure it's set after initial load
+	}, [])
+
+	// Save to localStorage when state changes
+	useEffect(() => {
+		if (!loading && walletState !== defaultWalletState) {
+			// Only save if there's actual wallet data
+			try {
+				localStorage.setItem('walletState', JSON.stringify(walletState))
+			} catch (error) {
+				console.error('Error saving wallet state:', error)
+			}
+		}
+	}, [walletState, loading])
+
 	const handleWalletConnect = async (wallet: string): Promise<boolean> => {
 		if (!window.cardano) return false
 		setLoading(true)
