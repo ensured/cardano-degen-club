@@ -67,35 +67,61 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	const [walletState, setWalletState] = useState<WalletState>(defaultWalletState)
 	const [loading, setLoading] = useState(true)
 
-	// Load from localStorage only once on mount
-	useEffect(() => {
-		const savedWalletState = localStorage.getItem('walletState')
-		if (savedWalletState) {
-			try {
-				const parsed = JSON.parse(savedWalletState)
-				// Validate the parsed data has required fields before setting
-				if (parsed && typeof parsed === 'object') {
-					setWalletState(parsed)
-				}
-			} catch (error) {
-				console.error('Error parsing wallet state:', error)
-				localStorage.removeItem('walletState') // Clean up invalid data
-			}
+	const updateWalletState = async (walletInstance: any, primaryAddress: string, newWalletState: WalletState) => {
+		const walletAuth = newWalletState.walletAddress ? await getWalletAuth(newWalletState.walletAddress) : null
+		if (walletAuth) {
+			setWalletState(newWalletState)
+			return true
 		}
-		setLoading(false) // Move this here to ensure it's set after initial load
-	}, [])
+		const message = `Login to cardanodegen.shop`
+		const messageHex = Buffer.from(message).toString('hex')
+		const signedMessage = await walletInstance.signData(primaryAddress, messageHex)
 
-	// Save to localStorage when state changes
-	useEffect(() => {
-		if (!loading && walletState !== defaultWalletState) {
-			// Only save if there's actual wallet data
-			try {
-				localStorage.setItem('walletState', JSON.stringify(walletState))
-			} catch (error) {
-				console.error('Error saving wallet state:', error)
-			}
+		const token = {
+			body: message,
+			signature: signedMessage,
+			key: primaryAddress,
 		}
-	}, [walletState, loading])
+
+		const encodedToken = Buffer.from(JSON.stringify(token)).toString('base64')
+		const decodedToken = JSON.parse(Buffer.from(encodedToken, 'base64').toString())
+
+		if (decodedToken.key) {
+			// Store auth in Vercel KV
+			await storeWalletAuth(primaryAddress, decodedToken.signature)
+
+			localStorage.setItem('walletState', JSON.stringify(newWalletState))
+			setWalletState(newWalletState)
+			return true
+		}
+		return false
+	}
+
+	const fetchWalletDetails = async (walletInstance: any) => {
+		try {
+			const balanceResponse = await walletInstance.getBalance()
+			const balanceBytes = Buffer.from(balanceResponse, 'hex')
+			const uint8Array = new Uint8Array(balanceBytes)
+			const arrayBuffer = uint8Array.buffer
+			const decodedBalance = Number((cborDecode(arrayBuffer)[0] / 1000000).toFixed(0))
+
+			const walletAddresses = await walletInstance.getUsedAddresses()
+			let primaryAddress
+
+			if (walletAddresses.length === 0) {
+				// If no used addresses, get the first unused address
+				const unusedAddresses = await walletInstance.getUnusedAddresses()
+				primaryAddress = unusedAddresses[0]
+			} else {
+				primaryAddress = walletAddresses[0]
+			}
+
+			return { decodedBalance, walletAddresses, primaryAddress }
+		} catch (error) {
+			console.error('Error fetching wallet details:', error)
+			throw new Error('Failed to fetch wallet details. Please try again.')
+		}
+	}
 
 	const handleWalletConnect = async (wallet: string): Promise<boolean> => {
 		if (!window.cardano) return false
@@ -106,91 +132,48 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 			const walletName = walletData?.name || null
 			const walletIcon = walletData?.icon || null
 
-			const balanceResponse = await walletInstance.getBalance()
+			const { decodedBalance, walletAddresses, primaryAddress } = await fetchWalletDetails(walletInstance)
 
-			try {
-				const balanceBytes = Buffer.from(balanceResponse, 'hex')
-				const uint8Array = new Uint8Array(balanceBytes)
-				const arrayBuffer = uint8Array.buffer
-				const decodedBalance = Number((cborDecode(arrayBuffer)[0] / 1000000).toFixed(0))
+			const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
+				return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
+			})
 
-				const walletAddresses = await walletInstance.getUsedAddresses()
-				let primaryAddress
+			let stakeAddress = await walletInstance.getRewardAddresses()
+			stakeAddress = stakeAddress[0]
+			const stakeAddressBytes = Buffer.from(stakeAddress, 'hex')
+			const stakeAddressAddress = Address.from_bytes(stakeAddressBytes)
+			const stakeAddressBaseAddress = BaseAddress.from_address(stakeAddressAddress)
+			const stakeAddressBech32 = stakeAddressBaseAddress
+				? stakeAddressBaseAddress.to_address().to_bech32()
+				: stakeAddressAddress.to_bech32()
 
-				if (walletAddresses.length === 0) {
-					// If no used addresses, get the first unused address
-					const unusedAddresses = await walletInstance.getUnusedAddresses()
-					primaryAddress = unusedAddresses[0]
-				} else {
-					primaryAddress = walletAddresses[0]
-				}
+			const adaHandle = await getAdaHandle(stakeAddressBech32)
 
-				const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
-					return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
-				})
-
-				let stakeAddress = await walletInstance.getRewardAddresses()
-				stakeAddress = stakeAddress[0]
-				const stakeAddressBytes = Buffer.from(stakeAddress, 'hex')
-				const stakeAddressAddress = Address.from_bytes(stakeAddressBytes)
-				const stakeAddressBaseAddress = BaseAddress.from_address(stakeAddressAddress)
-				const stakeAddressBech32 = stakeAddressBaseAddress
-					? stakeAddressBaseAddress.to_address().to_bech32()
-					: stakeAddressAddress.to_bech32()
-
-				const adaHandle = await getAdaHandle(stakeAddressBech32)
-
-				const newWalletState: WalletState = {
-					wallet: walletInstance,
-					walletIcon,
-					walletName,
-					walletAddress: /^[0-9a-fA-F]+$/.test(primaryAddress) ? decodeHexAddress(primaryAddress) : primaryAddress,
-					walletAddresses: humanReadableAddresses,
-					dropdownVisible: false,
-					balance: isNaN(decodedBalance) ? 0 : decodedBalance,
-					supportedWallets: [],
-					walletImages: [],
-					adaHandle: {
-						handle: adaHandle.default_handle ? adaHandle.default_handle : false,
-						total_handles: adaHandle.total_handles ? adaHandle.total_handles : false,
-					},
-					stakeAddress: stakeAddressBech32,
-				}
-
-				const walletAuth = newWalletState.walletAddress ? await getWalletAuth(newWalletState.walletAddress) : null
-				if (walletAuth) {
-					setWalletState(newWalletState)
-					return true
-				}
-				const message = `Login to cardanodegen.shop`
-				const messageHex = Buffer.from(message).toString('hex')
-				const signedMessage = await walletInstance.signData(primaryAddress, messageHex)
-
-				const token = {
-					body: message,
-					signature: signedMessage,
-					key: primaryAddress,
-				}
-
-				const encodedToken = Buffer.from(JSON.stringify(token)).toString('base64')
-				const decodedToken = JSON.parse(Buffer.from(encodedToken, 'base64').toString())
-
-				if (decodedToken.key) {
-					// Store auth in Vercel KV
-					await storeWalletAuth(primaryAddress, decodedToken.signature)
-
-					localStorage.setItem('walletState', JSON.stringify(newWalletState))
-					setWalletState(newWalletState)
-					return true
-				}
-				return false
-			} catch (error: any) {
-				setLoading(false)
-				throw error
+			const newWalletState: WalletState = {
+				wallet: walletInstance,
+				walletIcon,
+				walletName,
+				walletAddress: /^[0-9a-fA-F]+$/.test(primaryAddress) ? decodeHexAddress(primaryAddress) : primaryAddress,
+				walletAddresses: humanReadableAddresses,
+				dropdownVisible: false,
+				balance: isNaN(decodedBalance) ? 0 : decodedBalance,
+				supportedWallets: [],
+				walletImages: [],
+				adaHandle: {
+					handle: adaHandle.default_handle ? adaHandle.default_handle : false,
+					total_handles: adaHandle.total_handles ? adaHandle.total_handles : false,
+				},
+				stakeAddress: stakeAddressBech32,
 			}
-		} catch (error) {
-			console.error('Wallet connection error:', error)
-			setLoading(false)
+
+			const success = await updateWalletState(walletInstance, primaryAddress, newWalletState)
+			if (!success) {
+				toast.error('Failed to connect wallet. Please try again.')
+			}
+			return success
+		} catch (error: any) {
+			toast.error('An error occurred while connecting the wallet.')
+			console.error(`Wallet connection error for ${wallet}:`, error)
 			return false
 		} finally {
 			setLoading(false)
