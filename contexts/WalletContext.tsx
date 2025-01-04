@@ -32,6 +32,7 @@ export interface WalletState {
 	walletAddresses: string[]
 	balance: number | null
 	walletImages: string[]
+	paymentKeyHash: string | null
 }
 
 const defaultWalletState: WalletState = {
@@ -49,6 +50,7 @@ const defaultWalletState: WalletState = {
 	walletAddresses: [],
 	balance: null,
 	walletImages: [],
+	paymentKeyHash: null,
 }
 
 interface WalletContextType {
@@ -127,12 +129,17 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 		if (!window.cardano) return false
 		setLoading(true)
 		try {
+			// address 018922c003105c02b2a4f8871dd0a311b1c834045f3e111e47705beb7a84e9d318d2c2f1769ac66e07048993e816d6f734975594217f37f63c
+			// payment key hash 8922c003105c02b2a4f8871dd0a311b1c834045f3e111e47705beb7a
+
 			const walletInstance = await window.cardano[wallet]?.enable()
 			const walletData = window.cardano[wallet]
 			const walletName = walletData?.name || null
 			const walletIcon = walletData?.icon || null
 
 			const { decodedBalance, walletAddresses, primaryAddress } = await fetchWalletDetails(walletInstance)
+			console.log(primaryAddress)
+			const paymentKeyHash = walletAddresses[0].slice(2, 58)
 
 			const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
 				return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
@@ -164,6 +171,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 					total_handles: adaHandle.total_handles ? adaHandle.total_handles : false,
 				},
 				stakeAddress: stakeAddressBech32,
+				paymentKeyHash,
 			}
 
 			const success = await updateWalletState(walletInstance, primaryAddress, newWalletState)
