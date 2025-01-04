@@ -73,6 +73,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 			setWalletState(newWalletState)
 			return true
 		}
+
 		const message = `Login to cardanodegen.shop`
 		const messageHex = Buffer.from(message).toString('hex')
 		const signedMessage = await walletInstance.signData(primaryAddress, messageHex)

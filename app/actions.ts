@@ -508,7 +508,7 @@ export const getAddressFromHandle = async (handleName: string) => {
 		image = data.image
 		address = data.resolved_addresses.ada
 	} catch (error) {
-		return { error: 'Error in getAddressFromHandle' }
+		return { error: 'No $handle found' }
 	}
 
 	const errors: string[] = []
