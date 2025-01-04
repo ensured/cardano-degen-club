@@ -90,7 +90,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 			// Store auth in Vercel KV
 			await storeWalletAuth(primaryAddress, decodedToken.signature)
 
-			localStorage.setItem('walletState', JSON.stringify(newWalletState))
 			setWalletState(newWalletState)
 			return true
 		}
@@ -233,7 +232,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	}, [])
 
 	const handleDisconnect = async () => {
-		localStorage.removeItem('walletState')
 		setWalletState(defaultWalletState)
 		setLoading(false)
 	}
