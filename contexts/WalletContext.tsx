@@ -201,31 +201,36 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	// Load saved wallet state on mount
 	useEffect(() => {
 		const checkStoredWallet = async () => {
-			setLoading(true)
+			try {
+				setLoading(true)
+				// Check for currently connected wallet
+				const currentWallet = await detectCurrentWallet()
 
-			// Check for currently connected wallet
-			const currentWallet = await detectCurrentWallet()
-
-			if (currentWallet) {
-				// If a wallet is connected, connect to it
-				await handleWalletConnect(currentWallet)
-			} else {
-				// Check saved wallet as fallback
-				const savedWallet = localStorage.getItem('walletState')
-				if (savedWallet) {
-					const parsed = JSON.parse(savedWallet) as Partial<WalletState>
-					if (parsed?.walletAddress) {
-						const walletAuth = await getWalletAuth(parsed.walletAddress)
-						if (!walletAuth) {
-							toast.error('Wallet session expired. Please connect again.')
-							handleDisconnect()
-						} else {
-							setWalletState(parsed as WalletState)
+				if (currentWallet) {
+					// If a wallet is connected, connect to it
+					await handleWalletConnect(currentWallet)
+				} else {
+					// Check saved wallet as fallback
+					const savedWallet = localStorage.getItem('walletState')
+					if (savedWallet) {
+						const parsed = JSON.parse(savedWallet) as Partial<WalletState>
+						if (parsed?.walletAddress) {
+							const walletAuth = await getWalletAuth(parsed.walletAddress)
+							if (!walletAuth) {
+								toast.error('Wallet session expired. Please connect again.')
+								handleDisconnect()
+							} else {
+								setWalletState(parsed as WalletState)
+							}
 						}
 					}
 				}
+			} catch (error) {
+				console.error('Error checking stored wallet:', error)
+				handleDisconnect()
+			} finally {
+				setLoading(false)
 			}
-			setLoading(false)
 		}
 
 		checkStoredWallet()
