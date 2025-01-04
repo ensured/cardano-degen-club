@@ -56,27 +56,37 @@ const Page = () => {
 
 	return (
 		<Animation>
-			<div className="m-4 flex flex-col items-center justify-center gap-4 rounded-lg p-6 shadow-sm">
-				<ResolveHandleForm
-					handleSubmit={handleSubmit}
-					walletAddress={walletAddress}
-					loadingAdahandle={loadingAdahandle}
-					handleName={handleName}
-					setHandleName={setHandleName}
-					walletState={walletState}
-				/>
-			</div>
-			<div className="sticky bottom-0 border-t border-border py-4">
-				<h3 className="py-2 text-center text-lg font-semibold">ADA Handle Statistics</h3>
-
-				<div className="flex flex-row items-center justify-center gap-4 p-4">
-					<div className="flex flex-col items-center rounded-lg border border-border p-4 shadow-sm">
-						<span className="text-3xl font-bold text-primary">{adahandleStats?.total_handles?.toLocaleString()}</span>
-						<span className="text-sm text-muted-foreground">Total Handles</span>
+			<div className="flex min-h-[calc(100vh-4rem)] flex-col">
+				<div className="flex flex-1 items-center justify-center">
+					<div className="flex flex-col items-center justify-center gap-2 rounded-lg">
+						<ResolveHandleForm
+							handleSubmit={handleSubmit}
+							walletAddress={walletAddress}
+							loadingAdahandle={loadingAdahandle}
+							handleName={handleName}
+							setHandleName={setHandleName}
+							walletState={walletState}
+						/>
 					</div>
-					<div className="flex flex-col items-center rounded-lg border border-border p-4 shadow-sm">
-						<span className="text-3xl font-bold text-primary">{adahandleStats?.total_holders?.toLocaleString()}</span>
-						<span className="text-sm text-muted-foreground">Total Holders</span>
+				</div>
+				<div className="flex flex-col justify-center bg-gradient-to-b from-background to-secondary/10 backdrop-blur-sm">
+					<div className="border-t-2 border-primary/10 p-6">
+						<h3 className="text-center text-xl font-semibold text-primary">ADA Handle Statistics</h3>
+
+						<div className="flex flex-row items-center justify-center gap-6 p-4">
+							<div className="flex flex-col items-center rounded-lg bg-card p-6 shadow-lg transition-all hover:shadow-xl">
+								<span className="text-4xl font-bold text-primary">
+									{adahandleStats?.total_handles?.toLocaleString()}
+								</span>
+								<span className="mt-2 text-sm text-muted-foreground">Total Handles</span>
+							</div>
+							<div className="flex flex-col items-center rounded-lg bg-card p-6 shadow-lg transition-all hover:shadow-xl">
+								<span className="text-4xl font-bold text-primary">
+									{adahandleStats?.total_holders?.toLocaleString()}
+								</span>
+								<span className="mt-2 text-sm text-muted-foreground">Total Holders</span>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

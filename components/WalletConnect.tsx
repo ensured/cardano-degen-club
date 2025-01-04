@@ -7,7 +7,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { CheckIcon, Eye, EyeOff, Loader2 } from 'lucide-react'
 // import { Blockfrost, Lucid } from 'lucid-cardano'
 import { cn } from '@/lib/utils'
-import { useWallet } from '@/contexts/WalletContext'
+import { useWallet, type WalletState } from '@/contexts/WalletContext'
 import {
 	AlertDialog,
 	AlertDialogContent,
@@ -20,6 +20,7 @@ import {
 	AlertDialogCancel,
 } from './ui/alert-dialog'
 import { Input } from './ui/input'
+import Link from 'next/link'
 
 interface Cardano {
 	[key: string]:
@@ -102,16 +103,20 @@ const WalletConnect = ({
 
 						<div className="flex flex-1 items-center justify-between">
 							<span className="line-clamp-1 text-sm text-muted-foreground sm:text-base">
-								{adaHandle?.handle && !isAdaHandleVisible && (
+								{adaHandle?.handle ? (
 									<span>
-										${adaHandle.handle.charAt(0)}
-										{'*'.repeat(adaHandle.handle.length - 1)}
+										$
+										{isAdaHandleVisible
+											? adaHandle.handle
+											: `${adaHandle.handle.charAt(0)}${'*'.repeat(adaHandle.handle.length - 1)}`}
+									</span>
+								) : (
+									<span>
+										{isWalletAddressVisible
+											? `${walletState?.walletAddress?.slice(0, 10)}...${walletState?.walletAddress?.slice(-4)}`
+											: `${walletState?.walletAddress?.slice(0, 4)}...${walletState?.walletAddress?.slice(-4)}`}
 									</span>
 								)}
-								{adaHandle?.handle && isAdaHandleVisible && <span>${adaHandle.handle}</span>}
-								{(!adaHandle?.handle || !isAdaHandleVisible) && isWalletAddressVisible
-									? `${walletState?.walletAddress?.slice(0, 10)}...${walletState?.walletAddress?.slice(-4)}`
-									: ''}
 							</span>
 							<button
 								onClick={() => {
@@ -146,17 +151,23 @@ const WalletConnect = ({
 						</div>
 					</div>
 					<div className="flex flex-row items-center justify-between gap-2">
-						{walletState.balance && (
+						{walletState.balance !== null && (
 							<span className="mt-2 text-sm text-muted-foreground">
 								{isAdaHandleVisible
-									? walletState.balance + ' ₳'
-									: '*'.repeat(walletState.balance.toString().length + 1) + ' ₳'}
+									? `${walletState.balance.toLocaleString()} ₳`
+									: '*'.repeat(String(walletState.balance).length) + ' ₳'}
 							</span>
 						)}
-						{walletState.adaHandle.total_handles && (
-							<span className="mt-2 text-sm text-muted-foreground">
-								{isAdaHandleVisible ? walletState.adaHandle.total_handles + ' handles' : ''}
-							</span>
+						{!walletState.adaHandle.handle && (
+							<Button
+								variant="link"
+								asChild
+								className="mt-2 h-auto p-0 text-sm text-muted-foreground hover:text-primary"
+							>
+								<Link href="https://handle.me" target="_blank" rel="noopener noreferrer">
+									Get $handle
+								</Link>
+							</Button>
 						)}
 					</div>
 					<Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full">

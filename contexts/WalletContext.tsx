@@ -17,7 +17,7 @@ const decodeHexAddress = (hexAddress: string): string => {
 	}
 }
 
-interface WalletState {
+export interface WalletState {
 	wallet: any | null
 	supportedWallets: string[]
 	dropdownVisible: boolean
@@ -30,7 +30,7 @@ interface WalletState {
 	}
 	stakeAddress: string | null
 	walletAddresses: string[]
-	balance: string | null
+	balance: number | null
 	walletImages: string[]
 }
 
@@ -112,9 +112,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 				const balanceBytes = Buffer.from(balanceResponse, 'hex')
 				const uint8Array = new Uint8Array(balanceBytes)
 				const arrayBuffer = uint8Array.buffer
-				const decodedBalance = (cborDecode(arrayBuffer)[0] / 1000000).toLocaleString()
+				const decodedBalance = Number((cborDecode(arrayBuffer)[0] / 1000000).toFixed(0))
 
 				const walletAddresses = await walletInstance.getUsedAddresses()
+				let primaryAddress
+
+				if (walletAddresses.length === 0) {
+					// If no used addresses, get the first unused address
+					const unusedAddresses = await walletInstance.getUnusedAddresses()
+					primaryAddress = unusedAddresses[0]
+				} else {
+					primaryAddress = walletAddresses[0]
+				}
 
 				const humanReadableAddresses = walletAddresses.slice(0, 136).map((address: string) => {
 					return /^[0-9a-fA-F]+$/.test(address) ? decodeHexAddress(address) : address
@@ -130,39 +139,37 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 					: stakeAddressAddress.to_bech32()
 
 				const adaHandle = await getAdaHandle(stakeAddressBech32)
-				console.log(adaHandle)
 
 				const newWalletState: WalletState = {
 					wallet: walletInstance,
 					walletIcon,
 					walletName,
-					walletAddress: humanReadableAddresses[0],
+					walletAddress: /^[0-9a-fA-F]+$/.test(primaryAddress) ? decodeHexAddress(primaryAddress) : primaryAddress,
 					walletAddresses: humanReadableAddresses,
 					dropdownVisible: false,
-					balance: decodedBalance,
+					balance: isNaN(decodedBalance) ? 0 : decodedBalance,
 					supportedWallets: [],
 					walletImages: [],
 					adaHandle: {
-						handle: adaHandle.default_handle,
-						total_handles: adaHandle.total_handles,
+						handle: adaHandle.default_handle ? adaHandle.default_handle : false,
+						total_handles: adaHandle.total_handles ? adaHandle.total_handles : false,
 					},
 					stakeAddress: stakeAddressBech32,
 				}
 
-				const address = walletAddresses[0]
-				const walletAuth = await getWalletAuth(humanReadableAddresses[0])
+				const walletAuth = newWalletState.walletAddress ? await getWalletAuth(newWalletState.walletAddress) : null
 				if (walletAuth) {
 					setWalletState(newWalletState)
 					return true
 				}
 				const message = `Login to cardanodegen.shop`
 				const messageHex = Buffer.from(message).toString('hex')
-				const signedMessage = await walletInstance.signData(address, messageHex)
+				const signedMessage = await walletInstance.signData(primaryAddress, messageHex)
 
 				const token = {
 					body: message,
 					signature: signedMessage,
-					key: address,
+					key: primaryAddress,
 				}
 
 				const encodedToken = Buffer.from(JSON.stringify(token)).toString('base64')
@@ -170,7 +177,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
 				if (decodedToken.key) {
 					// Store auth in Vercel KV
-					await storeWalletAuth(humanReadableAddresses[0], decodedToken.signature)
+					await storeWalletAuth(primaryAddress, decodedToken.signature)
 
 					localStorage.setItem('walletState', JSON.stringify(newWalletState))
 					setWalletState(newWalletState)
@@ -190,24 +197,50 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 		}
 	}
 
+	const detectCurrentWallet = async () => {
+		if (!window.cardano) return null
+
+		for (const walletKey of Object.keys(window.cardano)) {
+			const wallet = window.cardano[walletKey]
+			if (!wallet?.apiVersion) continue
+
+			try {
+				const api = await wallet.enable()
+				if (api) {
+					return walletKey
+				}
+			} catch (error) {
+				console.error(`Error checking ${walletKey}:`, error)
+			}
+		}
+		return null
+	}
+
 	// Load saved wallet state on mount
 	useEffect(() => {
 		const checkStoredWallet = async () => {
 			setLoading(true)
-			const savedWallet = localStorage.getItem('walletState')
-			if (savedWallet) {
-				const parsed = JSON.parse(savedWallet) as Partial<WalletState>
-				if (parsed?.walletAddress) {
-					// check if wallet is still valid on server
-					const walletAuth = await getWalletAuth(parsed.walletAddress)
-					if (!walletAuth) {
-						toast.error('Wallet session expired. Please connect again.')
-						setLoading(false)
-						handleDisconnect()
-						return
+
+			// Check for currently connected wallet
+			const currentWallet = await detectCurrentWallet()
+
+			if (currentWallet) {
+				// If a wallet is connected, connect to it
+				await handleWalletConnect(currentWallet)
+			} else {
+				// Check saved wallet as fallback
+				const savedWallet = localStorage.getItem('walletState')
+				if (savedWallet) {
+					const parsed = JSON.parse(savedWallet) as Partial<WalletState>
+					if (parsed?.walletAddress) {
+						const walletAuth = await getWalletAuth(parsed.walletAddress)
+						if (!walletAuth) {
+							toast.error('Wallet session expired. Please connect again.')
+							handleDisconnect()
+						} else {
+							setWalletState(parsed as WalletState)
+						}
 					}
-					setWalletState(parsed as WalletState)
-					setLoading(false)
 				}
 			}
 			setLoading(false)

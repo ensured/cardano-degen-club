@@ -61,20 +61,20 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 						aria-label="User login options"
 					>
 						<span className="line-clamp-1">
-							{walletState.adaHandle?.handle && !isAdaHandleVisible && (
+							{walletState.adaHandle?.handle ? (
 								<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
-									${walletState.adaHandle.handle.charAt(0)}
-									{'*'.repeat(walletState.adaHandle.handle.length - 1)}
+									$
+									{isAdaHandleVisible
+										? walletState.adaHandle.handle
+										: `${walletState.adaHandle.handle.charAt(0)}${'*'.repeat(walletState.adaHandle.handle.length - 1)}`}
+								</span>
+							) : (
+								<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
+									{isWalletAddressVisible
+										? `${walletState.walletAddress?.slice(0, 10)}...${walletState.walletAddress?.slice(-4)}`
+										: `${walletState.walletAddress?.slice(0, 4)}...${walletState.walletAddress?.slice(-4)}`}
 								</span>
 							)}
-							{walletState.adaHandle?.handle && isAdaHandleVisible && (
-								<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
-									${walletState.adaHandle.handle}
-								</span>
-							)}
-							{(!walletState.adaHandle?.handle || !isAdaHandleVisible) && isWalletAddressVisible
-								? `${walletState?.walletAddress?.slice(0, 10)}...${walletState?.walletAddress?.slice(-4)}`
-								: ''}
 						</span>
 						<Image src={walletState.walletIcon} alt="wallet icon" width={32} height={32} />
 					</Button>

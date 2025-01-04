@@ -76,8 +76,10 @@ const ResolveHandleForm = ({
 					</span>
 				</Button>
 			</form>
+
+			{/* output */}
 			{walletAddress?.stakeAddress && (
-				<div className="col-span-1 max-w-[44rem] overflow-hidden break-all rounded-md border border-border bg-secondary/50 p-6 text-center">
+				<div className="col-span-1 max-w-[44rem] overflow-hidden break-all rounded-md border border-border bg-secondary/20 p-6 text-center">
 					<div className="z-20">
 						<Image
 							src={
