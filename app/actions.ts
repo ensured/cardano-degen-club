@@ -1,6 +1,6 @@
 'use server'
 
-import { MAX_FAVORITES } from '@/utils/consts'
+import { CARDANO_WALLET_MAX_AGE, MAX_FAVORITES } from '@/utils/consts'
 import { extractRecipeId } from '@/utils/helper'
 import { currentUser } from '@clerk/nextjs/server'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
@@ -540,9 +540,8 @@ export const getAddressFromHandle = async (handleName: string) => {
 }
 
 interface WalletAuth {
-	address: string
+	stakeKey: string
 	timestamp: number
-	signature: string
 }
 
 export const getAdaHandle = async (stakeAddress: string) => {
@@ -556,22 +555,23 @@ export const getAdaHandle = async (stakeAddress: string) => {
 }
 
 export async function storeWalletAuth(
-	address: string,
-	signature: string,
+	stakeKey: string,
+	timestamp: number,
 ): Promise<{ success: boolean; error?: string }> {
 	try {
 		const authData: WalletAuth = {
-			address,
-			timestamp: Date.now(),
-			signature,
+			stakeKey,
+			timestamp,
 		}
 
-		// Store in KV with 120-day expiration (10368000 seconds)
-		await kv.set(`wallet:${address}`, authData)
+		// Convert CARDANO_WALLET_MAX_AGE from milliseconds to seconds for KV storage
+		const expirationInSeconds = Math.floor(CARDANO_WALLET_MAX_AGE / 1000)
+
+		// Store in KV with expiration in seconds
+		await kv.set(`wallet:${stakeKey}`, authData, { ex: expirationInSeconds })
 
 		// Verify it was stored
-		const stored = await getWalletAuth(address)
-
+		const stored = await getWalletAuth(stakeKey)
 		if (!stored) {
 			return { success: false, error: 'Failed to verify storage' }
 		}
@@ -583,38 +583,53 @@ export async function storeWalletAuth(
 	}
 }
 
-export const getWalletAuth = async (address: string) => {
-	const walletAuth = await kv.get(`wallet:${address}`)
-	return walletAuth
-}
+export const getWalletAuth = async (stakeKey: string) => {
+	console.log('Checking auth for stake key:', stakeKey)
 
-export const removeWalletAuth = async (address: string) => {
-	await kv.del(`wallet:${address}`)
-}
-
-export async function verifyWalletAuth(address: string): Promise<{ isValid: boolean; error?: string }> {
 	try {
-		const walletAuth = await getWalletAuth(address)
+		const walletAuth = await kv.get(`wallet:${stakeKey}`)
 
 		if (!walletAuth) {
-			return { isValid: false, error: 'No authentication found' }
+			console.log('No auth found for stake key')
+			return { error: 'No auth found' }
 		}
 
-		// KV already returns the parsed object
-		const auth = walletAuth as WalletAuth
-		const currentTime = Date.now()
-		const OneTwentyDays = 120 * 24 * 60 * 60 * 1000
-		const timeDiff = currentTime - auth.timestamp
-
-		// Simple existence check first
-		if (auth.address === address) {
-			return { isValid: true }
+		// Type guard to ensure walletAuth has the correct shape
+		if (!isWalletAuth(walletAuth)) {
+			console.error('Invalid wallet auth format')
+			await kv.del(`wallet:${stakeKey}`)
+			return { error: 'Invalid auth format' }
 		}
 
-		await kv.del(`wallet:${address}`)
-		return { isValid: false, error: 'Invalid authentication' }
+		const expirationTime = walletAuth.timestamp + CARDANO_WALLET_MAX_AGE
+		const hasExpired = Date.now() > expirationTime
+
+		if (hasExpired) {
+			console.log('Auth has expired')
+			await kv.del(`wallet:${stakeKey}`)
+			return {
+				error: 'Auth expired',
+				expiredAt: new Date(expirationTime).toISOString(),
+			}
+		}
+
+		return {
+			...walletAuth,
+			expiresAt: new Date(expirationTime).toISOString(),
+		}
 	} catch (error) {
-		console.error('Error verifying wallet auth:', error)
-		return { isValid: false, error: 'Failed to verify authentication' }
+		console.error('Error checking wallet auth:', error)
+		return { error: 'Server error' }
 	}
+}
+
+// Type guard function
+function isWalletAuth(auth: any): auth is WalletAuth {
+	return (
+		auth && typeof auth === 'object' && 'stakeKey' in auth && 'timestamp' in auth && typeof auth.timestamp === 'number'
+	)
+}
+
+export const removeWalletAuth = async (stakeKey: string) => {
+	await kv.del(`wallet:${stakeKey}`)
 }

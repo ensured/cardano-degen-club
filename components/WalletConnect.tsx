@@ -21,6 +21,8 @@ import {
 } from './ui/alert-dialog'
 import { Input } from './ui/input'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import { getWalletAuth } from '@/app/actions'
 
 interface Cardano {
 	[key: string]:
