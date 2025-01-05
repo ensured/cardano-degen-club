@@ -78,7 +78,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 			const messageHex = Buffer.from(message).toString('hex')
 
 			try {
-				// Always attempt to sign first
 				const signedMessage = await api.signData(primaryAddress, messageHex)
 
 				const isEmpty = (obj: any) => Object.keys(obj).length === 0
@@ -105,7 +104,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 				return false
 			} catch (signError) {
 				console.error('Failed to sign message:', signError)
-				toast.error('Please sign the message to connect your wallet')
 				return false
 			}
 		} catch (error: any) {
