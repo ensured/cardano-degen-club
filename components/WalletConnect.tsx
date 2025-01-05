@@ -5,9 +5,8 @@ import { Sheet, SheetTrigger, SheetContent, SheetDescription, SheetTitle } from 
 import Image from 'next/image'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { CheckIcon, Eye, EyeOff, Loader2 } from 'lucide-react'
-// import { Blockfrost, Lucid } from 'lucid-cardano'
 import { cn } from '@/lib/utils'
-import { useWallet, type WalletState } from '@/contexts/WalletContext'
+import { useWallet } from '@/contexts/WalletContext'
 import {
 	AlertDialog,
 	AlertDialogContent,
@@ -21,8 +20,6 @@ import {
 } from './ui/alert-dialog'
 import { Input } from './ui/input'
 import Link from 'next/link'
-import { toast } from 'sonner'
-import { getWalletAuth } from '@/app/actions'
 
 interface Cardano {
 	[key: string]:
@@ -43,12 +40,6 @@ declare global {
 	}
 }
 
-// declare global {
-// 	interface Window {
-// 		lucid?: Lucid
-// 	}
-// }
-
 interface WalletConnectProps {
 	className: string
 	setIsAdaHandleVisible: (value: boolean) => void
@@ -65,27 +56,17 @@ const WalletConnect = ({
 	isWalletAddressVisible,
 }: WalletConnectProps) => {
 	const [isSheetOpen, setIsSheetOpen] = useState(false)
-	const { walletState, setWalletState, handleDisconnect, handleWalletConnect, handleUnlink, adaHandle } = useWallet()
+	const { walletState, loading, connect, disconnect, unlink, getSupportedWallets } = useWallet()
 
-	const handleOpenConnectSheet = async (e: React.MouseEvent<HTMLButtonElement>) => {
+	const handleOpenConnectSheet = (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
-		if (window.cardano) {
-			const walletNames = Object.keys(window.cardano).filter(
-				(key) => (window.cardano as Cardano)[key]?.apiVersion !== undefined,
-			)
+		getSupportedWallets()
+		setIsSheetOpen(true)
+	}
 
-			setWalletState({
-				...walletState,
-				supportedWallets: walletNames,
-			})
-			setIsSheetOpen(true)
-		} else {
-			console.error('No Cardano object found')
-			setWalletState({
-				...walletState,
-				supportedWallets: [],
-			})
-		}
+	const handleConnect = async (wallet: string) => {
+		setIsSheetOpen(false)
+		await connect(wallet)
 	}
 
 	return (
@@ -105,12 +86,12 @@ const WalletConnect = ({
 
 						<div className="flex flex-1 items-center justify-between">
 							<span className="line-clamp-1 text-sm text-muted-foreground sm:text-base">
-								{adaHandle?.handle ? (
+								{walletState.adaHandle?.handle ? (
 									<span>
 										$
 										{isAdaHandleVisible
-											? adaHandle.handle
-											: `${adaHandle.handle.charAt(0)}${'*'.repeat(adaHandle.handle.length - 1)}`}
+											? walletState.adaHandle.handle
+											: `${walletState.adaHandle.handle.charAt(0)}${'*'.repeat(walletState.adaHandle.handle.length - 1)}`}
 									</span>
 								) : (
 									<span>
@@ -122,7 +103,7 @@ const WalletConnect = ({
 							</span>
 							<button
 								onClick={() => {
-									if (adaHandle?.handle) {
+									if (walletState.adaHandle?.handle) {
 										setIsAdaHandleVisible(!isAdaHandleVisible)
 									} else {
 										setIsWalletAddressVisible(!isWalletAddressVisible)
@@ -130,7 +111,7 @@ const WalletConnect = ({
 								}}
 								className="group ml-2"
 							>
-								{(adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? (
+								{(walletState.adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? (
 									<>
 										<div className="group-hover:hidden">
 											<Eye />
@@ -172,7 +153,7 @@ const WalletConnect = ({
 							</Button>
 						)}
 					</div>
-					<Button variant="destructive" onClick={handleDisconnect} size="sm" className="w-full">
+					<Button variant="destructive" onClick={async () => disconnect()} size="sm" className="w-full">
 						Disconnect
 					</Button>
 
@@ -190,11 +171,11 @@ const WalletConnect = ({
 								</AlertDialogDescription>
 							</AlertDialogHeader>
 							<form
-								onSubmit={(e) => {
+								onSubmit={async (e) => {
 									e.preventDefault()
 									const button = document.getElementById('confirmUnlink') as HTMLButtonElement
 									if (!button.disabled) {
-										handleUnlink()
+										await unlink()
 									}
 								}}
 							>
@@ -259,10 +240,8 @@ const WalletConnect = ({
 						</div>
 
 						<div className="flex flex-col border-none">
-							{Array.from(
-								new Set((walletState?.supportedWallets || []).map((wallet: string) => window.cardano?.[wallet]?.icon)),
-							)
-								.filter((icon) => icon !== undefined)
+							{Array.from(new Set(walletState.supportedWallets.map((wallet: string) => window.cardano?.[wallet]?.icon)))
+								.filter((icon): icon is string => icon !== undefined)
 								.map((icon, index) => {
 									const wallet = Object.keys(window.cardano || {}).find((key) => {
 										const cardanoWallet = window.cardano?.[key]
@@ -275,10 +254,14 @@ const WalletConnect = ({
 											key={wallet}
 											onClick={(e) => {
 												e.preventDefault()
-												wallet && handleWalletConnect(wallet)
-												setIsSheetOpen(false)
+												wallet && handleConnect(wallet)
 											}}
-											className={`flex w-full cursor-pointer flex-row items-center justify-between gap-2 border-x border-b border-border p-4 px-6 text-lg md:text-xl ${index === 0 ? 'border-t' : ''} ${index === walletState?.supportedWallets.length - 1 - 1 ? 'rounded-b-md' : ''}`}
+											className={cn(
+												'flex w-full cursor-pointer flex-row items-center justify-between gap-2 border-x border-b border-border p-4 px-6 text-lg md:text-xl',
+												index === 0 && 'border-t',
+												index === walletState.supportedWallets.length - 1 && 'rounded-b-md',
+												loading && 'cursor-wait opacity-50',
+											)}
 										>
 											<div className="flex flex-row items-center gap-2">
 												{typeof icon === 'string' && (
@@ -291,7 +274,7 @@ const WalletConnect = ({
 													/>
 												)}
 
-												<span>{walletName}</span>
+												<span>{loading ? <Loader2 className="animate-spin" /> : walletName}</span>
 											</div>
 											<div>
 												{walletState?.walletName &&
