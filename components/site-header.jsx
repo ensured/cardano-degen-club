@@ -14,7 +14,7 @@ export async function SiteHeader() {
 				<MainNav HeaderNavSheet={<HeaderNavSheet />} />
 
 				<div className="flex flex-1 items-center justify-end space-x-4 overflow-hidden">
-					<nav className="flex items-center gap-2 text-xs">
+					<nav className="flex items-center gap-1 text-xs">
 						<div className="flex shrink-0 items-center justify-center">
 							<UserLoginButtons />
 						</div>

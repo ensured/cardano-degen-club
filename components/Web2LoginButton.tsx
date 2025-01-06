@@ -2,13 +2,12 @@
 import { Button } from './ui/button'
 import { SignInButton } from '@clerk/nextjs'
 import { Globe } from 'lucide-react'
+import Button3D from './3dButton'
 
 const Web2LoginButton = ({ currentPath }: { currentPath: string }) => {
 	return (
 		<SignInButton mode="modal" forceRedirectUrl={currentPath}>
-			<Button variant="outline" className="bg-secondary/50 text-muted-foreground">
-				Sign in
-			</Button>
+			<Button3D>Sign in</Button3D>
 		</SignInButton>
 	)
 }

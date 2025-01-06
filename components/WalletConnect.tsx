@@ -20,7 +20,8 @@ import {
 } from './ui/alert-dialog'
 import { Input } from './ui/input'
 import Link from 'next/link'
-import { getWalletAuth } from '@/app/actions'
+import Button3D from './3dButton'
+// import { getWalletAuth } from '@/app/actions'
 
 interface Cardano {
 	[key: string]:
@@ -49,28 +50,22 @@ interface WalletConnectProps {
 	isWalletAddressVisible: boolean
 }
 
-const WalletConnect = ({
-	className,
-	setIsAdaHandleVisible,
-	setIsWalletAddressVisible,
-	isAdaHandleVisible,
-	isWalletAddressVisible,
-}: WalletConnectProps) => {
+const WalletConnect = ({ className, isAdaHandleVisible, isWalletAddressVisible }: WalletConnectProps) => {
 	const [isSheetOpen, setIsSheetOpen] = useState(false)
-	const { walletState, loading, connect, disconnect, unlink, getSupportedWallets, setExpiresAt, timeLeft } = useWallet()
+	const { walletState, loading, connect, disconnect, getSupportedWallets } = useWallet()
 
-	useEffect(() => {
-		const checkWalletAuth = async () => {
-			if (walletState.stakeAddress) {
-				const auth = await getWalletAuth(walletState.stakeAddress)
-				if (!('error' in auth) && auth.expiresAt) {
-					setExpiresAt(auth.expiresAt)
-				}
-			}
-		}
+	// useEffect(() => {
+	// 	const checkWalletAuth = async () => {
+	// 		if (walletState.stakeAddress) {
+	// 			const auth = await getWalletAuth(walletState.stakeAddress)
+	// 			if (!('error' in auth) && auth.expiresAt) {
+	// 				setExpiresAt(auth.expiresAt)
+	// 			}
+	// 		}
+	// 	}
 
-		checkWalletAuth()
-	}, [walletState.stakeAddress, setExpiresAt])
+	// 	checkWalletAuth()
+	// }, [walletState.stakeAddress, setExpiresAt])
 
 	const handleOpenConnectSheet = (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
@@ -86,90 +81,65 @@ const WalletConnect = ({
 	return (
 		<div className="flex w-full flex-col items-center justify-center rounded-md">
 			{walletState?.walletName ? (
-				<div className="flex w-full flex-col gap-2">
-					<div className="flex w-full flex-row items-center justify-between gap-2 rounded-lg bg-secondary/50 p-2">
-						{walletState?.walletIcon && (
-							<Image
-								src={walletState?.walletIcon}
-								alt="wallet icon"
-								width={40}
-								height={40}
-								className="size-10 rounded-full"
-							/>
+				<div className="flex w-[15rem] flex-col rounded-md bg-secondary/50">
+					<div
+						className={cn(
+							'flex flex-row items-center justify-between gap-0.5 rounded-none px-4 pb-3 pt-2.5',
+							isAdaHandleVisible && isWalletAddressVisible && 'border-b border-border/50',
 						)}
-
-						<div className="flex flex-1 items-center justify-between">
-							<span className="line-clamp-1 text-sm text-muted-foreground sm:text-base">
-								{walletState.adaHandle?.handle ? (
-									<span>
-										$
-										{isAdaHandleVisible
-											? walletState.adaHandle.handle
-											: `${walletState.adaHandle.handle.charAt(0)}${'*'.repeat(walletState.adaHandle.handle.length + 2)}`}
-									</span>
-								) : (
-									<span>
-										{isWalletAddressVisible
-											? `${walletState?.walletAddress?.slice(0, 10)}...${walletState?.walletAddress?.slice(-4)}`
-											: `${walletState?.walletAddress?.slice(0, 4)}...${walletState?.walletAddress?.slice(-4)}`}
-									</span>
+					>
+						<div className="flex flex-row items-center gap-0.5">
+							{walletState?.walletIcon && (
+								<Image
+									src={walletState?.walletIcon}
+									alt="wallet icon"
+									width={40}
+									height={40}
+									className="size-10 rounded-full"
+								/>
+							)}
+							{/* <span className="line-clamp-1 text-muted-foreground">
+								{walletState.adaHandle?.handle && (
+									<span>{isAdaHandleVisible ? `$${walletState.adaHandle.handle}` : ``}</span>
 								)}
-							</span>
-							<button
-								onClick={() => {
-									if (walletState.adaHandle?.handle) {
-										setIsAdaHandleVisible(!isAdaHandleVisible)
-									} else {
-										setIsWalletAddressVisible(!isWalletAddressVisible)
-									}
-								}}
-								className="group ml-2"
-							>
-								{(walletState.adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? (
-									<>
-										<div className="group-hover:hidden">
-											<Eye />
-										</div>
-										<div className="hidden group-hover:block">
-											<EyeOff />
-										</div>
-									</>
-								) : (
-									<>
-										<div className="group-hover:hidden">
-											<EyeOff />
-										</div>
-										<div className="hidden group-hover:block">
-											<Eye />
-										</div>
-									</>
-								)}
-							</button>
+							</span> */}
+						</div>
+						<div className="relative bottom-0.5">
+							<Button3D onClick={disconnect}>Disconnect</Button3D>
 						</div>
 					</div>
-					<div className="flex flex-row items-center justify-between gap-2">
-						{walletState.balance !== null && (
-							<span className="mt-2 text-sm text-muted-foreground">
-								{isAdaHandleVisible ? `${walletState.balance.toLocaleString()} ₳` : '*'.repeat(6) + ' ₳'}
-							</span>
-						)}
-						{!walletState.adaHandle.handle && (
-							<Button
-								variant="link"
-								asChild
-								className="mt-2 h-auto p-0 text-sm text-muted-foreground hover:text-primary"
-							>
-								<Link href="https://handle.me" target="_blank" rel="noopener noreferrer">
-									Get $handle
-								</Link>
-							</Button>
-						)}
-					</div>
-					<Button variant="destructive" onClick={async () => disconnect()} size="sm" className="w-full">
-						Disconnect
-					</Button>
 
-					<AlertDialog>
+					{isAdaHandleVisible && isWalletAddressVisible && (
+						<div className="mx-2 flex flex-row items-center justify-between gap-2 py-0.5 pl-3 pr-2">
+							{walletState.balance !== null && (
+								<span className="whitespace-nowrap text-muted-foreground">
+									{`${walletState.balance.toLocaleString()} ₳`}
+								</span>
+							)}
+
+							{walletState.adaHandle.total_handles && (
+								<span className="whitespace-nowrap text-muted-foreground">
+									{walletState.adaHandle.total_handles.toLocaleString()}{' '}
+									<span className="text-green-500 dark:text-green-700">$</span>handles
+								</span>
+							)}
+
+							{!walletState.adaHandle.handle && (
+								<Button variant="link" size="sm" asChild className="h-auto p-1 text-muted-foreground">
+									<Link
+										href="https://handle.me"
+										target="_blank"
+										rel="noopener noreferrer"
+										className="text-green-600 dark:text-green-700/95"
+									>
+										<span className="">Get $handle</span>
+									</Link>
+								</Button>
+							)}
+						</div>
+					)}
+
+					{/* <AlertDialog>
 						<AlertDialogTrigger asChild>
 							<Button variant="outline" size="sm" className="w-full">
 								Unlink
@@ -219,9 +189,9 @@ const WalletConnect = ({
 								</AlertDialogFooter>
 							</form>
 						</AlertDialogContent>
-					</AlertDialog>
+					</AlertDialog> */}
 
-					{walletState?.walletName && (
+					{/* {walletState?.walletName && (
 						<div className="mt-2 text-xs text-muted-foreground">
 							{timeLeft && (
 								<div className="flex items-center justify-between">
@@ -240,19 +210,10 @@ const WalletConnect = ({
 								</div>
 							)}
 						</div>
-					)}
+					)} */}
 				</div>
 			) : (
-				<Button
-					variant="outline"
-					onClick={handleOpenConnectSheet}
-					className={cn(
-						'flex w-full flex-col items-center justify-center bg-secondary/50 text-muted-foreground transition-colors hover:bg-secondary',
-						className,
-					)}
-				>
-					Connect Wallet
-				</Button>
+				<Button3D onClick={handleOpenConnectSheet}>Connect Wallet</Button3D>
 			)}
 
 			<Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>

@@ -23,7 +23,7 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 	const { walletState, loading } = useWallet()
 	const [hiddenEmail, setHiddenEmail] = useState('')
 	const userEmail = user?.externalAccounts[0].emailAddress
-	const [isWalletAddressVisible, setIsWalletAddressVisible] = useState(false)
+	const [isWalletAddressVisible, setIsWalletAddressVisible] = useState(true)
 	const [isAdaHandleVisible, setIsAdaHandleVisible] = useState(true)
 
 	useEffect(() => {
@@ -45,7 +45,6 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 
 	const handleSignOut = (e: React.MouseEvent) => {
 		e.stopPropagation()
-		setIsOpen(false)
 		signOut()
 	}
 
@@ -56,34 +55,47 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 			<DropdownMenuTrigger asChild>
 				{walletState.walletAddress && walletState.walletIcon ? (
 					<Button
-						variant="outline"
-						className={`flex items-center gap-1.5 bg-secondary/55 ${isAdaHandleVisible ? 'px-2' : ''}`}
-						size={isAdaHandleVisible ? 'default' : 'icon'}
+						variant={
+							(walletState.adaHandle?.handle && isAdaHandleVisible) ||
+							(isWalletAddressVisible && !walletState.adaHandle?.handle)
+								? 'outline'
+								: 'ghost'
+						}
+						className={`flex items-center gap-1 ${
+							(walletState.adaHandle?.handle && isAdaHandleVisible) ||
+							(isWalletAddressVisible && !walletState.adaHandle?.handle)
+								? 'bg-secondary/55'
+								: 'bg-background'
+						} text-black/70 hover:text-black dark:text-white/70 dark:hover:text-white ${
+							(walletState.adaHandle?.handle && isAdaHandleVisible) ||
+							(isWalletAddressVisible && !walletState.adaHandle?.handle)
+								? 'px-2'
+								: ''
+						}`}
+						size={
+							(walletState.adaHandle?.handle && isAdaHandleVisible) ||
+							(isWalletAddressVisible && !walletState.adaHandle?.handle)
+								? 'sm'
+								: 'smIcon'
+						}
 						aria-label="User login options"
 					>
-						{isAdaHandleVisible && (
+						{walletState.adaHandle?.handle && isAdaHandleVisible && (
 							<span className="line-clamp-1">
-								{walletState.adaHandle?.handle ? (
-									<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
-										${walletState.adaHandle.handle}
-									</span>
-								) : (
-									<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
-										{isWalletAddressVisible
-											? `${walletState.walletAddress?.slice(0, 10)}...${walletState.walletAddress?.slice(-4)}`
-											: `${walletState.walletAddress?.slice(0, 4)}...${walletState.walletAddress?.slice(-4)}`}
-									</span>
-								)}
+								<span className="text-sm dark:text-white/70 sm:text-base">{`$${walletState.adaHandle.handle}`}</span>
 							</span>
 						)}
-						<Image src={walletState.walletIcon} alt="wallet icon" width={32} height={32} />
+						{!walletState.adaHandle?.handle &&
+							isWalletAddressVisible &&
+							`${walletState?.walletAddress?.slice(0, 6)}...${walletState?.walletAddress?.slice(-4)}`}
+						{walletState.walletIcon && <Image src={walletState.walletIcon} alt="wallet icon" width={28} height={28} />}
 					</Button>
 				) : isSignedIn ? (
 					<div style={{ cursor: 'pointer' }}>
 						{loading ? (
-							<Loader2 className="size-4 animate-spin" />
+							<Loader2 className="size-5 animate-spin sm:size-6" />
 						) : web2Image ? (
-							<Image src={web2Image} alt="user avatar" width={32} height={32} />
+							<Image src={web2Image} alt="user avatar" width={28} height={28} />
 						) : (
 							<UserIcon className="size-5 sm:size-6" />
 						)}
@@ -102,12 +114,12 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 				)}
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
-				className="w-[19rem] sm:w-[19.5rem] md:w-[20rem] lg:w-[20.5rem] xl:w-[21rem]"
+				className="w-[19rem] sm:w-[19.5rem] md:w-[20rem]"
 				align="center"
 				sideOffset={4}
 				alignOffset={0}
 			>
-				<div className="flex flex-col gap-6 rounded-lg p-6">
+				<div className="flex flex-col gap-4 rounded-lg p-4">
 					{/* web3 wallet login */}
 					<div className="flex flex-col items-center gap-4">
 						<h3 className="flex items-center text-lg font-semibold text-foreground/90">
@@ -115,6 +127,36 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 								<GlobeIcon className="size-5" />
 								Web3 Login
 							</div>
+							<button
+								onClick={() => {
+									if (walletState.adaHandle?.handle) {
+										setIsAdaHandleVisible(!isAdaHandleVisible)
+									} else {
+										setIsWalletAddressVisible(!isWalletAddressVisible)
+									}
+								}}
+								className="group ml-2"
+							>
+								{(walletState.adaHandle?.handle ? isAdaHandleVisible : isWalletAddressVisible) ? (
+									<>
+										<div className="group-hover:hidden">
+											<Eye />
+										</div>
+										<div className="hidden group-hover:block">
+											<EyeOff />
+										</div>
+									</>
+								) : (
+									<>
+										<div className="group-hover:hidden">
+											<EyeOff />
+										</div>
+										<div className="hidden group-hover:block">
+											<Eye />
+										</div>
+									</>
+								)}
+							</button>
 						</h3>
 						<WalletConnect
 							className="w-full rounded-md bg-secondary/50 p-4 transition-colors hover:bg-secondary"

@@ -9,7 +9,7 @@ export function ThemeToggle() {
 	const { setTheme, theme } = useTheme()
 
 	return (
-		<Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+		<Button variant="ghost" size="smIcon" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
 			<Moon className="hidden size-5 dark:block sm:size-6" />
 			<Sun className="block size-5 dark:hidden sm:size-6" />
 		</Button>

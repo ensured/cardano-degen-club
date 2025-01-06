@@ -541,93 +541,83 @@ export const getAddressFromHandle = async (handleName: string) => {
 	return { stakeAddress, image, address, error }
 }
 
-interface WalletAuth {
-	stakeKey: string
-	timestamp: number
-}
+// interface WalletAuth {
+// 	stakeKey: string
+// 	timestamp: number
+// }
 
-export const getAdaHandle = async (stakeAddress: string) => {
-	const res = await fetch(`https://api.handle.me/holders/${stakeAddress}`, {
-		headers: {
-			accept: 'application/json',
-		},
-	})
-	const data = await res.json()
-	return data
-}
+// export async function storeWalletAuth(
+// 	stakeKey: string,
+// 	timestamp: number,
+// ): Promise<{ success: boolean; error?: string }> {
+// 	try {
+// 		const authData: WalletAuth = {
+// 			stakeKey,
+// 			timestamp,
+// 		}
 
-export async function storeWalletAuth(
-	stakeKey: string,
-	timestamp: number,
-): Promise<{ success: boolean; error?: string }> {
-	try {
-		const authData: WalletAuth = {
-			stakeKey,
-			timestamp,
-		}
+// 		// Convert CARDANO_WALLET_MAX_AGE from milliseconds to seconds for KV storage
+// 		const expirationInSeconds = Math.floor(CARDANO_WALLET_MAX_AGE / 1000)
 
-		// Convert CARDANO_WALLET_MAX_AGE from milliseconds to seconds for KV storage
-		const expirationInSeconds = Math.floor(CARDANO_WALLET_MAX_AGE / 1000)
+// 		// Store in KV with expiration in seconds
+// 		await kv.set(`wallet:${stakeKey}`, authData, { ex: expirationInSeconds })
 
-		// Store in KV with expiration in seconds
-		await kv.set(`wallet:${stakeKey}`, authData, { ex: expirationInSeconds })
+// 		// Verify it was stored
+// 		const stored = await getWalletAuth(stakeKey)
+// 		if (!stored) {
+// 			return { success: false, error: 'Failed to verify storage' }
+// 		}
 
-		// Verify it was stored
-		const stored = await getWalletAuth(stakeKey)
-		if (!stored) {
-			return { success: false, error: 'Failed to verify storage' }
-		}
+// 		return { success: true }
+// 	} catch (error) {
+// 		console.error('Error storing wallet auth:', error)
+// 		return { success: false, error: 'Failed to store wallet authentication' }
+// 	}
+// }
 
-		return { success: true }
-	} catch (error) {
-		console.error('Error storing wallet auth:', error)
-		return { success: false, error: 'Failed to store wallet authentication' }
-	}
-}
+// export const getWalletAuth = async (stakeKey: string) => {
+// 	try {
+// 		const walletAuth = await kv.get(`wallet:${stakeKey}`)
 
-export const getWalletAuth = async (stakeKey: string) => {
-	try {
-		const walletAuth = await kv.get(`wallet:${stakeKey}`)
+// 		if (!walletAuth) {
+// 			return { error: 'No auth found' }
+// 		}
 
-		if (!walletAuth) {
-			return { error: 'No auth found' }
-		}
+// 		// Type guard to ensure walletAuth has the correct shape
+// 		if (!isWalletAuth(walletAuth)) {
+// 			console.error('Invalid wallet auth format')
+// 			await kv.del(`wallet:${stakeKey}`)
+// 			return { error: 'Invalid auth format' }
+// 		}
 
-		// Type guard to ensure walletAuth has the correct shape
-		if (!isWalletAuth(walletAuth)) {
-			console.error('Invalid wallet auth format')
-			await kv.del(`wallet:${stakeKey}`)
-			return { error: 'Invalid auth format' }
-		}
+// 		const expirationTime = walletAuth.timestamp + CARDANO_WALLET_MAX_AGE
+// 		const hasExpired = Date.now() > expirationTime
 
-		const expirationTime = walletAuth.timestamp + CARDANO_WALLET_MAX_AGE
-		const hasExpired = Date.now() > expirationTime
+// 		if (hasExpired) {
+// 			console.log('Auth has expired')
+// 			await kv.del(`wallet:${stakeKey}`)
+// 			return {
+// 				error: 'Auth expired',
+// 				expiredAt: new Date(expirationTime).toISOString(),
+// 			}
+// 		}
 
-		if (hasExpired) {
-			console.log('Auth has expired')
-			await kv.del(`wallet:${stakeKey}`)
-			return {
-				error: 'Auth expired',
-				expiredAt: new Date(expirationTime).toISOString(),
-			}
-		}
+// 		return {
+// 			...walletAuth,
+// 			expiresAt: new Date(expirationTime).toISOString(),
+// 		}
+// 	} catch (error) {
+// 		return { error: 'Server error' }
+// 	}
+// }
 
-		return {
-			...walletAuth,
-			expiresAt: new Date(expirationTime).toISOString(),
-		}
-	} catch (error) {
-		return { error: 'Server error' }
-	}
-}
+// // Type guard function
+// function isWalletAuth(auth: any): auth is WalletAuth {
+// 	return (
+// 		auth && typeof auth === 'object' && 'stakeKey' in auth && 'timestamp' in auth && typeof auth.timestamp === 'number'
+// 	)
+// }
 
-// Type guard function
-function isWalletAuth(auth: any): auth is WalletAuth {
-	return (
-		auth && typeof auth === 'object' && 'stakeKey' in auth && 'timestamp' in auth && typeof auth.timestamp === 'number'
-	)
-}
-
-export const removeWalletAuth = async (stakeKey: string) => {
-	await kv.del(`wallet:${stakeKey}`)
-}
+// export const removeWalletAuth = async (stakeKey: string) => {
+// 	await kv.del(`wallet:${stakeKey}`)
+// }
