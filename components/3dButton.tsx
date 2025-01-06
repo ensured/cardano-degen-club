@@ -11,7 +11,7 @@ const Button3D = ({
 	return (
 		<Button
 			variant="outline"
-			className="transform border-2 border-border bg-background shadow-[0_4px_0_0_hsl(var(--border))] transition-transform duration-100 hover:bg-background/90 active:translate-y-1 active:shadow-none"
+			className="transform border-2 border-border shadow-[0_4px_0_0_hsl(var(--border))] transition-transform duration-100 hover:bg-background/50 active:translate-y-1 active:shadow-none"
 			onClick={onClick}
 		>
 			{children}

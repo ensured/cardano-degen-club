@@ -81,7 +81,7 @@ const WalletConnect = ({ className, isAdaHandleVisible, isWalletAddressVisible }
 	return (
 		<div className="flex w-full flex-col items-center justify-center rounded-md">
 			{walletState?.walletName ? (
-				<div className="flex w-[15rem] flex-col rounded-md bg-secondary/50">
+				<div className="flex w-[15rem] flex-col rounded-md border border-border/65 bg-secondary/65">
 					<div
 						className={cn(
 							'flex flex-row items-center justify-between gap-0.5 rounded-none px-4 pb-3 pt-2.5',
@@ -170,7 +170,7 @@ const WalletConnect = ({ className, isAdaHandleVisible, isWalletAddressVisible }
 											onChange={(e) => {
 												const button = document.getElementById('confirmUnlink') as HTMLButtonElement
 												if (button) {
-													button.disabled = e.target.value.toLowerCase() !== 'unlink'
+													button.disabled = e.target.value !== 'unlink'
 												}
 											}}
 										/>
