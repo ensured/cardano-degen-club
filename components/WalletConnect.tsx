@@ -170,7 +170,7 @@ const WalletConnect = ({ className, isAdaHandleVisible, isWalletAddressVisible }
 											onChange={(e) => {
 												const button = document.getElementById('confirmUnlink') as HTMLButtonElement
 												if (button) {
-													button.disabled = e.target.value !== 'unlink'
+													button.disabled = e.target.value.toLowerCase() !== 'unlink'
 												}
 											}}
 										/>
