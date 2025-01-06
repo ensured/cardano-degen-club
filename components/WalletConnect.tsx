@@ -20,6 +20,7 @@ import {
 } from './ui/alert-dialog'
 import { Input } from './ui/input'
 import Link from 'next/link'
+import { getWalletAuth } from '@/app/actions'
 
 interface Cardano {
 	[key: string]:
@@ -56,7 +57,20 @@ const WalletConnect = ({
 	isWalletAddressVisible,
 }: WalletConnectProps) => {
 	const [isSheetOpen, setIsSheetOpen] = useState(false)
-	const { walletState, loading, connect, disconnect, unlink, getSupportedWallets } = useWallet()
+	const { walletState, loading, connect, disconnect, unlink, getSupportedWallets, setExpiresAt, timeLeft } = useWallet()
+
+	useEffect(() => {
+		const checkWalletAuth = async () => {
+			if (walletState.stakeAddress) {
+				const auth = await getWalletAuth(walletState.stakeAddress)
+				if (!('error' in auth) && auth.expiresAt) {
+					setExpiresAt(auth.expiresAt)
+				}
+			}
+		}
+
+		checkWalletAuth()
+	}, [walletState.stakeAddress, setExpiresAt])
 
 	const handleOpenConnectSheet = (e: React.MouseEvent<HTMLButtonElement>) => {
 		e.preventDefault()
@@ -208,6 +222,27 @@ const WalletConnect = ({
 							</form>
 						</AlertDialogContent>
 					</AlertDialog>
+
+					{walletState?.walletName && (
+						<div className="mt-2 text-xs text-muted-foreground">
+							{timeLeft && (
+								<div className="flex items-center justify-between">
+									<span>Session expires in:</span>
+									<span
+										className={`font-mono ${
+											timeLeft === 'Expired'
+												? 'text-destructive'
+												: parseInt(timeLeft?.split('m')[0] || '0') < 5
+													? 'text-warning'
+													: 'text-success'
+										}`}
+									>
+										{timeLeft}
+									</span>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			) : (
 				<Button

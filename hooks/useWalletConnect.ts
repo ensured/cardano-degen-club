@@ -35,7 +35,11 @@ const initialWalletState: WalletState = {
 	paymentKeyHash: null,
 }
 
-export function useWalletConnect() {
+interface WalletConnectProps {
+	setExpiresAt: (time: string | null) => void
+}
+
+export function useWalletConnect({ setExpiresAt }: WalletConnectProps) {
 	const [walletState, setWalletState] = useState<WalletState>(initialWalletState)
 	const [loading, setLoading] = useState(false)
 
@@ -131,6 +135,11 @@ export function useWalletConnect() {
 			}
 
 			await storeWalletAuth(decodedStakeAddr, Date.now())
+			const authResponse = await getWalletAuth(decodedStakeAddr)
+			if (!('error' in authResponse) && authResponse.expiresAt) {
+				setExpiresAt(authResponse.expiresAt)
+			}
+
 			setWalletState(newWalletState)
 			return true
 		} catch (error: any) {
