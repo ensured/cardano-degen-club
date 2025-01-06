@@ -57,25 +57,25 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
 				{walletState.walletAddress && walletState.walletIcon ? (
 					<Button
 						variant="outline"
-						className="flex items-center gap-1.5 bg-secondary/55 px-2"
+						className={`flex items-center gap-1.5 bg-secondary/55 ${isAdaHandleVisible ? 'px-2' : ''}`}
+						size={isAdaHandleVisible ? 'default' : 'icon'}
 						aria-label="User login options"
 					>
-						<span className="line-clamp-1">
-							{walletState.adaHandle?.handle ? (
-								<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
-									$
-									{isAdaHandleVisible
-										? walletState.adaHandle.handle
-										: `${walletState.adaHandle.handle.charAt(0)}${'*'.repeat(walletState.adaHandle.handle.length - 1)}`}
-								</span>
-							) : (
-								<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
-									{isWalletAddressVisible
-										? `${walletState.walletAddress?.slice(0, 10)}...${walletState.walletAddress?.slice(-4)}`
-										: `${walletState.walletAddress?.slice(0, 4)}...${walletState.walletAddress?.slice(-4)}`}
-								</span>
-							)}
-						</span>
+						{isAdaHandleVisible && (
+							<span className="line-clamp-1">
+								{walletState.adaHandle?.handle ? (
+									<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
+										${walletState.adaHandle.handle}
+									</span>
+								) : (
+									<span className="text-sm text-black/80 dark:text-white/70 sm:text-base">
+										{isWalletAddressVisible
+											? `${walletState.walletAddress?.slice(0, 10)}...${walletState.walletAddress?.slice(-4)}`
+											: `${walletState.walletAddress?.slice(0, 4)}...${walletState.walletAddress?.slice(-4)}`}
+									</span>
+								)}
+							</span>
+						)}
 						<Image src={walletState.walletIcon} alt="wallet icon" width={32} height={32} />
 					</Button>
 				) : isSignedIn ? (

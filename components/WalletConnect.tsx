@@ -105,7 +105,7 @@ const WalletConnect = ({
 										$
 										{isAdaHandleVisible
 											? walletState.adaHandle.handle
-											: `${walletState.adaHandle.handle.charAt(0)}${'*'.repeat(walletState.adaHandle.handle.length - 1)}`}
+											: `${walletState.adaHandle.handle.charAt(0)}${'*'.repeat(walletState.adaHandle.handle.length + 2)}`}
 									</span>
 								) : (
 									<span>
@@ -150,9 +150,7 @@ const WalletConnect = ({
 					<div className="flex flex-row items-center justify-between gap-2">
 						{walletState.balance !== null && (
 							<span className="mt-2 text-sm text-muted-foreground">
-								{isAdaHandleVisible
-									? `${walletState.balance.toLocaleString()} ₳`
-									: '*'.repeat(String(walletState.balance).length) + ' ₳'}
+								{isAdaHandleVisible ? `${walletState.balance.toLocaleString()} ₳` : '*'.repeat(6) + ' ₳'}
 							</span>
 						)}
 						{!walletState.adaHandle.handle && (
