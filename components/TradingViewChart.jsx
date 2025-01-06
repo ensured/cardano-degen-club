@@ -62,7 +62,6 @@ const INDICATORS = [
 
 function TradingViewChart() {
 	const [fullscreenChart, setFullscreenChart] = useState(null)
-	const [loadingAdahandle, setLoadingAdahandle] = useState(false)
 	const [chartSettings, setChartSettings] = useState(
 		CHART_CONFIG.reduce(
 			(acc, { containerId }) => ({

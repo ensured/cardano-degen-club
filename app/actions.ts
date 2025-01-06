@@ -21,7 +21,7 @@ export async function removeItemsFirebase(userEmail, keys) {
 	}
 
 	// remove all keys from firebase db
-	await Promise.all(
+	const res = await Promise.all(
 		// @ts-ignore
 		keys.map(async (key) => {
 			try {
@@ -30,7 +30,7 @@ export async function removeItemsFirebase(userEmail, keys) {
 				// @ts-ignore
 				await deleteObject(imageFileRef)
 			} catch (error) {
-				console.error('Error deleting item from favorites:', error)
+				return { error: 'Error deleting item from favorites' }
 			}
 		}),
 	)
@@ -39,6 +39,8 @@ export async function removeItemsFirebase(userEmail, keys) {
 		decrement: true,
 		amount: keys.length,
 	})
+
+	return res
 }
 
 // // @ts-ignore
@@ -584,13 +586,10 @@ export async function storeWalletAuth(
 }
 
 export const getWalletAuth = async (stakeKey: string) => {
-	console.log('Checking auth for stake key:', stakeKey)
-
 	try {
 		const walletAuth = await kv.get(`wallet:${stakeKey}`)
 
 		if (!walletAuth) {
-			console.log('No auth found for stake key')
 			return { error: 'No auth found' }
 		}
 
@@ -618,7 +617,6 @@ export const getWalletAuth = async (stakeKey: string) => {
 			expiresAt: new Date(expirationTime).toISOString(),
 		}
 	} catch (error) {
-		console.error('Error checking wallet auth:', error)
 		return { error: 'Server error' }
 	}
 }

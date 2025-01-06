@@ -40,7 +40,7 @@ const RecipeFrenPage = () => {
 	const { walletState } = useWallet()
 	const userEmail = user?.emailAddresses[0]?.emailAddress
 
-	if (!userEmail && !walletState.walletAddress) {
+	if (!userEmail && !walletState.stakeAddress) {
 		return (
 			<Animation>
 				<div className="flex w-full justify-center pt-6 text-center">

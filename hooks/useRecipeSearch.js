@@ -34,14 +34,14 @@ const useRecipeSearch = () => {
 	const { theme } = useTheme()
 	const pendingRemovals = useRef(new Set())
 	const pendingAdditions = useRef(new Set())
+	const [userEmail, setUserEmail] = useState(null)
 
 	const [pendingRequests, setPendingRequests] = useState(new Set())
-	const [userEmail, setUserEmail] = useState(null)
 	const { user } = useUser()
 	const { walletState } = useWallet()
 
 	useEffect(() => {
-		setUserEmail(walletState.walletAddress || user?.emailAddresses[0]?.emailAddress || null)
+		setUserEmail(walletState.stakeAddress || user?.emailAddresses[0]?.emailAddress || null)
 	}, [walletState, user])
 
 	const TOAST_LIMIT = 1
@@ -354,10 +354,15 @@ const useRecipeSearch = () => {
 			pendingRemovals.current.clear() // Clear the Set for future removals
 
 			try {
-				await removeItemsFirebase(userEmail, itemsToRemove) // Call your server action
-				// toast.success(`${itemsToRemove.length} favorites removed!`, {
-				//   onClick: (t) => toast.dismiss(t.id),
-				// })
+				try {
+					console.log(userEmail)
+					const res = await removeItemsFirebase(userEmail, itemsToRemove) // Call your server action
+					if (res.length !== 1) {
+						throw new Error('An unexpected error occurred')
+					}
+				} catch (error) {
+					toast.error('An unexpected error occurred')
+				}
 			} catch (error) {
 				console.error('Batch removal failed:', error)
 				toast.error(`Failed to remove ${itemsToRemove.length} favorites`)
