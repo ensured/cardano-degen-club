@@ -1,46 +1,14 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from './ui/button'
 import { Sheet, SheetTrigger, SheetContent, SheetDescription, SheetTitle } from './ui/sheet'
 import Image from 'next/image'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { CheckIcon, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { CheckIcon, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useWallet } from '@/contexts/WalletContext'
-import {
-	AlertDialog,
-	AlertDialogContent,
-	AlertDialogTrigger,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogDescription,
-	AlertDialogAction,
-	AlertDialogFooter,
-	AlertDialogCancel,
-} from './ui/alert-dialog'
-import { Input } from './ui/input'
 import Link from 'next/link'
 import Button3D from './3dButton'
-// import { getWalletAuth } from '@/app/actions'
-
-interface Cardano {
-	[key: string]:
-		| {
-				apiVersion: string
-				enable: () => Promise<any>
-				name: string
-				icon: string
-				getBalance?: () => Promise<number>
-				getUsedAddresses?: () => Promise<string[]>
-		  }
-		| undefined
-}
-
-declare global {
-	interface Window {
-		cardano?: Cardano
-	}
-}
 
 interface WalletConnectProps {
 	className: string

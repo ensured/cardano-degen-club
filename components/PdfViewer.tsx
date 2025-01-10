@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useResizeObserver } from "@wojtekmaj/react-hooks"
 import { jsPDF } from "jspdf"
 import { Document, Page } from "react-pdf"
+import { pdfjs } from 'react-pdf'
 
 import "./PdfViewer.css"
 import "../node_modules/react-pdf/dist/esm/Page/AnnotationLayer.css"
@@ -19,8 +20,12 @@ import { Switch } from "@/components/ui/switch"
 
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import "pdfjs-dist/build/pdf.worker.mjs"
 
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+	'pdfjs-dist/build/pdf.worker.min.mjs',
+	import.meta.url,
+  ).toString();
+  
 const options = {
   cMapUrl: "/cmaps/",
   standardFontDataUrl: "/standard_fonts/",
@@ -132,11 +137,9 @@ export default function PDFViewer({ inputFile, onProgress }: PDFViewerProps) {
     }
   }
 
-  function onDocumentLoadSuccess({
-    numPages: nextNumPages,
-  }: PDFDocumentProxy): void {
+  function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
     setIsContainerDivHidden(false)
-    setNumPages(nextNumPages)
+    setNumPages(numPages)
   }
 
   useEffect(() => {

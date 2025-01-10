@@ -6,7 +6,7 @@ import { debounce } from 'lodash'
 // Import debounce from lodash
 import { toast, useToasterStore } from 'react-hot-toast'
 
-import { MAX_FAVORITES } from '../utils/consts'
+import { MAX_FAVORITES } from '@/utils/consts'
 import { removeItemsFirebase, addItemsFirebase } from '../app/actions'
 import { useTheme } from 'next-themes'
 import { useWallet } from '@/contexts/WalletContext'

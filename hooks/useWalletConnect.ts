@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 // import { getAdaHandle } from '@/app/actions'
 import { isNaN } from '@/utils/helper'
 
-interface WalletState {
+export interface WalletState {
 	wallet: any | null
 	supportedWallets: string[]
 	walletIcon: string | null
@@ -62,7 +62,7 @@ export function useWalletConnect() {
 
 	const decodeHexAddress = (hexAddress: string): string => {
 		try {
-			const bytes = Buffer.from(hexAddress, 'hex')
+			const bytes = new Uint8Array(Buffer.from(hexAddress, 'hex'))
 			const address = Address.from_bytes(bytes)
 			const baseAddress = BaseAddress.from_address(address)
 			return baseAddress ? baseAddress.to_address().to_bech32() : address.to_bech32()
@@ -97,7 +97,7 @@ export function useWalletConnect() {
 
 		try {
 			const walletInstance = window.cardano?.[walletKey]
-			if (!walletInstance) throw new Error('Wallet not found')
+			if (!walletInstance || !walletKey || !window.cardano) throw new Error('Wallet not found')
 
 			localStorage.setItem('lastConnectedWallet', walletKey)
 
@@ -126,7 +126,8 @@ export function useWalletConnect() {
 			const handleData = await getAdaHandle(decodedStakeAddr)
 
 			const newWalletState = {
-				...walletState,
+				...initialWalletState,
+				wallet: walletInstance,
 				walletName: walletInstance.name,
 				walletAddress: decodedAddress,
 				walletIcon: walletInstance.icon,
@@ -159,10 +160,9 @@ export function useWalletConnect() {
 			// 	setExpiresAt(authResponse.expiresAt)
 			// }
 
-			setWalletState(newWalletState)
+			setWalletState((prev) => ({ ...prev, ...newWalletState }))
 			return true
 		} catch (error: any) {
-			console.error('Error connecting wallet:', error)
 			toast.error(error.message)
 			return false
 		} finally {

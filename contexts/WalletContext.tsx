@@ -1,21 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect } from 'react'
 import { useWalletConnect } from '@/hooks/useWalletConnect'
-
-interface WalletState {
-	wallet: any | null
-	supportedWallets: string[]
-	walletIcon: string | null
-	walletName: string | null
-	walletAddress: string | null
-	adaHandle: {
-		handle: string | null
-		total_handles: number | null
-	}
-	stakeAddress: string | null
-	balance: number | null
-	paymentKeyHash: string | null
-}
+import { type WalletState } from '@/hooks/useWalletConnect'
 
 type WalletContextType = {
 	walletState: WalletState
@@ -87,10 +73,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 	// }, [expiresAt])
 
 	const contextValue = {
-		...wallet,
-		// expiresAt,
-		// timeLeft,
-		// setExpiresAt: (time: string | null) => setExpiresAt(time),
+		walletState: wallet.walletState,
+		loading: wallet.loading,
+		connect: wallet.connect,
+		disconnect: wallet.disconnect,
+		getSupportedWallets: wallet.getSupportedWallets,
 	}
 
 	return <WalletContext.Provider value={contextValue}>{children}</WalletContext.Provider>
