@@ -60,7 +60,7 @@
     "buffer": "^6.0.3",
     "cbor": "^10.0.3",
     "cbor-js": "^0.1.0",
-    "class-variance-authority": "^0.4.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^1.2.1",
     "cmdk": "^1.0.0",
     "debounce": "^2.0.0",
