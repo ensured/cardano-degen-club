@@ -362,10 +362,8 @@ export default function Poas() {
 
   // Automatically load policies when API is available
   useEffect(() => {
-    let mounted = true
-
     const initializeWallet = async () => {
-      if (mounted && walletState.wallet) {
+      if (walletState.wallet) {
         try {
           console.log('Wallet is available:', walletState.wallet, walletState.balance) // Log wallet state
           const newApi = await walletState.wallet.enable()
@@ -402,9 +400,6 @@ export default function Poas() {
     }
 
     initializeWallet()
-    return () => {
-      mounted = false
-    }
   }, [walletState.wallet])
 
   const uploadFile = async (selectedFile?: File) => {
