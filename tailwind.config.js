@@ -153,6 +153,14 @@ module.exports = {
 						transform: 'translateY(0)',
 					},
 				},
+				borderPulse: {
+					'0%, 100%': {
+						borderColor: 'rgba(255, 255, 255, 0.5)', // Original border color
+					},
+					'50%': {
+						borderColor: 'rgba(255, 255, 255, 1)', // Highlighted border color
+					},
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -163,6 +171,7 @@ module.exports = {
 				'spin-3-times': 'spin-3-times 4.4s ease-in-out',
 				'hover-up-down': 'hover-up-down 1s ease-in-out infinite',
 				'pulse-slow': 'pulse 2.22s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				borderPulse: 'borderPulse 1.5s ease-in-out infinite',
 			},
 		},
 	},
