@@ -355,11 +355,7 @@ const useRecipeSearch = () => {
 
 			try {
 				try {
-					console.log(userEmail)
-					const res = await removeItemsFirebase(userEmail, itemsToRemove) // Call your server action
-					if (res.length !== 1) {
-						throw new Error('An unexpected error occurred')
-					}
+					await removeItemsFirebase(userEmail, itemsToRemove) // Call your server action
 				} catch (error) {
 					toast.error('An unexpected error occurred')
 				}

@@ -16,14 +16,18 @@ import {
 } from './ui/dropdown-menu'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
+import { getEpochData } from '@/app/actions'
+import copyImagePath from '@/public/copy.png'
+
+const testing = false
+
+type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
+export const CARDANO_NETWORK: CardanoNetwork = 'Preview'
 
 const getLucid = async () => {
 	const { Lucid, Blockfrost } = await import('@lucid-evolution/lucid')
 	return { Lucid, Blockfrost }
 }
-
-type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
-export const CARDANO_NETWORK: CardanoNetwork = 'Mainnet'
 
 const getScriptUtils = async () => {
 	const { scriptFromNative, paymentCredentialOf, unixTimeToSlot, mintingPolicyToId, fromText } = await import(
@@ -38,14 +42,13 @@ const getScriptUtils = async () => {
 	}
 }
 
-// import * as bip39 from 'bip39'
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
-import { Check, ChevronDown } from 'lucide-react'
+import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
+import SlotConverter from './SlotConverter'
 
 interface WalletApi {
 	getExtensions(): Promise<any>
@@ -67,7 +70,7 @@ interface WalletApi {
 interface PolicyInfo {
 	policyId: string
 	keyHash: string
-	slot: number
+	slot?: number
 	script: any
 	isGenerated?: boolean
 }
@@ -150,6 +153,104 @@ const isValidImageFile = (file: File): boolean => {
 	return VALID_IMAGE_EXTENSIONS.some((ext) => fileName.endsWith(ext))
 }
 
+// Add this function near the top with other utility functions
+const extractSlotFromScript = (script: any): number | undefined => {
+	if (!script) return undefined
+	if (script.type === 'before') return script.slot
+	if (script.scripts?.length) return script.scripts.find((s: any) => s.type === 'before')?.slot
+	if (script.json) return extractSlotFromScript(script.json)
+	return undefined
+}
+
+// Utility function to create a minting policy
+const createMintingPolicy = async (lucid: any, api: WalletApi, selectedPolicy: PolicyInfo, slot: number) => {
+	const { scriptFromNative, paymentCredentialOf } = await getScriptUtils()
+	const address = await lucid.wallet().address()
+	const keyHash = paymentCredentialOf(address).hash
+
+	let mintingPolicy
+
+	if (selectedPolicy.script.type === 'sig') {
+		mintingPolicy = scriptFromNative({
+			type: 'sig',
+			keyHash: selectedPolicy.script.keyHash,
+		})
+	} else {
+		mintingPolicy = scriptFromNative({
+			type: 'all',
+			scripts: [
+				{ type: 'sig', keyHash },
+				{ type: 'before', slot },
+			],
+		})
+	}
+
+	return mintingPolicy
+}
+
+// Utility function to mint the NFT
+const mintNFT = async (
+	lucid: any,
+	api: WalletApi,
+	selectedPolicy: PolicyInfo,
+	nftName: string,
+	nftDescription: string,
+	url: string,
+) => {
+	try {
+		console.log('Starting NFT minting process...')
+		const currentSlot = await lucid.currentSlot()
+		console.log('Current Slot:', currentSlot)
+
+		const epochData = await getEpochData(CARDANO_NETWORK)
+		console.log('Epoch Data:', epochData)
+
+		const { scriptFromNative, fromText } = await getScriptUtils()
+
+		const metadata = {
+			[selectedPolicy.policyId]: {
+				[nftName]: {
+					name: nftName,
+					description: nftDescription,
+					image: `ipfs://${url}`,
+					mediaType: 'image/png',
+				},
+			},
+		}
+
+		// const donationAddress =
+		// 	CARDANO_NETWORK === 'Mainnet'
+		// 		? 'addr1qxyj9sqrzpwq9v4ylzr3m59rzxcusdqytulpz8j8wpd7k75ya8f335kz79mf43nwquzgnylgzmt0wdyh2k2zzleh7c7qmkdw9a'
+		// 		: 'addr_test1qrmm28eu9n4payu3sghjg7rpl2jqcdyl43sl3aezrqyx3gjxl4hjnhrmtcs6xnayrndwqfawlet6cr6upcnws30ujp9setmuen'
+
+		const tx = await lucid
+			.newTx()
+			.mintAssets({
+				[selectedPolicy.policyId + fromText(nftName)]: 1n,
+			})
+			.attachMetadata(721, metadata)
+			.validTo(Date.now() + 1200000)
+			// .pay.ToAddress(donationAddress, { lovelace: 1000000n })
+			.attach.MintingPolicy(
+				await createMintingPolicy(lucid, api, selectedPolicy, selectedPolicy.slot ?? lucid.currentSlot() + 36000),
+			)
+			.complete()
+
+		const signedTx = await tx.sign.withWallet().complete()
+		const txHash = await signedTx.submit()
+
+		return txHash
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			console.error('Error during NFT minting:', error)
+			toast.error('Minting failed: ' + error.message, { position: 'bottom-center' })
+		} else {
+			console.error('Unexpected error during NFT minting:', error)
+			toast.error('Minting failed: An unexpected error occurred.', { position: 'bottom-center' })
+		}
+	}
+}
+
 export default function Poas() {
 	const [file, setFile] = useState<File>()
 	const [url, setUrl] = useState<string | null>(null)
@@ -157,7 +258,7 @@ export default function Poas() {
 	const [pinataJWT, setPinataJWT] = useState<string | null>(null)
 	const [generatingPolicy, setGeneratingPolicy] = useState(false)
 	const [policyIds, setPolicyIds] = useState<PolicyInfo[]>([])
-	const [selectedPolicyId, setSelectedPolicyId] = useState<string | null>(null)
+	const [selectedPolicy, setSelectedPolicy] = useState<PolicyInfo | null>(null)
 	const { walletState } = useWallet()
 	const [api, setApi] = useState<WalletApi | null>(null)
 	const [scanning, setScanning] = useState(false)
@@ -165,8 +266,6 @@ export default function Poas() {
 	const [nftName, setNftName] = useState('')
 	const [nftDescription, setNftDescription] = useState('')
 	const [blockfrostKey, setBlockfrostKey] = useState<string | null>(null)
-	const [policiesExist, setPoliciesExist] = useState(true)
-	const [pinataFiles, setPinataFiles] = useState<PinataFile[]>([])
 	const [loadingFiles, setLoadingFiles] = useState(false)
 	const [currentStep, setCurrentStep] = useState(1)
 	const [showPinataDialog, setShowPinataDialog] = useState(false)
@@ -179,6 +278,7 @@ export default function Poas() {
 		totalPages: 1,
 		itemsPerPage: 12,
 	})
+	const [lucid, setLucid] = useState<any | null>(null)
 
 	// Add function to check step completion
 	const isStepComplete = (step: number) => {
@@ -188,9 +288,9 @@ export default function Poas() {
 			case 2:
 				return Boolean(url && file)
 			case 3:
-				return Boolean(selectedPolicyId)
+				return Boolean(selectedPolicy)
 			case 4:
-				return Boolean(selectedPolicyId && nftName && nftDescription && url)
+				return Boolean(selectedPolicy && nftName && nftDescription && url)
 			default:
 				return false
 		}
@@ -208,12 +308,12 @@ export default function Poas() {
 			setCurrentStep(3)
 			setOpenSections([3])
 		}
-		// Step 3 -> 4: When policy is selected
-		else if (currentStep === 3 && selectedPolicyId) {
-			setCurrentStep(4)
-			setOpenSections([4])
-		}
-	}, [blockfrostKey, pinataJWT, url, selectedPolicyId, currentStep])
+		// // Step 3 -> 4: When policy is selected
+		// else if (currentStep === 3 && selectedPolicyId) {
+		// 	setCurrentStep(4)
+		// 	setOpenSections([4])
+		// }
+	}, [blockfrostKey, pinataJWT, url, selectedPolicy, currentStep])
 
 	// Load all saved data when component mounts
 	useEffect(() => {
@@ -255,6 +355,27 @@ export default function Poas() {
 				try {
 					const newApi = await walletState.wallet.enable()
 					setApi(newApi)
+
+					// Initialize Lucid here
+					const { Lucid, Blockfrost } = await getLucid()
+					const lucidInstance = await Lucid(
+						new Blockfrost(
+							`https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0`,
+							blockfrostKey || undefined,
+						),
+						CARDANO_NETWORK,
+					)
+					lucidInstance.selectWallet.fromAPI(newApi)
+					setLucid(lucidInstance)
+
+					// Existing testing code...
+					if (testing) {
+						const response = await fetch(copyImagePath.src)
+						const blob = await response.blob()
+						const file = new File([blob], 'copy.png', { type: 'image/png' })
+						setFile(file)
+						await uploadFile(file)
+					}
 				} catch (error) {
 					toast.error('Failed to connect to wallet', { position: 'bottom-center' })
 				} finally {
@@ -357,122 +478,6 @@ export default function Poas() {
 		}
 	}
 
-	const mintNFT = async () => {
-		if (!api) {
-			toast.error('Please connect your wallet first', { position: 'bottom-center' })
-			return
-		}
-		// check for balance
-		const balance = await api.getBalance()
-		if (Number(balance) < 1000000) {
-			toast.error('Insufficient balance', { position: 'bottom-center' })
-			return
-		}
-		if (!selectedPolicyId || !url) {
-			toast.error('Please select a policy ID and upload an image first', { position: 'bottom-center' })
-			return
-		}
-
-		try {
-			const { Lucid, Blockfrost } = await getLucid()
-			const { scriptFromNative, fromText, paymentCredentialOf } = await getScriptUtils()
-
-			const selectedPolicy = policyIds.find((p) => p.policyId === selectedPolicyId)
-			if (!selectedPolicy?.script) {
-				throw new Error('Policy script not found')
-			}
-			const lucid = await Lucid(
-				new Blockfrost(
-					`https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0`,
-					blockfrostKey || undefined,
-				),
-				CARDANO_NETWORK,
-			)
-
-			lucid.selectWallet.fromAPI(api)
-			// Handle different script shapes
-			let mintingPolicy
-			if (selectedPolicy.script.type === 'sig') {
-				// Direct signature script
-				mintingPolicy = scriptFromNative({
-					type: 'sig',
-					keyHash: selectedPolicy.script.keyHash,
-				})
-			} else if (selectedPolicy.script.type === 'all') {
-				// Multiple scripts under "all" type
-				mintingPolicy = scriptFromNative({
-					type: 'all',
-					scripts: selectedPolicy.script.scripts,
-				})
-			} else {
-				// use the generated policy
-				const address = await lucid.wallet().address()
-				const keyHash = paymentCredentialOf(address).hash
-				mintingPolicy = scriptFromNative({
-					type: 'all',
-					scripts: [
-						{ type: 'sig', keyHash: keyHash },
-						{ type: 'before', slot: selectedPolicy.slot },
-					],
-				})
-				console.log('Using generated policy:', JSON.stringify(mintingPolicy, null, 2))
-			}
-
-			setMinting(true)
-
-			// Rest of minting logic using selectedPolicyId
-			const metadata = {
-				[selectedPolicyId]: {
-					[nftName]: {
-						name: nftName,
-						description: nftDescription,
-						image: `ipfs://${url}`,
-						mediaType: 'image/png',
-					},
-				},
-			}
-
-			const donationAddress =
-				CARDANO_NETWORK === 'Mainnet'
-					? 'addr1qxyj9sqrzpwq9v4ylzr3m59rzxcusdqytulpz8j8wpd7k75ya8f335kz79mf43nwquzgnylgzmt0wdyh2k2zzleh7c7qmkdw9a'
-					: 'addr_test1qrmm28eu9n4payu3sghjg7rpl2jqcdyl43sl3aezrqyx3gjxl4hjnhrmtcs6xnayrndwqfawlet6cr6upcnws30ujp9setmuen'
-
-			const tx = await lucid
-				.newTx()
-				.mintAssets({
-					[selectedPolicyId + fromText(nftName)]: 1n,
-				})
-				.attachMetadata(721, metadata)
-				.validTo(Date.now() + 900000)
-				.pay.ToAddress(donationAddress, { lovelace: 1000000n }) // 1 ADA
-				.attach.MintingPolicy(mintingPolicy)
-				.complete()
-
-			const signedTx = await tx.sign.withWallet().complete()
-			const txHash = await signedTx.submit()
-
-			toast.success(
-				<div className="flex flex-col gap-2">
-					<p>NFT minted successfully!</p>
-					<p>Tx: {txHash}</p>
-					<Link
-						href={`https://${CARDANO_NETWORK === 'Mainnet' ? 'cardanoscan.io' : `${CARDANO_NETWORK.toLowerCase()}.cardanoscan.io`}/transaction/${txHash}`}
-						target="_blank"
-						className="text-primary underline"
-					>
-						View on Cardanoscan
-					</Link>
-				</div>,
-				{ position: 'bottom-center' },
-			)
-		} catch (error: any) {
-			console.log('Full error:', error)
-			toast.error(error.message, { position: 'bottom-center' })
-		} finally {
-			setMinting(false)
-		}
-	}
-
 	const generatePolicyId = async () => {
 		if (!api) {
 			toast.error('Please connect your wallet first', { position: 'bottom-center' })
@@ -490,37 +495,47 @@ export default function Poas() {
 				CARDANO_NETWORK,
 			)
 			lucid.selectWallet.fromAPI(api)
-			const { scriptFromNative, paymentCredentialOf, unixTimeToSlot, mintingPolicyToId } = await getScriptUtils()
+			const { scriptFromNative, paymentCredentialOf, mintingPolicyToId } = await getScriptUtils()
 
 			const address = await lucid.wallet().address()
 			const keyHash = paymentCredentialOf(address).hash
 
-			// Calculate a unique future slot based on the number of existing policies
-			const baseOffset = 1000000 // 1 million milliseconds (about 16.6 minutes)
-			const uniqueOffset = baseOffset * (policyIds.length + 1)
-			const futureSlot = unixTimeToSlot(CARDANO_NETWORK, Date.now() + uniqueOffset)
+			// Use currentSlot directly
+			const currentSlot = lucid.currentSlot() + 86400 // current slot + 1 day
 
+			// Generate policy using currentSlot
 			const mintingPolicy = scriptFromNative({
 				type: 'all',
 				scripts: [
 					{ type: 'sig', keyHash },
-					{ type: 'before', slot: futureSlot },
+					{ type: 'before', slot: currentSlot },
 				],
 			})
-
 			const policyId = mintingPolicyToId(mintingPolicy)
 
-			const newPolicy = {
+			const newPolicy: PolicyInfo = {
 				policyId,
 				keyHash,
-				slot: futureSlot,
-				script: { json: { type: 'all', scripts: mintingPolicy.script } },
+				slot: currentSlot,
+				script: {
+					type: 'all',
+					scripts: [
+						{ type: 'sig', keyHash },
+						{ type: 'before', slot: currentSlot },
+					],
+				},
 				isGenerated: true,
 			}
 
+			// Update state with new policy
 			setPolicyIds((prev) => [...prev, newPolicy])
-			// setSelectedPolicyId(policyId)
-			toast.success(`New policy ID generated: ${policyId}`, { position: 'bottom-center' })
+			setSelectedPolicy(newPolicy)
+			toast.success(
+				<div className="flex flex-col gap-2">
+					<p className="text-sm text-muted-foreground">{policyId} will expire in 1 day.</p>
+				</div>,
+				{ position: 'bottom-center' },
+			)
 		} catch (error: any) {
 			console.error('Error:', error)
 			toast.error('Error generating policy ID: ' + error.message, { position: 'bottom-center' })
@@ -585,7 +600,7 @@ export default function Poas() {
 					if (keyHashMatches) {
 						return {
 							policyId,
-							slot: policyId.slot,
+							slot: extractSlotFromScript(scriptDetails.json),
 							script: scriptDetails.json,
 							keyHash,
 						}
@@ -613,12 +628,6 @@ export default function Poas() {
 				return
 			}
 
-			// const response = await fetch(
-			// 	`/api/cardano/usersMintedPolicies?address=${address}&keyHash=${keyHash}&blockfrostKey=${blockfrostKey}`,
-			// )
-			// if (!response.ok) throw new Error('Failed to fetch policies')
-
-			// const { policies } = await response.json()
 			const validPolicies = Array.from(policies.values())
 				.filter((p: any) => {
 					const policyId = typeof p === 'string' ? p : p.policyId
@@ -631,7 +640,6 @@ export default function Poas() {
 					script: p.script,
 				}))
 
-			// // Merge existing and new policies, removing duplicates by policyId
 			setPolicyIds((prevPolicies) => {
 				const mergedPolicies = [...prevPolicies, ...validPolicies]
 				const uniquePolicies = mergedPolicies.reduce((acc, current) => {
@@ -649,16 +657,13 @@ export default function Poas() {
 				return uniquePolicies
 			})
 
-			// // // Only set selected policy if none is currently selected
-			// // if (!selectedPolicyId && validPolicies.length > 0) {
-			// // 	setSelectedPolicyId(validPolicies[0].policyId)
-			// // }
+			// if (!selectedPolicy && validPolicies.length > 0) {
+			// 	setSelectedPolicy(validPolicies[0])
+			// }
 
 			if (validPolicies.length === 0) {
 				toast.info('No policies found, generate a new policy ID', { position: 'bottom-center' })
-				setPoliciesExist(false)
 			} else {
-				setPoliciesExist(true)
 				toast.success(
 					<div className="flex flex-col gap-2">
 						Loaded {validPolicies.length} existing policy ID{validPolicies.length > 1 ? 's' : ''}
@@ -758,13 +763,12 @@ export default function Poas() {
 		}
 	}
 
-	// Add this useEffect
 	useEffect(() => {
-		if (!selectedPolicyId && currentStep === 4) {
+		if (!selectedPolicy && currentStep === 4) {
 			setCurrentStep(3)
 			setOpenSections([3])
 		}
-	}, [selectedPolicyId, currentStep])
+	}, [selectedPolicy, currentStep])
 
 	if (initializing) {
 		return (
@@ -944,46 +948,60 @@ export default function Poas() {
 							<ChevronDown className="h-4 w-4" />
 						</div>
 					</CollapsibleTrigger>
-					<CollapsibleContent className="px-6 pb-6">
-						<div className="flex gap-4">
-							<Button3D disabled={!isStepComplete(2) || generatingPolicy} onClick={generatePolicyId} className="w-full">
-								Generate New Policy
-							</Button3D>
-							<Button3D
-								disabled={!isStepComplete(2) || scanning}
-								onClick={loadPolicies}
-								variant="outline"
-								className="w-full"
-							>
-								{scanning ? 'Scanning...' : 'Load Existing Policies'}
-							</Button3D>
-						</div>
-						<div className="mt-4">
-							<Label>Select Policy ID ({policyIds.length} policies found)</Label>
+					<CollapsibleContent className="grid grid-cols-2 gap-2 px-6 pb-6">
+						<div className="col-span-1 flex flex-col gap-4">
+							<div className="flex gap-4">
+								<Button3D
+									disabled={!isStepComplete(2) || scanning}
+									onClick={loadPolicies}
+									variant="outline"
+									className="flex-1"
+								>
+									{scanning ? 'Scanning...' : 'Load Existing Policies'}
+								</Button3D>
+								<Button3D
+									disabled={!isStepComplete(2) || generatingPolicy}
+									onClick={generatePolicyId}
+									className="flex-1"
+								>
+									Generate New Policy
+								</Button3D>
+							</div>
+
 							<DropdownMenu>
+								<Label className="text-lg font-semibold">Select Policy ID ({policyIds.length} policies found)</Label>
 								<DropdownMenuTrigger asChild>
 									<Button
 										variant="outline"
-										className="mt-2 w-full justify-between font-normal"
-										disabled={loadingPolicies}
+										className="w-full justify-between font-normal"
+										disabled={loadingPolicies || policyIds.length === 0}
 									>
-										{selectedPolicyId ? (
+										{selectedPolicy ? (
 											<span>
-												{selectedPolicyId.slice(0, 28)}...{selectedPolicyId.slice(-8)}
+												{selectedPolicy.policyId.slice(0, 14)}...{selectedPolicy.policyId.slice(-8)}
 											</span>
 										) : (
 											<span className="text-muted-foreground">
-												{loadingPolicies ? 'Loading...' : 'Select a policy'}
+												{loadingPolicies ? (
+													<div className="flex items-center justify-center gap-2">
+														<Loader2 className="h-4 w-4 animate-spin" />
+														Loading...
+													</div>
+												) : policyIds.length === 0 ? (
+													'No policies available'
+												) : (
+													'Select a policy'
+												)}
 											</span>
 										)}
 										<ChevronDown className="ml-2 h-4 w-4 opacity-50" />
 									</Button>
 								</DropdownMenuTrigger>
-								<DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+								<DropdownMenuContent className="max-h-96 w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto">
 									{/* Generated Policies Section */}
 									{policyIds.some((p) => p.isGenerated) && (
 										<>
-											<DropdownMenuLabel className="flex items-center gap-2 text-emerald-500">
+											<DropdownMenuLabel className="flex items-center gap-2 font-medium text-emerald-500">
 												<div className="h-2 w-2 rounded-full bg-emerald-500" />
 												Generated Policies
 											</DropdownMenuLabel>
@@ -992,12 +1010,16 @@ export default function Poas() {
 												.map((policy) => (
 													<DropdownMenuItem
 														key={policy.policyId}
-														onClick={() => setSelectedPolicyId(policy.policyId)}
-														className="flex items-center gap-2"
+														onClick={() => {
+															setSelectedPolicy(policy)
+														}}
+														className="flex items-center gap-2 transition-colors hover:bg-emerald-100"
 													>
-														{selectedPolicyId === policy.policyId && <Check className="h-4 w-4 text-emerald-500" />}
-														<span className={selectedPolicyId === policy.policyId ? 'text-emerald-500' : ''}>
-															{policy.policyId}
+														{selectedPolicy?.policyId === policy.policyId && (
+															<Check className="h-4 w-4 text-emerald-500" />
+														)}
+														<span className={selectedPolicy?.policyId === policy.policyId ? 'text-emerald-500' : ''}>
+															{policy.policyId.slice(0, 14)}...{policy.policyId.slice(-8)}
 														</span>
 													</DropdownMenuItem>
 												))}
@@ -1012,7 +1034,7 @@ export default function Poas() {
 									{/* Loaded Policies Section */}
 									{policyIds.some((p) => !p.isGenerated) && (
 										<>
-											<DropdownMenuLabel className="text-blue-500 flex items-center gap-2 text-blue">
+											<DropdownMenuLabel className="text-blue-500 flex items-center gap-2 font-medium">
 												<div className="h-2 w-2 rounded-full bg-blue" />
 												Loaded Policies
 											</DropdownMenuLabel>
@@ -1021,36 +1043,42 @@ export default function Poas() {
 												.map((policy) => (
 													<DropdownMenuItem
 														key={policy.policyId}
-														onClick={() => setSelectedPolicyId(policy.policyId)}
-														className="flex items-center gap-2"
+														onClick={async () => {
+															const slot = extractSlotFromScript(policy.script)
+
+															setSelectedPolicy({
+																...policy,
+																slot: slot,
+															})
+														}}
+														className="hover:bg-blue-100 flex items-center gap-2 transition-colors"
 													>
-														{selectedPolicyId === policy.policyId && <Check className="h-4 w-4 text-blue" />}
-														<span className={selectedPolicyId === policy.policyId ? 'text-blue' : ''}>
-															{policy.policyId}
+														{selectedPolicy?.policyId === policy.policyId && <Check className="h-4 w-4 text-blue" />}
+														<span className={selectedPolicy?.policyId === policy.policyId ? 'text-blue' : ''}>
+															{policy.policyId.slice(0, 14)}...{policy.policyId.slice(-8)}
 														</span>
 													</DropdownMenuItem>
 												))}
 										</>
 									)}
-
-									{/* Show message if no policies */}
-									{policyIds.length === 0 && <DropdownMenuItem disabled>No policies available</DropdownMenuItem>}
+									{loadingPolicies && (
+										<div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+											<div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+											Loading policies...
+										</div>
+									)}
 								</DropdownMenuContent>
 							</DropdownMenu>
-
-							{loadingPolicies && (
-								<div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-									<div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-									Loading policies...
-								</div>
-							)}
+						</div>
+						<div className="col-span-1 flex flex-grow flex-col gap-2">
+							{/* <SlotConverter network={CARDANO_NETWORK} defaultSlot={selectedPolicy?.slot || 0} /> */}
 						</div>
 					</CollapsibleContent>
 				</Collapsible>
 			)}
 
 			{/* Step 4: NFT Details */}
-			{selectedPolicyId && (
+			{selectedPolicy && (
 				<Collapsible
 					open={openSections.includes(4)}
 					onOpenChange={(isOpen) => {
@@ -1059,7 +1087,7 @@ export default function Poas() {
 					className="w-full rounded-lg border border-border bg-card"
 				>
 					<CollapsibleTrigger className="flex w-full items-center justify-between p-6 hover:bg-secondary/10">
-						<h2 className="text-lg font-semibold">Step 4: NFT Details</h2>
+						<h2 className="text-lg font-semibold">Step 4: Mint!</h2>
 						<div className="flex items-center gap-2">
 							{isStepComplete(4) && <Check className="h-4 w-4 text-green-500" />}
 							<ChevronDown className="h-4 w-4" />
@@ -1096,7 +1124,21 @@ export default function Poas() {
 								/>
 							</div>
 
-							<Button3D disabled={!isStepComplete(4) || minting} onClick={mintNFT} className="w-full">
+							<Button3D
+								disabled={!isStepComplete(4) || minting || !api}
+								onClick={() => {
+									if (api && nftName && nftDescription && url) {
+										mintNFT(lucid, api, selectedPolicy, nftName, nftDescription, url)
+									} else {
+										if (!nftName || !nftDescription) {
+											toast.error('NFT name and description must be provided', { position: 'bottom-center' })
+										} else {
+											toast.error('Wallet not connected', { position: 'bottom-center' })
+										}
+									}
+								}}
+								className="w-full"
+							>
 								{minting ? 'Minting...' : 'Mint NFT'}
 							</Button3D>
 						</div>

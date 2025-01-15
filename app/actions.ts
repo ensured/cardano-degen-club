@@ -6,7 +6,7 @@ import { currentUser } from '@clerk/nextjs/server'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { getDownloadURL, getMetadata, listAll, ref as storageRef, uploadBytes } from 'firebase/storage'
 import { db, deleteObject, storage } from '../components/firebase/firebase'
-import { kv } from '@vercel/kv'
+// import { kv } from '@vercel/kv'
 
 export async function checkUserAuthentication() {
 	const user = await currentUser()
@@ -420,12 +420,13 @@ export async function getImagesBase64(urls: string[]) {
 	}
 }
 
-export async function getEpochData() {
-	const blockfrostApiKey = process.env.BLOCKFROST_API_KEY
+export async function getEpochData(network: string = 'mainnet') {
+	const blockfrostApiKey =
+		network.toLowerCase() === 'mainnet' ? process.env.BLOCKFROST_API_KEY : process.env.BLOCKFROST_API_KEY_PREVIEW
 	if (!blockfrostApiKey) {
 		return { error: 'Blockfrost API key not found' }
 	}
-	const url = `https://cardano-mainnet.blockfrost.io/api/v0/epochs/latest`
+	const url = `https://cardano-${network}.blockfrost.io/api/v0/epochs/latest`
 	const response = await fetch(url, {
 		headers: {
 			project_id: blockfrostApiKey,
@@ -435,6 +436,7 @@ export async function getEpochData() {
 		},
 	})
 	const data = await response.json()
+	console.log(network, data)
 	return data
 }
 

@@ -2,10 +2,10 @@
 import { useEffect, useState } from 'react'
 import { MAX_FAVORITES } from '@/utils/consts'
 import { useWindowSize } from '@uidotdev/usehooks'
-import { Heart, Loader2, StarIcon, Database, Trash2, Settings } from 'lucide-react'
+import { Heart, Loader2, StarIcon } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 
-import { getFavoritesFirebase, removeItemsFirebase } from '../app/actions'
+import { getFavoritesFirebase } from '../app/actions'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet'
