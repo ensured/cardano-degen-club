@@ -270,7 +270,7 @@ export default function Poas() {
   const [generatingPolicy, setGeneratingPolicy] = useState(false)
   const [policyIds, setPolicyIds] = useState<PolicyInfo[]>([])
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyInfo | null>(null)
-  const { walletState } = useWallet()
+  const { walletState, loading } = useWallet()
   const [api, setApi] = useState<WalletApi | null>(null)
   const [scanning, setScanning] = useState(false)
   const [minting, setMinting] = useState(false)
@@ -365,7 +365,13 @@ export default function Poas() {
     let mounted = true
 
     const initializeWallet = async () => {
-      if (mounted && walletState.wallet) {
+      // Check if the wallet is not loading
+      if (
+        mounted &&
+        !loading &&
+        walletState?.wallet?.stakeAddress &&
+        walletState?.wallet?.stakeAddress
+      ) {
         try {
           const newApi = await walletState.wallet.enable()
           setApi(newApi)
@@ -404,7 +410,7 @@ export default function Poas() {
     return () => {
       mounted = false
     }
-  }, [walletState.wallet])
+  }, [walletState.wallet, loading])
 
   const uploadFile = async (selectedFile?: File) => {
     try {
