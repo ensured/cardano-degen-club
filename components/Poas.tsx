@@ -1240,7 +1240,16 @@ export default function Poas() {
                         position: 'bottom-center',
                       })
                     } else {
-                      toast.error('Wallet not connected', { position: 'bottom-center' })
+                      if (!api || !walletState.stakeAddress) {
+                        toast.error('Wallet not connected', {
+                          position: 'bottom-center',
+                        })
+                      }
+                      if (!pinataJWT || !blockfrostKey) {
+                        toast.error('API keys not set', {
+                          position: 'bottom-center',
+                        })
+                      }
                     }
                   }
                 }}
@@ -1356,7 +1365,7 @@ export default function Poas() {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
           </DialogHeader>
-          <p>Type "confirm" to delete this file.</p>
+          <p>Type &ldquo;confirm&ldquo; to delete this file.</p>
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -1366,7 +1375,7 @@ export default function Poas() {
             <Input
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value.toLowerCase())}
-              placeholder="Type 'confirm' here"
+              placeholder='Type "confirm" here'
               autoCapitalize="none"
             />
             <div className="mt-4 flex justify-end">
