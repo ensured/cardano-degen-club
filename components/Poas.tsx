@@ -1,6 +1,6 @@
 'use client'
 
-import { useWallet } from '@/contexts/WalletContext'
+import { useWallet, WalletContextType } from '@/contexts/WalletContext'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import Button3D from './3dButton'
@@ -270,7 +270,7 @@ export default function Poas() {
   const [generatingPolicy, setGeneratingPolicy] = useState(false)
   const [policyIds, setPolicyIds] = useState<PolicyInfo[]>([])
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyInfo | null>(null)
-  const { walletState, loading } = useWallet()
+  const { walletState, loading } = useWallet() as WalletContextType
   const [api, setApi] = useState<WalletApi | null>(null)
   const [scanning, setScanning] = useState(false)
   const [minting, setMinting] = useState(false)
@@ -365,14 +365,9 @@ export default function Poas() {
     let mounted = true
 
     const initializeWallet = async () => {
-      // Check if the wallet is not loading
-      if (
-        mounted &&
-        !loading &&
-        walletState?.wallet?.stakeAddress &&
-        walletState?.wallet?.stakeAddress
-      ) {
+      if (mounted && walletState.wallet) {
         try {
+          console.log('Wallet is available:', walletState.wallet, walletState.balance) // Log wallet state
           const newApi = await walletState.wallet.enable()
           setApi(newApi)
 
@@ -397,12 +392,12 @@ export default function Poas() {
             await uploadFile(file)
           }
         } catch (error) {
-          toast.error('Failed to connect to wallet', { position: 'bottom-center' })
+          console.error('Failed to connect to wallet:', error) // Log error
         } finally {
           setInitializing(false)
         }
       } else {
-        setInitializing(false)
+        console.log('Wallet is not available or component unmounted.') // Log if wallet is not available
       }
     }
 
@@ -410,7 +405,7 @@ export default function Poas() {
     return () => {
       mounted = false
     }
-  }, [walletState.wallet, loading])
+  }, [walletState.wallet])
 
   const uploadFile = async (selectedFile?: File) => {
     try {
@@ -1246,16 +1241,7 @@ export default function Poas() {
                         position: 'bottom-center',
                       })
                     } else {
-                      if (!api || !walletState.stakeAddress) {
-                        toast.error('Wallet not connected', {
-                          position: 'bottom-center',
-                        })
-                      }
-                      if (!pinataJWT || !blockfrostKey) {
-                        toast.error('API keys not set', {
-                          position: 'bottom-center',
-                        })
-                      }
+                      toast.error('Wallet not connected', { position: 'bottom-center' })
                     }
                   }
                 }}
