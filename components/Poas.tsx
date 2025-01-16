@@ -23,7 +23,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 const testing = false
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
-export const CARDANO_NETWORK: CardanoNetwork = 'Preview'
+export const CARDANO_NETWORK: CardanoNetwork = 'Mainnet'
 
 const getLucid = async () => {
   const { Lucid, Blockfrost } = await import('@lucid-evolution/lucid')
