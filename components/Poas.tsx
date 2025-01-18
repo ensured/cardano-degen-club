@@ -18,12 +18,16 @@ import { Button } from './ui/button'
 import { toast } from 'sonner'
 import { getEpochData } from '@/app/actions'
 import copyImagePath from '@/public/copy.png'
+import { Metadata, TransactionMetadata } from '@lucid-evolution/lucid'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
-
-const testing = false
+import { Check, ChevronDown, Loader2, Plus, X } from 'lucide-react'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
-export const CARDANO_NETWORK: CardanoNetwork = 'Mainnet'
+export const CARDANO_NETWORK: CardanoNetwork =
+  process.env.NODE_ENV === 'development' ? 'Preview' : 'Mainnet'
+
+// const testing = process.env.NODE_ENV === 'development' ? true : false
+const testing = false
 
 const getLucid = async () => {
   const { Lucid, Blockfrost } = await import('@lucid-evolution/lucid')
@@ -31,23 +35,30 @@ const getLucid = async () => {
 }
 
 const getScriptUtils = async () => {
-  const { scriptFromNative, paymentCredentialOf, unixTimeToSlot, mintingPolicyToId, fromText } =
-    await import('@lucid-evolution/lucid')
+  const {
+    scriptFromNative,
+    paymentCredentialOf,
+    unixTimeToSlot,
+    mintingPolicyToId,
+    fromText,
+    Data,
+  } = await import('@lucid-evolution/lucid')
   return {
     scriptFromNative,
     paymentCredentialOf,
     unixTimeToSlot,
     mintingPolicyToId,
     fromText,
+    Data,
   }
 }
 
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
-import { Check, ChevronDown, Loader2 } from 'lucide-react'
 import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
 import SlotConverter from './SlotConverter'
+import { LucidEvolution } from '@lucid-evolution/lucid'
 
 interface WalletApi {
   getExtensions(): Promise<any>
@@ -194,77 +205,22 @@ const createMintingPolicy = async (
   return mintingPolicy
 }
 
-// Utility function to mint the NFT
-const mintNFT = async (
-  lucid: any,
-  api: WalletApi,
-  selectedPolicy: PolicyInfo,
-  nftName: string,
-  nftDescription: string,
-  url: string,
-) => {
-  try {
-    console.log('Starting NFT minting process...')
-    const currentSlot = await lucid.currentSlot()
-    console.log('Current Slot:', currentSlot)
+// Add this interface
+interface FileInfo {
+  url: string
+  name: string
+  traits?: Trait[]
+}
 
-    const epochData = await getEpochData(CARDANO_NETWORK)
-    console.log('Epoch Data:', epochData)
-
-    const { scriptFromNative, fromText } = await getScriptUtils()
-
-    const metadata = {
-      [selectedPolicy.policyId]: {
-        [nftName]: {
-          name: nftName,
-          description: nftDescription,
-          image: `ipfs://${url}`,
-          mediaType: 'image/png',
-        },
-      },
-    }
-
-    // const donationAddress =
-    // 	CARDANO_NETWORK === 'Mainnet'
-    // 		? 'addr1qxyj9sqrzpwq9v4ylzr3m59rzxcusdqytulpz8j8wpd7k75ya8f335kz79mf43nwquzgnylgzmt0wdyh2k2zzleh7c7qmkdw9a'
-    // 		: 'addr_test1qrmm28eu9n4payu3sghjg7rpl2jqcdyl43sl3aezrqyx3gjxl4hjnhrmtcs6xnayrndwqfawlet6cr6upcnws30ujp9setmuen'
-
-    const tx = await lucid
-      .newTx()
-      .mintAssets({
-        [selectedPolicy.policyId + fromText(nftName)]: 1n,
-      })
-      .attachMetadata(721, metadata)
-      .validTo(Date.now() + 1200000)
-      // .pay.ToAddress(donationAddress, { lovelace: 1000000n })
-      .attach.MintingPolicy(
-        await createMintingPolicy(
-          lucid,
-          api,
-          selectedPolicy,
-          selectedPolicy.slot ?? lucid.currentSlot() + 36000,
-        ),
-      )
-      .complete()
-
-    const signedTx = await tx.sign.withWallet().complete()
-    const txHash = await signedTx.submit()
-
-    return txHash
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Error during NFT minting:', error)
-      toast.error('Minting failed: ' + error.message, { position: 'bottom-center' })
-    } else {
-      console.error('Unexpected error during NFT minting:', error)
-      toast.error('Minting failed: An unexpected error occurred.', { position: 'bottom-center' })
-    }
-  }
+// Update the traits interface near the top with other interfaces
+interface Trait {
+  key: string
+  value: string
 }
 
 export default function Poas() {
-  const [file, setFile] = useState<File>()
-  const [url, setUrl] = useState<string | null>(null)
+  const [file, setFile] = useState<File[]>([])
+  const [urls, setUrls] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
   const [pinataJWT, setPinataJWT] = useState<string | null>(null)
   const [generatingPolicy, setGeneratingPolicy] = useState(false)
@@ -287,12 +243,17 @@ export default function Poas() {
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     totalPages: 1,
-    itemsPerPage: 12,
+    itemsPerPage: 9,
   })
   const [lucid, setLucid] = useState<any | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [fileToDelete, setFileToDelete] = useState<string | null>(null)
   const [confirmationText, setConfirmationText] = useState('')
+  const [files, setFiles] = useState<File[]>([])
+  const [selectedPinataFiles, setSelectedPinataFiles] = useState<PinataFile[]>([])
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
+  const [traits, setTraits] = useState<Trait[]>([])
+  const [imageNames, setImageNames] = useState<{ [key: string]: string }>({})
 
   // Add function to check step completion
   const isStepComplete = (step: number) => {
@@ -300,11 +261,11 @@ export default function Poas() {
       case 1:
         return Boolean(blockfrostKey && pinataJWT)
       case 2:
-        return Boolean(url && file)
+        return Boolean(urls.length > 0)
       case 3:
         return Boolean(selectedPolicy)
       case 4:
-        return Boolean(selectedPolicy && nftName && nftDescription && url)
+        return Boolean(selectedPolicy && nftName && nftDescription && urls.length > 0)
       default:
         return false
     }
@@ -317,8 +278,8 @@ export default function Poas() {
       setCurrentStep(2)
       setOpenSections([2])
     }
-    // Step 2 -> 3: When URL is obtained
-    else if (currentStep === 2 && url) {
+    // Step 2 -> 3: When URL and thumbnailImage is obtained
+    else if (currentStep === 2 && urls.length > 0 && thumbnailImage) {
       setCurrentStep(3)
       setOpenSections([3])
     }
@@ -327,7 +288,7 @@ export default function Poas() {
     // 	setCurrentStep(4)
     // 	setOpenSections([4])
     // }
-  }, [blockfrostKey, pinataJWT, url, selectedPolicy, currentStep])
+  }, [blockfrostKey, pinataJWT, urls, thumbnailImage, currentStep])
 
   // Load all saved data when component mounts
   useEffect(() => {
@@ -381,14 +342,14 @@ export default function Poas() {
           lucidInstance.selectWallet.fromAPI(newApi)
           setLucid(lucidInstance)
 
-          // Existing testing code...
-          if (testing) {
-            const response = await fetch(copyImagePath.src)
-            const blob = await response.blob()
-            const file = new File([blob], 'copy.png', { type: 'image/png' })
-            setFile(file)
-            await uploadFile(file)
-          }
+          // // Existing testing code...
+          // if (testing) {
+          //   const response = await fetch(copyImagePath.src)
+          //   const blob = await response.blob()
+          //   const file = new File([blob], 'copy.png', { type: 'image/png' })
+          //   setFile(file)
+          //   await uploadFile(file)
+          // }
         } catch (error) {
           console.error('Failed to connect to wallet:', error) // Log error
         } finally {
@@ -402,93 +363,173 @@ export default function Poas() {
     initializeWallet()
   }, [walletState.wallet])
 
-  const uploadFile = async (selectedFile?: File) => {
+  const mintNFT = async (
+    lucid: LucidEvolution,
+    api: WalletApi,
+    selectedPolicy: PolicyInfo,
+    nftName: string,
+    nftDescription: string,
+    urls: FileInfo[],
+  ) => {
+    setMinting(true)
     try {
-      if (!selectedFile) {
-        toast.error('No file selected', { position: 'bottom-center' })
+      console.log('Starting NFT minting process...')
+      const currentSlot = lucid.currentSlot()
+
+      const epochData = await getEpochData(CARDANO_NETWORK)
+      console.log('Epoch Data:', epochData)
+
+      const { fromText } = await getScriptUtils()
+
+      if (!thumbnailImage) {
+        toast.error('Please select a thumbnail image', { position: 'bottom-center' })
         return
       }
 
-      // Check if file type is valid before attempting upload
-      if (!isValidImageFile(selectedFile)) {
-        toast.error(
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 font-medium text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              Upload Blocked: Invalid File Format
-            </div>
-            <p className="text-sm">&quot;{selectedFile.name}&quot; cannot be uploaded.</p>
-            <p className="text-sm text-muted-foreground">
-              Supported formats: {formatSupportedExtensions()}
-            </p>
-          </div>,
-          { position: 'bottom-center' },
-        )
+      if (!nftName || !nftDescription) {
+        toast.error('Please enter a name and description', { position: 'bottom-center' })
         return
+      }
+
+      if (urls.length === 0) {
+        toast.error('Please select at least one image', { position: 'bottom-center' })
+        return
+      }
+
+      const newUrls = urls.map((url) => {
+        const baseUrl = {
+          mediaType: 'image/png',
+          name: url.name,
+          src: 'ipfs://' + url.url,
+        }
+
+        if (url.traits && url.traits.length > 0) {
+          return {
+            ...baseUrl,
+            traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
+          }
+        }
+
+        return baseUrl
+      })
+
+      const metadata: { [key: string]: TransactionMetadata } = {
+        [selectedPolicy.policyId]: {
+          name: nftName,
+          description: [nftDescription] as ReadonlyArray<string>,
+          image: 'ipfs://' + thumbnailImage,
+          mediaType: 'image/png',
+          files: newUrls,
+        },
+      } as const
+
+      // Transaction to mint the NFT
+      const tx = await lucid
+        .newTx()
+        .mintAssets({
+          [selectedPolicy.policyId + fromText(nftName)]: 1n,
+        })
+        .attachMetadata(721, metadata) // Attach the Uint8Array metadata with the label 721
+        .validTo(Date.now() + 1200000) // 20 minutes for the user to sign the tx
+        // .pay.ToAddress(donationAddress, { lovelace: 1000000n })
+        .attach.MintingPolicy(
+          await createMintingPolicy(
+            lucid,
+            api,
+            selectedPolicy,
+            selectedPolicy.slot ?? lucid.currentSlot() + 36000,
+          ),
+        )
+        .complete()
+
+      const signedTx = await tx.sign.withWallet().complete()
+      const txHash = await signedTx.submit()
+      console.log('Minted NFT with transaction hash:', txHash)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error during NFT minting:', error)
+        toast.error('Minting failed: ' + error.message, { position: 'bottom-center' })
+      } else {
+        console.error('Unexpected error during NFT minting:', error)
+        toast.error('Minting failed: An unexpected error occurred.', { position: 'bottom-center' })
+      }
+    } finally {
+      setMinting(false)
+    }
+  }
+
+  const uploadFile = async (selectedFiles?: File[]) => {
+    try {
+      if (!selectedFiles || selectedFiles.length === 0) {
+        toast.error('No files selected', { position: 'bottom-center' })
+        return
+      }
+
+      // Check if all files are valid
+      for (const file of selectedFiles) {
+        if (!isValidImageFile(file)) {
+          toast.error(`Invalid file format: ${file.name}`, { position: 'bottom-center' })
+          return
+        }
       }
 
       setUploading(true)
-      const data = new FormData()
-      data.set('file', selectedFile)
 
-      const uploadRequest = await fetch('/api/ipfs/pin', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${pinataJWT}`,
-        },
-        body: data,
+      // Create an array of promises for each file upload
+      const uploadPromises = selectedFiles.map(async (file) => {
+        const data = new FormData()
+        data.append('file', file) // Append the file
+        data.append('pinataMetadata', JSON.stringify({ name: file.name })) // Add metadata for the file
+        data.append('pinataOptions', JSON.stringify({ cidVersion: 1 })) // Add options for the file
+
+        const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${pinataJWT}`,
+            // 'Content-Type': 'multipart/form-data' // Do not set Content-Type, it will be set automatically
+          },
+          body: data,
+        })
+
+        const response = await uploadRequest.json()
+
+        // Log the response to see its structure
+        console.log('Upload Response:', response)
+
+        // Check if response contains an IpfsHash
+        if (!response.IpfsHash) {
+          throw new Error(`Unexpected response format for ${file.name}: IpfsHash not found`)
+        }
+
+        return {
+          url: response.IpfsHash,
+          name: file.name,
+        }
       })
-      const response = await uploadRequest.json()
-      setUrl(response.IpfsHash)
 
-      // Set default NFT name and description based on file name
-      const baseName = selectedFile.name
-        .split('.')[0]
-        .replace(/[-_]/g, ' ') // Replace hyphens and underscores with spaces
-        .replace(/\b\w/g, (c) => c.toUpperCase()) // Capitalize first letter of each word
+      // Wait for all uploads to complete
+      const results = await Promise.all(uploadPromises)
+      console.log('All uploads completed:', results)
 
-      setNftName(baseName)
-      setNftDescription(baseName)
+      setUrls((prev) => [...prev, ...results])
 
       setUploading(false)
     } catch (e) {
       console.log(e)
       setUploading(false)
-      toast.error('Trouble uploading file to IPFS', { position: 'bottom-center' })
+      toast.error('Trouble uploading files to IPFS', { position: 'bottom-center' })
     }
   }
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target?.files?.[0]
+    const selectedFiles = Array.from(e.target.files || [])
 
-    if (selectedFile && !isValidImageFile(selectedFile)) {
-      toast.error(
-        <div className="flex flex-col gap-2">
-          <p>Invalid file type</p>
-          <p className="text-sm text-muted-foreground">
-            Supported formats: JPG, PNG, GIF, WebP, AVIF, SVG, TIFF, BMP
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Selected file: {selectedFile.name} ({selectedFile.type || 'unknown type'})
-          </p>
-        </div>,
-        { position: 'bottom-center' },
-      )
-      return
-    }
-
-    setFile(selectedFile)
-    // submit if there's an api key and a file
-    if (pinataJWT && selectedFile) {
-      await uploadFile(selectedFile)
+    setFiles(selectedFiles)
+    // submit if there's an api key and files
+    if (pinataJWT && selectedFiles.length > 0) {
+      await uploadFile(selectedFiles)
     } else {
-      console.log('Upload conditions not met:', {
-        hasPinataJWT: Boolean(pinataJWT),
-        hasFile: Boolean(selectedFile),
-        fileType: selectedFile?.type,
-        fileName: selectedFile?.name,
-      })
-      toast.error('Please enter a Pinata JWT and select a file', { position: 'bottom-center' })
+      toast.error('Please enter a Pinata JWT and select files', { position: 'bottom-center' })
     }
   }
 
@@ -544,6 +585,8 @@ export default function Poas() {
       // Update state with new policy
       setPolicyIds((prev) => [...prev, newPolicy])
       setSelectedPolicy(newPolicy)
+      setCurrentStep(4)
+      setOpenSections([4])
       toast.success(
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">{policyId} will expire in 1 day.</p>
@@ -721,7 +764,13 @@ export default function Poas() {
       if (!response.ok) throw new Error('Failed to fetch files')
 
       const data = await response.json()
-      setPinataResponse(data)
+
+      // Sort the files by date_pinned in descending order
+      const sortedRows = data.rows.sort((a: PinataFile, b: PinataFile) => {
+        return new Date(b.date_pinned).getTime() - new Date(a.date_pinned).getTime()
+      })
+
+      setPinataResponse({ count: data.count, rows: sortedRows })
       setPagination((prev) => ({
         ...prev,
         currentPage: page,
@@ -739,53 +788,37 @@ export default function Poas() {
     }
   }
 
-  const selectPinataFile = async (file: PinataFile) => {
-    // More robust check for image files
-    const isImage =
-      file.mime_type?.startsWith('image/') ||
-      VALID_IMAGE_EXTENSIONS.some((ext) => file.metadata?.name?.toLowerCase().endsWith(ext))
+  const selectPinataFile = (file: PinataFile, isThumbnail: boolean = false) => {
+    // Check if the file is already selected
+    const isSelected = selectedPinataFiles.some(
+      (selectedFile) => selectedFile.ipfs_pin_hash === file.ipfs_pin_hash,
+    )
 
-    if (!isImage) {
-      toast.error(
-        <div className="flex flex-col gap-2">
-          <p>Invalid file type</p>
-          <p className="text-sm text-muted-foreground">
-            Supported formats: JPG, PNG, GIF, WebP, AVIF, SVG, TIFF, BMP
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Selected file type: {file.mime_type || 'unknown'}
-          </p>
-        </div>,
-        { position: 'bottom-center' },
+    if (isSelected) {
+      // If already selected, remove it from the selection
+      setSelectedPinataFiles((prev) =>
+        prev.filter((selectedFile) => selectedFile.ipfs_pin_hash !== file.ipfs_pin_hash),
       )
-      return
+      if (isThumbnail) {
+        setThumbnailImage(null) // Clear thumbnail if it's deselected
+      }
+    } else {
+      // If not selected, add it to the selection
+      setSelectedPinataFiles((prev) => [...prev, file])
+      if (isThumbnail) {
+        setThumbnailImage(file.ipfs_pin_hash) // Set the thumbnail image using the IPFS hash
+      }
     }
+  }
 
-    const ipfsHash = file.ipfs_pin_hash
-    setUrl(ipfsHash)
+  // Add a button to confirm the selection of files
+  const confirmSelection = () => {
+    const newFiles = selectedPinataFiles.map((file) => ({
+      url: file.ipfs_pin_hash,
+      name: file.metadata?.name || `image${Date.now()}`,
+    }))
+    setUrls((prev) => [...prev, ...newFiles])
     setShowPinataDialog(false)
-
-    try {
-      // Fetch the actual file from IPFS
-      const response = await fetch(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`)
-      const blob = await response.blob()
-
-      // Create a proper File object
-      const properFile = new File([blob], file.metadata.name, { type: file.mime_type })
-      setFile(properFile)
-
-      // Set default NFT name and description based on file name
-      const baseName = file.metadata.name.split('.')[0]
-      setNftName(baseName)
-      setNftDescription(baseName)
-
-      // Force step advancement
-      setCurrentStep(3)
-      setOpenSections([3])
-    } catch (error) {
-      console.error('Error creating file:', error)
-      toast.error('Error loading file from IPFS', { position: 'bottom-center' })
-    }
   }
 
   // Update the deleteFile function to handle non-JSON responses and remove the deleted file from state
@@ -839,12 +872,104 @@ export default function Poas() {
     setIsConfirmDialogOpen(false) // Close the dialog
   }
 
-  useEffect(() => {
-    if (!selectedPolicy && currentStep === 4) {
-      setCurrentStep(3)
-      setOpenSections([3])
+  // Function to upload the thumbnail image with modified filename
+  const uploadThumbnail = async (file: File) => {
+    const data = new FormData()
+    const newFileName = `${file.name.split('.').slice(0, -1).join('.')}_thumbnail.${file.name.split('.').pop()}` // Append _thumbnail to the filename
+    data.append('file', new File([file], newFileName)) // Append the file with the new name
+    data.append('pinataMetadata', JSON.stringify({ name: newFileName })) // Add metadata for the file
+    data.append('pinataOptions', JSON.stringify({ cidVersion: 1 })) // Add options for the file
+
+    const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${pinataJWT}`,
+      },
+      body: data,
+    })
+
+    const response = await uploadRequest.json()
+
+    // Check if response contains an IpfsHash
+    if (!response.IpfsHash) {
+      throw new Error(`Unexpected response format for ${file.name}: IpfsHash not found`)
     }
-  }, [selectedPolicy, currentStep])
+
+    return response.IpfsHash // Return the IpfsHash for the thumbnail
+  }
+
+  const handleAddTrait = () => {
+    setTraits((prev) => [...prev, { key: '', value: '' }])
+  }
+
+  const handleTraitChange = (
+    fileUrl: string,
+    traitIndex: number,
+    field: 'key' | 'value',
+    value: string,
+  ) => {
+    setUrls((prev) =>
+      prev.map((fileInfo) => {
+        if (fileInfo.url === fileUrl) {
+          const traits = fileInfo.traits || []
+          const updatedTraits = [...traits]
+          updatedTraits[traitIndex] = {
+            ...updatedTraits[traitIndex],
+            [field]: value,
+          }
+          return { ...fileInfo, traits: updatedTraits }
+        }
+        return fileInfo
+      }),
+    )
+  }
+
+  const handleNameChange = (url: string, value: string) => {
+    setImageNames((prev) => ({ ...prev, [url]: value }))
+  }
+
+  // Function to check if all images have names
+  const areAllNamesEntered = () => {
+    return urls.every((url) => imageNames[url.url]?.trim() !== '')
+  }
+
+  // Update the useEffect for step advancement
+  useEffect(() => {
+    if (currentStep === 2 && !areAllNamesEntered()) {
+      // Prevent advancing to step 3 if not all names are entered
+      setCurrentStep(2)
+      setOpenSections([2])
+    }
+  }, [imageNames, currentStep])
+
+  // Add this function to add a trait to a specific image
+  const addTraitToImage = (fileUrl: string) => {
+    setUrls((prev) =>
+      prev.map((fileInfo) => {
+        if (fileInfo.url === fileUrl) {
+          const traits = fileInfo.traits || []
+          return { ...fileInfo, traits: [...traits, { key: '', value: '' }] }
+        }
+        return fileInfo
+      }),
+    )
+  }
+
+  // Add this function to remove a trait from a specific image
+  const removeTraitFromImage = (fileUrl: string, traitIndex: number) => {
+    setUrls((prev) =>
+      prev.map((fileInfo) => {
+        if (fileInfo.url === fileUrl) {
+          const traits = fileInfo.traits || []
+          return {
+            ...fileInfo,
+            traits: traits.filter((_, index) => index !== traitIndex),
+          }
+        }
+        return fileInfo
+      }),
+    )
+  }
 
   if (initializing) {
     return (
@@ -876,16 +1001,19 @@ export default function Poas() {
             <Tooltip key={step}>
               <TooltipTrigger>
                 <div className="flex flex-col items-center gap-2">
-                  <div
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
-                      isStepComplete(step)
-                        ? 'border-primary bg-primary font-bold text-white shadow-lg shadow-primary/30 ring-2 ring-primary/10 ring-offset-2'
-                        : step === currentStep
-                          ? 'animate-pulse-slow border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-500/10 ring-offset-2'
-                          : 'border-muted bg-background text-muted-foreground hover:scale-110 hover:border-muted-foreground/50 hover:shadow-sm'
-                    }`}
-                  >
-                    {step}
+                  <div className="flex items-center">
+                    {isStepComplete(step) && <Check className="mr-1 h-4 w-4 text-green-500" />}
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
+                        isStepComplete(step)
+                          ? 'border-primary bg-primary font-bold text-white shadow-lg shadow-primary/30 ring-2 ring-primary/10 ring-offset-2'
+                          : step === currentStep
+                            ? 'animate-pulse-slow border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-500/10 ring-offset-2'
+                            : 'border-muted bg-background text-muted-foreground hover:scale-110 hover:border-muted-foreground/50 hover:shadow-sm'
+                      }`}
+                    >
+                      {step}
+                    </div>
                   </div>
                   <span className="text-xs text-muted-foreground">{title}</span>
                 </div>
@@ -981,35 +1109,147 @@ export default function Poas() {
                   disabled={!isStepComplete(1)}
                   className="flex-1"
                   accept={VALID_FILE_ACCEPT}
+                  multiple
                 />
                 <Button3D
-                  disabled={!isStepComplete(1) || uploading || !file}
-                  onClick={() => uploadFile(file)}
+                  disabled={!isStepComplete(1) || uploading || !files.length}
+                  onClick={() => uploadFile(files)}
                 >
                   {uploading ? 'Uploading...' : 'Upload'}
                 </Button3D>
               </div>
 
               {/* File preview section */}
-              {url && (
-                <div className="mt-2 flex items-center gap-4 rounded-lg bg-secondary/20 p-4">
-                  {file?.type.startsWith('image/') ? (
-                    <Image
-                      src={`https://gateway.pinata.cloud/ipfs/${url}`}
-                      alt="Preview"
-                      width={100}
-                      height={100}
-                      className="rounded-lg"
-                    />
-                  ) : (
-                    <div className="text-sm">File: {file?.name}</div>
-                  )}
-                  <div className="flex flex-col gap-1">
-                    <div className="text-sm text-muted-foreground">
-                      IPFS Hash: {url.slice(0, 20)}...
+              {urls.length > 0 && (
+                <div className="flex flex-col gap-4">
+                  {!thumbnailImage && (
+                    <div className="flex items-center justify-center gap-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-500">
+                      <AlertCircle className="h-4 w-4 animate-pulse" />
+                      <span>
+                        Please select a preview image by clicking on one of the images below
+                      </span>
                     </div>
-                    <div className="text-sm text-muted-foreground">IPFS Type: {file?.type}</div>
-                    <div className="text-sm text-muted-foreground">File Name: {file?.name}</div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                    {urls.map((fileInfo, index) => {
+                      // Split the filename and extension
+                      const lastDotIndex = fileInfo.name.lastIndexOf('.')
+                      const nameWithoutExtension = fileInfo.name.substring(0, lastDotIndex)
+                      const extension = fileInfo.name.substring(lastDotIndex)
+
+                      return (
+                        <div
+                          key={fileInfo.url}
+                          className={`group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md ${
+                            thumbnailImage === fileInfo.url
+                              ? 'ring-2 ring-primary ring-offset-2'
+                              : ''
+                          }`}
+                        >
+                          <div
+                            className="relative aspect-square cursor-pointer overflow-hidden"
+                            onClick={() => {
+                              setThumbnailImage(fileInfo.url)
+                            }}
+                          >
+                            <Image
+                              src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
+                              alt={fileInfo.name}
+                              fill
+                              className="object-contain transition-transform group-hover:scale-105"
+                            />
+                            {thumbnailImage === fileInfo.url && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-sm">
+                                <div className="rounded-full bg-primary/90 p-2 text-white">
+                                  <Check className="h-4 w-4" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-3 p-3">
+                            <div className="flex w-full items-center">
+                              <Input
+                                value={nameWithoutExtension}
+                                onChange={(e) => {
+                                  setUrls((prev) =>
+                                    prev.map((item, i) =>
+                                      i === index
+                                        ? { ...item, name: e.target.value + extension }
+                                        : item,
+                                    ),
+                                  )
+                                }}
+                                className="w-full rounded-r-none bg-background/50"
+                                placeholder="Image name"
+                              />
+                              <span className="rounded-r-md border border-l-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
+                                {extension}
+                              </span>
+                            </div>
+
+                            {/* Add traits section */}
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs text-muted-foreground">Traits</Label>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => addTraitToImage(fileInfo.url)}
+                                  className="h-6 w-6 p-0"
+                                  disabled={(fileInfo.traits?.length || 0) >= 1}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+
+                              {fileInfo.traits?.map((trait, traitIndex) => (
+                                <div key={traitIndex} className="flex gap-2">
+                                  <div className="flex-1">
+                                    <Input
+                                      placeholder="Name"
+                                      value={trait.key}
+                                      onChange={(e) =>
+                                        handleTraitChange(
+                                          fileInfo.url,
+                                          traitIndex,
+                                          'key',
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="h-8 text-xs"
+                                    />
+                                  </div>
+                                  <div className="flex-1">
+                                    <Input
+                                      placeholder="Value"
+                                      value={trait.value}
+                                      onChange={(e) =>
+                                        handleTraitChange(
+                                          fileInfo.url,
+                                          traitIndex,
+                                          'value',
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="h-8 text-xs"
+                                    />
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeTraitFromImage(fileInfo.url, traitIndex)}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -1019,7 +1259,7 @@ export default function Poas() {
       )}
 
       {/* Step 3: Policy ID */}
-      {url && (
+      {urls.length > 0 && thumbnailImage && (
         <Collapsible
           open={openSections.includes(3)}
           onOpenChange={(isOpen) => {
@@ -1036,7 +1276,7 @@ export default function Poas() {
           </CollapsibleTrigger>
           <CollapsibleContent className="grid grid-cols-2 gap-2 px-6 pb-6">
             <div className="col-span-1 flex flex-col gap-4">
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-2">
                 <Button3D
                   disabled={!isStepComplete(2) || scanning}
                   onClick={loadPolicies}
@@ -1225,11 +1465,64 @@ export default function Poas() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Custom Metadata</label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTraits([...traits, { key: '', value: '' }])}
+                    className="h-8 w-8 p-0"
+                    disabled={traits.length >= 1}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {traits.map((trait, index) => (
+                  <div key={index} className="flex gap-2">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Trait name"
+                        value={trait.key}
+                        onChange={(e) => {
+                          const newTraits = [...traits]
+                          newTraits[index].key = e.target.value
+                          setTraits(newTraits)
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Trait value"
+                        value={trait.value}
+                        onChange={(e) => {
+                          const newTraits = [...traits]
+                          newTraits[index].value = e.target.value
+                          setTraits(newTraits)
+                        }}
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const newTraits = traits.filter((_, i) => i !== index)
+                        setTraits(newTraits)
+                      }}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
               <Button3D
                 disabled={!isStepComplete(4) || minting || !api}
                 onClick={() => {
-                  if (api && nftName && nftDescription && url) {
-                    mintNFT(lucid, api, selectedPolicy, nftName, nftDescription, url)
+                  if (api && nftName && nftDescription && urls.length > 0) {
+                    mintNFT(lucid, api, selectedPolicy, nftName, nftDescription, urls)
                   } else {
                     if (!nftName || !nftDescription) {
                       toast.error('NFT name and description must be provided', {
@@ -1252,11 +1545,20 @@ export default function Poas() {
       <Dialog open={showPinataDialog} onOpenChange={setShowPinataDialog}>
         <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Select from Pinata Files</DialogTitle>
+            <div className="flex w-full items-center justify-between px-4">
+              <DialogTitle>Select from Pinata Files</DialogTitle>
+              <Button
+                onClick={confirmSelection}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Selected Files
+              </Button>
+            </div>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3">
             {pinataResponse.rows
-              // Filter to only show supported files
               .filter((file) => {
                 const isValidMime = VALID_IMAGE_MIMES.includes(file.mime_type)
                 const isValidExtension = VALID_IMAGE_EXTENSIONS.some((ext) =>
@@ -1268,7 +1570,7 @@ export default function Poas() {
                 <div
                   key={file.ipfs_pin_hash}
                   onClick={() => selectPinataFile(file)}
-                  className="cursor-pointer rounded-lg border border-border p-4 transition-colors hover:border-primary"
+                  className={`cursor-pointer rounded-lg border border-border p-4 transition-colors hover:border-primary ${selectedPinataFiles.some((selectedFile) => selectedFile.ipfs_pin_hash === file.ipfs_pin_hash) ? 'border-primary' : ''}`}
                 >
                   <div className="space-y-2">
                     <Image
@@ -1282,16 +1584,6 @@ export default function Poas() {
                     <p className="text-xs text-muted-foreground">
                       {new Date(file.date_pinned).toLocaleDateString()}
                     </p>
-                    <Button
-                      variant="destructive"
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevent triggering the selectPinataFile function
-                        setFileToDelete(file.ipfs_pin_hash) // Set the file to delete
-                        setIsConfirmDialogOpen(true) // Open the confirmation dialog
-                      }}
-                    >
-                      Delete
-                    </Button>
                   </div>
                 </div>
               ))}
@@ -1344,6 +1636,8 @@ export default function Poas() {
                 <p className="text-sm">Supported formats: {formatSupportedExtensions()}</p>
               </div>
             )}
+
+          {/* Add a button to confirm the selection of files */}
         </DialogContent>
       </Dialog>
 

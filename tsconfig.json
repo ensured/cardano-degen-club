@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -18,9 +14,7 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
     "plugins": [
       {
@@ -28,11 +22,8 @@
       }
     ],
     "strictNullChecks": true,
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ],
-    "target": "ES2022",
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "target": "ES2024",
     "jsx": "preserve"
   },
   "include": [
@@ -53,7 +44,5 @@
     "hooks/**/*.ts",
     "hooks/**/*.tsx"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
