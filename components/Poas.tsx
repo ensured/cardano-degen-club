@@ -59,6 +59,7 @@ import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
 import SlotConverter from './SlotConverter'
 import { LucidEvolution } from '@lucid-evolution/lucid'
+import { useWindowSize } from '@uidotdev/usehooks'
 
 interface WalletApi {
   getExtensions(): Promise<any>
@@ -254,6 +255,8 @@ export default function Poas() {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [traits, setTraits] = useState<Trait[]>([])
   const [imageNames, setImageNames] = useState<{ [key: string]: string }>({})
+
+  const { width } = useWindowSize()
 
   // Add function to check step completion
   const isStepComplete = (step: number) => {
@@ -1131,7 +1134,7 @@ export default function Poas() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                     {urls.map((fileInfo, index) => {
                       // Split the filename and extension
                       const lastDotIndex = fileInfo.name.lastIndexOf('.')
@@ -1546,7 +1549,9 @@ export default function Poas() {
         <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
             <div className="flex w-full items-center justify-between px-4">
-              <DialogTitle>Select from Pinata Files</DialogTitle>
+              <DialogTitle>
+                {width && width > 450 ? 'Select from Pinata Files' : 'Select files'}
+              </DialogTitle>
               <Button
                 onClick={confirmSelection}
                 variant="outline"
