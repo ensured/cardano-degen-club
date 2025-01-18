@@ -18,7 +18,7 @@ import { Button } from './ui/button'
 import { toast } from 'sonner'
 import { getEpochData } from '@/app/actions'
 import copyImagePath from '@/public/copy.png'
-import { Metadata, TransactionMetadata } from '@lucid-evolution/lucid'
+// import { Metadata } from '@lucid-evolution/lucid'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Check, ChevronDown, Loader2, Plus, X } from 'lucide-react'
 
@@ -413,7 +413,7 @@ export default function Poas() {
         return baseUrl
       })
 
-      const metadata: { [key: string]: TransactionMetadata } = {
+      const metadata: { [key: string]: any } = {
         [selectedPolicy.policyId]: {
           name: nftName,
           description: [nftDescription] as ReadonlyArray<string>,
