@@ -21,7 +21,7 @@ import copyImagePath from '@/public/copy.png'
 // import { Metadata } from '@lucid-evolution/lucid'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Check, ChevronDown, Loader2, Plus, X, Trash2 } from 'lucide-react'
-
+import { timeAgoCompact } from '@/lib/helper'
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
   process.env.NODE_ENV === 'development' ? 'Preview' : 'Mainnet'
@@ -210,6 +210,7 @@ interface FileInfo {
   url: string
   name: string
   traits?: Trait[]
+  date_pinned?: string
 }
 
 // Update the traits interface near the top with other interfaces
@@ -1170,105 +1171,58 @@ export default function Poas() {
                       const extension = fileInfo.name.substring(lastDotIndex)
 
                       return (
-                        <div key={fileInfo.url} className="group relative">
-                          <div
-                            className="relative aspect-square cursor-pointer overflow-hidden"
-                            onClick={() => {
-                              setThumbnailImage(fileInfo.url)
-                            }}
-                          >
-                            <Image
-                              src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
-                              alt={fileInfo.name}
-                              fill
-                              className="object-contain transition-transform group-hover:scale-105"
-                            />
-                            {thumbnailImage === fileInfo.url && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-primary/10 backdrop-blur-sm">
-                                <div className="rounded-full bg-primary/90 p-2 text-white">
-                                  <Check className="h-4 w-4" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <div className="space-y-3 p-3">
-                            <div className="flex w-full items-center">
-                              <Input
-                                value={nameWithoutExtension}
-                                onChange={(e) => {
-                                  setUrls((prev) =>
-                                    prev.map((item, i) =>
-                                      i === index
-                                        ? { ...item, name: e.target.value + extension }
-                                        : item,
-                                    ),
-                                  )
-                                }}
-                                className="w-full rounded-r-none bg-background/50"
-                                placeholder="Image name"
-                              />
-                              <span className="rounded-r-md border border-l-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
-                                {extension}
-                              </span>
-                            </div>
-
-                            {/* Add traits section */}
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-xs text-muted-foreground">Traits</Label>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => addTraitToImage(fileInfo.url)}
-                                  className="h-6 w-6 p-0"
-                                  disabled={(fileInfo.traits?.length || 0) >= 1}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
+                        <div key={fileInfo.url} className="group relative h-full">
+                          <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
+                            <div className="flex flex-1 flex-col space-y-2">
+                              <div className="relative">
+                                <Image
+                                  src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
+                                  alt={fileInfo.name}
+                                  width={200}
+                                  height={200}
+                                  className="h-32 w-full rounded-lg object-contain transition-transform group-hover:scale-105"
+                                />
                               </div>
 
-                              {fileInfo.traits?.map((trait, traitIndex) => (
-                                <div key={traitIndex} className="flex gap-2">
-                                  <div className="flex-1">
-                                    <Input
-                                      placeholder="Name"
-                                      value={trait.key}
-                                      onChange={(e) =>
-                                        handleTraitChange(
-                                          fileInfo.url,
-                                          traitIndex,
-                                          'key',
-                                          e.target.value,
-                                        )
-                                      }
-                                      className="h-8 text-xs"
-                                    />
+                              <div className="flex flex-1 flex-col justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="min-w-0 flex-1">
+                                    {(() => {
+                                      const fullName = fileInfo.name || ''
+                                      const nameWithoutExt = fullName.substring(
+                                        0,
+                                        fullName.lastIndexOf('.'),
+                                      )
+                                      const displayName =
+                                        nameWithoutExt.length > 20
+                                          ? nameWithoutExt.slice(0, 20) + '...'
+                                          : nameWithoutExt
+
+                                      return (
+                                        <div className="flex flex-wrap items-center gap-1">
+                                          <span className="line-clamp-3 break-all text-xs font-medium sm:text-sm">
+                                            {displayName}
+                                          </span>
+                                        </div>
+                                      )
+                                    })()}
                                   </div>
-                                  <div className="flex-1">
-                                    <Input
-                                      placeholder="Value"
-                                      value={trait.value}
-                                      onChange={(e) =>
-                                        handleTraitChange(
-                                          fileInfo.url,
-                                          traitIndex,
-                                          'value',
-                                          e.target.value,
-                                        )
-                                      }
-                                      className="h-8 text-xs"
-                                    />
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => removeTraitFromImage(fileInfo.url, traitIndex)}
-                                    className="h-8 w-8 p-0"
-                                  >
-                                    <X className="h-3 w-3" />
-                                  </Button>
+                                  <div className="invisible flex justify-end"></div>
                                 </div>
-                              ))}
+
+                                <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    {timeAgoCompact(fileInfo.date_pinned)}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {(() => {
+                                      const fullName = fileInfo.name || ''
+                                      const extension = fullName.split('.').pop() || ''
+                                      return `.${extension}`
+                                    })()}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1530,7 +1484,7 @@ export default function Poas() {
               </Button>
             </div>
           </DialogHeader>
-          <div className="grid grid-cols-1 gap-1 p-2 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 p-1 md:grid-cols-3">
             {pinataResponse.rows.map((file) => (
               <div
                 key={file.ipfs_pin_hash}
@@ -1543,34 +1497,64 @@ export default function Poas() {
                 }`}
                 onClick={() => selectPinataFile(file, false)}
               >
-                <div className="cursor-pointer rounded-lg border border-border p-4">
-                  <div className="space-y-2">
-                    <Image
-                      src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
-                      alt={file.metadata?.name || 'Pinata file'}
-                      width={200}
-                      height={200}
-                      className="h-32 w-full rounded-lg object-cover"
-                    />
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="truncate text-sm">{file.metadata?.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(file.date_pinned).toLocaleDateString()}
-                        </p>
+                <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
+                  <div className="flex flex-1 flex-col space-y-2">
+                    <div className="relative">
+                      <Image
+                        src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
+                        alt={file.metadata?.name || 'Pinata file'}
+                        width={200}
+                        height={200}
+                        className="h-32 w-full rounded-lg object-contain"
+                      />
+                    </div>
+
+                    <div className="flex flex-1 flex-col justify-between">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          {(() => {
+                            const fullName = file.metadata?.name || ''
+                            const nameWithoutExt = fullName.substring(0, fullName.lastIndexOf('.'))
+                            const displayName =
+                              nameWithoutExt.length > 20
+                                ? nameWithoutExt.slice(0, 20) + '...'
+                                : nameWithoutExt
+
+                            return (
+                              <div className="flex flex-wrap items-center gap-1">
+                                <span className="line-clamp-3 break-all text-xs sm:text-base md:text-lg">
+                                  {displayName}
+                                </span>
+                              </div>
+                            )
+                          })()}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-4 shrink-0 !px-0 !py-0 hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setFileToDelete(file.ipfs_pin_hash)
+                            setIsConfirmDialogOpen(true)
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation() // Prevent file selection when clicking delete
-                          setFileToDelete(file.ipfs_pin_hash)
-                          setIsConfirmDialogOpen(true)
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                      <div className="mt-auto flex items-center justify-between pt-2">
+                        <span className="text-xs text-muted-foreground sm:text-sm md:text-base">
+                          {timeAgoCompact(file.date_pinned)}
+                        </span>
+                        <span className="text-xs text-muted-foreground sm:text-sm md:text-base">
+                          {(() => {
+                            const fullName = file.metadata?.name || ''
+                            const extension = fullName.split('.').pop() || ''
+                            return `.${extension}`
+                          })()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
