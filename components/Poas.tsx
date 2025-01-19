@@ -403,7 +403,7 @@ export default function Poas() {
       const newUrls = urls.map((url) => {
   // Extract the file extension from the URL, handling potential undefined values
   const parts = url.name.split('.');
-  const fileExtension = parts.length > 1 ? '.' + parts.pop().toLowerCase() : '.png'; // Default to .png if no extension found
+  const fileExtension = parts.length > 1 ? '.' + (parts.pop() || 'png').toLowerCase() : '.png'; // Default to .png if no extension found
   
   // Determine the correct MIME type based on the extension
   const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png';
@@ -429,10 +429,12 @@ const metadata: { [key: string]: any } = {
     name: nftName,
     description: [nftDescription] as ReadonlyArray<string>,
     image: 'ipfs://' + thumbnailImage,
-    mediaType: VALID_IMAGE_MIMES['.' + thumbnailImage.split('.').pop().toLowerCase()] || 'image/png',
+    mediaType: VALID_IMAGE_MIMES['.' + (thumbnailImage.split('.').pop() || 'png').toLowerCase()] || 'image/png',
     files: newUrls,
   },
 } as const
+
+
 
       // Transaction to mint the NFT
       const tx = await lucid
