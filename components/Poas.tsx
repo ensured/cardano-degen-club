@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
@@ -110,20 +109,20 @@ interface PaginationState {
   itemsPerPage: number
 }
 
-// Add these constants near the top of the component
-const VALID_IMAGE_MIMES = [
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/gif',
-  'image/webp',
-  'image/avif',
-  'image/svg+xml',
-  'image/tiff',
-  'image/bmp',
-  'image/x-icon',
-  'image/apng',
-]
+// Update the VALID_IMAGE_MIMES constant to be a Record type
+const VALID_IMAGE_MIMES: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.svg': 'image/svg+xml',
+  '.tiff': 'image/tiff',
+  '.bmp': 'image/bmp',
+  '.ico': 'image/x-icon',
+  '.apng': 'image/apng',
+}
 
 const VALID_IMAGE_EXTENSIONS = [
   '.png',
@@ -143,7 +142,7 @@ const VALID_IMAGE_EXTENSIONS = [
 // Add this constant to define what files can be selected
 const VALID_FILE_ACCEPT = [
   // Image MIME types
-  ...VALID_IMAGE_MIMES,
+  ...Object.values(VALID_IMAGE_MIMES),
   // File extensions (for better browser support)
   ...VALID_IMAGE_EXTENSIONS.map((ext) => (ext.startsWith('.') ? ext : `.${ext}`)),
 ].join(',')
@@ -158,7 +157,7 @@ const formatSupportedExtensions = () => {
 // Update the validation function to be more robust
 const isValidImageFile = (file: File): boolean => {
   // Check MIME type
-  if (VALID_IMAGE_MIMES.includes(file.type)) {
+  if (Object.values(VALID_IMAGE_MIMES).includes(file.type)) {
     return true
   }
 
@@ -401,40 +400,40 @@ export default function Poas() {
       }
 
       const newUrls = urls.map((url) => {
-  // Extract the file extension from the URL, handling potential undefined values
-  const parts = url.name.split('.');
-  const fileExtension = parts.length > 1 ? '.' + (parts.pop() || 'png').toLowerCase() : '.png'; // Default to .png if no extension found
-  
-  // Determine the correct MIME type based on the extension
-  const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png';
+        // Extract the file extension from the URL, handling potential undefined values
+        const parts = url.name.split('.')
+        const fileExtension = parts.length > 1 ? '.' + (parts.pop() || 'png').toLowerCase() : '.png' // Default to .png if no extension found
 
-  const baseUrl = {
-    mediaType: mediaType,
-    name: url.name,
-    src: 'ipfs://' + url.url,
-  }
+        // Determine the correct MIME type based on the extension
+        const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png'
 
-  if (url.traits && url.traits.length > 0) {
-    return {
-      ...baseUrl,
-      traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
-    }
-  }
+        const baseUrl = {
+          mediaType: mediaType,
+          name: url.name,
+          src: 'ipfs://' + url.url,
+        }
 
-  return baseUrl
-})
+        if (url.traits && url.traits.length > 0) {
+          return {
+            ...baseUrl,
+            traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
+          }
+        }
 
-const metadata: { [key: string]: any } = {
-  [selectedPolicy.policyId]: {
-    name: nftName,
-    description: [nftDescription] as ReadonlyArray<string>,
-    image: 'ipfs://' + thumbnailImage,
-    mediaType: VALID_IMAGE_MIMES['.' + (thumbnailImage.split('.').pop() || 'png').toLowerCase()] || 'image/png',
-    files: newUrls,
-  },
-} as const
+        return baseUrl
+      })
 
-
+      const metadata: { [key: string]: any } = {
+        [selectedPolicy.policyId]: {
+          name: nftName,
+          description: [nftDescription] as ReadonlyArray<string>,
+          image: 'ipfs://' + thumbnailImage,
+          mediaType:
+            VALID_IMAGE_MIMES['.' + (thumbnailImage.split('.').pop() || 'png').toLowerCase()] ||
+            'image/png',
+          files: newUrls,
+        },
+      } as const
 
       // Transaction to mint the NFT
       const tx = await lucid
@@ -1522,7 +1521,7 @@ const metadata: { [key: string]: any } = {
           <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3">
             {pinataResponse.rows
               .filter((file) => {
-                const isValidMime = VALID_IMAGE_MIMES.includes(file.mime_type)
+                const isValidMime = Object.values(VALID_IMAGE_MIMES).includes(file.mime_type)
                 const isValidExtension = VALID_IMAGE_EXTENSIONS.some((ext) =>
                   file.metadata?.name?.toLowerCase().endsWith(ext),
                 )
@@ -1587,7 +1586,7 @@ const metadata: { [key: string]: any } = {
           {pinataResponse.rows.length > 0 &&
             pinataResponse.rows.filter(
               (file) =>
-                VALID_IMAGE_MIMES.includes(file.mime_type) ||
+                Object.values(VALID_IMAGE_MIMES).includes(file.mime_type) ||
                 VALID_IMAGE_EXTENSIONS.some((ext) =>
                   file.metadata?.name?.toLowerCase().endsWith(ext),
                 ),
