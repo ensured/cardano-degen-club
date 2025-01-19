@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
@@ -400,31 +401,40 @@ export default function Poas() {
       }
 
       const newUrls = urls.map((url) => {
-        const baseUrl = {
-          mediaType: 'image/png',
-          name: url.name,
-          src: 'ipfs://' + url.url,
-        }
+  // Extract the file extension from the URL, handling potential undefined values
+  const parts = url.name.split('.');
+  const fileExtension = parts.length > 1 ? '.' + (parts.pop() || 'png').toLowerCase() : '.png'; // Default to .png if no extension found
+  
+  // Determine the correct MIME type based on the extension
+  const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png';
 
-        if (url.traits && url.traits.length > 0) {
-          return {
-            ...baseUrl,
-            traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
-          }
-        }
+  const baseUrl = {
+    mediaType: mediaType,
+    name: url.name,
+    src: 'ipfs://' + url.url,
+  }
 
-        return baseUrl
-      })
+  if (url.traits && url.traits.length > 0) {
+    return {
+      ...baseUrl,
+      traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
+    }
+  }
 
-      const metadata: { [key: string]: any } = {
-        [selectedPolicy.policyId]: {
-          name: nftName,
-          description: [nftDescription] as ReadonlyArray<string>,
-          image: 'ipfs://' + thumbnailImage,
-          mediaType: 'image/png',
-          files: newUrls,
-        },
-      } as const
+  return baseUrl
+})
+
+const metadata: { [key: string]: any } = {
+  [selectedPolicy.policyId]: {
+    name: nftName,
+    description: [nftDescription] as ReadonlyArray<string>,
+    image: 'ipfs://' + thumbnailImage,
+    mediaType: VALID_IMAGE_MIMES['.' + (thumbnailImage.split('.').pop() || 'png').toLowerCase()] || 'image/png',
+    files: newUrls,
+  },
+} as const
+
+
 
       // Transaction to mint the NFT
       const tx = await lucid
