@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
@@ -400,8 +401,9 @@ export default function Poas() {
       }
 
       const newUrls = urls.map((url) => {
-  // Extract the file extension from the URL
-  const fileExtension = '.' + url.name.split('.').pop().toLowerCase();
+  // Extract the file extension from the URL, handling potential undefined values
+  const parts = url.name.split('.');
+  const fileExtension = parts.length > 1 ? '.' + parts.pop().toLowerCase() : '.png'; // Default to .png if no extension found
   
   // Determine the correct MIME type based on the extension
   const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png';
