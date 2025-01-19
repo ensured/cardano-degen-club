@@ -431,21 +431,22 @@ export default function Poas() {
 
       // Update the metadata construction with console logs
       const metadata = {
-        name: nftName,
-        description: [nftDescription] as ReadonlyArray<string>,
-        image: 'ipfs://' + thumbnailImage,
-        mediaType: (() => {
-          const thumbnailFile = urls.find((file) => file.url === thumbnailImage)
-          if (!thumbnailFile) return 'image/png'
-          const extension = '.' + thumbnailFile.name.split('.').pop()!.toLowerCase()
-          const mimeType = VALID_IMAGE_MIMES[extension]
-          console.log('Thumbnail extension:', extension)
-          console.log('Detected MIME type:', mimeType)
-          return mimeType || 'image/png'
-        })(),
-        files: newUrls,
-      }
-      console.log('Metadata:', metadata)
+        [selectedPolicy.policyId]: {
+          name: nftName,
+          description: [nftDescription] as ReadonlyArray<string>,
+          image: 'ipfs://' + thumbnailImage,
+          mediaType: (() => {
+            const thumbnailFile = urls.find((file) => file.url === thumbnailImage)
+            if (!thumbnailFile) return 'image/png'
+            const extension = '.' + thumbnailFile.name.split('.').pop()!.toLowerCase()
+            const mimeType = VALID_IMAGE_MIMES[extension]
+            console.log('Thumbnail extension:', extension)
+            console.log('Detected MIME type:', mimeType)
+            return mimeType || 'image/png'
+          })(),
+          files: newUrls,
+        },
+      } as const
 
       // Transaction to mint the NFT
       const tx = await lucid
@@ -1654,12 +1655,7 @@ export default function Poas() {
               >
                 Cancel
               </Button>
-              <Button
-                variant="destructive"
-                disabled={confirmationText.toLowerCase() !== 'confirm'}
-                type="submit"
-                className="ml-2"
-              >
+              <Button variant="destructive" onClick={handleDeleteConfirmation}>
                 Delete
               </Button>
             </div>
