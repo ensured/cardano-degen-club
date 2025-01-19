@@ -400,31 +400,37 @@ export default function Poas() {
       }
 
       const newUrls = urls.map((url) => {
-        const baseUrl = {
-          mediaType: 'image/png',
-          name: url.name,
-          src: 'ipfs://' + url.url,
-        }
+  // Extract the file extension from the URL
+  const fileExtension = '.' + url.name.split('.').pop().toLowerCase();
+  
+  // Determine the correct MIME type based on the extension
+  const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png';
 
-        if (url.traits && url.traits.length > 0) {
-          return {
-            ...baseUrl,
-            traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
-          }
-        }
+  const baseUrl = {
+    mediaType: mediaType,
+    name: url.name,
+    src: 'ipfs://' + url.url,
+  }
 
-        return baseUrl
-      })
+  if (url.traits && url.traits.length > 0) {
+    return {
+      ...baseUrl,
+      traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
+    }
+  }
 
-      const metadata: { [key: string]: any } = {
-        [selectedPolicy.policyId]: {
-          name: nftName,
-          description: [nftDescription] as ReadonlyArray<string>,
-          image: 'ipfs://' + thumbnailImage,
-          mediaType: 'image/png',
-          files: newUrls,
-        },
-      } as const
+  return baseUrl
+})
+
+const metadata: { [key: string]: any } = {
+  [selectedPolicy.policyId]: {
+    name: nftName,
+    description: [nftDescription] as ReadonlyArray<string>,
+    image: 'ipfs://' + thumbnailImage,
+    mediaType: VALID_IMAGE_MIMES['.' + thumbnailImage.split('.').pop().toLowerCase()] || 'image/png',
+    files: newUrls,
+  },
+} as const
 
       // Transaction to mint the NFT
       const tx = await lucid
