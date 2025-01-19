@@ -1468,59 +1468,6 @@ export default function Poas() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Custom Metadata</label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setTraits([...traits, { key: '', value: '' }])}
-                    className="h-8 w-8 p-0"
-                    disabled={traits.length >= 1}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {traits.map((trait, index) => (
-                  <div key={index} className="flex gap-2">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Trait name"
-                        value={trait.key}
-                        onChange={(e) => {
-                          const newTraits = [...traits]
-                          newTraits[index].key = e.target.value
-                          setTraits(newTraits)
-                        }}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Trait value"
-                        value={trait.value}
-                        onChange={(e) => {
-                          const newTraits = [...traits]
-                          newTraits[index].value = e.target.value
-                          setTraits(newTraits)
-                        }}
-                      />
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const newTraits = traits.filter((_, i) => i !== index)
-                        setTraits(newTraits)
-                      }}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-
               <Button3D
                 disabled={!isStepComplete(4) || minting || !api}
                 onClick={() => {
