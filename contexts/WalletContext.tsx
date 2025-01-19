@@ -78,6 +78,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     connect: wallet.connect,
     disconnect: wallet.disconnect,
     getSupportedWallets: wallet.getSupportedWallets,
+    network: wallet.walletState.network,
   }
 
   return <WalletContext.Provider value={contextValue}>{children}</WalletContext.Provider>

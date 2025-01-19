@@ -423,17 +423,25 @@ export default function Poas() {
         return baseUrl
       })
 
-      const metadata: { [key: string]: any } = {
-        [selectedPolicy.policyId]: {
-          name: nftName,
-          description: [nftDescription] as ReadonlyArray<string>,
-          image: 'ipfs://' + thumbnailImage,
-          mediaType:
-            VALID_IMAGE_MIMES['.' + (thumbnailImage.split('.').pop() || 'png').toLowerCase()] ||
-            'image/png',
-          files: newUrls,
-        },
-      } as const
+      const metadata = {
+        name: nftName,
+        description: [nftDescription] as ReadonlyArray<string>,
+        image: 'ipfs://' + thumbnailImage,
+        mediaType: (() => {
+          // Find the original file info from urls array
+          const thumbnailFile = urls.find((file) => file.url === thumbnailImage)
+          if (!thumbnailFile) return 'image/png'
+
+          const extension = '.' + thumbnailFile.name.split('.').pop()!.toLowerCase()
+          const mimeType = VALID_IMAGE_MIMES[extension]
+          console.log('Original filename:', thumbnailFile.name)
+          console.log('Extension:', extension)
+          console.log('MIME type:', mimeType)
+          return mimeType
+        })(),
+        files: newUrls,
+      }
+      console.log('Metadata:', metadata)
 
       // Transaction to mint the NFT
       const tx = await lucid
@@ -490,15 +498,14 @@ export default function Poas() {
       // Create an array of promises for each file upload
       const uploadPromises = selectedFiles.map(async (file) => {
         const data = new FormData()
-        data.append('file', file) // Append the file
-        data.append('pinataMetadata', JSON.stringify({ name: file.name })) // Add metadata for the file
-        data.append('pinataOptions', JSON.stringify({ cidVersion: 1 })) // Add options for the file
+        data.append('file', file)
+        data.append('pinataMetadata', JSON.stringify({ name: file.name }))
+        data.append('pinataOptions', JSON.stringify({ cidVersion: 0 }))
 
         const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${pinataJWT}`,
-            // 'Content-Type': 'multipart/form-data' // Do not set Content-Type, it will be set automatically
           },
           body: data,
         })
