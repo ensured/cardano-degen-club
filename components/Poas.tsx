@@ -20,7 +20,7 @@ import { getEpochData } from '@/app/actions'
 import copyImagePath from '@/public/copy.png'
 // import { Metadata } from '@lucid-evolution/lucid'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
-import { Check, ChevronDown, Loader2, Plus, X } from 'lucide-react'
+import { Check, ChevronDown, Loader2, Plus, X, Trash2 } from 'lucide-react'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -89,12 +89,11 @@ interface PolicyInfo {
 // Add this interface near the top with other interfaces
 interface PinataFile {
   ipfs_pin_hash: string
-  metadata: {
-    name: string
-  }
-  mime_type: string
-  size: number
   date_pinned: string
+  metadata: {
+    name?: string
+  }
+  mime_type?: string
 }
 
 // Add these interfaces near the top with other interfaces
@@ -219,6 +218,12 @@ interface Trait {
   value: string
 }
 
+// Add a helper function to check if it's a CIDv0 hash
+const isCIDv0 = (hash: string) => {
+  // CIDv0 starts with "Qm" and is 46 characters long
+  return hash.startsWith('Qm') && hash.length === 46
+}
+
 export default function Poas() {
   const [file, setFile] = useState<File[]>([])
   const [urls, setUrls] = useState<FileInfo[]>([])
@@ -255,6 +260,7 @@ export default function Poas() {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [traits, setTraits] = useState<Trait[]>([])
   const [imageNames, setImageNames] = useState<{ [key: string]: string }>({})
+  const [isThumbnail, setIsThumbnail] = useState(false)
 
   const { width } = useWindowSize()
 
@@ -423,21 +429,19 @@ export default function Poas() {
         return baseUrl
       })
 
+      // Update the metadata construction with console logs
       const metadata = {
         name: nftName,
         description: [nftDescription] as ReadonlyArray<string>,
         image: 'ipfs://' + thumbnailImage,
         mediaType: (() => {
-          // Find the original file info from urls array
           const thumbnailFile = urls.find((file) => file.url === thumbnailImage)
           if (!thumbnailFile) return 'image/png'
-
           const extension = '.' + thumbnailFile.name.split('.').pop()!.toLowerCase()
           const mimeType = VALID_IMAGE_MIMES[extension]
-          console.log('Original filename:', thumbnailFile.name)
-          console.log('Extension:', extension)
-          console.log('MIME type:', mimeType)
-          return mimeType
+          console.log('Thumbnail extension:', extension)
+          console.log('Detected MIME type:', mimeType)
+          return mimeType || 'image/png'
         })(),
         files: newUrls,
       }
@@ -464,7 +468,7 @@ export default function Poas() {
 
       const signedTx = await tx.sign.withWallet().complete()
       const txHash = await signedTx.submit()
-      console.log('Minted NFT with transaction hash:', txHash)
+      toast.success(`Minted NFT with transaction hash: ${txHash}`, { position: 'bottom-center' })
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Error during NFT minting:', error)
@@ -498,14 +502,15 @@ export default function Poas() {
       // Create an array of promises for each file upload
       const uploadPromises = selectedFiles.map(async (file) => {
         const data = new FormData()
-        data.append('file', file)
-        data.append('pinataMetadata', JSON.stringify({ name: file.name }))
-        data.append('pinataOptions', JSON.stringify({ cidVersion: 0 }))
+        data.append('file', file) // Append the file
+        data.append('pinataMetadata', JSON.stringify({ name: file.name })) // Add metadata for the file
+        data.append('pinataOptions', JSON.stringify({ cidVersion: 1 })) // Add options for the file
 
         const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${pinataJWT}`,
+            // 'Content-Type': 'multipart/form-data' // Do not set Content-Type, it will be set automatically
           },
           body: data,
         })
@@ -784,16 +789,22 @@ export default function Poas() {
 
       const data = await response.json()
 
-      // Sort the files by date_pinned in descending order
-      const sortedRows = data.rows.sort((a: PinataFile, b: PinataFile) => {
+      // Filter for CIDv0 files only
+      const cidv0Files = data.rows.filter((file: PinataFile) => isCIDv0(file.ipfs_pin_hash))
+
+      // Sort the filtered files by date
+      const sortedRows = cidv0Files.sort((a: PinataFile, b: PinataFile) => {
         return new Date(b.date_pinned).getTime() - new Date(a.date_pinned).getTime()
       })
 
-      setPinataResponse({ count: data.count, rows: sortedRows })
+      setPinataResponse({
+        count: cidv0Files.length, // Update count to reflect filtered total
+        rows: sortedRows,
+      })
       setPagination((prev) => ({
         ...prev,
         currentPage: page,
-        totalPages: Math.ceil(data.count / prev.itemsPerPage),
+        totalPages: Math.ceil(cidv0Files.length / prev.itemsPerPage),
       }))
 
       if (page === 1) {
@@ -825,7 +836,7 @@ export default function Poas() {
       // If not selected, add it to the selection
       setSelectedPinataFiles((prev) => [...prev, file])
       if (isThumbnail) {
-        setThumbnailImage(file.ipfs_pin_hash) // Set the thumbnail image using the IPFS hash
+        setThumbnailImage(file.ipfs_pin_hash)
       }
     }
   }
@@ -1158,14 +1169,7 @@ export default function Poas() {
                       const extension = fileInfo.name.substring(lastDotIndex)
 
                       return (
-                        <div
-                          key={fileInfo.url}
-                          className={`group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-md ${
-                            thumbnailImage === fileInfo.url
-                              ? 'ring-2 ring-primary ring-offset-2'
-                              : ''
-                          }`}
-                        >
+                        <div key={fileInfo.url} className="group relative">
                           <div
                             className="relative aspect-square cursor-pointer overflow-hidden"
                             onClick={() => {
@@ -1526,20 +1530,19 @@ export default function Poas() {
             </div>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3">
-            {pinataResponse.rows
-              .filter((file) => {
-                const isValidMime = Object.values(VALID_IMAGE_MIMES).includes(file.mime_type)
-                const isValidExtension = VALID_IMAGE_EXTENSIONS.some((ext) =>
-                  file.metadata?.name?.toLowerCase().endsWith(ext),
-                )
-                return isValidMime || isValidExtension
-              })
-              .map((file) => (
-                <div
-                  key={file.ipfs_pin_hash}
-                  onClick={() => selectPinataFile(file)}
-                  className={`cursor-pointer rounded-lg border border-border p-4 transition-colors hover:border-primary ${selectedPinataFiles.some((selectedFile) => selectedFile.ipfs_pin_hash === file.ipfs_pin_hash) ? 'border-primary' : ''}`}
-                >
+            {pinataResponse.rows.map((file) => (
+              <div
+                key={file.ipfs_pin_hash}
+                className={`group relative ${
+                  selectedPinataFiles.some(
+                    (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                  )
+                    ? 'ring-2 ring-primary ring-offset-2'
+                    : ''
+                }`}
+                onClick={() => selectPinataFile(file, false)}
+              >
+                <div className="cursor-pointer rounded-lg border border-border p-4">
                   <div className="space-y-2">
                     <Image
                       src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
@@ -1548,13 +1551,30 @@ export default function Poas() {
                       height={200}
                       className="h-32 w-full rounded-lg object-cover"
                     />
-                    <p className="truncate text-sm">{file.metadata?.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(file.date_pinned).toLocaleDateString()}
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="truncate text-sm">{file.metadata?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(file.date_pinned).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation() // Prevent file selection when clicking delete
+                          setFileToDelete(file.ipfs_pin_hash)
+                          setIsConfirmDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
 
           {/* Add pagination controls */}
@@ -1593,7 +1613,9 @@ export default function Poas() {
           {pinataResponse.rows.length > 0 &&
             pinataResponse.rows.filter(
               (file) =>
-                Object.values(VALID_IMAGE_MIMES).includes(file.mime_type) ||
+                (file.mime_type
+                  ? Object.values(VALID_IMAGE_MIMES).includes(file.mime_type)
+                  : false) ||
                 VALID_IMAGE_EXTENSIONS.some((ext) =>
                   file.metadata?.name?.toLowerCase().endsWith(ext),
                 ),
@@ -1604,8 +1626,6 @@ export default function Poas() {
                 <p className="text-sm">Supported formats: {formatSupportedExtensions()}</p>
               </div>
             )}
-
-          {/* Add a button to confirm the selection of files */}
         </DialogContent>
       </Dialog>
 
