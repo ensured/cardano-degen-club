@@ -407,11 +407,9 @@ export default function Poas() {
       }
 
       const newUrls = urls.map((url) => {
-        // Extract the file extension from the URL, handling potential undefined values
+        // Extract the file extension from the URL
         const parts = url.name.split('.')
-        const fileExtension = parts.length > 1 ? '.' + (parts.pop() || 'png').toLowerCase() : '.png' // Default to .png if no extension found
-
-        // Determine the correct MIME type based on the extension
+        const fileExtension = parts.length > 1 ? '.' + (parts.pop() || 'png').toLowerCase() : '.png'
         const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png'
 
         const baseUrl = {
@@ -420,10 +418,13 @@ export default function Poas() {
           src: 'ipfs://' + url.url,
         }
 
+        // If the file has traits, add them as an array of objects
         if (url.traits && url.traits.length > 0) {
           return {
             ...baseUrl,
-            traits: url.traits.map((trait) => ({ [trait.key]: trait.value })),
+            traits: url.traits
+              .filter((trait) => trait.key && trait.value) // Only include traits with both key and value
+              .map((trait) => ({ [trait.key]: trait.value })),
           }
         }
 
@@ -943,13 +944,12 @@ export default function Poas() {
     setUrls((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
-          const traits = fileInfo.traits || []
-          const updatedTraits = [...traits]
-          updatedTraits[traitIndex] = {
-            ...updatedTraits[traitIndex],
+          const traits = [...(fileInfo.traits || [])]
+          traits[traitIndex] = {
+            ...traits[traitIndex],
             [field]: value,
           }
-          return { ...fileInfo, traits: updatedTraits }
+          return { ...fileInfo, traits }
         }
         return fileInfo
       }),
@@ -992,11 +992,8 @@ export default function Poas() {
     setUrls((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
-          const traits = fileInfo.traits || []
-          return {
-            ...fileInfo,
-            traits: traits.filter((_, index) => index !== traitIndex),
-          }
+          const traits = fileInfo.traits?.filter((_, index) => index !== traitIndex) || []
+          return { ...fileInfo, traits }
         }
         return fileInfo
       }),
@@ -1164,70 +1161,135 @@ export default function Poas() {
                   )}
 
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                    {urls.map((fileInfo, index) => {
-                      // Split the filename and extension
-                      const lastDotIndex = fileInfo.name.lastIndexOf('.')
-                      const nameWithoutExtension = fileInfo.name.substring(0, lastDotIndex)
-                      const extension = fileInfo.name.substring(lastDotIndex)
+                    {urls.map((fileInfo, index) => (
+                      <div key={fileInfo.url} className="group relative h-full">
+                        <div
+                          className={`flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-all hover:shadow-lg hover:shadow-primary/5 ${
+                            thumbnailImage === fileInfo.url
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                          onClick={() => {
+                            setThumbnailImage(fileInfo.url)
+                            toast.success('Selected as thumbnail image', {
+                              position: 'bottom-center',
+                            })
+                          }}
+                        >
+                          <div className="flex flex-1 flex-col space-y-2">
+                            <div className="relative">
+                              <Image
+                                src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
+                                alt={fileInfo.name}
+                                width={200}
+                                height={200}
+                                className="h-32 w-full rounded-lg object-contain transition-transform group-hover:scale-105"
+                              />
+                              {thumbnailImage === fileInfo.url && (
+                                <div className="absolute left-2 top-2 rounded-full bg-primary px-2 py-1 text-xs text-primary-foreground">
+                                  Thumbnail
+                                </div>
+                              )}
+                            </div>
 
-                      return (
-                        <div key={fileInfo.url} className="group relative h-full">
-                          <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-                            <div className="flex flex-1 flex-col space-y-2">
-                              <div className="relative">
-                                <Image
-                                  src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
-                                  alt={fileInfo.name}
-                                  width={200}
-                                  height={200}
-                                  className="h-32 w-full rounded-lg object-contain transition-transform group-hover:scale-105"
-                                />
+                            <div className="flex flex-1 flex-col justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="min-w-0 flex-1">
+                                  {(() => {
+                                    const fullName = fileInfo.name || ''
+                                    const nameWithoutExt = fullName.substring(
+                                      0,
+                                      fullName.lastIndexOf('.'),
+                                    )
+                                    const displayName =
+                                      nameWithoutExt.length > 20
+                                        ? nameWithoutExt.slice(0, 20) + '...'
+                                        : nameWithoutExt
+
+                                    return (
+                                      <div className="flex flex-wrap items-center gap-1">
+                                        <span className="line-clamp-3 break-all text-xs font-medium sm:text-sm">
+                                          {displayName}
+                                        </span>
+                                      </div>
+                                    )
+                                  })()}
+                                </div>
+                                <div className="flex items-center justify-end text-xs text-muted-foreground">
+                                  {(() => {
+                                    const fullName = fileInfo.name || ''
+                                    const extension = fullName.split('.').pop() || ''
+                                    return `.${extension}`
+                                  })()}
+                                </div>
                               </div>
 
-                              <div className="flex flex-1 flex-col justify-between">
-                                <div className="flex items-center gap-2">
-                                  <div className="min-w-0 flex-1">
-                                    {(() => {
-                                      const fullName = fileInfo.name || ''
-                                      const nameWithoutExt = fullName.substring(
-                                        0,
-                                        fullName.lastIndexOf('.'),
-                                      )
-                                      const displayName =
-                                        nameWithoutExt.length > 20
-                                          ? nameWithoutExt.slice(0, 20) + '...'
-                                          : nameWithoutExt
+                              {/* Traits Section */}
+                              <div className="mt-4 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">Traits</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 px-2 hover:bg-primary/10"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      addTraitToImage(fileInfo.url)
+                                    }}
+                                  >
+                                    <Plus className="h-4 w-4" />
+                                  </Button>
+                                </div>
 
-                                      return (
-                                        <div className="flex flex-wrap items-center gap-1">
-                                          <span className="line-clamp-3 break-all text-xs font-medium sm:text-sm">
-                                            {displayName}
-                                          </span>
-                                        </div>
-                                      )
-                                    })()}
+                                {fileInfo.traits?.map((trait, traitIndex) => (
+                                  <div key={traitIndex} className="flex items-center gap-2">
+                                    <Input
+                                      placeholder="Key"
+                                      value={trait.key}
+                                      className="h-8 text-xs"
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) =>
+                                        handleTraitChange(
+                                          fileInfo.url,
+                                          traitIndex,
+                                          'key',
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                    <Input
+                                      placeholder="Value"
+                                      value={trait.value}
+                                      className="h-8 text-xs"
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) =>
+                                        handleTraitChange(
+                                          fileInfo.url,
+                                          traitIndex,
+                                          'value',
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        removeTraitFromImage(fileInfo.url, traitIndex)
+                                      }}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
                                   </div>
-                                  <div className="invisible flex justify-end"></div>
-                                </div>
-
-                                <div className="mt-auto flex items-center justify-between border-t border-border/50 pt-2">
-                                  <span className="text-xs text-muted-foreground">
-                                    {timeAgoCompact(fileInfo.date_pinned)}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {(() => {
-                                      const fullName = fileInfo.name || ''
-                                      const extension = fullName.split('.').pop() || ''
-                                      return `.${extension}`
-                                    })()}
-                                  </span>
-                                </div>
+                                ))}
                               </div>
                             </div>
                           </div>
                         </div>
-                      )
-                    })}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -1472,7 +1534,15 @@ export default function Poas() {
           <DialogHeader>
             <div className="flex w-full items-center justify-between px-4">
               <DialogTitle>
-                {width && width > 450 ? 'Select from Pinata Files' : 'Select files'}
+                {width && width > 450 && selectedPinataFiles.length === 0
+                  ? 'Select from Pinata files'
+                  : width && width < 450 && selectedPinataFiles.length === 0
+                    ? 'Select files'
+                    : selectedPinataFiles.length === 0
+                      ? 'No files selected'
+                      : selectedPinataFiles.length === 1
+                        ? '1 File Selected'
+                        : `${selectedPinataFiles.length} Files Selected`}
               </DialogTitle>
               <Button
                 onClick={confirmSelection}
@@ -1480,7 +1550,7 @@ export default function Poas() {
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Add Selected Files
+                Add File{selectedPinataFiles.length === 1 ? '' : 's'}
               </Button>
             </div>
           </DialogHeader>
