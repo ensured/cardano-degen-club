@@ -222,7 +222,7 @@ interface Trait {
 // Add a helper function to check if it's a CIDv0 hash
 const isCIDv0 = (hash: string) => {
   // CIDv0 starts with "Qm" and is 46 characters long
-  return hash.startsWith('Q') && hash.length === 46
+  return hash.startsWith('Qm') && hash.length === 46
 }
 
 export default function Poas() {
@@ -250,7 +250,7 @@ export default function Poas() {
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     totalPages: 1,
-    itemsPerPage: 9,
+    itemsPerPage: 12,
   })
   const [lucid, setLucid] = useState<any | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -510,7 +510,7 @@ export default function Poas() {
         const data = new FormData()
         data.append('file', file) // Append the file
         data.append('pinataMetadata', JSON.stringify({ name: file.name })) // Add metadata for the file
-        data.append('pinataOptions', JSON.stringify({ cidVersion: 1 })) // Add options for the file
+        data.append('pinataOptions', JSON.stringify({ cidVersion: 0 })) // Add options for the file
 
         const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
           method: 'POST',
