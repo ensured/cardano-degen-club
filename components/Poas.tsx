@@ -2,7 +2,7 @@
 
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import Button3D from './3dButton'
 import Link from 'next/link'
 import { Input } from './ui/input'
@@ -22,6 +22,23 @@ import copyImagePath from '@/public/copy.png'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { Check, ChevronDown, Loader2, Plus, X, Trash2 } from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
+import { AlertCircle } from 'lucide-react'
+import { Label } from './ui/label'
+import SlotConverter from './SlotConverter'
+import { LucidEvolution } from '@lucid-evolution/lucid'
+import { useWindowSize } from '@uidotdev/usehooks'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from './ui/pagination'
+
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
   process.env.NODE_ENV === 'development' ? 'Preview' : 'Mainnet'
@@ -53,14 +70,6 @@ const getScriptUtils = async () => {
   }
 }
 
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
-import { AlertCircle } from 'lucide-react'
-import { Label } from './ui/label'
-import SlotConverter from './SlotConverter'
-import { LucidEvolution } from '@lucid-evolution/lucid'
-import { useWindowSize } from '@uidotdev/usehooks'
-
 interface WalletApi {
   getExtensions(): Promise<any>
   getNetworkId(): Promise<number>
@@ -89,17 +98,19 @@ interface PolicyInfo {
 // Add this interface near the top with other interfaces
 interface PinataFile {
   ipfs_pin_hash: string
-  date_pinned: string
-  metadata: {
+  metadata?: {
     name?: string
   }
+  date_pinned: string
   mime_type?: string
+  name?: string
 }
 
-// Add these interfaces near the top with other interfaces
+// Update the PinataResponse interface to include all files
 interface PinataResponse {
   count: number
   rows: PinataFile[]
+  filteredRows: PinataFile[] // Add this to store all valid files
 }
 
 interface PaginationState {
@@ -205,10 +216,11 @@ const createMintingPolicy = async (
   return mintingPolicy
 }
 
-// Add this interface
+// Update the FileInfo interface
 interface FileInfo {
   url: string
   name: string
+  customName?: string // Add this for user-modified names
   traits?: Trait[]
   date_pinned?: string
 }
@@ -226,8 +238,7 @@ const isCIDv0 = (hash: string) => {
 }
 
 export default function Poas() {
-  const [file, setFile] = useState<File[]>([])
-  const [urls, setUrls] = useState<FileInfo[]>([])
+  const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
   const [pinataJWT, setPinataJWT] = useState<string | null>(null)
   const [generatingPolicy, setGeneratingPolicy] = useState(false)
@@ -246,11 +257,15 @@ export default function Poas() {
   const [initializing, setInitializing] = useState(true)
   const [loadingPolicies, setLoadingPolicies] = useState(false)
   const [openSections, setOpenSections] = useState<number[]>([1])
-  const [pinataResponse, setPinataResponse] = useState<PinataResponse>({ count: 0, rows: [] })
+  const [pinataResponse, setPinataResponse] = useState<PinataResponse>({
+    count: 0,
+    rows: [],
+    filteredRows: [],
+  })
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     totalPages: 1,
-    itemsPerPage: 12,
+    itemsPerPage: 6,
   })
   const [lucid, setLucid] = useState<any | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -259,9 +274,7 @@ export default function Poas() {
   const [files, setFiles] = useState<File[]>([])
   const [selectedPinataFiles, setSelectedPinataFiles] = useState<PinataFile[]>([])
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
-  const [traits, setTraits] = useState<Trait[]>([])
   const [imageNames, setImageNames] = useState<{ [key: string]: string }>({})
-  const [isThumbnail, setIsThumbnail] = useState(false)
 
   const { width } = useWindowSize()
 
@@ -271,11 +284,11 @@ export default function Poas() {
       case 1:
         return Boolean(blockfrostKey && pinataJWT)
       case 2:
-        return Boolean(urls.length > 0)
+        return Boolean(selectedFiles.length > 0)
       case 3:
         return Boolean(selectedPolicy)
       case 4:
-        return Boolean(selectedPolicy && nftName && nftDescription && urls.length > 0)
+        return Boolean(selectedPolicy && nftName && nftDescription && selectedFiles.length > 0)
       default:
         return false
     }
@@ -289,7 +302,7 @@ export default function Poas() {
       setOpenSections([2])
     }
     // Step 2 -> 3: When URL and thumbnailImage is obtained
-    else if (currentStep === 2 && urls.length > 0 && thumbnailImage) {
+    else if (currentStep === 2 && selectedFiles.length > 0 && thumbnailImage) {
       setCurrentStep(3)
       setOpenSections([3])
     }
@@ -298,7 +311,7 @@ export default function Poas() {
     // 	setCurrentStep(4)
     // 	setOpenSections([4])
     // }
-  }, [blockfrostKey, pinataJWT, urls, thumbnailImage, currentStep])
+  }, [blockfrostKey, pinataJWT, selectedFiles, thumbnailImage, currentStep])
 
   // Load all saved data when component mounts
   useEffect(() => {
@@ -379,7 +392,7 @@ export default function Poas() {
     selectedPolicy: PolicyInfo,
     nftName: string,
     nftDescription: string,
-    urls: FileInfo[],
+    selectedFiles: FileInfo[],
   ) => {
     setMinting(true)
     try {
@@ -401,37 +414,22 @@ export default function Poas() {
         return
       }
 
-      if (urls.length === 0) {
+      if (selectedFiles.length === 0) {
         toast.error('Please select at least one image', { position: 'bottom-center' })
         return
       }
 
-      const address = await lucid.wallet().address();
+      const address = await lucid.wallet().address()
 
-      const newUrls = urls.map((url) => {
-        // Extract the file extension from the URL
-        const parts = url.name.split('.')
-        const fileExtension = parts.length > 1 ? '.' + (parts.pop() || 'png').toLowerCase() : '.png'
-        const mediaType = VALID_IMAGE_MIMES[fileExtension] || 'image/png'
-
-        const baseUrl = {
-          mediaType: mediaType,
-          name: url.name,
-          src: 'ipfs://' + url.url,
-        }
-
-        // If the file has traits, add them as an array of objects
-        if (url.traits && url.traits.length > 0) {
-          return {
-            ...baseUrl,
-            traits: url.traits
-              .filter((trait) => trait.key && trait.value) // Only include traits with both key and value
-              .map((trait) => ({ [trait.key]: trait.value })),
-          }
-        }
-
-        return baseUrl
-      })
+      const newFiles = selectedFiles.map((file) => ({
+        mediaType:
+          VALID_IMAGE_MIMES[file.name.split('.').pop()?.toLowerCase() || ''] || 'image/png',
+        name: file.customName || file.name, // Use customName if available
+        src: 'ipfs://' + file.url,
+        ...(file.traits?.length
+          ? { traits: file.traits.map((trait) => ({ [trait.key]: trait.value })) }
+          : {}),
+      }))
 
       // Update the metadata construction with console logs
       const metadata = {
@@ -440,7 +438,7 @@ export default function Poas() {
           description: [nftDescription] as ReadonlyArray<string>,
           image: 'ipfs://' + thumbnailImage,
           mediaType: (() => {
-            const thumbnailFile = urls.find((file) => file.url === thumbnailImage)
+            const thumbnailFile = selectedFiles.find((file) => file.url === thumbnailImage)
             if (!thumbnailFile) return 'image/png'
             const extension = '.' + thumbnailFile.name.split('.').pop()!.toLowerCase()
             const mimeType = VALID_IMAGE_MIMES[extension]
@@ -448,7 +446,7 @@ export default function Poas() {
             console.log('Detected MIME type:', mimeType)
             return mimeType || 'image/png'
           })(),
-          files: newUrls,
+          files: newFiles,
         },
       } as const
 
@@ -508,42 +506,42 @@ export default function Poas() {
       // Create an array of promises for each file upload
       const uploadPromises = selectedFiles.map(async (file) => {
         const data = new FormData()
-        data.append('file', file) // Append the file
-        data.append('pinataMetadata', JSON.stringify({ name: file.name })) // Add metadata for the file
-        data.append('pinataOptions', JSON.stringify({ cidVersion: 0 })) // Add options for the file
+        data.append('file', file)
+        data.append('pinataMetadata', JSON.stringify({ name: file.name }))
+        data.append('pinataOptions', JSON.stringify({ cidVersion: 0 }))
 
         const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${pinataJWT}`,
-            // 'Content-Type': 'multipart/form-data' // Do not set Content-Type, it will be set automatically
           },
           body: data,
         })
 
         const response = await uploadRequest.json()
-
-        // Log the response to see its structure
         console.log('Upload Response:', response)
 
-        // Check if response contains an IpfsHash
         if (!response.IpfsHash) {
           throw new Error(`Unexpected response format for ${file.name}: IpfsHash not found`)
-        }
-
-        return {
-          url: response.IpfsHash,
-          name: file.name,
         }
       })
 
       // Wait for all uploads to complete
-      const results = await Promise.all(uploadPromises)
-      console.log('All uploads completed:', results)
+      await Promise.all(uploadPromises)
+      let message = 'Files uploaded successfully. Browse uploaded files to select them.'
+      if (selectedFiles.length > 1) {
+        message = 'Files uploaded successfully. Browse uploaded files to select them.'
+      } else if (selectedFiles.length === 1) {
+        message = 'File uploaded successfully. Browse uploaded files to select it.'
+      }
 
-      setUrls((prev) => [...prev, ...results])
+      toast.success(message, {
+        position: 'bottom-center',
+      })
 
       setUploading(false)
+      // Automatically open the browse dialog after upload
+      loadPinataFiles(1)
     } catch (e) {
       console.log(e)
       setUploading(false)
@@ -775,15 +773,12 @@ export default function Poas() {
   }
 
   const loadPinataFiles = async (page: number = 1) => {
-    if (!pinataJWT) {
-      toast.error('Please enter Pinata JWT first', { position: 'bottom-center' })
-      return
-    }
-
     try {
       setLoadingFiles(true)
+
+      // Fetch all files at once (or a reasonable large number)
       const response = await fetch(
-        `https://api.pinata.cloud/data/pinList?status=pinned&pageLimit=${pagination.itemsPerPage}&pageOffset=${(page - 1) * pagination.itemsPerPage}`,
+        `https://api.pinata.cloud/data/pinList?status=pinned&pageLimit=1000`,
         {
           headers: {
             Authorization: `Bearer ${pinataJWT}`,
@@ -795,22 +790,38 @@ export default function Poas() {
 
       const data = await response.json()
 
-      // Filter for CIDv0 files only
-      const cidv0Files = data.rows.filter((file: PinataFile) => isCIDv0(file.ipfs_pin_hash))
+      // Filter for valid files
+      const validFiles = data.rows
+        .filter(
+          (file: PinataFile) =>
+            isCIDv0(file.ipfs_pin_hash) &&
+            ((file.mime_type && Object.values(VALID_IMAGE_MIMES).includes(file.mime_type)) ||
+              VALID_IMAGE_EXTENSIONS.some((ext) =>
+                file.metadata?.name?.toLowerCase().endsWith(ext),
+              )),
+        )
+        .sort((a: PinataFile, b: PinataFile) => {
+          return new Date(b.date_pinned).getTime() - new Date(a.date_pinned).getTime()
+        })
 
-      // Sort the filtered files by date
-      const sortedRows = cidv0Files.sort((a: PinataFile, b: PinataFile) => {
-        return new Date(b.date_pinned).getTime() - new Date(a.date_pinned).getTime()
-      })
+      // Calculate pagination
+      const totalPages = Math.ceil(validFiles.length / pagination.itemsPerPage)
+      const startIndex = (page - 1) * pagination.itemsPerPage
+      const endIndex = startIndex + pagination.itemsPerPage
+
+      // Get current page items
+      const currentPageItems = validFiles.slice(startIndex, endIndex)
 
       setPinataResponse({
-        count: cidv0Files.length, // Update count to reflect filtered total
-        rows: sortedRows,
+        count: validFiles.length,
+        rows: currentPageItems,
+        filteredRows: validFiles,
       })
+
       setPagination((prev) => ({
         ...prev,
         currentPage: page,
-        totalPages: Math.ceil(cidv0Files.length / prev.itemsPerPage),
+        totalPages,
       }))
 
       if (page === 1) {
@@ -821,6 +832,31 @@ export default function Poas() {
       toast.error('Failed to load files: ' + error.message, { position: 'bottom-center' })
     } finally {
       setLoadingFiles(false)
+    }
+  }
+
+  // Update the handlePageChange function to prevent invalid navigation
+  const handlePageChange = (newPage: number) => {
+    if (!pinataResponse.filteredRows) return
+
+    // Prevent going beyond valid pages
+    if (newPage < 1 || newPage > pagination.totalPages) return
+
+    const startIndex = (newPage - 1) * pagination.itemsPerPage
+    const endIndex = startIndex + pagination.itemsPerPage
+    const currentPageItems = pinataResponse.filteredRows.slice(startIndex, endIndex)
+
+    // Only update if we have items for this page
+    if (currentPageItems.length > 0) {
+      setPinataResponse((prev) => ({
+        ...prev,
+        rows: currentPageItems,
+      }))
+
+      setPagination((prev) => ({
+        ...prev,
+        currentPage: newPage,
+      }))
     }
   }
 
@@ -853,7 +889,7 @@ export default function Poas() {
       url: file.ipfs_pin_hash,
       name: file.metadata?.name || `image${Date.now()}`,
     }))
-    setUrls((prev) => [...prev, ...newFiles])
+    setSelectedFiles((prev) => [...prev, ...newFiles])
     setShowPinataDialog(false)
   }
 
@@ -934,17 +970,13 @@ export default function Poas() {
     return response.IpfsHash // Return the IpfsHash for the thumbnail
   }
 
-  const handleAddTrait = () => {
-    setTraits((prev) => [...prev, { key: '', value: '' }])
-  }
-
   const handleTraitChange = (
     fileUrl: string,
     traitIndex: number,
     field: 'key' | 'value',
     value: string,
   ) => {
-    setUrls((prev) =>
+    setSelectedFiles((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
           const traits = [...(fileInfo.traits || [])]
@@ -965,7 +997,7 @@ export default function Poas() {
 
   // Function to check if all images have names
   const areAllNamesEntered = () => {
-    return urls.every((url) => imageNames[url.url]?.trim() !== '')
+    return selectedFiles.every((fileInfo) => imageNames[fileInfo.url]?.trim() !== '')
   }
 
   // Update the useEffect for step advancement
@@ -979,7 +1011,7 @@ export default function Poas() {
 
   // Add this function to add a trait to a specific image
   const addTraitToImage = (fileUrl: string) => {
-    setUrls((prev) =>
+    setSelectedFiles((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
           const traits = fileInfo.traits || []
@@ -992,7 +1024,7 @@ export default function Poas() {
 
   // Add this function to remove a trait from a specific image
   const removeTraitFromImage = (fileUrl: string, traitIndex: number) => {
-    setUrls((prev) =>
+    setSelectedFiles((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
           const traits = fileInfo.traits?.filter((_, index) => index !== traitIndex) || []
@@ -1003,7 +1035,7 @@ export default function Poas() {
     )
   }
 
-  if (initializing) {
+  if (initializing || loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -1152,7 +1184,7 @@ export default function Poas() {
               </div>
 
               {/* File preview section */}
-              {urls.length > 0 && (
+              {selectedFiles.length > 0 && (
                 <div className="flex flex-col gap-4">
                   {!thumbnailImage && (
                     <div className="flex items-center justify-center gap-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-500">
@@ -1164,7 +1196,7 @@ export default function Poas() {
                   )}
 
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                    {urls.map((fileInfo) => (
+                    {selectedFiles.map((fileInfo) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
                           className={`flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-all hover:shadow-lg hover:shadow-primary/5 ${
@@ -1196,40 +1228,8 @@ export default function Poas() {
                             </div>
 
                             <div className="flex flex-1 flex-col justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="min-w-0 flex-1">
-                                  {(() => {
-                                    const fullName = fileInfo.name || ''
-                                    const nameWithoutExt = fullName.substring(
-                                      0,
-                                      fullName.lastIndexOf('.'),
-                                    )
-                                    const displayName =
-                                      nameWithoutExt.length > 20
-                                        ? nameWithoutExt.slice(0, 20) + '...'
-                                        : nameWithoutExt
-
-                                    return (
-                                      <div className="flex flex-wrap items-center gap-1">
-                                        <span className="line-clamp-3 break-all text-xs font-medium sm:text-sm">
-                                          {displayName}
-                                        </span>
-                                      </div>
-                                    )
-                                  })()}
-                                </div>
-                                <div className="flex items-center justify-end text-xs text-muted-foreground">
-                                  {(() => {
-                                    const fullName = fileInfo.name || ''
-                                    const extension = fullName.split('.').pop() || ''
-                                    return `.${extension}`
-                                  })()}
-                                </div>
-                              </div>
-
-                              {/* Traits Section */}
-                              <div className="mt-4 space-y-2">
-                                <div className="flex items-center justify-between">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
                                   <span className="text-sm font-medium">Traits</span>
                                   <Button
                                     variant="ghost"
@@ -1302,7 +1302,7 @@ export default function Poas() {
       )}
 
       {/* Step 3: Policy ID */}
-      {urls.length > 0 && thumbnailImage && (
+      {selectedFiles.length > 0 && thumbnailImage && (
         <Collapsible
           open={openSections.includes(3)}
           onOpenChange={(isOpen) => {
@@ -1511,8 +1511,8 @@ export default function Poas() {
               <Button3D
                 disabled={!isStepComplete(4) || minting || !api}
                 onClick={() => {
-                  if (api && nftName && nftDescription && urls.length > 0) {
-                    mintNFT(lucid, api, selectedPolicy, nftName, nftDescription, urls)
+                  if (api && nftName && nftDescription && selectedFiles.length > 0) {
+                    mintNFT(lucid, api, selectedPolicy, nftName, nftDescription, selectedFiles)
                   } else {
                     if (!nftName || !nftDescription) {
                       toast.error('NFT name and description must be provided', {
@@ -1583,49 +1583,15 @@ export default function Poas() {
                     </div>
 
                     <div className="flex flex-1 flex-col justify-between">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
+                      <div className="space-y-2">
+                        <span className="block truncate text-xs sm:text-sm md:text-base lg:text-lg">
                           {(() => {
-                            const fullName = file.metadata?.name || ''
-                            const nameWithoutExt = fullName.substring(0, fullName.lastIndexOf('.'))
-                            const displayName =
-                              nameWithoutExt.length > 20
-                                ? nameWithoutExt.slice(0, 20) + '...'
-                                : nameWithoutExt
-
-                            return (
-                              <div className="flex flex-wrap items-center gap-1">
-                                <span className="line-clamp-3 break-all text-xs sm:text-base md:text-lg">
-                                  {displayName}
-                                </span>
-                              </div>
-                            )
+                            const fullName = file.metadata?.name || file.name || ''
+                            return fullName // Return full name including extension
                           })()}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4 shrink-0 !px-0 !py-0 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setFileToDelete(file.ipfs_pin_hash)
-                            setIsConfirmDialogOpen(true)
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="mt-auto flex items-center justify-between pt-2">
-                        <span className="text-xs text-muted-foreground sm:text-sm md:text-base">
-                          {timeAgoCompact(file.date_pinned)}
                         </span>
-                        <span className="text-xs text-muted-foreground sm:text-sm md:text-base">
-                          {(() => {
-                            const fullName = file.metadata?.name || ''
-                            const extension = fullName.split('.').pop() || ''
-                            return `.${extension}`
-                          })()}
+                        <span className="block text-xs text-muted-foreground sm:text-sm md:text-base lg:text-lg">
+                          {timeAgoCompact(new Date(file.date_pinned))}
                         </span>
                       </div>
                     </div>
@@ -1635,27 +1601,68 @@ export default function Poas() {
             ))}
           </div>
 
-          {/* Add pagination controls */}
-          <div className="flex items-center justify-between border-t border-border px-4 py-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadPinataFiles(pagination.currentPage - 1)}
-              disabled={pagination.currentPage === 1 || loadingFiles}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {pagination.currentPage} of {pagination.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadPinataFiles(pagination.currentPage + 1)}
-              disabled={pagination.currentPage === pagination.totalPages || loadingFiles}
-            >
-              Next
-            </Button>
+          {/* Update the pagination section */}
+          <div className="flex w-full items-center justify-center border-t border-border px-4 py-2">
+            <Pagination>
+              <PaginationContent>
+                {/* Only show Previous button if we're not on page 1 */}
+                {pagination.currentPage > 1 ? (
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(pagination.currentPage - 1)}
+                      isActive={loadingFiles || pinataResponse.rows.length === 0}
+                    />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem className="opacity-50">
+                    <PaginationPrevious />
+                  </PaginationItem>
+                )}
+
+                {/* Generate page numbers */}
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                  .filter((pageNumber) => {
+                    // Always show first and last page
+                    if (pageNumber === 1 || pageNumber === pagination.totalPages) return true
+                    // Show pages around current page
+                    if (Math.abs(pageNumber - pagination.currentPage) <= 1) return true
+                    return false
+                  })
+                  .map((pageNumber, i, array) => (
+                    <Fragment key={pageNumber}>
+                      {/* Add ellipsis if there's a gap */}
+                      {i > 0 && array[i] - array[i - 1] > 1 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          onClick={() => handlePageChange(pageNumber)}
+                          isActive={pageNumber === pagination.currentPage}
+                        >
+                          {pageNumber}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </Fragment>
+                  ))}
+
+                {/* Only show Next button if we're not on the last page and have a full page of items */}
+                {pagination.currentPage < pagination.totalPages &&
+                pinataResponse.rows.length === pagination.itemsPerPage ? (
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(pagination.currentPage + 1)}
+                      isActive={loadingFiles || pinataResponse.rows.length === 0}
+                    />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem className="opacity-50">
+                    <PaginationNext />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
           </div>
 
           {loadingFiles && (
