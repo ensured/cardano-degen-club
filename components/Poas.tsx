@@ -19,7 +19,7 @@ import { toast } from 'sonner'
 import { getEpochData } from '@/app/actions'
 import copyImagePath from '@/public/copy.png'
 // import { Metadata } from '@lucid-evolution/lucid'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
 import { Check, ChevronDown, Loader2, Plus, X, Trash2 } from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
@@ -904,9 +904,11 @@ export default function Poas() {
 
     // Optimistically update the UI
     const previousFiles = pinataResponse.rows // Store previous state
+    const previousFilteredRows = pinataResponse.filteredRows // Store previous filtered rows
     setPinataResponse((prev) => ({
       ...prev,
       rows: prev.rows.filter((file) => file.ipfs_pin_hash !== cid), // Filter out the deleted file
+      filteredRows: prev.filteredRows.filter((file) => file.ipfs_pin_hash !== cid), // Also filter from filteredRows
     }))
 
     try {
@@ -914,12 +916,22 @@ export default function Poas() {
       const result = await response.text() // Use .text() to get the response as plain text
 
       if (response.ok) {
+        // Update pagination if needed
+        const newTotalPages = Math.ceil(
+          (pinataResponse.filteredRows.length - 1) / pagination.itemsPerPage,
+        )
+        setPagination((prev) => ({
+          ...prev,
+          totalPages: newTotalPages,
+          currentPage: prev.currentPage > newTotalPages ? newTotalPages : prev.currentPage,
+        }))
         toast.success('File deleted successfully', { position: 'bottom-center' })
       } else {
         // Revert the optimistic update if the delete fails
         setPinataResponse((prev) => ({
           ...prev,
           rows: previousFiles, // Restore previous state
+          filteredRows: previousFilteredRows, // Restore previous filtered rows
         }))
         toast.error('Failed to delete file: ' + result, { position: 'bottom-center' })
       }
@@ -928,6 +940,7 @@ export default function Poas() {
       setPinataResponse((prev) => ({
         ...prev,
         rows: previousFiles, // Restore previous state
+        filteredRows: previousFilteredRows, // Restore previous filtered rows
       }))
       console.error('Error deleting file:', error)
       toast.error('Error deleting file: ' + (error as Error).message, { position: 'bottom-center' })
@@ -940,6 +953,15 @@ export default function Poas() {
       await deleteFile(fileToDelete)
       setConfirmationText('') // Reset confirmation text
       setFileToDelete(null) // Reset file to delete
+      setPinataResponse((prev) => ({
+        ...prev,
+        rows: prev.rows.filter((file) => file.ipfs_pin_hash !== fileToDelete),
+      }))
+      setSelectedPinataFiles((prev) => prev.filter((file) => file.ipfs_pin_hash !== fileToDelete))
+      // if the file is selected as thumbnail, set thumbnail to null
+      if (thumbnailImage === fileToDelete) {
+        setThumbnailImage(null)
+      }
     }
     setIsConfirmDialogOpen(false) // Close the dialog
   }
@@ -950,7 +972,7 @@ export default function Poas() {
     const newFileName = `${file.name.split('.').slice(0, -1).join('.')}_thumbnail.${file.name.split('.').pop()}` // Append _thumbnail to the filename
     data.append('file', new File([file], newFileName)) // Append the file with the new name
     data.append('pinataMetadata', JSON.stringify({ name: newFileName })) // Add metadata for the file
-    data.append('pinataOptions', JSON.stringify({ cidVersion: 1 })) // Add options for the file
+    data.append('pinataOptions', JSON.stringify({ cidVersion: 0 })) // Add options for the file
 
     const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',
@@ -1211,7 +1233,7 @@ export default function Poas() {
                             })
                           }}
                         >
-                          <div className="flex flex-1 flex-col space-y-2">
+                          <div className="flex flex-1 flex-col space-y-1">
                             <div className="relative">
                               <Image
                                 src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
@@ -1228,7 +1250,7 @@ export default function Poas() {
                             </div>
 
                             <div className="flex flex-1 flex-col justify-between">
-                              <div className="space-y-2">
+                              <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm font-medium">Traits</span>
                                   <Button
@@ -1479,7 +1501,7 @@ export default function Poas() {
           </CollapsibleTrigger>
           <CollapsibleContent className="px-6 pb-6">
             <div className="flex flex-col gap-4">
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label htmlFor="nft-title" className="text-sm font-medium">
                   NFT Title
                 </label>
@@ -1494,7 +1516,7 @@ export default function Poas() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <label htmlFor="nft-description" className="text-sm font-medium">
                   NFT Description
                 </label>
@@ -1561,17 +1583,17 @@ export default function Poas() {
             {pinataResponse.rows.map((file) => (
               <div
                 key={file.ipfs_pin_hash}
-                className={`group relative ${
+                className={`group relative rounded-md ${
                   selectedPinataFiles.some(
                     (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
                   )
-                    ? 'ring-2 ring-primary ring-offset-2'
+                    ? 'ring-2 ring-primary'
                     : ''
                 }`}
                 onClick={() => selectPinataFile(file, false)}
               >
                 <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
-                  <div className="flex flex-1 flex-col space-y-2">
+                  <div className="flex flex-1 flex-col space-y-1">
                     <div className="relative">
                       <Image
                         src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
@@ -1583,16 +1605,30 @@ export default function Poas() {
                     </div>
 
                     <div className="flex flex-1 flex-col justify-between">
-                      <div className="space-y-2">
-                        <span className="block truncate text-xs sm:text-sm md:text-base lg:text-lg">
+                      <div className="space-y-1">
+                        <span className="block truncate text-sm sm:text-base md:text-lg">
                           {(() => {
                             const fullName = file.metadata?.name || file.name || ''
                             return fullName // Return full name including extension
                           })()}
                         </span>
-                        <span className="block text-xs text-muted-foreground sm:text-sm md:text-base lg:text-lg">
-                          {timeAgoCompact(new Date(file.date_pinned))}
-                        </span>
+                        <div className="flex items-center justify-between">
+                          <span className="block text-sm text-muted-foreground sm:text-base md:text-lg">
+                            {timeAgoCompact(new Date(file.date_pinned))}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={(e) => {
+                              e.stopPropagation() // Prevent file selection when clicking delete
+                              setFileToDelete(file.ipfs_pin_hash)
+                              setIsConfirmDialogOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1607,14 +1643,14 @@ export default function Poas() {
               <PaginationContent>
                 {/* Only show Previous button if we're not on page 1 */}
                 {pagination.currentPage > 1 ? (
-                  <PaginationItem>
+                  <PaginationItem className="cursor-pointer select-none">
                     <PaginationPrevious
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
                     />
                   </PaginationItem>
                 ) : (
-                  <PaginationItem className="opacity-50">
+                  <PaginationItem className="select-none opacity-50">
                     <PaginationPrevious />
                   </PaginationItem>
                 )}
@@ -1632,11 +1668,11 @@ export default function Poas() {
                     <Fragment key={pageNumber}>
                       {/* Add ellipsis if there's a gap */}
                       {i > 0 && array[i] - array[i - 1] > 1 && (
-                        <PaginationItem>
+                        <PaginationItem className="cursor-pointer select-none">
                           <PaginationEllipsis />
                         </PaginationItem>
                       )}
-                      <PaginationItem>
+                      <PaginationItem className="cursor-pointer select-none">
                         <PaginationLink
                           onClick={() => handlePageChange(pageNumber)}
                           isActive={pageNumber === pagination.currentPage}
@@ -1650,14 +1686,14 @@ export default function Poas() {
                 {/* Only show Next button if we're not on the last page and have a full page of items */}
                 {pagination.currentPage < pagination.totalPages &&
                 pinataResponse.rows.length === pagination.itemsPerPage ? (
-                  <PaginationItem>
+                  <PaginationItem className="cursor-pointer select-none">
                     <PaginationNext
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
                     />
                   </PaginationItem>
                 ) : (
-                  <PaginationItem className="opacity-50">
+                  <PaginationItem className="select-none opacity-50">
                     <PaginationNext />
                   </PaginationItem>
                 )}
@@ -1699,7 +1735,22 @@ export default function Poas() {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
           </DialogHeader>
-          <p>Type &ldquo;confirm&ldquo; to delete this file.</p>
+          <DialogDescription>Type &ldquo;confirm&ldquo; to delete this file.</DialogDescription>
+          <div className="rounded-lg border border-destructive/20 bg-gradient-to-b from-destructive/5 to-destructive/10 p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="rounded-full bg-destructive/10 p-2">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="font-semibold text-destructive">Warning: Permanent Action</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  This action cannot be undone. Deleting this file from Pinata will break any NFTs
+                  that use this file's IPFS link. The NFT's metadata will still point to this IPFS
+                  address, but the content will no longer be available through Pinata.
+                </p>
+              </div>
+            </div>
+          </div>
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -1712,7 +1763,7 @@ export default function Poas() {
               placeholder='Type "confirm" here'
               autoCapitalize="none"
             />
-            <div className="mt-4 flex justify-end">
+            <div className="mt-2 flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => setIsConfirmDialogOpen(false)} // Close dialog without deleting
