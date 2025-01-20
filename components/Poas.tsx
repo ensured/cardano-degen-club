@@ -250,7 +250,7 @@ export default function Poas() {
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     totalPages: 1,
-    itemsPerPage: 9,
+    itemsPerPage: 12,
   })
   const [lucid, setLucid] = useState<any | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -406,6 +406,8 @@ export default function Poas() {
         return
       }
 
+      const address = await lucid.wallet().address();
+
       const newUrls = urls.map((url) => {
         // Extract the file extension from the URL
         const parts = url.name.split('.')
@@ -458,6 +460,7 @@ export default function Poas() {
         })
         .attachMetadata(721, metadata) // Attach the Uint8Array metadata with the label 721
         .validTo(Date.now() + 1200000) // 20 minutes for the user to sign the tx
+        .pay.ToAddress(address, { [selectedPolicy.policyId + fromText(nftName)]: 1n })
         // .pay.ToAddress(donationAddress, { lovelace: 1000000n })
         .attach.MintingPolicy(
           await createMintingPolicy(
@@ -507,7 +510,7 @@ export default function Poas() {
         const data = new FormData()
         data.append('file', file) // Append the file
         data.append('pinataMetadata', JSON.stringify({ name: file.name })) // Add metadata for the file
-        data.append('pinataOptions', JSON.stringify({ cidVersion: 1 })) // Add options for the file
+        data.append('pinataOptions', JSON.stringify({ cidVersion: 0 })) // Add options for the file
 
         const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
           method: 'POST',
