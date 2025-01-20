@@ -1161,7 +1161,7 @@ export default function Poas() {
                   )}
 
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                    {urls.map((fileInfo, index) => (
+                    {urls.map((fileInfo) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
                           className={`flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-all hover:shadow-lg hover:shadow-primary/5 ${
@@ -1171,7 +1171,7 @@ export default function Poas() {
                           }`}
                           onClick={() => {
                             setThumbnailImage(fileInfo.url)
-                            toast.success('Selected as thumbnail image', {
+                            toast.success(`Selected ${fileInfo.name} as thumbnail image`, {
                               position: 'bottom-center',
                             })
                           }}
@@ -1316,7 +1316,7 @@ export default function Poas() {
           </CollapsibleTrigger>
           <CollapsibleContent className="grid grid-cols-2 gap-2 px-6 pb-6">
             <div className="col-span-1 flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 md:flex-row">
                 <Button3D
                   disabled={!isStepComplete(2) || scanning}
                   onClick={loadPolicies}
