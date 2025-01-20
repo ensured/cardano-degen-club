@@ -222,7 +222,7 @@ interface Trait {
 // Add a helper function to check if it's a CIDv0 hash
 const isCIDv0 = (hash: string) => {
   // CIDv0 starts with "Qm" and is 46 characters long
-  return hash.startsWith('Qm') && hash.length === 46
+  return hash.startsWith('Q') && hash.length === 46
 }
 
 export default function Poas() {
