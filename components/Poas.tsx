@@ -26,7 +26,6 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/t
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
 import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
-import SlotConverter from './SlotConverter'
 import { LucidEvolution } from '@lucid-evolution/lucid'
 import { useWindowSize } from '@uidotdev/usehooks'
 import {
@@ -38,6 +37,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from './ui/pagination'
+import { Slider } from './ui/slider'
+import { Switch } from './ui/switch'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -237,6 +238,12 @@ const isCIDv0 = (hash: string) => {
   return hash.startsWith('Qm') && hash.length === 46
 }
 
+// Add this interface near other interfaces
+interface ExpiryConfig {
+  hasExpiry: boolean
+  days: number
+}
+
 export default function Poas() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
@@ -275,8 +282,25 @@ export default function Poas() {
   const [selectedPinataFiles, setSelectedPinataFiles] = useState<PinataFile[]>([])
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [imageNames, setImageNames] = useState<{ [key: string]: string }>({})
+  const [expiryConfig, setExpiryConfig] = useState<ExpiryConfig>({
+    hasExpiry: true,
+    days: 1,
+  })
 
   const { width } = useWindowSize()
+
+  const formatExpiryTime = (slot?: number) => {
+    if (!slot) return null
+
+    // Calculate days remaining
+    const currentSlot = lucid?.currentSlot() || 0
+    const slotsRemaining = slot - currentSlot
+    const daysRemaining = Math.ceil(slotsRemaining / 86400)
+
+    if (slotsRemaining <= 0) return 'Expired'
+    if (daysRemaining === 1) return '1 day left'
+    return `${daysRemaining} days left`
+  }
 
   // Add function to check step completion
   const isStepComplete = (step: number) => {
@@ -583,30 +607,46 @@ export default function Poas() {
       const address = await lucid.wallet().address()
       const keyHash = paymentCredentialOf(address).hash
 
-      // Use currentSlot directly
-      const currentSlot = lucid.currentSlot() + 86400 // current slot + 1 day
+      // Calculate expiry slot if needed
+      const currentSlot = lucid.currentSlot()
+      const expirySlot = expiryConfig.hasExpiry
+        ? currentSlot + expiryConfig.days * 86400
+        : undefined
 
-      // Generate policy using currentSlot
-      const mintingPolicy = scriptFromNative({
-        type: 'all',
-        scripts: [
-          { type: 'sig', keyHash },
-          { type: 'before', slot: currentSlot },
-        ],
-      })
+      // Generate policy with or without expiry
+      const mintingPolicy = scriptFromNative(
+        expiryConfig.hasExpiry
+          ? {
+              type: 'all',
+              scripts: [
+                { type: 'sig', keyHash },
+                { type: 'before', slot: expirySlot! },
+              ],
+            }
+          : {
+              type: 'sig',
+              keyHash,
+            },
+      )
+
       const policyId = mintingPolicyToId(mintingPolicy)
 
       const newPolicy: PolicyInfo = {
         policyId,
         keyHash,
-        slot: currentSlot,
-        script: {
-          type: 'all',
-          scripts: [
-            { type: 'sig', keyHash },
-            { type: 'before', slot: currentSlot },
-          ],
-        },
+        slot: expirySlot,
+        script: expiryConfig.hasExpiry
+          ? {
+              type: 'all',
+              scripts: [
+                { type: 'sig', keyHash },
+                { type: 'before', slot: expirySlot! },
+              ],
+            }
+          : {
+              type: 'sig',
+              keyHash,
+            },
         isGenerated: true,
       }
 
@@ -615,9 +655,15 @@ export default function Poas() {
       setSelectedPolicy(newPolicy)
       setCurrentStep(4)
       setOpenSections([4])
+
+      // Update success message based on expiry
+      const message = expiryConfig.hasExpiry
+        ? `${policyId} will expire in ${expiryConfig.days} day${expiryConfig.days > 1 ? 's' : ''}.`
+        : `${policyId} has no expiry date.`
+
       toast.success(
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">{policyId} will expire in 1 day.</p>
+          <p className="text-sm text-muted-foreground">{message}</p>
         </div>,
         { position: 'bottom-center' },
       )
@@ -1088,7 +1134,6 @@ export default function Poas() {
               <TooltipTrigger>
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex items-center">
-                    {isStepComplete(step) && <Check className="mr-1 h-4 w-4 text-green-500" />}
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
                         isStepComplete(step)
@@ -1125,7 +1170,7 @@ export default function Poas() {
             <ChevronDown className="h-4 w-4" />
           </div>
         </CollapsibleTrigger>
-        <CollapsibleContent className="px-6 pb-6">
+        <CollapsibleContent className="p-6 pt-2">
           <div className="flex flex-col gap-4">
             <div>
               <label className="mb-2 block text-sm font-medium">Blockfrost Project ID</label>
@@ -1178,7 +1223,7 @@ export default function Poas() {
               <ChevronDown className="h-4 w-4" />
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="px-6 pb-6">
+          <CollapsibleContent className="p-6 pt-2">
             <div className="flex flex-col gap-4">
               <Button3D
                 disabled={!isStepComplete(1) || loadingFiles}
@@ -1339,36 +1384,31 @@ export default function Poas() {
               <ChevronDown className="h-4 w-4" />
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="grid grid-cols-2 gap-2 px-6 pb-6">
-            <div className="col-span-1 flex flex-col gap-4">
-              <div className="flex flex-col gap-2 md:flex-row">
+          <CollapsibleContent className="p-6 pt-2">
+            <div className="flex flex-col gap-4">
+              <div className="flex w-full flex-col gap-2">
                 <Button3D
                   disabled={!isStepComplete(2) || scanning}
                   onClick={loadPolicies}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 text-sm sm:text-base"
                 >
-                  {scanning ? 'Scanning...' : 'Load Existing Policies'}
+                  {scanning ? 'Scanning...' : 'Load Policies'}
                 </Button3D>
                 <Button3D
                   disabled={!isStepComplete(2) || generatingPolicy}
                   onClick={generatePolicyId}
-                  className="flex-1"
+                  className="flex-1 text-sm sm:text-base"
                 >
-                  Generate New Policy
+                  Generate Policy
                 </Button3D>
               </div>
 
               <DropdownMenu>
-                <Label className="text-lg font-semibold">
-                  {policyIds.length !== 0
-                    ? `Select Policy ID (${policyIds.length} policies found)`
-                    : 'Generate or load a policy'}
-                </Label>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild className="mb-2 w-full">
                   <Button
                     variant="outline"
-                    className="w-full justify-between font-normal"
+                    className="w-full justify-center font-normal"
                     disabled={loadingPolicies || policyIds.length === 0}
                   >
                     {selectedPolicy ? (
@@ -1376,7 +1416,7 @@ export default function Poas() {
                         {selectedPolicy.policyId.slice(0, 10)}...{selectedPolicy.policyId.slice(-8)}
                       </span>
                     ) : (
-                      <span className="text-muted-foreground">
+                      <span className="text-sm text-muted-foreground sm:text-base">
                         {loadingPolicies ? (
                           <div className="flex items-center justify-center gap-2">
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -1406,22 +1446,66 @@ export default function Poas() {
                           <DropdownMenuItem
                             key={policy.policyId}
                             onClick={() => {
+                              // Check if policy is expired
+                              const currentSlot = lucid?.currentSlot() || 0
+                              const slotsRemaining = policy.slot ? policy.slot - currentSlot : null
+
+                              if (slotsRemaining !== null && slotsRemaining <= 0) {
+                                // Show error toast
+                                toast.error(
+                                  <div className="flex flex-col gap-2">
+                                    <p className="font-medium">Policy has expired</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      This policy (ending in ...{policy.policyId.slice(-8)}) can no
+                                      longer be used for minting. Please select or generate a new
+                                      policy.
+                                    </p>
+                                  </div>,
+                                  { position: 'bottom-center', duration: 5000 },
+                                )
+
+                                // Remove expired policy from state
+                                setPolicyIds((prev) =>
+                                  prev.filter((p) => p.policyId !== policy.policyId),
+                                )
+
+                                // If this was the selected policy, clear the selection
+                                if (selectedPolicy?.policyId === policy.policyId) {
+                                  setSelectedPolicy(null)
+                                }
+
+                                return
+                              }
+
                               setSelectedPolicy(policy)
                             }}
-                            className="flex items-center gap-2 transition-colors hover:bg-emerald-100"
+                            className="flex items-center justify-between gap-2 transition-colors hover:bg-emerald-100"
                           >
-                            {selectedPolicy?.policyId === policy.policyId && (
-                              <Check className="h-4 w-4 text-emerald-500" />
+                            <div className="flex items-center gap-2">
+                              {selectedPolicy?.policyId === policy.policyId && (
+                                <Check className="h-4 w-4 text-emerald-500" />
+                              )}
+                              <span
+                                className={
+                                  selectedPolicy?.policyId === policy.policyId
+                                    ? 'text-emerald-500'
+                                    : ''
+                                }
+                              >
+                                {policy.policyId.slice(0, 14)}...{policy.policyId.slice(-8)}
+                              </span>
+                            </div>
+                            {policy.slot && (
+                              <span
+                                className={`text-xs ${
+                                  formatExpiryTime(policy.slot) === 'Expired'
+                                    ? 'text-destructive'
+                                    : 'text-muted-foreground'
+                                }`}
+                              >
+                                {formatExpiryTime(policy.slot)}
+                              </span>
                             )}
-                            <span
-                              className={
-                                selectedPolicy?.policyId === policy.policyId
-                                  ? 'text-emerald-500'
-                                  : ''
-                              }
-                            >
-                              {policy.policyId.slice(0, 14)}...{policy.policyId.slice(-8)}
-                            </span>
                           </DropdownMenuItem>
                         ))}
                     </>
@@ -1435,7 +1519,7 @@ export default function Poas() {
                   {policyIds.some((p) => !p.isGenerated) && (
                     <>
                       <DropdownMenuLabel className="text-blue-500 flex items-center gap-2 font-medium">
-                        <div className="h-2 w-2 rounded-full bg-blue" />
+                        <div className="bg-blue-500 h-2 w-2 rounded-full" />
                         Loaded Policies
                       </DropdownMenuLabel>
                       {policyIds
@@ -1445,24 +1529,65 @@ export default function Poas() {
                             key={policy.policyId}
                             onClick={async () => {
                               const slot = extractSlotFromScript(policy.script)
+                              const currentSlot = lucid?.currentSlot() || 0
+                              const slotsRemaining = slot ? slot - currentSlot : null
+
+                              if (slotsRemaining !== null && slotsRemaining <= 0) {
+                                toast.error(
+                                  <div className="flex flex-col gap-2">
+                                    <p className="font-medium">Policy has expired</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      This policy (ending in ...{policy.policyId.slice(-8)}) can no
+                                      longer be used for minting. Please select or generate a new
+                                      policy.
+                                    </p>
+                                  </div>,
+                                  { position: 'bottom-center', duration: 5000 },
+                                )
+
+                                setPolicyIds((prev) =>
+                                  prev.filter((p) => p.policyId !== policy.policyId),
+                                )
+
+                                if (selectedPolicy?.policyId === policy.policyId) {
+                                  setSelectedPolicy(null)
+                                }
+
+                                return
+                              }
 
                               setSelectedPolicy({
                                 ...policy,
                                 slot: slot,
                               })
                             }}
-                            className="hover:bg-blue-100 flex items-center gap-2 transition-colors"
+                            className="hover:bg-blue-100 flex items-center justify-between gap-2 transition-colors"
                           >
-                            {selectedPolicy?.policyId === policy.policyId && (
-                              <Check className="h-4 w-4 text-blue" />
+                            <div className="flex items-center gap-2">
+                              {selectedPolicy?.policyId === policy.policyId && (
+                                <Check className="text-blue-500 h-4 w-4" />
+                              )}
+                              <span
+                                className={
+                                  selectedPolicy?.policyId === policy.policyId
+                                    ? 'text-blue-500'
+                                    : ''
+                                }
+                              >
+                                {policy.policyId.slice(0, 10)}...{policy.policyId.slice(-8)}
+                              </span>
+                            </div>
+                            {policy.slot && (
+                              <span
+                                className={`text-xs ${
+                                  formatExpiryTime(policy.slot) === 'Expired'
+                                    ? 'text-destructive'
+                                    : 'text-muted-foreground'
+                                }`}
+                              >
+                                {formatExpiryTime(policy.slot)}
+                              </span>
                             )}
-                            <span
-                              className={
-                                selectedPolicy?.policyId === policy.policyId ? 'text-blue' : ''
-                              }
-                            >
-                              {policy.policyId.slice(0, 10)}...{policy.policyId.slice(-8)}
-                            </span>
                           </DropdownMenuItem>
                         ))}
                     </>
@@ -1476,8 +1601,33 @@ export default function Poas() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="col-span-1 flex flex-grow flex-col gap-2">
-              {/* <SlotConverter network={CARDANO_NETWORK} defaultSlot={selectedPolicy?.slot || 0} /> */}
+            <div className="space-y-4 rounded-lg border border-border p-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm sm:text-base">Policy Expiry</Label>
+                <Switch
+                  checked={expiryConfig.hasExpiry}
+                  onCheckedChange={(checked) =>
+                    setExpiryConfig((prev) => ({ ...prev, hasExpiry: checked }))
+                  }
+                />
+              </div>
+
+              {expiryConfig.hasExpiry && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Expires in {expiryConfig.days} day{expiryConfig.days > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[expiryConfig.days]}
+                    onValueChange={([days]) => setExpiryConfig((prev) => ({ ...prev, days }))}
+                    min={1}
+                    max={365}
+                    step={1}
+                  />
+                </div>
+              )}
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -1499,7 +1649,7 @@ export default function Poas() {
               <ChevronDown className="h-4 w-4" />
             </div>
           </CollapsibleTrigger>
-          <CollapsibleContent className="px-6 pb-6">
+          <CollapsibleContent className="p-6 pt-2">
             <div className="flex flex-col gap-4">
               <div className="space-y-1">
                 <label htmlFor="nft-title" className="text-sm font-medium">
