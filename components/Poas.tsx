@@ -1745,8 +1745,8 @@ export default function Poas() {
                 <p className="font-semibold text-destructive">Warning: Permanent Action</p>
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   This action cannot be undone. Deleting this file from Pinata will break any NFTs
-                  that use this file's IPFS link. The NFT's metadata will still point to this IPFS
-                  address, but the content will no longer be available through Pinata.
+                  that use this file&lsquo;s IPFS link. The NFT&lsquo;s metadata will still point to
+                  this IPFS address, but the content will no longer be available through Pinata.
                 </p>
               </div>
             </div>
