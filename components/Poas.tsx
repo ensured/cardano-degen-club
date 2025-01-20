@@ -1587,16 +1587,10 @@ export default function Poas() {
                   selectedPinataFiles.some(
                     (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
                   )
-                    ? 'ring-2 ring-primary'
+                    ? 'outline outline-2 outline-primary'
                     : ''
                 }`}
                 onClick={() => selectPinataFile(file, false)}
-                onTouchEnd={(e) => {
-                  e.preventDefault() // Prevent default touch behavior
-                  selectPinataFile(file, false)
-                }}
-                role="button"
-                tabIndex={0}
               >
                 <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
                   <div className="flex flex-1 flex-col space-y-1">
