@@ -433,46 +433,54 @@ export default function Poas() {
         return
       }
 
-      if (!nftName || !nftDescription) {
-        toast.error('Please enter a name and description', { position: 'bottom-center' })
+      // Get the thumbnail file info
+      const thumbnailFileInfo = selectedFiles.find((file) => file.url === thumbnailImage)
+      if (!thumbnailFileInfo) {
+        toast.error('Thumbnail file info not found', { position: 'bottom-center' })
         return
       }
 
-      if (selectedFiles.length === 0) {
-        toast.error('Please select at least one image', { position: 'bottom-center' })
-        return
-      }
+      // Get the extension and MIME type for the thumbnail
+      const thumbnailExt = '.' + thumbnailFileInfo.name.split('.').pop()!.toLowerCase()
+      const thumbnailMimeType = VALID_IMAGE_MIMES[thumbnailExt] || 'image/png'
 
-      const address = await lucid.wallet().address()
+      // Format the files array according to CIP-25
+      const formattedFiles = selectedFiles.map((file) => {
+        const extension = '.' + file.name.split('.').pop()!.toLowerCase()
+        return {
+          name: file.customName || file.name,
+          mediaType: VALID_IMAGE_MIMES[extension] || 'image/png',
+          src: `ipfs://${file.url}`,
+          ...(file.traits?.length
+            ? {
+                properties: file.traits.reduce(
+                  (acc, trait) => ({
+                    ...acc,
+                    [trait.key]: trait.value,
+                  }),
+                  {},
+                ),
+              }
+            : {}),
+        }
+      })
 
-      const newFiles = selectedFiles.map((file) => ({
-        mediaType:
-          VALID_IMAGE_MIMES[file.name.split('.').pop()?.toLowerCase() || ''] || 'image/png',
-        name: file.customName || file.name, // Use customName if available
-        src: 'ipfs://' + file.url,
-        ...(file.traits?.length
-          ? { traits: file.traits.map((trait) => ({ [trait.key]: trait.value })) }
-          : {}),
-      }))
-
-      // Update the metadata construction with console logs
+      // Construct the metadata according to CIP-25
       const metadata = {
+        version: '1.0',
         [selectedPolicy.policyId]: {
-          name: nftName,
-          description: [nftDescription] as ReadonlyArray<string>,
-          image: 'ipfs://' + thumbnailImage,
-          mediaType: (() => {
-            const thumbnailFile = selectedFiles.find((file) => file.url === thumbnailImage)
-            if (!thumbnailFile) return 'image/png'
-            const extension = '.' + thumbnailFile.name.split('.').pop()!.toLowerCase()
-            const mimeType = VALID_IMAGE_MIMES[extension]
-            console.log('Thumbnail extension:', extension)
-            console.log('Detected MIME type:', mimeType)
-            return mimeType || 'image/png'
-          })(),
-          files: newFiles,
+          [fromText(nftName)]: {
+            name: nftName,
+            image: `ipfs://${thumbnailImage}`,
+            mediaType: thumbnailMimeType,
+            description: nftDescription,
+            files: formattedFiles,
+          },
         },
-      } as const
+      }
+
+      console.log('Metadata:', metadata)
+      const address = await lucid.wallet().address()
 
       // Transaction to mint the NFT
       const tx = await lucid
@@ -480,10 +488,9 @@ export default function Poas() {
         .mintAssets({
           [selectedPolicy.policyId + fromText(nftName)]: 1n,
         })
-        .attachMetadata(721, metadata) // Attach the Uint8Array metadata with the label 721
-        .validTo(Date.now() + 1200000) // 20 minutes for the user to sign the tx
+        .attachMetadata(721, metadata)
+        .validTo(Date.now() + 1200000)
         .pay.ToAddress(address, { [selectedPolicy.policyId + fromText(nftName)]: 1n })
-        // .pay.ToAddress(donationAddress, { lovelace: 1000000n })
         .attach.MintingPolicy(
           await createMintingPolicy(
             lucid,
