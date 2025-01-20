@@ -1591,6 +1591,12 @@ export default function Poas() {
                     : ''
                 }`}
                 onClick={() => selectPinataFile(file, false)}
+                onTouchEnd={(e) => {
+                  e.preventDefault() // Prevent default touch behavior
+                  selectPinataFile(file, false)
+                }}
+                role="button"
+                tabIndex={0}
               >
                 <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
                   <div className="flex flex-1 flex-col space-y-1">
