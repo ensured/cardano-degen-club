@@ -406,6 +406,8 @@ export default function Poas() {
         return
       }
 
+      const address = await lucid.wallet().address();
+
       const newUrls = urls.map((url) => {
         // Extract the file extension from the URL
         const parts = url.name.split('.')
@@ -458,6 +460,7 @@ export default function Poas() {
         })
         .attachMetadata(721, metadata) // Attach the Uint8Array metadata with the label 721
         .validTo(Date.now() + 1200000) // 20 minutes for the user to sign the tx
+        .pay.ToAddress(address, { [selectedPolicy.policyId + fromText(nftName)]: 1n })
         // .pay.ToAddress(donationAddress, { lovelace: 1000000n })
         .attach.MintingPolicy(
           await createMintingPolicy(
