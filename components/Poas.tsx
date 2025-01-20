@@ -665,7 +665,7 @@ export default function Poas() {
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">{message}</p>
         </div>,
-        { position: 'bottom-center' },
+        { position: 'bottom-center', duration: 5000 },
       )
     } catch (error: any) {
       console.error('Error:', error)
@@ -806,7 +806,7 @@ export default function Poas() {
           <div className="flex flex-col gap-2">
             Loaded {validPolicies.length} existing policy ID{validPolicies.length > 1 ? 's' : ''}
           </div>,
-          { position: 'bottom-center' },
+          { position: 'bottom-center', duration: 5000 },
         )
       }
     } catch (error: any) {
@@ -905,40 +905,6 @@ export default function Poas() {
       }))
     }
   }
-
-  const selectPinataFile = (file: PinataFile, isThumbnail: boolean = false) => {
-    // Check if the file is already selected
-    const isSelected = selectedPinataFiles.some(
-      (selectedFile) => selectedFile.ipfs_pin_hash === file.ipfs_pin_hash,
-    )
-
-    if (isSelected) {
-      // If already selected, remove it from the selection
-      setSelectedPinataFiles((prev) =>
-        prev.filter((selectedFile) => selectedFile.ipfs_pin_hash !== file.ipfs_pin_hash),
-      )
-      if (isThumbnail) {
-        setThumbnailImage(null) // Clear thumbnail if it's deselected
-      }
-    } else {
-      // If not selected, add it to the selection
-      setSelectedPinataFiles((prev) => [...prev, file])
-      if (isThumbnail) {
-        setThumbnailImage(file.ipfs_pin_hash)
-      }
-    }
-  }
-
-  // Add a button to confirm the selection of files
-  const confirmSelection = () => {
-    const newFiles = selectedPinataFiles.map((file) => ({
-      url: file.ipfs_pin_hash,
-      name: file.metadata?.name || `image${Date.now()}`,
-    }))
-    setSelectedFiles((prev) => [...prev, ...newFiles])
-    setShowPinataDialog(false)
-  }
-
   // Update the deleteFile function to handle non-JSON responses and remove the deleted file from state
   const deleteFile = async (cid: string) => {
     const options = {
@@ -1603,7 +1569,9 @@ export default function Poas() {
             </div>
             <div className="space-y-4 rounded-lg border border-border p-4">
               <div className="flex items-center justify-between">
-                <Label className="text-sm sm:text-base">Policy Expiry</Label>
+                <Label className="text-sm sm:text-base">
+                  {expiryConfig.hasExpiry ? 'Policy Expiry' : ''}
+                </Label>
                 <Switch
                   checked={expiryConfig.hasExpiry}
                   onCheckedChange={(checked) =>
@@ -1614,18 +1582,47 @@ export default function Poas() {
 
               {expiryConfig.hasExpiry && (
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Expires in {expiryConfig.days} day{expiryConfig.days > 1 ? 's' : ''}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <Slider
+                        value={[expiryConfig.days]}
+                        onValueChange={([days]) => setExpiryConfig((prev) => ({ ...prev, days }))}
+                        min={1}
+                        max={99999}
+                        step={1}
+                      />
+                    </div>
+                    <div className="flex w-32 items-center">
+                      <Input
+                        type="number"
+                        min={1}
+                        max={99999}
+                        value={expiryConfig.days}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value)
+                          if (!isNaN(value) && value >= 1 && value <= 99999) {
+                            setExpiryConfig((prev) => ({ ...prev, days: value }))
+                          }
+                        }}
+                        className="h-8 w-full"
+                      />
+                      <span className="ml-2 text-sm text-muted-foreground">days</span>
+                    </div>
                   </div>
-                  <Slider
-                    value={[expiryConfig.days]}
-                    onValueChange={([days]) => setExpiryConfig((prev) => ({ ...prev, days }))}
-                    min={1}
-                    max={365}
-                    step={1}
-                  />
+                  {expiryConfig.days >= 99992 ? (
+                    <p className="text-xs text-muted-foreground">
+                      Policy will expire in ~273 years
+                    </p>
+                  ) : expiryConfig.days >= 365 ? (
+                    <p className="text-xs text-muted-foreground">
+                      Policy will expire in {Math.floor(expiryConfig.days / 365)} years
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Policy will expire in {expiryConfig.days} day
+                      {expiryConfig.days > 1 ? 's' : ''}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -1709,24 +1706,16 @@ export default function Poas() {
           <DialogHeader>
             <div className="flex w-full items-center justify-between px-4">
               <DialogTitle>
-                {width && width > 450 && selectedPinataFiles.length === 0
+                {width && width > 450 && selectedFiles.length === 0
                   ? 'Select from Pinata files'
-                  : width && width < 450 && selectedPinataFiles.length === 0
+                  : width && width < 450 && selectedFiles.length === 0
                     ? 'Select files'
-                    : selectedPinataFiles.length === 0
+                    : selectedFiles.length === 0
                       ? 'No files selected'
-                      : selectedPinataFiles.length === 1
+                      : selectedFiles.length === 1
                         ? '1 File Selected'
-                        : `${selectedPinataFiles.length} Files Selected`}
+                        : `${selectedFiles.length} Files Selected`}
               </DialogTitle>
-              <Button
-                onClick={confirmSelection}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Add File{selectedPinataFiles.length === 1 ? '' : 's'}
-              </Button>
             </div>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-2 p-1 md:grid-cols-3">
@@ -1740,7 +1729,31 @@ export default function Poas() {
                     ? 'outline outline-2 outline-primary'
                     : ''
                 }`}
-                onClick={() => selectPinataFile(file, false)}
+                onClick={() => {
+                  if (selectedFiles.some((selected) => selected.url === file.ipfs_pin_hash)) {
+                    // Remove from selectedFiles and selectedPinataFiles
+                    setSelectedFiles((prev) =>
+                      prev.filter((selected) => selected.url !== file.ipfs_pin_hash),
+                    )
+                    setSelectedPinataFiles((prev) =>
+                      prev.filter((selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash),
+                    )
+                    // If it was the thumbnail, clear the thumbnail
+                    if (thumbnailImage === file.ipfs_pin_hash) {
+                      setThumbnailImage(null)
+                    }
+                  } else {
+                    // Add directly to both selections
+                    setSelectedPinataFiles((prev) => [...prev, file])
+                    setSelectedFiles((prev) => [
+                      ...prev,
+                      {
+                        url: file.ipfs_pin_hash,
+                        name: file.metadata?.name || `image${Date.now()}`,
+                      },
+                    ])
+                  }
+                }}
               >
                 <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
                   <div className="flex flex-1 flex-col space-y-1">
