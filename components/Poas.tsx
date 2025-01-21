@@ -487,8 +487,6 @@ export default function Poas() {
         const stakeAddress = rewardAddresses[0]
 
         if (stakeAddress && stakeAddress !== currentStakeAddress) {
-          console.log('Stake address changed from:', currentStakeAddress, 'to:', stakeAddress)
-
           setCurrentStakeAddress(stakeAddress)
           setSelectedPolicy(null)
           setPolicyIds([])
