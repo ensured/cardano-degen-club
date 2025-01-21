@@ -2025,7 +2025,7 @@ export default function Poas() {
                   {selectedForDeletion.length > 0 ? 'these files' : 'this file'} from Pinata will
                   break any NFTs that use{' '}
                   {selectedForDeletion.length > 0 ? "these files'" : "this file's"} IPFS link. The
-                  NFT's metadata will still point to
+                  NFT&apos;s metadata will still point to
                   {selectedForDeletion.length > 0 ? 'these' : 'this'} IPFS{' '}
                   {selectedForDeletion.length > 0 ? 'addresses' : 'address'}, but the content will
                   no longer be available through Pinata.
