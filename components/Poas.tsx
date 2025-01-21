@@ -286,6 +286,7 @@ export default function Poas() {
     hasExpiry: true,
     days: 1,
   })
+  const [mintQuantity, setMintQuantity] = useState<number>(1)
 
   const { width } = useWindowSize()
 
@@ -486,11 +487,13 @@ export default function Poas() {
       const tx = await lucid
         .newTx()
         .mintAssets({
-          [selectedPolicy.policyId + fromText(nftName)]: 1n,
+          [selectedPolicy.policyId + fromText(nftName)]: BigInt(mintQuantity),
         })
         .attachMetadata(721, metadata)
         .validTo(Date.now() + 1200000)
-        .pay.ToAddress(address, { [selectedPolicy.policyId + fromText(nftName)]: 1n })
+        .pay.ToAddress(address, {
+          [selectedPolicy.policyId + fromText(nftName)]: BigInt(mintQuantity),
+        })
         .attach.MintingPolicy(
           await createMintingPolicy(
             lucid,
@@ -1682,6 +1685,31 @@ export default function Poas() {
                   onChange={(e) => setNftDescription(e.target.value)}
                   className="w-full"
                 />
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="mint-quantity" className="text-sm font-medium">
+                  Quantity to Mint
+                </label>
+                <Input
+                  id="mint-quantity"
+                  type="number"
+                  min="1"
+                  max="42069"
+                  value={mintQuantity}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value)
+                    if (!isNaN(value) && value >= 1 && value <= 42069) {
+                      setMintQuantity(value)
+                    } else {
+                      toast.error('Quantity must be between 1 and 42069', {
+                        position: 'bottom-center',
+                      })
+                    }
+                  }}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">Enter a number between 1 and 42069</p>
               </div>
 
               <Button3D
