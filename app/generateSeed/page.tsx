@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ChevronDown } from 'lucide-react'
 
-const page = () => {
+const Page = () => {
   const [mnemonic, setMnemonic] = useState<string>('')
   const [wordCount, setWordCount] = useState<128 | 160 | 192 | 256>(256)
   const [hasCopied, setHasCopied] = useState(false)
@@ -157,4 +157,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
