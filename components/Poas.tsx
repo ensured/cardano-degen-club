@@ -566,6 +566,8 @@ export default function Poas() {
         return
       }
 
+      const address = await lucid.wallet().address()
+
       // Get the thumbnail file info
       const thumbnailFileInfo = selectedFiles.find((file) => file.url === thumbnailImage)
       if (!thumbnailFileInfo) {
@@ -598,7 +600,7 @@ export default function Poas() {
         }
       })
 
-      // Construct the metadata according to CIP-25
+      // Construct the metadata according to CIP-25 (version 1.0)
       const metadata = {
         [selectedPolicy.policyId]: {
           [nftName]: {
@@ -610,9 +612,6 @@ export default function Poas() {
           },
         },
       }
-
-      console.log(metadata)
-      const address = await lucid.wallet().address()
 
       // Transaction to mint the NFT
       const tx = await lucid
