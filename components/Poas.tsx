@@ -40,6 +40,7 @@ import {
 import { Slider } from './ui/slider'
 import { Switch } from './ui/switch'
 import { Skeleton } from '@/components/ui/skeleton'
+import { WalletState } from '@/hooks/useWalletConnect'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -286,6 +287,38 @@ const FileGridSkeleton = () => {
     </div>
   )
 }
+
+const ImageWithFallback = ({
+  src,
+  alt,
+  ...props
+}: {
+  src: string
+  alt: string
+  [key: string]: any
+}) => {
+  const [error, setError] = useState(false)
+
+  return error ? (
+    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-muted/30">
+      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+        <AlertCircle className="h-6 w-6" />
+        <span className="text-xs">Failed to load image</span>
+      </div>
+    </div>
+  ) : (
+    <Image
+      src={src}
+      alt={alt}
+      width={200}
+      height={200}
+      className="h-32 w-full rounded-lg object-contain"
+      onError={() => setError(true)}
+      {...props}
+    />
+  )
+}
+
 export default function Poas() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
@@ -331,6 +364,7 @@ export default function Poas() {
   const [mintQuantity, setMintQuantity] = useState<number>(1)
   const [selectedForDeletion, setSelectedForDeletion] = useState<string[]>([])
   const [isMultiDeleteMode, setIsMultiDeleteMode] = useState(false)
+  const [currentStakeAddress, setCurrentStakeAddress] = useState<string | null>(null)
 
   const { width } = useWindowSize()
 
@@ -347,7 +381,6 @@ export default function Poas() {
     return `${daysRemaining} days left`
   }
 
-  // Add function to check step completion
   const isStepComplete = (step: number) => {
     switch (step) {
       case 1:
@@ -363,66 +396,53 @@ export default function Poas() {
     }
   }
 
-  // Replace/combine existing step advancement useEffects with this one
   useEffect(() => {
-    // Step 1 -> 2: When API keys are entered
     if (currentStep === 1 && blockfrostKey && pinataJWT) {
       setCurrentStep(2)
       setOpenSections([2])
-    }
-    // Step 2 -> 3: When URL and thumbnailImage is obtained
-    else if (currentStep === 2 && selectedFiles.length > 0 && thumbnailImage) {
+    } else if (currentStep === 2 && selectedFiles.length > 0 && thumbnailImage) {
       setCurrentStep(3)
       setOpenSections([3])
+    } else if (currentStep === 3 && selectedPolicy) {
+      setCurrentStep(4)
+      setOpenSections([4])
     }
-    // // Step 3 -> 4: When policy is selected
-    // else if (currentStep === 3 && selectedPolicyId) {
-    // 	setCurrentStep(4)
-    // 	setOpenSections([4])
-    // }
   }, [blockfrostKey, pinataJWT, selectedFiles, thumbnailImage, currentStep])
 
   // Load all saved data when component mounts
   useEffect(() => {
-    // Load JWT
     const savedJWT = localStorage.getItem('pinataJWT')
     if (savedJWT) setPinataJWT(savedJWT)
 
-    // Load Blockfrost key
     const savedBlockfrost = localStorage.getItem('blockfrostKey')
     if (savedBlockfrost) setBlockfrostKey(savedBlockfrost)
 
-    // If both keys exist, start at step 2
     if (savedJWT && savedBlockfrost) {
       setCurrentStep(2)
       setOpenSections([2])
     }
-  }, [])
+  }, [walletState.wallet])
 
-  // Save JWT whenever it changes
   const handleJWTChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setPinataJWT(value)
     localStorage.setItem('pinataJWT', value)
   }
 
-  // Add handler for Blockfrost key changes
   const handleBlockfrostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setBlockfrostKey(value)
     localStorage.setItem('blockfrostKey', value)
   }
 
-  // Automatically load policies when API is available
   useEffect(() => {
     const initializeWallet = async () => {
       if (walletState.wallet) {
         try {
-          console.log('Wallet is available:', walletState.wallet, walletState.balance)
-          const newApi = await walletState.wallet.enable()
-          setApi(newApi)
+          // connect to the wallet
+          setApi(walletState.api)
 
-          // Only initialize Lucid if we have a Blockfrost key
+          // initialize lucid and set it in state
           if (blockfrostKey) {
             const { Lucid, Blockfrost } = await getLucid()
             const lucidInstance = await Lucid(
@@ -432,7 +452,7 @@ export default function Poas() {
               ),
               CARDANO_NETWORK,
             )
-            lucidInstance.selectWallet.fromAPI(newApi)
+            lucidInstance.selectWallet.fromAPI(walletState.api!)
             setLucid(lucidInstance)
           }
         } catch (error) {
@@ -449,13 +469,97 @@ export default function Poas() {
           }
         }
       } else {
-        console.log('Wallet is not available.')
+        toast.info('no wallet connected', { position: 'bottom-center' })
       }
       setInitializing(false)
     }
 
     initializeWallet()
   }, [walletState.wallet, blockfrostKey])
+
+  // Add polling effect to check stake address
+  useEffect(() => {
+    if (!walletState.api) return
+
+    const checkStakeAddressAndReconnect = async () => {
+      try {
+        const rewardAddresses = await walletState.api.getRewardAddresses()
+        const stakeAddress = rewardAddresses[0]
+
+        if (stakeAddress && stakeAddress !== currentStakeAddress) {
+          console.log('Stake address changed from:', currentStakeAddress, 'to:', stakeAddress)
+
+          setCurrentStakeAddress(stakeAddress)
+          setSelectedPolicy(null)
+          setPolicyIds([])
+
+          toast.info('Wallet account changed', { position: 'bottom-center' })
+
+          // Reconnect Lucid if needed
+          if (blockfrostKey && walletState.api) {
+            try {
+              const { Lucid, Blockfrost } = await getLucid()
+              const lucidInstance = await Lucid(
+                new Blockfrost(
+                  `https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0`,
+                  blockfrostKey,
+                ),
+                CARDANO_NETWORK,
+              )
+              lucidInstance.selectWallet.fromAPI(walletState.api)
+              setLucid(lucidInstance)
+            } catch (error) {
+              console.error('Error reconnecting Lucid:', error)
+            }
+          }
+        }
+      } catch (error) {
+        console.log('error', error)
+        if (error instanceof Error && error.message.includes('account changed')) {
+          if (currentStakeAddress) {
+            console.log('Account change detected')
+            setSelectedPolicy(null)
+            setPolicyIds([])
+          }
+        } else {
+          console.error('Error checking stake address:', error)
+        }
+      }
+    }
+
+    // let isChecking = false
+    // const intervalId = setInterval(async () => {
+    //   if (!isChecking) {
+    //     isChecking = true
+    //     console.log('Checking stake address...')
+    //     await checkStakeAddressAndReconnect()
+    //     isChecking = false
+    //   }
+    // }, 5000)
+
+    // Initial check
+    checkStakeAddressAndReconnect()
+
+    // return () => clearInterval(intervalId)
+  }, [api, currentStakeAddress, blockfrostKey, walletState.api])
+
+  // Remove the duplicate wallet checking effect and replace with:
+  useEffect(() => {
+    const handleWalletStateChange = (event: CustomEvent<WalletState>) => {
+      // Handle any UI updates needed when wallet state changes
+      if (event.detail.stakeAddress !== currentStakeAddress) {
+        setCurrentStakeAddress(event.detail.stakeAddress)
+        setSelectedPolicy(null)
+        setPolicyIds([])
+      }
+    }
+
+    window.addEventListener('walletStateChanged', handleWalletStateChange as EventListener)
+
+    return () => {
+      window.removeEventListener('walletStateChanged', handleWalletStateChange as EventListener)
+    }
+  }, [currentStakeAddress])
 
   const mintNFT = async (
     lucid: LucidEvolution,
@@ -467,11 +571,7 @@ export default function Poas() {
   ) => {
     setMinting(true)
     try {
-      console.log('Starting NFT minting process...')
-      const currentSlot = lucid.currentSlot()
-
       const epochData = await getEpochData(CARDANO_NETWORK)
-      console.log('Epoch Data:', epochData)
 
       const { fromText } = await getScriptUtils()
 
@@ -524,8 +624,6 @@ export default function Poas() {
           },
         },
       }
-
-      console.log('Metadata:', metadata)
       const address = await lucid.wallet().address()
 
       // Transaction to mint the NFT
@@ -614,7 +712,6 @@ export default function Poas() {
         })
 
         const response = await uploadRequest.json()
-        console.log('Upload Response:', response)
 
         if (!response.IpfsHash) {
           throw new Error(`Unexpected response format for ${file.name}: IpfsHash not found`)
@@ -735,7 +832,7 @@ export default function Poas() {
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">{message}</p>
         </div>,
-        { position: 'bottom-center', duration: 5000 },
+        { position: 'bottom-center', duration: 6000 },
       )
     } catch (error: any) {
       console.error('Error:', error)
@@ -828,7 +925,7 @@ export default function Poas() {
           .map((policy) => [policy.policyId, policy]),
       )
 
-      const balance = await api.getBalance()
+      const balance = await walletState.api.getBalance()
       if (Number(balance) < 1000000) {
         toast.error('Insufficient balance, please add funds to your wallet', {
           position: 'bottom-center',
@@ -876,7 +973,7 @@ export default function Poas() {
           <div className="flex flex-col gap-2">
             Loaded {validPolicies.length} existing policy ID{validPolicies.length > 1 ? 's' : ''}
           </div>,
-          { position: 'bottom-center', duration: 5000 },
+          { position: 'bottom-center', duration: 6000 },
         )
       }
     } catch (error: any) {
@@ -930,8 +1027,8 @@ export default function Poas() {
         setShowPinataDialog(true)
       }
     } catch (error: any) {
-      console.error('Error loading files:', error)
-      toast.error('Failed to load files: ' + error.message, { position: 'bottom-center' })
+      console.warn('Error loading files: ' + error.message)
+      toast.error('Failed to load files', { position: 'bottom-center' })
     } finally {
       setLoadingFiles(false)
     }
@@ -1254,7 +1351,11 @@ export default function Poas() {
                 onClick={() => loadPinataFiles(1)}
                 variant="outline"
               >
-                {loadingFiles ? 'Loading Files...' : 'Browse Uploaded Files'}
+                {loadingFiles ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  'Browse Uploaded Files'
+                )}
               </Button3D>
 
               <div className="flex gap-4">
@@ -1304,12 +1405,9 @@ export default function Poas() {
                         >
                           <div className="flex flex-1 flex-col space-y-1">
                             <div className="relative">
-                              <Image
+                              <ImageWithFallback
                                 src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
                                 alt={fileInfo.name}
-                                width={200}
-                                height={200}
-                                className="h-32 w-full rounded-lg object-contain transition-transform group-hover:scale-105"
                               />
                               {thumbnailImage === fileInfo.url && (
                                 <div className="absolute left-2 top-2 rounded-full bg-primary px-2 py-1 text-xs text-primary-foreground">
@@ -1485,7 +1583,7 @@ export default function Poas() {
                                       policy.
                                     </p>
                                   </div>,
-                                  { position: 'bottom-center', duration: 5000 },
+                                  { position: 'bottom-center', duration: 6000 },
                                 )
 
                                 // Remove expired policy from state
@@ -1566,7 +1664,7 @@ export default function Poas() {
                                       policy.
                                     </p>
                                   </div>,
-                                  { position: 'bottom-center', duration: 5000 },
+                                  { position: 'bottom-center', duration: 6000 },
                                 )
 
                                 setPolicyIds((prev) =>
@@ -1842,13 +1940,55 @@ export default function Poas() {
               {pinataResponse.rows.map((file) => (
                 <div
                   key={file.ipfs_pin_hash}
-                  className={`group relative rounded-md ${
+                  className={`group relative rounded-lg ${
                     selectedPinataFiles.some(
                       (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
                     )
                       ? 'outline outline-2 outline-primary'
                       : ''
                   }`}
+                  onClick={() => {
+                    if (isMultiDeleteMode) {
+                      // Handle multi-delete selection
+                      setSelectedForDeletion((prev) =>
+                        prev.includes(file.ipfs_pin_hash)
+                          ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
+                          : [...prev, file.ipfs_pin_hash],
+                      )
+                    } else {
+                      // Handle file selection
+                      setSelectedPinataFiles((prev) => {
+                        const isSelected = prev.some(
+                          (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                        )
+                        if (isSelected) {
+                          return prev.filter(
+                            (selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash,
+                          )
+                        } else {
+                          return [...prev, file]
+                        }
+                      })
+
+                      // Also update selectedFiles state with the file info
+                      const fileInfo = {
+                        url: file.ipfs_pin_hash,
+                        name: file.metadata?.name || file.name || file.ipfs_pin_hash,
+                        date_pinned: file.date_pinned,
+                      }
+
+                      setSelectedFiles((prev) => {
+                        const isSelected = prev.some(
+                          (selected) => selected.url === file.ipfs_pin_hash,
+                        )
+                        if (isSelected) {
+                          return prev.filter((selected) => selected.url !== file.ipfs_pin_hash)
+                        } else {
+                          return [...prev, fileInfo]
+                        }
+                      })
+                    }
+                  }}
                 >
                   <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-2 sm:p-4">
                     {isMultiDeleteMode && (
@@ -1868,12 +2008,9 @@ export default function Poas() {
                     )}
                     <div className="flex flex-1 flex-col space-y-1">
                       <div className="relative">
-                        <Image
+                        <ImageWithFallback
                           src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
                           alt={file.metadata?.name || 'Pinata file'}
-                          width={200}
-                          height={200}
-                          className="h-32 w-full rounded-lg object-contain"
                         />
                       </div>
 
@@ -1913,7 +2050,7 @@ export default function Poas() {
 
           {/* Update the pagination section */}
           <div className="flex w-full items-center justify-center border-t border-border py-1.5">
-            <Pagination className="!mx-0 overflow-x-auto !px-0">
+            <Pagination className="!mx-0 overflow-x-auto !px-0 sm:!px-1">
               <PaginationContent className="flex-nowrap">
                 {/* Only show Previous button if we're not on page 1 */}
                 {pagination.currentPage > 1 ? (
@@ -1926,7 +2063,7 @@ export default function Poas() {
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationPrevious className="!px-1 !pl-0.5 !pr-0.5" />
+                    <PaginationPrevious className="!px-1 !pl-0.5 !pr-0.5 sm:!px-1 sm:!pl-0.5 sm:!pr-0.5" />
                   </PaginationItem>
                 )}
 
@@ -1952,7 +2089,7 @@ export default function Poas() {
                           <PaginationLink
                             onClick={() => handlePageChange(pageNumber)}
                             isActive={pageNumber === pagination.currentPage}
-                            className="!h-6 !w-6"
+                            className="!h-6 !w-6 sm:!h-8 sm:!w-8"
                           >
                             {pageNumber}
                           </PaginationLink>
@@ -1966,14 +2103,14 @@ export default function Poas() {
                 pinataResponse.rows.length === pagination.itemsPerPage ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationNext
-                      className="!px-1 !pl-0.5 !pr-0.5"
+                      className="!px-1 !pl-0.5 !pr-0.5 sm:!px-1 sm:!pl-0.5 sm:!pr-0.5"
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationNext className="!px-1 !pl-0.5 !pr-0.5" />
+                    <PaginationNext className="!px-1 !pl-0.5 !pr-0.5 sm:!px-1 sm:!pl-0.5 sm:!pr-0.5" />
                   </PaginationItem>
                 )}
               </PaginationContent>
@@ -1992,7 +2129,7 @@ export default function Poas() {
                 ),
             ).length === 0 && (
               <div className="flex flex-col items-center gap-2 p-8 text-center text-muted-foreground">
-                <AlertCircle className="h-8 w-8" />
+                <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10" />
                 <p>No supported image files found</p>
                 <p className="text-sm">Supported formats: {formatSupportedExtensions()}</p>
               </div>

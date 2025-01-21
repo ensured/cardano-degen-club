@@ -8,6 +8,7 @@ import { isNaN } from '@/utils/helper'
 export interface WalletState {
   network: number | null
   wallet: any | null
+  api: any | null
   supportedWallets: string[]
   walletIcon: string | null
   walletName: string | null
@@ -24,6 +25,7 @@ export interface WalletState {
 const initialWalletState: WalletState = {
   network: null,
   wallet: null,
+  api: null,
   supportedWallets: [],
   walletIcon: null,
   walletName: null,
@@ -55,12 +57,93 @@ export function useWalletConnect() {
   const [walletState, setWalletState] = useState<WalletState>(initialWalletState)
   const [loading, setLoading] = useState(false)
 
+  // Auto-connect to last used wallet on page load
   useEffect(() => {
-    const lastWallet = localStorage.getItem('lastConnectedWallet')
-    if (lastWallet) {
+    const lastWallet = localStorage.getItem('lastWallet')
+    if (lastWallet && !walletState.api) {
       connect(lastWallet)
     }
   }, [])
+
+  // Check for wallet account changes
+  useEffect(() => {
+    if (!walletState.api) return
+
+    let isChecking = false
+    const checkWalletState = async () => {
+      if (isChecking) return
+
+      try {
+        isChecking = true
+        const api = walletState.api
+
+        // Get stake address first
+        const stakeAddresses = await api.getRewardAddresses()
+        const decodedStakeAddr = decodeHexAddress(stakeAddresses[0])
+
+        // Only proceed if stake address has changed
+        if (decodedStakeAddr !== walletState.stakeAddress) {
+          // Get other wallet details
+          const [walletAddresses, balanceResponse, networkId] = await Promise.all([
+            api.getUsedAddresses(),
+            api.getBalance(),
+            api.getNetworkId(),
+          ])
+
+          const primaryAddress =
+            walletAddresses.length > 0 ? walletAddresses[0] : (await api.getUnusedAddresses())[0]
+
+          const decodedAddress = decodeHexAddress(primaryAddress)
+          if (!decodedAddress) return
+
+          // Process balance
+          const balanceBytes = Buffer.from(balanceResponse, 'hex')
+          const decodedBalance = Number(
+            (cborDecode(new Uint8Array(balanceBytes).buffer)[0] / 1000000).toFixed(0),
+          )
+
+          // Fetch handle only when stake address changes
+          const handleData = await getAdaHandle(decodedStakeAddr)
+
+          const newWalletState = {
+            ...walletState,
+            walletAddress: decodedAddress,
+            balance: isNaN(decodedBalance) ? 0 : decodedBalance,
+            networkId,
+            stakeAddress: decodedStakeAddr,
+            adaHandle: {
+              handle: handleData?.default_handle,
+              total_handles: handleData?.total_handles,
+            },
+          }
+
+          setWalletState(newWalletState)
+
+          // Emit a custom event when wallet state changes
+          window.dispatchEvent(
+            new CustomEvent('walletStateChanged', {
+              detail: newWalletState,
+            }),
+          )
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('account changed')) {
+          // Attempt to reconnect with the same wallet
+          const lastWallet = localStorage.getItem('lastWallet')
+          if (lastWallet) {
+            await connect(lastWallet)
+          }
+        } else {
+          console.error('Error checking wallet state:', error)
+        }
+      } finally {
+        isChecking = false
+      }
+    }
+
+    const intervalId = setInterval(checkWalletState, 2000)
+    return () => clearInterval(intervalId)
+  }, [walletState.api, walletState.stakeAddress])
 
   const decodeHexAddress = (hexAddress: string): string => {
     try {
@@ -101,9 +184,10 @@ export function useWalletConnect() {
       const walletInstance = window.cardano?.[walletKey]
       if (!walletInstance || !walletKey || !window.cardano) throw new Error('Wallet not found')
 
-      localStorage.setItem('lastConnectedWallet', walletKey)
-
       const api = await walletInstance.enable()
+
+      // Store wallet name for auto-connect
+      localStorage.setItem('lastWallet', walletKey)
 
       // Get primary address
       const walletAddresses = await api.getUsedAddresses()
@@ -126,13 +210,14 @@ export function useWalletConnect() {
         (cborDecode(new Uint8Array(balanceBytes).buffer)[0] / 1000000).toFixed(0),
       )
 
-      // Get stake address and handle
+      // Get stake address and handle for initial connection
       const decodedStakeAddr = decodeHexAddress(stakeAddress[0])
       const handleData = await getAdaHandle(decodedStakeAddr)
 
       const newWalletState = {
         ...initialWalletState,
         wallet: walletInstance,
+        api: api,
         walletName: walletInstance.name,
         walletAddress: decodedAddress,
         walletIcon: walletInstance.icon,
@@ -145,27 +230,8 @@ export function useWalletConnect() {
         },
       }
 
-      // Check existing auth
-      // const existingAuth = await getWalletAuth(decodedStakeAddr)
-      // if (!('error' in existingAuth)) {
-      // 	setWalletState(newWalletState)
-      // 	return true
-      // }
-
-      // // Request new signature
-      // const token = await signMessage(api, decodedAddress)
-      // if (!token) {
-      // 	toast.error('User declined sign data')
-      // 	return false
-      // }
-
-      // await storeWalletAuth(decodedStakeAddr, Date.now())
-      // const authResponse = await getWalletAuth(decodedStakeAddr)
-      // if (!('error' in authResponse) && authResponse.expiresAt) {
-      // 	setExpiresAt(authResponse.expiresAt)
-      // }
-
-      setWalletState((prev) => ({ ...prev, ...newWalletState }))
+      setWalletState(newWalletState)
+      window.dispatchEvent(new CustomEvent('walletStateChanged', { detail: newWalletState }))
       return true
     } catch (error: any) {
       toast.error(error.message)
@@ -176,7 +242,7 @@ export function useWalletConnect() {
   }
 
   const disconnect = () => {
-    localStorage.removeItem('lastConnectedWallet')
+    localStorage.removeItem('lastWallet')
     setWalletState(initialWalletState)
     setLoading(false)
   }

@@ -17,6 +17,20 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined)
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   // const [expiresAt, setExpiresAt] = useState<string | null>(null)
   const wallet = useWalletConnect()
+
+  useEffect(() => {
+    const handleWalletStateChange = (event: CustomEvent<WalletState>) => {
+      // Update the entire wallet state when changes occur
+      wallet.walletState = event.detail
+    }
+
+    window.addEventListener('walletStateChanged', handleWalletStateChange as EventListener)
+
+    return () => {
+      window.removeEventListener('walletStateChanged', handleWalletStateChange as EventListener)
+    }
+  }, [])
+
   // const [timeLeft, setTimeLeft] = useState<string | null>(null)
 
   // useEffect(() => {
