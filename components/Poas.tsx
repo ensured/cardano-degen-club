@@ -259,26 +259,24 @@ interface ExpiryConfig {
   days: number
 }
 
-// Add this interface near other interfaces
-interface PinataMetadataFilter {
-  name?: string
-  keyvalues?: Record<string, { value: string; op: 'eq' | 'gt' | 'lt' | 'between' | 'ne' }>
-}
-
 // Add this loading skeleton component
 const FileGridSkeleton = () => {
   return (
-    <div className="grid grid-cols-2 gap-2 p-1 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 md:grid-cols-3">
       {Array.from({ length: 24 }).map((_, index) => (
-        <div key={index} className="flex flex-col space-y-3">
-          <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
-            <div className="flex flex-1 flex-col space-y-3">
-              <Skeleton className="h-32 w-full rounded-lg" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-1/4" />
-                  <Skeleton className="h-8 w-8 rounded-md" />
+        <div key={index} className="group relative">
+          <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-2 sm:p-4">
+            <div className="flex flex-1 flex-col space-y-1">
+              <div className="relative">
+                <Skeleton className="h-32 w-full rounded-lg" />
+              </div>
+              <div className="flex flex-1 flex-col justify-between">
+                <div className="space-y-1">
+                  <Skeleton className="mt-1 h-5 w-full" />
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-7 w-7 rounded-lg" />
+                  </div>
                 </div>
               </div>
             </div>
@@ -288,7 +286,6 @@ const FileGridSkeleton = () => {
     </div>
   )
 }
-
 export default function Poas() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
