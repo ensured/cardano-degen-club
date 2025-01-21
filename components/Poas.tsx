@@ -39,6 +39,7 @@ import {
 } from './ui/pagination'
 import { Slider } from './ui/slider'
 import { Switch } from './ui/switch'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -120,7 +121,7 @@ interface PaginationState {
   itemsPerPage: number
 }
 
-// Update the VALID_IMAGE_MIMES constant to be a Record type
+// Update the VALID_IMAGE_MIMES constant to include HTML
 const VALID_IMAGE_MIMES: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -133,6 +134,8 @@ const VALID_IMAGE_MIMES: Record<string, string> = {
   '.bmp': 'image/bmp',
   '.ico': 'image/x-icon',
   '.apng': 'image/apng',
+  '.html': 'text/html', // Add HTML support
+  '.htm': 'text/html', // Add HTM support
 }
 
 const VALID_IMAGE_EXTENSIONS = [
@@ -148,6 +151,8 @@ const VALID_IMAGE_EXTENSIONS = [
   '.bmp',
   '.ico',
   '.apng',
+  '.html', // Add HTML support
+  '.htm', // Add HTM support
 ]
 
 // Add this constant to define what files can be selected
@@ -158,11 +163,21 @@ const VALID_FILE_ACCEPT = [
   ...VALID_IMAGE_EXTENSIONS.map((ext) => (ext.startsWith('.') ? ext : `.${ext}`)),
 ].join(',')
 
-// Update the formatSupportedExtensions helper to handle special cases
+// Update the formatSupportedExtensions helper to include HTML
 const formatSupportedExtensions = () => {
-  return ['PNG', 'JPG/JPEG', 'GIF', 'SVG', 'WEBP', 'AVIF', 'TIFF/TIF', 'BMP', 'ICO', 'APNG'].join(
-    ', ',
-  )
+  return [
+    'PNG',
+    'JPG/JPEG',
+    'GIF',
+    'SVG',
+    'WEBP',
+    'AVIF',
+    'TIFF/TIF',
+    'BMP',
+    'ICO',
+    'APNG',
+    'HTML/HTM',
+  ].join(', ')
 }
 
 // Update the validation function to be more robust
@@ -244,6 +259,36 @@ interface ExpiryConfig {
   days: number
 }
 
+// Add this interface near other interfaces
+interface PinataMetadataFilter {
+  name?: string
+  keyvalues?: Record<string, { value: string; op: 'eq' | 'gt' | 'lt' | 'between' | 'ne' }>
+}
+
+// Add this loading skeleton component
+const FileGridSkeleton = () => {
+  return (
+    <div className="grid grid-cols-2 gap-2 p-1 md:grid-cols-3">
+      {Array.from({ length: 24 }).map((_, index) => (
+        <div key={index} className="flex flex-col space-y-3">
+          <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
+            <div className="flex flex-1 flex-col space-y-3">
+              <Skeleton className="h-32 w-full rounded-lg" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function Poas() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
@@ -272,7 +317,7 @@ export default function Poas() {
   const [pagination, setPagination] = useState<PaginationState>({
     currentPage: 1,
     totalPages: 1,
-    itemsPerPage: 6,
+    itemsPerPage: 24,
   })
   const [lucid, setLucid] = useState<any | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
@@ -287,6 +332,8 @@ export default function Poas() {
     days: 1,
   })
   const [mintQuantity, setMintQuantity] = useState<number>(1)
+  const [selectedForDeletion, setSelectedForDeletion] = useState<string[]>([])
+  const [isMultiDeleteMode, setIsMultiDeleteMode] = useState(false)
 
   const { width } = useWindowSize()
 
@@ -374,42 +421,44 @@ export default function Poas() {
     const initializeWallet = async () => {
       if (walletState.wallet) {
         try {
-          console.log('Wallet is available:', walletState.wallet, walletState.balance) // Log wallet state
+          console.log('Wallet is available:', walletState.wallet, walletState.balance)
           const newApi = await walletState.wallet.enable()
           setApi(newApi)
 
-          // Initialize Lucid here
-          const { Lucid, Blockfrost } = await getLucid()
-          const lucidInstance = await Lucid(
-            new Blockfrost(
-              `https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0`,
-              blockfrostKey || undefined,
-            ),
-            CARDANO_NETWORK,
-          )
-          lucidInstance.selectWallet.fromAPI(newApi)
-          setLucid(lucidInstance)
-
-          // // Existing testing code...
-          // if (testing) {
-          //   const response = await fetch(copyImagePath.src)
-          //   const blob = await response.blob()
-          //   const file = new File([blob], 'copy.png', { type: 'image/png' })
-          //   setFile(file)
-          //   await uploadFile(file)
-          // }
+          // Only initialize Lucid if we have a Blockfrost key
+          if (blockfrostKey) {
+            const { Lucid, Blockfrost } = await getLucid()
+            const lucidInstance = await Lucid(
+              new Blockfrost(
+                `https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0`,
+                blockfrostKey,
+              ),
+              CARDANO_NETWORK,
+            )
+            lucidInstance.selectWallet.fromAPI(newApi)
+            setLucid(lucidInstance)
+          }
         } catch (error) {
-          console.error('Failed to connect to wallet:', error) // Log error
-        } finally {
-          setInitializing(false)
+          if (error instanceof TypeError) {
+            toast.error('Blockfrost key is not valid', { position: 'bottom-center' })
+          } else {
+            toast.error(
+              'Unexpected error during wallet connection: ' +
+                (error instanceof Error ? error.message : String(error)),
+              {
+                position: 'bottom-center',
+              },
+            )
+          }
         }
       } else {
-        console.log('Wallet is not available or component unmounted.') // Log if wallet is not available
+        console.log('Wallet is not available.')
       }
+      setInitializing(false)
     }
 
     initializeWallet()
-  }, [walletState.wallet])
+  }, [walletState.wallet, blockfrostKey])
 
   const mintNFT = async (
     lucid: LucidEvolution,
@@ -468,7 +517,6 @@ export default function Poas() {
 
       // Construct the metadata according to CIP-25
       const metadata = {
-        version: '1.0',
         [selectedPolicy.policyId]: {
           [fromText(nftName)]: {
             name: nftName,
@@ -509,10 +557,8 @@ export default function Poas() {
       toast.success(`Minted NFT with transaction hash: ${txHash}`, { position: 'bottom-center' })
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error('Error during NFT minting:', error)
-        toast.error('Minting failed: ' + error.message, { position: 'bottom-center' })
+        toast.error(error.message, { position: 'bottom-center' })
       } else {
-        console.error('Unexpected error during NFT minting:', error)
         toast.error('Minting failed: An unexpected error occurred.', { position: 'bottom-center' })
       }
     } finally {
@@ -541,7 +587,25 @@ export default function Poas() {
       const uploadPromises = selectedFiles.map(async (file) => {
         const data = new FormData()
         data.append('file', file)
-        data.append('pinataMetadata', JSON.stringify({ name: file.name }))
+
+        // Add metadata to identify file type
+        const metadata = {
+          name: file.name,
+          keyvalues: {
+            fileType:
+              file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')
+                ? 'html'
+                : 'image',
+            mimeType:
+              file.type ||
+              (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')
+                ? 'text/html'
+                : 'image/png'),
+            extension: file.name.split('.').pop()?.toLowerCase(),
+          },
+        }
+
+        data.append('pinataMetadata', JSON.stringify(metadata))
         data.append('pinataOptions', JSON.stringify({ cidVersion: 0 }))
 
         const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
@@ -562,12 +626,11 @@ export default function Poas() {
 
       // Wait for all uploads to complete
       await Promise.all(uploadPromises)
-      let message = 'Files uploaded successfully. Browse uploaded files to select them.'
-      if (selectedFiles.length > 1) {
-        message = 'Files uploaded successfully. Browse uploaded files to select them.'
-      } else if (selectedFiles.length === 1) {
-        message = 'File uploaded successfully. Browse uploaded files to select it.'
-      }
+
+      let message =
+        selectedFiles.length > 1
+          ? 'Files uploaded successfully. Browse uploaded files to select them.'
+          : 'File uploaded successfully. Browse uploaded files to select it.'
 
       toast.success(message, {
         position: 'bottom-center',
@@ -832,52 +895,38 @@ export default function Poas() {
     try {
       setLoadingFiles(true)
 
-      // Fetch all files at once (or a reasonable large number)
-      const response = await fetch(
-        `https://api.pinata.cloud/data/pinList?status=pinned&pageLimit=1000`,
-        {
-          headers: {
-            Authorization: `Bearer ${pinataJWT}`,
-          },
+      // Build the query URL with metadata filters
+      const queryParams = new URLSearchParams({
+        status: 'pinned',
+        pageLimit: pagination.itemsPerPage.toString(),
+        pageOffset: ((page - 1) * pagination.itemsPerPage).toString(),
+      })
+
+      const response = await fetch(`https://api.pinata.cloud/data/pinList?${queryParams}`, {
+        headers: {
+          Authorization: `Bearer ${pinataJWT}`,
         },
-      )
+      })
 
       if (!response.ok) throw new Error('Failed to fetch files')
 
       const data = await response.json()
 
-      // Filter for valid files
-      const validFiles = data.rows
-        .filter(
-          (file: PinataFile) =>
-            isCIDv0(file.ipfs_pin_hash) &&
-            ((file.mime_type && Object.values(VALID_IMAGE_MIMES).includes(file.mime_type)) ||
-              VALID_IMAGE_EXTENSIONS.some((ext) =>
-                file.metadata?.name?.toLowerCase().endsWith(ext),
-              )),
-        )
-        .sort((a: PinataFile, b: PinataFile) => {
-          return new Date(b.date_pinned).getTime() - new Date(a.date_pinned).getTime()
-        })
-
-      // Calculate pagination
-      const totalPages = Math.ceil(validFiles.length / pagination.itemsPerPage)
-      const startIndex = (page - 1) * pagination.itemsPerPage
-      const endIndex = startIndex + pagination.itemsPerPage
-
-      // Get current page items
-      const currentPageItems = validFiles.slice(startIndex, endIndex)
+      // Sort files by date
+      const sortedFiles = data.rows.sort((a: PinataFile, b: PinataFile) => {
+        return new Date(b.date_pinned).getTime() - new Date(a.date_pinned).getTime()
+      })
 
       setPinataResponse({
-        count: validFiles.length,
-        rows: currentPageItems,
-        filteredRows: validFiles,
+        count: data.count,
+        rows: sortedFiles,
+        filteredRows: sortedFiles,
       })
 
       setPagination((prev) => ({
         ...prev,
         currentPage: page,
-        totalPages,
+        totalPages: Math.ceil(data.count / pagination.itemsPerPage),
       }))
 
       if (page === 1) {
@@ -891,30 +940,12 @@ export default function Poas() {
     }
   }
 
-  // Update the handlePageChange function to prevent invalid navigation
+  // Update the handlePageChange function to fetch new data
   const handlePageChange = (newPage: number) => {
-    if (!pinataResponse.filteredRows) return
-
-    // Prevent going beyond valid pages
     if (newPage < 1 || newPage > pagination.totalPages) return
-
-    const startIndex = (newPage - 1) * pagination.itemsPerPage
-    const endIndex = startIndex + pagination.itemsPerPage
-    const currentPageItems = pinataResponse.filteredRows.slice(startIndex, endIndex)
-
-    // Only update if we have items for this page
-    if (currentPageItems.length > 0) {
-      setPinataResponse((prev) => ({
-        ...prev,
-        rows: currentPageItems,
-      }))
-
-      setPagination((prev) => ({
-        ...prev,
-        currentPage: newPage,
-      }))
-    }
+    loadPinataFiles(newPage)
   }
+
   // Update the deleteFile function to handle non-JSON responses and remove the deleted file from state
   const deleteFile = async (cid: string) => {
     const options = {
@@ -1079,12 +1110,32 @@ export default function Poas() {
     )
   }
 
+  // Add this function near other delete-related functions
+  const handleMultiDelete = async () => {
+    if (selectedForDeletion.length === 0) {
+      toast.error('No files selected for deletion', { position: 'bottom-center' })
+      return
+    }
+
+    setIsConfirmDialogOpen(true)
+  }
+
   if (initializing || loading) {
     return (
-      <div className="flex h-[50vh] items-center justify-center">
+      <div className="flex h-[69vh] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-muted-foreground">Connecting to wallet...</p>
+          <p className="text-muted-foreground">Waiting for wallet...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!walletState.wallet) {
+    return (
+      <div className="flex h-[69vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-muted-foreground">Connect a wallet to get started</p>
         </div>
       </div>
     )
@@ -1580,7 +1631,7 @@ export default function Poas() {
             <div className="space-y-4 rounded-lg border border-border p-4">
               <div className="flex items-center justify-between">
                 <Label className="text-sm sm:text-base">
-                  {expiryConfig.hasExpiry ? 'Policy Expiry' : ''}
+                  {expiryConfig.hasExpiry ? 'Policy Expiry' : 'Policy never expires'}
                 </Label>
                 <Switch
                   checked={expiryConfig.hasExpiry}
@@ -1707,9 +1758,19 @@ export default function Poas() {
                       })
                     }
                   }}
-                  className="w-full"
+                  className={`w-full ${mintQuantity > 1 ? 'border-yellow-500' : ''}`}
                 />
                 <p className="text-xs text-muted-foreground">Enter a number between 1 and 42069</p>
+
+                {mintQuantity > 1 && (
+                  <div className="mt-2 flex items-center gap-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-500">
+                    <AlertCircle className="h-4 w-4" />
+                    <span>
+                      Warning: Minting multiple copies will create a Fungible Token (FT) instead of
+                      a Non-Fungible Token (NFT). Each copy will be identical and interchangeable.
+                    </span>
+                  </div>
+                )}
               </div>
 
               <Button3D
@@ -1751,89 +1812,141 @@ export default function Poas() {
                         ? '1 File Selected'
                         : `${selectedFiles.length} Files Selected`}
               </DialogTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsMultiDeleteMode(!isMultiDeleteMode)
+                    setSelectedForDeletion([])
+                  }}
+                  className={isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''}
+                >
+                  {isMultiDeleteMode ? 'Cancel Delete' : 'Delete Files'}
+                </Button>
+                {isMultiDeleteMode && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleMultiDelete}
+                    disabled={selectedForDeletion.length === 0}
+                  >
+                    Delete Selected ({selectedForDeletion.length})
+                  </Button>
+                )}
+              </div>
             </div>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-2 p-1 md:grid-cols-3">
-            {pinataResponse.rows.map((file) => (
-              <div
-                key={file.ipfs_pin_hash}
-                className={`group relative rounded-md ${
-                  selectedPinataFiles.some(
-                    (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
-                  )
-                    ? 'outline outline-2 outline-primary'
-                    : ''
-                }`}
-                onClick={() => {
-                  if (selectedFiles.some((selected) => selected.url === file.ipfs_pin_hash)) {
-                    // Remove from selectedFiles and selectedPinataFiles
-                    setSelectedFiles((prev) =>
-                      prev.filter((selected) => selected.url !== file.ipfs_pin_hash),
-                    )
-                    setSelectedPinataFiles((prev) =>
-                      prev.filter((selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash),
-                    )
-                    // If it was the thumbnail, clear the thumbnail
-                    if (thumbnailImage === file.ipfs_pin_hash) {
-                      setThumbnailImage(null)
-                    }
-                  } else {
-                    // Add directly to both selections
-                    setSelectedPinataFiles((prev) => [...prev, file])
-                    setSelectedFiles((prev) => [
-                      ...prev,
-                      {
-                        url: file.ipfs_pin_hash,
-                        name: file.metadata?.name || `image${Date.now()}`,
-                      },
-                    ])
-                  }
-                }}
-              >
-                <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
-                  <div className="flex flex-1 flex-col space-y-1">
-                    <div className="relative">
-                      <Image
-                        src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
-                        alt={file.metadata?.name || 'Pinata file'}
-                        width={200}
-                        height={200}
-                        className="h-32 w-full rounded-lg object-contain"
-                      />
-                    </div>
 
-                    <div className="flex flex-1 flex-col justify-between">
-                      <div className="space-y-1">
-                        <span className="block truncate text-sm sm:text-base md:text-lg">
-                          {(() => {
-                            const fullName = file.metadata?.name || file.name || ''
-                            return fullName // Return full name including extension
-                          })()}
-                        </span>
-                        <div className="flex items-center justify-between">
-                          <span className="block text-sm text-muted-foreground sm:text-base md:text-lg">
-                            {timeAgoCompact(new Date(file.date_pinned))}
+          {loadingFiles ? (
+            <FileGridSkeleton />
+          ) : (
+            <div className="grid grid-cols-2 gap-2 p-1 md:grid-cols-3">
+              {pinataResponse.rows.map((file) => (
+                <div
+                  key={file.ipfs_pin_hash}
+                  className={`group relative rounded-md ${
+                    selectedPinataFiles.some(
+                      (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                    )
+                      ? 'outline outline-2 outline-primary'
+                      : ''
+                  }`}
+                  onClick={(e) => {
+                    if (isMultiDeleteMode) {
+                      e.preventDefault()
+                      setSelectedForDeletion((prev) =>
+                        prev.includes(file.ipfs_pin_hash)
+                          ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
+                          : [...prev, file.ipfs_pin_hash],
+                      )
+                    } else {
+                      if (selectedFiles.some((selected) => selected.url === file.ipfs_pin_hash)) {
+                        // Remove from selectedFiles and selectedPinataFiles
+                        setSelectedFiles((prev) =>
+                          prev.filter((selected) => selected.url !== file.ipfs_pin_hash),
+                        )
+                        setSelectedPinataFiles((prev) =>
+                          prev.filter((selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash),
+                        )
+                        // If it was the thumbnail, clear the thumbnail
+                        if (thumbnailImage === file.ipfs_pin_hash) {
+                          setThumbnailImage(null)
+                        }
+                      } else {
+                        // Add directly to both selections
+                        setSelectedPinataFiles((prev) => [...prev, file])
+                        setSelectedFiles((prev) => [
+                          ...prev,
+                          {
+                            url: file.ipfs_pin_hash,
+                            name: file.metadata?.name || `image${Date.now()}`,
+                          },
+                        ])
+                      }
+                    }
+                  }}
+                >
+                  <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
+                    {isMultiDeleteMode && (
+                      <div className="absolute right-6 top-6 z-10">
+                        <div
+                          className={`h-5 w-5 rounded border ${
+                            selectedForDeletion.includes(file.ipfs_pin_hash)
+                              ? 'border-destructive bg-destructive'
+                              : 'border-border bg-background'
+                          } flex items-center justify-center`}
+                        >
+                          {selectedForDeletion.includes(file.ipfs_pin_hash) && (
+                            <Check className="h-4 w-4 text-destructive-foreground" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col space-y-1">
+                      <div className="relative">
+                        <Image
+                          src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
+                          alt={file.metadata?.name || 'Pinata file'}
+                          width={200}
+                          height={200}
+                          className="h-32 w-full rounded-lg object-contain"
+                        />
+                      </div>
+
+                      <div className="flex flex-1 flex-col justify-between">
+                        <div className="space-y-1">
+                          <span className="block truncate text-sm sm:text-base md:text-lg">
+                            {(() => {
+                              const fullName = file.metadata?.name || file.name || ''
+                              return fullName // Return full name including extension
+                            })()}
                           </span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
-                            onClick={(e) => {
-                              e.stopPropagation() // Prevent file selection when clicking delete
-                              setFileToDelete(file.ipfs_pin_hash)
-                              setIsConfirmDialogOpen(true)
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-between">
+                            <span className="block text-sm text-muted-foreground sm:text-base md:text-lg">
+                              {timeAgoCompact(new Date(file.date_pinned))}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                              onClick={(e) => {
+                                e.stopPropagation() // Prevent file selection when clicking delete
+                                setFileToDelete(file.ipfs_pin_hash)
+                                setIsConfirmDialogOpen(true)
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Update the pagination section */}
           <div className="flex w-full items-center justify-center border-t border-border px-4 py-2">
@@ -1899,14 +2012,14 @@ export default function Poas() {
             </Pagination>
           </div>
 
-          {loadingFiles && (
+          {/* {loadingFiles && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/80">
               <div className="flex flex-col items-center gap-2">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
                 <span className="text-sm text-muted-foreground">Loading files...</span>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Add a message if no supported files are found */}
           {pinataResponse.rows.length > 0 &&
@@ -1933,7 +2046,11 @@ export default function Poas() {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
           </DialogHeader>
-          <DialogDescription>Type &ldquo;confirm&ldquo; to delete this file.</DialogDescription>
+          <DialogDescription>
+            {selectedForDeletion.length > 0
+              ? `Type "confirm" to delete ${selectedForDeletion.length} files.`
+              : 'Type "confirm" to delete this file.'}
+          </DialogDescription>
           <div className="rounded-lg border border-destructive/20 bg-gradient-to-b from-destructive/5 to-destructive/10 p-6 shadow-sm">
             <div className="flex items-start gap-4">
               <div className="rounded-full bg-destructive/10 p-2">
@@ -1942,9 +2059,14 @@ export default function Poas() {
               <div className="flex flex-col gap-2">
                 <p className="font-semibold text-destructive">Warning: Permanent Action</p>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  This action cannot be undone. Deleting this file from Pinata will break any NFTs
-                  that use this file&lsquo;s IPFS link. The NFT&lsquo;s metadata will still point to
-                  this IPFS address, but the content will no longer be available through Pinata.
+                  This action cannot be undone. Deleting{' '}
+                  {selectedForDeletion.length > 0 ? 'these files' : 'this file'} from Pinata will
+                  break any NFTs that use{' '}
+                  {selectedForDeletion.length > 0 ? "these files'" : "this file's"} IPFS link. The
+                  NFT's metadata will still point to
+                  {selectedForDeletion.length > 0 ? 'these' : 'this'} IPFS{' '}
+                  {selectedForDeletion.length > 0 ? 'addresses' : 'address'}, but the content will
+                  no longer be available through Pinata.
                 </p>
               </div>
             </div>
@@ -1952,7 +2074,26 @@ export default function Poas() {
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              handleDeleteConfirmation()
+              if (confirmationText.toLowerCase() === 'confirm') {
+                if (selectedForDeletion.length > 0) {
+                  // Delete multiple files
+                  Promise.all(selectedForDeletion.map((hash) => deleteFile(hash)))
+                    .then(() => {
+                      setSelectedForDeletion([])
+                      setIsMultiDeleteMode(false)
+                      setIsConfirmDialogOpen(false)
+                      setConfirmationText('')
+                    })
+                    .catch((error) => {
+                      toast.error('Error deleting files: ' + error.message, {
+                        position: 'bottom-center',
+                      })
+                    })
+                } else {
+                  // Delete single file
+                  handleDeleteConfirmation()
+                }
+              }
             }}
           >
             <Input
@@ -1964,11 +2105,18 @@ export default function Poas() {
             <div className="mt-2 flex justify-end gap-2">
               <Button
                 variant="outline"
-                onClick={() => setIsConfirmDialogOpen(false)} // Close dialog without deleting
+                onClick={() => {
+                  setIsConfirmDialogOpen(false)
+                  setConfirmationText('')
+                }}
               >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleDeleteConfirmation}>
+              <Button
+                variant="destructive"
+                type="submit"
+                disabled={confirmationText.toLowerCase() !== 'confirm'}
+              >
                 Delete
               </Button>
             </div>
