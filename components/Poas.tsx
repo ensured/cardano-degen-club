@@ -1798,21 +1798,21 @@ export default function Poas() {
       )}
 
       <Dialog open={showPinataDialog} onOpenChange={setShowPinataDialog}>
-        <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto">
+        <DialogContent className="max-h-[80vh] w-full max-w-[90vw] overflow-y-auto p-0.5">
           <DialogHeader>
-            <div className="flex w-full items-center justify-between px-4">
-              <DialogTitle>
-                {width && width > 450 && selectedFiles.length === 0
-                  ? 'Select from Pinata files'
-                  : width && width < 450 && selectedFiles.length === 0
-                    ? 'Select files'
-                    : selectedFiles.length === 0
-                      ? 'No files selected'
-                      : selectedFiles.length === 1
-                        ? '1 File Selected'
-                        : `${selectedFiles.length} Files Selected`}
-              </DialogTitle>
-              <div className="flex items-center gap-2">
+            <div className="flex w-full flex-col gap-2 break-all sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex w-full items-center justify-between gap-2 px-8 pt-4">
+                <DialogTitle className="break-all text-base sm:text-lg">
+                  {width && width > 450 && selectedFiles.length === 0
+                    ? 'Select from Pinata files'
+                    : width && width < 450 && selectedFiles.length === 0
+                      ? 'Select files'
+                      : selectedFiles.length === 0
+                        ? 'No files selected'
+                        : selectedFiles.length === 1
+                          ? '1 File Selected'
+                          : `${selectedFiles.length} Files Selected`}
+                </DialogTitle>
                 <Button
                   variant="outline"
                   size="sm"
@@ -1841,7 +1841,7 @@ export default function Poas() {
           {loadingFiles ? (
             <FileGridSkeleton />
           ) : (
-            <div className="grid grid-cols-2 gap-2 p-1 md:grid-cols-3">
+            <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 md:grid-cols-3">
               {pinataResponse.rows.map((file) => (
                 <div
                   key={file.ipfs_pin_hash}
@@ -1852,42 +1852,8 @@ export default function Poas() {
                       ? 'outline outline-2 outline-primary'
                       : ''
                   }`}
-                  onClick={(e) => {
-                    if (isMultiDeleteMode) {
-                      e.preventDefault()
-                      setSelectedForDeletion((prev) =>
-                        prev.includes(file.ipfs_pin_hash)
-                          ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
-                          : [...prev, file.ipfs_pin_hash],
-                      )
-                    } else {
-                      if (selectedFiles.some((selected) => selected.url === file.ipfs_pin_hash)) {
-                        // Remove from selectedFiles and selectedPinataFiles
-                        setSelectedFiles((prev) =>
-                          prev.filter((selected) => selected.url !== file.ipfs_pin_hash),
-                        )
-                        setSelectedPinataFiles((prev) =>
-                          prev.filter((selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash),
-                        )
-                        // If it was the thumbnail, clear the thumbnail
-                        if (thumbnailImage === file.ipfs_pin_hash) {
-                          setThumbnailImage(null)
-                        }
-                      } else {
-                        // Add directly to both selections
-                        setSelectedPinataFiles((prev) => [...prev, file])
-                        setSelectedFiles((prev) => [
-                          ...prev,
-                          {
-                            url: file.ipfs_pin_hash,
-                            name: file.metadata?.name || `image${Date.now()}`,
-                          },
-                        ])
-                      }
-                    }
-                  }}
                 >
-                  <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-4">
+                  <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-2 sm:p-4">
                     {isMultiDeleteMode && (
                       <div className="absolute right-6 top-6 z-10">
                         <div
@@ -1949,77 +1915,73 @@ export default function Poas() {
           )}
 
           {/* Update the pagination section */}
-          <div className="flex w-full items-center justify-center border-t border-border px-4 py-2">
-            <Pagination>
-              <PaginationContent>
+          <div className="flex w-full items-center justify-center border-t border-border py-1.5">
+            <Pagination className="!mx-0 overflow-x-auto !px-0">
+              <PaginationContent className="flex-nowrap">
                 {/* Only show Previous button if we're not on page 1 */}
                 {pagination.currentPage > 1 ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationPrevious
+                      className="!px-1 !pl-0.5 !pr-0.5"
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationPrevious />
+                    <PaginationPrevious className="!px-1 !pl-0.5 !pr-0.5" />
                   </PaginationItem>
                 )}
 
                 {/* Generate page numbers */}
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                  .filter((pageNumber) => {
-                    // Always show first and last page
-                    if (pageNumber === 1 || pageNumber === pagination.totalPages) return true
-                    // Show pages around current page
-                    if (Math.abs(pageNumber - pagination.currentPage) <= 1) return true
-                    return false
-                  })
-                  .map((pageNumber, i, array) => (
-                    <Fragment key={pageNumber}>
-                      {/* Add ellipsis if there's a gap */}
-                      {i > 0 && array[i] - array[i - 1] > 1 && (
+                <div className="flex items-center gap-[0.09rem]">
+                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                    .filter((pageNumber) => {
+                      // Always show first and last page
+                      if (pageNumber === 1 || pageNumber === pagination.totalPages) return true
+                      // Show pages around current page
+                      if (Math.abs(pageNumber - pagination.currentPage) <= 1) return true
+                      return false
+                    })
+                    .map((pageNumber, i, array) => (
+                      <Fragment key={pageNumber}>
+                        {/* Add ellipsis if there's a gap */}
+                        {i > 0 && array[i] - array[i - 1] > 1 && (
+                          <PaginationItem className="cursor-pointer select-none">
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
                         <PaginationItem className="cursor-pointer select-none">
-                          <PaginationEllipsis />
+                          <PaginationLink
+                            onClick={() => handlePageChange(pageNumber)}
+                            isActive={pageNumber === pagination.currentPage}
+                            className="!h-6 !w-6"
+                          >
+                            {pageNumber}
+                          </PaginationLink>
                         </PaginationItem>
-                      )}
-                      <PaginationItem className="cursor-pointer select-none">
-                        <PaginationLink
-                          onClick={() => handlePageChange(pageNumber)}
-                          isActive={pageNumber === pagination.currentPage}
-                        >
-                          {pageNumber}
-                        </PaginationLink>
-                      </PaginationItem>
-                    </Fragment>
-                  ))}
+                      </Fragment>
+                    ))}
+                </div>
 
                 {/* Only show Next button if we're not on the last page and have a full page of items */}
                 {pagination.currentPage < pagination.totalPages &&
                 pinataResponse.rows.length === pagination.itemsPerPage ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationNext
+                      className="!px-1 !pl-0.5 !pr-0.5"
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationNext />
+                    <PaginationNext className="!px-1 !pl-0.5 !pr-0.5" />
                   </PaginationItem>
                 )}
               </PaginationContent>
             </Pagination>
           </div>
-
-          {/* {loadingFiles && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                <span className="text-sm text-muted-foreground">Loading files...</span>
-              </div>
-            </div>
-          )} */}
 
           {/* Add a message if no supported files are found */}
           {pinataResponse.rows.length > 0 &&
