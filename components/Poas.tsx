@@ -28,6 +28,7 @@ import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
 import { LucidEvolution } from '@lucid-evolution/lucid'
 import { useWindowSize } from '@uidotdev/usehooks'
+import * as bip39 from 'bip39'
 import {
   Pagination,
   PaginationContent,
@@ -42,6 +43,8 @@ import { Switch } from './ui/switch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WalletState } from '@/hooks/useWalletConnect'
 import { m } from 'framer-motion'
+import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent } from './ui/select'
+import { Separator } from './ui/separator'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
