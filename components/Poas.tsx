@@ -41,6 +41,7 @@ import { Slider } from './ui/slider'
 import { Switch } from './ui/switch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WalletState } from '@/hooks/useWalletConnect'
+import { m } from 'framer-motion'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -468,8 +469,6 @@ export default function Poas() {
             )
           }
         }
-      } else {
-        toast.info('no wallet connected', { position: 'bottom-center' })
       }
       setInitializing(false)
     }
@@ -525,21 +524,10 @@ export default function Poas() {
       }
     }
 
-    // let isChecking = false
-    // const intervalId = setInterval(async () => {
-    //   if (!isChecking) {
-    //     isChecking = true
-    //     console.log('Checking stake address...')
-    //     await checkStakeAddressAndReconnect()
-    //     isChecking = false
-    //   }
-    // }, 5000)
-
-    // Initial check
     checkStakeAddressAndReconnect()
 
     // return () => clearInterval(intervalId)
-  }, [api, currentStakeAddress, blockfrostKey, walletState.api])
+  }, [currentStakeAddress, blockfrostKey, walletState.api])
 
   // Remove the duplicate wallet checking effect and replace with:
   useEffect(() => {
@@ -613,7 +601,7 @@ export default function Poas() {
       // Construct the metadata according to CIP-25
       const metadata = {
         [selectedPolicy.policyId]: {
-          [fromText(nftName)]: {
+          [nftName]: {
             name: nftName,
             image: `ipfs://${thumbnailImage}`,
             mediaType: thumbnailMimeType,
@@ -622,6 +610,8 @@ export default function Poas() {
           },
         },
       }
+
+      console.log(metadata)
       const address = await lucid.wallet().address()
 
       // Transaction to mint the NFT
