@@ -16,11 +16,8 @@ import {
 } from './ui/dropdown-menu'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import { getEpochData } from '@/app/actions'
-import copyImagePath from '@/public/copy.png'
-// import { Metadata } from '@lucid-evolution/lucid'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
-import { Check, ChevronDown, Loader2, Plus, X, Trash2 } from 'lucide-react'
+import { Check, ChevronDown, Loader2, Plus, X, Trash2, Info } from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
@@ -28,7 +25,6 @@ import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
 import { LucidEvolution } from '@lucid-evolution/lucid'
 import { useWindowSize } from '@uidotdev/usehooks'
-import * as bip39 from 'bip39'
 import {
   Pagination,
   PaginationContent,
@@ -42,9 +38,6 @@ import { Slider } from './ui/slider'
 import { Switch } from './ui/switch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WalletState } from '@/hooks/useWalletConnect'
-import { m } from 'framer-motion'
-import { Select, SelectTrigger, SelectValue, SelectItem, SelectContent } from './ui/select'
-import { Separator } from './ui/separator'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -241,15 +234,9 @@ const createMintingPolicy = async (
 interface FileInfo {
   url: string
   name: string
-  customName?: string // Add this for user-modified names
-  traits?: Trait[]
+  customName?: string
+  properties?: Record<string, string>
   date_pinned?: string
-}
-
-// Update the traits interface near the top with other interfaces
-interface Trait {
-  key: string
-  value: string
 }
 
 // Add a helper function to check if it's a CIDv0 hash
@@ -267,7 +254,7 @@ interface ExpiryConfig {
 // Add this loading skeleton component
 const FileGridSkeleton = () => {
   return (
-    <div className="grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 24 }).map((_, index) => (
         <div key={index} className="group relative">
           <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-2 sm:p-4">
@@ -289,37 +276,6 @@ const FileGridSkeleton = () => {
         </div>
       ))}
     </div>
-  )
-}
-
-const ImageWithFallback = ({
-  src,
-  alt,
-  ...props
-}: {
-  src: string
-  alt: string
-  [key: string]: any
-}) => {
-  const [error, setError] = useState(false)
-
-  return error ? (
-    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-muted/30">
-      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-        <AlertCircle className="h-6 w-6" />
-        <span className="text-xs">Failed to load image</span>
-      </div>
-    </div>
-  ) : (
-    <Image
-      src={src}
-      alt={alt}
-      width={200}
-      height={200}
-      className="h-32 w-full rounded-lg object-contain"
-      onError={() => setError(true)}
-      {...props}
-    />
   )
 }
 
@@ -362,7 +318,7 @@ export default function Poas() {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [imageNames, setImageNames] = useState<{ [key: string]: string }>({})
   const [expiryConfig, setExpiryConfig] = useState<ExpiryConfig>({
-    hasExpiry: true,
+    hasExpiry: false,
     days: 1,
   })
   const [mintQuantity, setMintQuantity] = useState<number>(1)
@@ -493,8 +449,6 @@ export default function Poas() {
           setSelectedPolicy(null)
           setPolicyIds([])
 
-          toast.info('Wallet account changed', { position: 'bottom-center' })
-
           // Reconnect Lucid if needed
           if (blockfrostKey && walletState.api) {
             try {
@@ -550,6 +504,43 @@ export default function Poas() {
     }
   }, [currentStakeAddress])
 
+  const ImageWithFallback = ({
+    src,
+    alt,
+    fileUrl,
+    ...props
+  }: {
+    src: string
+    alt: string
+    fileUrl?: string
+    [key: string]: any
+  }) => {
+    const [error, setError] = useState(false)
+    const isGif = src.toLowerCase().endsWith('.gif') || src.includes('image/gif')
+
+    return error ? (
+      <div className="flex h-32 w-full items-center justify-center rounded-lg bg-muted/30">
+        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+          <AlertCircle className="h-6 w-6" />
+          <span className="text-xs">Failed to load image</span>
+        </div>
+      </div>
+    ) : (
+      <Image
+        src={src}
+        alt={alt}
+        width={200}
+        height={200}
+        className={`h-32 w-full cursor-pointer rounded-lg object-contain ${
+          fileUrl === thumbnailImage && 'outline-dashed outline-1 outline-primary'
+        }`}
+        onError={() => setError(true)}
+        unoptimized={isGif} // Disable optimization for GIFs
+        {...props}
+      />
+    )
+  }
+
   const mintNFT = async (
     lucid: LucidEvolution,
     api: WalletApi,
@@ -560,8 +551,6 @@ export default function Poas() {
   ) => {
     setMinting(true)
     try {
-      const epochData = await getEpochData(CARDANO_NETWORK)
-
       const { fromText } = await getScriptUtils()
 
       if (!thumbnailImage) {
@@ -589,16 +578,8 @@ export default function Poas() {
           name: file.customName || file.name,
           mediaType: VALID_IMAGE_MIMES[extension] || 'image/png',
           src: `ipfs://${file.url}`,
-          ...(file.traits?.length
-            ? {
-                properties: file.traits.reduce(
-                  (acc, trait) => ({
-                    ...acc,
-                    [trait.key]: trait.value,
-                  }),
-                  {},
-                ),
-              }
+          ...(file.properties && Object.keys(file.properties).length > 0
+            ? file.properties // Directly spread the properties instead of nesting under 'properties'
             : {}),
         }
       })
@@ -952,10 +933,6 @@ export default function Poas() {
         return uniquePolicies
       })
 
-      // if (!selectedPolicy && validPolicies.length > 0) {
-      // 	setSelectedPolicy(validPolicies[0])
-      // }
-
       if (validPolicies.length === 0) {
         toast.info('No policies found, generate a new policy ID', { position: 'bottom-center' })
       } else {
@@ -1001,10 +978,13 @@ export default function Poas() {
         return new Date(b.date_pinned).getTime() - new Date(a.date_pinned).getTime()
       })
 
+      // Filter out CIDv1 hashes and sort remaining files by date
+      const filteredFiles = sortedFiles.filter((file: PinataFile) => isCIDv0(file.ipfs_pin_hash))
+
       setPinataResponse({
         count: data.count,
-        rows: sortedFiles,
-        filteredRows: sortedFiles,
+        rows: filteredFiles,
+        filteredRows: filteredFiles,
       })
 
       setPagination((prev) => ({
@@ -1103,47 +1083,31 @@ export default function Poas() {
     setIsConfirmDialogOpen(false) // Close the dialog
   }
 
-  // Function to upload the thumbnail image with modified filename
-  const uploadThumbnail = async (file: File) => {
-    const data = new FormData()
-    const newFileName = `${file.name.split('.').slice(0, -1).join('.')}_thumbnail.${file.name.split('.').pop()}` // Append _thumbnail to the filename
-    data.append('file', new File([file], newFileName)) // Append the file with the new name
-    data.append('pinataMetadata', JSON.stringify({ name: newFileName })) // Add metadata for the file
-    data.append('pinataOptions', JSON.stringify({ cidVersion: 0 })) // Add options for the file
-
-    const uploadRequest = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${pinataJWT}`,
-      },
-      body: data,
-    })
-
-    const response = await uploadRequest.json()
-
-    // Check if response contains an IpfsHash
-    if (!response.IpfsHash) {
-      throw new Error(`Unexpected response format for ${file.name}: IpfsHash not found`)
-    }
-
-    return response.IpfsHash // Return the IpfsHash for the thumbnail
-  }
-
   const handleTraitChange = (
     fileUrl: string,
-    traitIndex: number,
+    propertyIndex: number,
     field: 'key' | 'value',
     value: string,
   ) => {
     setSelectedFiles((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
-          const traits = [...(fileInfo.traits || [])]
-          traits[traitIndex] = {
-            ...traits[traitIndex],
-            [field]: value,
+          const properties = { ...fileInfo.properties }
+          const keys = Object.keys(properties)
+
+          if (field === 'key') {
+            // When changing a key, preserve the old value but under new key
+            const oldKey = keys[propertyIndex]
+            const oldValue = properties[oldKey]
+            delete properties[oldKey]
+            if (value) properties[value] = oldValue
+          } else {
+            // When changing value, update existing key's value
+            const key = keys[propertyIndex]
+            if (key) properties[key] = value
           }
-          return { ...fileInfo, traits }
+
+          return { ...fileInfo, properties }
         }
         return fileInfo
       }),
@@ -1173,8 +1137,9 @@ export default function Poas() {
     setSelectedFiles((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
-          const traits = fileInfo.traits || []
-          return { ...fileInfo, traits: [...traits, { key: '', value: '' }] }
+          const properties = { ...fileInfo.properties }
+          properties[''] = '' // Add empty key-value pair
+          return { ...fileInfo, properties }
         }
         return fileInfo
       }),
@@ -1182,12 +1147,17 @@ export default function Poas() {
   }
 
   // Add this function to remove a trait from a specific image
-  const removeTraitFromImage = (fileUrl: string, traitIndex: number) => {
+  const removeTraitFromImage = (fileUrl: string, propertyIndex: number) => {
     setSelectedFiles((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
-          const traits = fileInfo.traits?.filter((_, index) => index !== traitIndex) || []
-          return { ...fileInfo, traits }
+          const properties = { ...fileInfo.properties }
+          const keys = Object.keys(properties)
+          const keyToRemove = keys[propertyIndex]
+          if (keyToRemove) {
+            delete properties[keyToRemove]
+          }
+          return { ...fileInfo, properties }
         }
         return fileInfo
       }),
@@ -1236,7 +1206,7 @@ export default function Poas() {
     { step: 4, tooltip: 'Set NFT metadata and mint', title: 'Metadata/Mint' },
   ]
   return (
-    <main className="m-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 p-4">
+    <main className="m-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 p-4 md:max-w-4xl">
       {/* Progress indicator */}
       <TooltipProvider delayDuration={50}>
         <div className="mb-4 flex w-full justify-between px-2">
@@ -1377,63 +1347,110 @@ export default function Poas() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {selectedFiles.map((fileInfo) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
-                          className={`flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-all hover:shadow-lg hover:shadow-primary/5 ${
-                            thumbnailImage === fileInfo.url
-                              ? 'border-primary bg-primary/5'
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                          onClick={() => {
-                            setThumbnailImage(fileInfo.url)
-                            toast.success(`Selected ${fileInfo.name} as thumbnail image`, {
-                              position: 'bottom-center',
-                            })
-                          }}
+                          className={`flex h-full flex-col rounded-lg border border-border bg-background/50 p-4 transition-all hover:shadow-lg hover:shadow-primary/5 hover:ring-1 hover:ring-primary/20`}
                         >
-                          <div className="flex flex-1 flex-col space-y-1">
+                          <div className="flex flex-1 flex-col space-y-2">
+                            {/* Image preview */}
                             <div className="relative">
                               <ImageWithFallback
                                 src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
+                                fileUrl={fileInfo.url}
                                 alt={fileInfo.name}
+                                onClick={() => {
+                                  if (thumbnailImage === fileInfo.url) {
+                                    // Deselect the thumbnail if it's already selected
+                                    setThumbnailImage(null)
+                                  } else {
+                                    // Select new thumbnail
+                                    setThumbnailImage(fileInfo.url)
+                                  }
+                                }}
                               />
                               {thumbnailImage === fileInfo.url && (
-                                <div className="absolute left-2 top-2 rounded-full bg-primary px-2 py-1 text-xs text-primary-foreground">
-                                  Thumbnail
+                                <div className="absolute right-2 top-2 rounded-md bg-primary/90 px-2 py-1 text-xs text-white backdrop-blur-sm">
+                                  Preview Image
                                 </div>
                               )}
                             </div>
 
-                            <div className="flex flex-1 flex-col justify-between">
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-medium">Traits</span>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 px-2 hover:bg-primary/10"
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      addTraitToImage(fileInfo.url)
-                                    }}
-                                  >
-                                    <Plus className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                            {/* Filename editor with improved styling */}
+                            <div className="flex items-center gap-1 rounded-lg border border-border bg-background/50 p-2">
+                              <Input
+                                value={
+                                  fileInfo.customName?.split('.').slice(0, -1).join('.') ||
+                                  fileInfo.name.split('.').slice(0, -1).join('.')
+                                }
+                                onChange={(e) => {
+                                  e.stopPropagation()
+                                  const extension = fileInfo.name.split('.').pop()
+                                  const newName = `${e.target.value}.${extension}`
+                                  setSelectedFiles((prev) =>
+                                    prev.map((f) =>
+                                      f.url === fileInfo.url ? { ...f, customName: newName } : f,
+                                    ),
+                                  )
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-8 flex-1 border-none text-xs shadow-none focus-visible:ring-0"
+                                placeholder="File name"
+                              />
+                              <span className="text-xs text-muted-foreground">
+                                .{fileInfo.name.split('.').pop()}
+                              </span>
+                            </div>
 
-                                {fileInfo.traits?.map((trait, traitIndex) => (
-                                  <div key={traitIndex} className="flex items-center gap-2">
+                            {/* Action buttons with improved styling */}
+                            <div className="flex items-center justify-between gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1.5 px-3 font-medium transition-colors hover:bg-primary/10 hover:text-primary"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  addTraitToImage(fileInfo.url)
+                                }}
+                              >
+                                Add Trait
+                                <Plus className="h-4 w-4" />
+                              </Button>
+
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1 font-medium transition-colors hover:bg-destructive/10 hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setSelectedFiles((prev) =>
+                                    prev.filter((f) => f.url !== fileInfo.url),
+                                  )
+                                }}
+                              >
+                                Remove File
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            {/* Traits section with improved styling */}
+                            <div className="flex flex-col flex-wrap gap-1">
+                              {Object.entries(fileInfo.properties || {}).map(
+                                ([key, value], propertyIndex) => (
+                                  <div
+                                    key={propertyIndex}
+                                    className="group flex items-center gap-2 rounded-lg bg-background/50 p-1"
+                                  >
                                     <Input
                                       placeholder="Key"
-                                      value={trait.key}
-                                      className="h-8 text-xs"
+                                      value={key}
+                                      className="h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0"
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) =>
                                         handleTraitChange(
                                           fileInfo.url,
-                                          traitIndex,
+                                          propertyIndex,
                                           'key',
                                           e.target.value,
                                         )
@@ -1441,32 +1458,32 @@ export default function Poas() {
                                     />
                                     <Input
                                       placeholder="Value"
-                                      value={trait.value}
-                                      className="h-8 text-xs"
+                                      value={value}
+                                      className="h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0"
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) =>
                                         handleTraitChange(
                                           fileInfo.url,
-                                          traitIndex,
+                                          propertyIndex,
                                           'value',
                                           e.target.value,
                                         )
                                       }
                                     />
                                     <Button
-                                      variant="ghost"
+                                      variant="outline"
                                       size="icon"
-                                      className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                                      className="h-8 w-8 transition-opacity group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground"
                                       onClick={(e) => {
                                         e.stopPropagation()
-                                        removeTraitFromImage(fileInfo.url, traitIndex)
+                                        removeTraitFromImage(fileInfo.url, propertyIndex)
                                       }}
                                     >
                                       <X className="h-4 w-4" />
                                     </Button>
                                   </div>
-                                ))}
-                              </div>
+                                ),
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1706,7 +1723,7 @@ export default function Poas() {
                   )}
                   {loadingPolicies && (
                     <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-transparent" />
                       Loading policies...
                     </div>
                   )}
@@ -1717,6 +1734,15 @@ export default function Poas() {
               <div className="flex items-center justify-between">
                 <Label className="text-sm sm:text-base">
                   {expiryConfig.hasExpiry ? 'Policy Expiry' : 'Policy never expires'}
+                  {!expiryConfig.hasExpiry && (
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Info className="h-4 w-4" />
+                      <span>
+                        Creating a policy with no expiry will just generate the same policy each
+                        time.
+                      </span>
+                    </p>
+                  )}
                 </Label>
                 <Switch
                   checked={expiryConfig.hasExpiry}
@@ -1750,7 +1776,7 @@ export default function Poas() {
                             setExpiryConfig((prev) => ({ ...prev, days: value }))
                           }
                         }}
-                        className="h-8 w-full"
+                        className="w-full"
                       />
                       <span className="ml-2 text-sm text-muted-foreground">days</span>
                     </div>
@@ -1834,16 +1860,18 @@ export default function Poas() {
                   max="42069"
                   value={mintQuantity}
                   onChange={(e) => {
-                    const value = parseInt(e.target.value)
-                    if (!isNaN(value) && value >= 1 && value <= 42069) {
-                      setMintQuantity(value)
-                    } else {
-                      toast.error('Quantity must be between 1 and 42069', {
-                        position: 'bottom-center',
-                      })
+                    const value = e.target.value === '' ? '' : parseInt(e.target.value)
+                    if (value === '' || (!isNaN(value) && value >= 0 && value <= 42069)) {
+                      setMintQuantity(value as number)
                     }
                   }}
-                  className={`w-full ${mintQuantity > 1 ? 'border-yellow-500' : ''}`}
+                  onBlur={(e) => {
+                    const value = parseInt(e.target.value)
+                    if (isNaN(value) || value < 1) {
+                      setMintQuantity(1)
+                    }
+                  }}
+                  className={`w-full ${mintQuantity > 1 ? 'border-yellow-500' : 'border-border'}`}
                 />
                 <p className="text-xs text-muted-foreground">Enter a number between 1 and 42069</p>
 
@@ -1884,49 +1912,59 @@ export default function Poas() {
 
       <Dialog open={showPinataDialog} onOpenChange={setShowPinataDialog}>
         <DialogContent className="max-h-[80vh] w-full max-w-[90vw] overflow-y-auto p-0.5">
-          <DialogHeader>
-            <div className="flex w-full flex-col gap-2 break-all sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex w-full items-center justify-between gap-2 px-8 pt-4">
-                <DialogTitle className="break-all text-base sm:text-lg">
-                  {width && width > 450 && selectedFiles.length === 0
-                    ? 'Select from Pinata files'
-                    : width && width < 450 && selectedFiles.length === 0
-                      ? 'Select files'
-                      : selectedFiles.length === 0
-                        ? 'No files selected'
-                        : selectedFiles.length === 1
-                          ? '1 File Selected'
-                          : `${selectedFiles.length} Files Selected`}
-                </DialogTitle>
+          {/* Sticky header with Done button */}
+          <div className="sticky top-0 z-10 flex w-full items-center justify-between gap-2 border-b bg-background/95 px-8 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <DialogTitle className="break-all text-base sm:text-lg">
+              {width && width > 450 && selectedFiles.length === 0
+                ? 'Select from Pinata files'
+                : width && width < 450 && selectedFiles.length === 0
+                  ? 'Select files'
+                  : selectedFiles.length === 0
+                    ? 'No files selected'
+                    : selectedFiles.length === 1
+                      ? '1 File Selected'
+                      : `${selectedFiles.length} Files Selected`}
+            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsMultiDeleteMode(!isMultiDeleteMode)
+                  setSelectedForDeletion([])
+                }}
+                className={isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''}
+              >
+                {isMultiDeleteMode ? 'Cancel Delete' : 'Delete Files'}
+              </Button>
+              {isMultiDeleteMode ? (
                 <Button
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
-                  onClick={() => {
-                    setIsMultiDeleteMode(!isMultiDeleteMode)
-                    setSelectedForDeletion([])
-                  }}
-                  className={isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''}
+                  onClick={handleMultiDelete}
+                  disabled={selectedForDeletion.length === 0}
                 >
-                  {isMultiDeleteMode ? 'Cancel Delete' : 'Delete Files'}
+                  Delete Selected ({selectedForDeletion.length})
                 </Button>
-                {isMultiDeleteMode && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleMultiDelete}
-                    disabled={selectedForDeletion.length === 0}
-                  >
-                    Delete Selected ({selectedForDeletion.length})
-                  </Button>
-                )}
-              </div>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowPinataDialog(false)}
+                  className="gap-2"
+                >
+                  Done
+                  <Check className="h-4 w-4" />
+                </Button>
+              )}
             </div>
-          </DialogHeader>
+          </div>
 
+          {/* Rest of the dialog content */}
           {loadingFiles ? (
             <FileGridSkeleton />
           ) : (
-            <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
               {pinataResponse.rows.map((file) => (
                 <div
                   key={file.ipfs_pin_hash}
@@ -2088,14 +2126,12 @@ export default function Poas() {
                     ))}
                 </div>
 
-                {/* Only show Next button if we're not on the last page and have a full page of items */}
-                {pagination.currentPage < pagination.totalPages &&
-                pinataResponse.rows.length === pagination.itemsPerPage ? (
+                {pagination.currentPage < pagination.totalPages ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationNext
                       className="!px-1 !pl-0.5 !pr-0.5 sm:!px-1 sm:!pl-0.5 sm:!pr-0.5"
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
-                      isActive={loadingFiles || pinataResponse.rows.length === 0}
+                      isActive={loadingFiles}
                     />
                   </PaginationItem>
                 ) : (
