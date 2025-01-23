@@ -1512,6 +1512,10 @@ export default function Poas() {
                                   setSelectedFiles((prev) =>
                                     prev.filter((f) => f.url !== fileInfo.url),
                                   )
+                                  // Add this line to keep selectedPinataFiles in sync
+                                  setSelectedPinataFiles((prev) =>
+                                    prev.filter((f) => f.ipfs_pin_hash !== fileInfo.url),
+                                  )
                                 }}
                               >
                                 Remove File
@@ -2086,24 +2090,22 @@ export default function Poas() {
               )}
             </div>
           </div>
-
+          <span className="flex w-full items-center justify-center">
+            {width && width > 450 && selectedFiles.length === 0
+              ? 'Select from Pinata files'
+              : width && width < 450 && selectedFiles.length === 0
+                ? 'Select files'
+                : selectedFiles.length === 0
+                  ? 'No files selected'
+                  : selectedFiles.length === 1
+                    ? '1 File Selected'
+                    : `${selectedFiles.length} Files Selected`}
+          </span>
           {/* Rest of the dialog content */}
           {loadingFiles ? (
             <FileGridSkeleton />
           ) : (
             <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
-              <span className="flex w-full items-center justify-center">
-                {width && width > 450 && selectedFiles.length === 0
-                  ? 'Select from Pinata files'
-                  : width && width < 450 && selectedFiles.length === 0
-                    ? 'Select files'
-                    : selectedFiles.length === 0
-                      ? 'No files selected'
-                      : selectedFiles.length === 1
-                        ? '1 File Selected'
-                        : `${selectedFiles.length} Files Selected`}
-              </span>
-
               {pinataResponse.rows.map((file) => (
                 <div
                   key={file.ipfs_pin_hash}
