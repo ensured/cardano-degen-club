@@ -325,6 +325,10 @@ export default function Poas() {
   const [selectedForDeletion, setSelectedForDeletion] = useState<string[]>([])
   const [isMultiDeleteMode, setIsMultiDeleteMode] = useState(false)
   const [currentStakeAddress, setCurrentStakeAddress] = useState<string | null>(null)
+  // Add new state for temporary trait edits
+  const [traitEdits, setTraitEdits] = useState<
+    Record<string, Record<number, { key: string; value: string }>>
+  >({})
 
   const { width } = useWindowSize()
 
@@ -1083,35 +1087,32 @@ export default function Poas() {
     setIsConfirmDialogOpen(false) // Close the dialog
   }
 
+  // Modified handleTraitChange to work with temporary state
   const handleTraitChange = (
     fileUrl: string,
     propertyIndex: number,
     field: 'key' | 'value',
     value: string,
   ) => {
-    setSelectedFiles((prev) =>
-      prev.map((fileInfo) => {
-        if (fileInfo.url === fileUrl) {
-          const properties = { ...fileInfo.properties }
-          const keys = Object.keys(properties)
-
-          if (field === 'key') {
-            // When changing a key, preserve the old value but under new key
-            const oldKey = keys[propertyIndex]
-            const oldValue = properties[oldKey]
-            delete properties[oldKey]
-            if (value) properties[value] = oldValue
-          } else {
-            // When changing value, update existing key's value
-            const key = keys[propertyIndex]
-            if (key) properties[key] = value
-          }
-
-          return { ...fileInfo, properties }
-        }
-        return fileInfo
-      }),
-    )
+    setTraitEdits((prev) => ({
+      ...prev,
+      [fileUrl]: {
+        ...(prev[fileUrl] || {}),
+        [propertyIndex]: {
+          ...(prev[fileUrl]?.[propertyIndex] || {
+            key:
+              Object.keys(selectedFiles.find((f) => f.url === fileUrl)?.properties || {})[
+                propertyIndex
+              ] || '',
+            value:
+              Object.values(selectedFiles.find((f) => f.url === fileUrl)?.properties || {})[
+                propertyIndex
+              ] || '',
+          }),
+          [field]: value,
+        },
+      },
+    }))
   }
 
   const handleNameChange = (url: string, value: string) => {
@@ -1132,13 +1133,23 @@ export default function Poas() {
     }
   }, [imageNames, currentStep])
 
-  // Add this function to add a trait to a specific image
+  // Update the addTraitToImage function
   const addTraitToImage = (fileUrl: string) => {
+    // Only allow adding a new trait if all existing traits are valid
+    if (!areAllTraitPairsValid(fileUrl)) {
+      toast.error('Please fill in all existing traits before adding a new one', {
+        position: 'bottom-center',
+      })
+      return
+    }
+
     setSelectedFiles((prev) =>
       prev.map((fileInfo) => {
         if (fileInfo.url === fileUrl) {
           const properties = { ...fileInfo.properties }
-          properties[''] = '' // Add empty key-value pair
+          const newIndex = Object.keys(properties).length
+          // Add empty key-value pair with blank values
+          properties[`${newIndex}`] = '' // Using just the index as key, value will be blank
           return { ...fileInfo, properties }
         }
         return fileInfo
@@ -1172,6 +1183,80 @@ export default function Poas() {
     }
 
     setIsConfirmDialogOpen(true)
+  }
+
+  // Add new function to save traits
+  const saveTraits = (fileUrl: string) => {
+    const fileEdits = traitEdits[fileUrl]
+    if (!fileEdits) return
+
+    setSelectedFiles((prev) =>
+      prev.map((fileInfo) => {
+        if (fileInfo.url === fileUrl) {
+          const newProperties: Record<string, string> = {}
+          const existingKeys = new Set()
+
+          // First pass: collect all valid traits
+          Object.values(fileEdits).forEach(({ key, value }) => {
+            if (key && !existingKeys.has(key)) {
+              newProperties[key] = value
+              existingKeys.add(key)
+            }
+          })
+
+          return {
+            ...fileInfo,
+            properties: newProperties,
+          }
+        }
+        return fileInfo
+      }),
+    )
+
+    // Clear edits for this file
+    setTraitEdits((prev) => {
+      const newEdits = { ...prev }
+      delete newEdits[fileUrl]
+      return newEdits
+    })
+
+    toast.success('Traits saved successfully', { position: 'bottom-center' })
+  }
+
+  // Add new function to check if there are unsaved changes
+  const hasUnsavedChanges = (fileUrl: string) => {
+    return !!traitEdits[fileUrl]
+  }
+
+  // Add this function to check if a trait pair is valid (both key and value have at least 1 character)
+  const isTraitPairValid = (key: string, value: string) => {
+    return key.trim().length > 0 && value.trim().length > 0
+  }
+
+  // Add this function to check if all current trait pairs are valid
+  const areAllTraitPairsValid = (fileUrl: string) => {
+    const fileEdits = traitEdits[fileUrl] || {}
+    const fileInfo = selectedFiles.find((f) => f.url === fileUrl)
+    const fileProperties = fileInfo?.properties || {}
+
+    // Get all property indices
+    const indices = Object.keys(fileProperties).length
+
+    // Check each index
+    for (let i = 0; i < indices; i++) {
+      // Get either the edited values or the original values
+      const trait = fileEdits[i] || {
+        key: Object.keys(fileProperties)[i] || '',
+        value: Object.values(fileProperties)[i] || '',
+      }
+
+      // If either key or value is empty, return false
+      if (!isTraitPairValid(trait.key, trait.value)) {
+        return false
+      }
+    }
+
+    return true
   }
 
   if (initializing || loading) {
@@ -1444,8 +1529,15 @@ export default function Poas() {
                                   >
                                     <Input
                                       placeholder="Key"
-                                      value={key}
-                                      className="h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0"
+                                      value={traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key}
+                                      className={`h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0 ${
+                                        !isTraitPairValid(
+                                          traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key,
+                                          traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value,
+                                        )
+                                          ? 'border-red-500/50'
+                                          : ''
+                                      }`}
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) =>
                                         handleTraitChange(
@@ -1458,8 +1550,17 @@ export default function Poas() {
                                     />
                                     <Input
                                       placeholder="Value"
-                                      value={value}
-                                      className="h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0"
+                                      value={
+                                        traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value
+                                      }
+                                      className={`h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0 ${
+                                        !isTraitPairValid(
+                                          traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key,
+                                          traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value,
+                                        )
+                                          ? 'border-red-500/50'
+                                          : ''
+                                      }`}
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) =>
                                         handleTraitChange(
@@ -1483,6 +1584,35 @@ export default function Poas() {
                                     </Button>
                                   </div>
                                 ),
+                              )}
+
+                              {/* Add Save Traits button with count */}
+                              {hasUnsavedChanges(fileInfo.url) && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="mt-2 gap-2 text-xs"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    if (areAllTraitPairsValid(fileInfo.url)) {
+                                      saveTraits(fileInfo.url)
+                                    } else {
+                                      toast.error('Please fill in all trait fields before saving', {
+                                        position: 'bottom-center',
+                                      })
+                                    }
+                                  }}
+                                >
+                                  Save {Object.keys(fileInfo.properties || {}).length} Traits
+                                  <Check className="h-3 w-3" />
+                                </Button>
+                              )}
+
+                              {/* Show trait count limit warning */}
+                              {Object.keys(fileInfo.properties || {}).length >= 10 && (
+                                <p className="mt-1 text-xs text-yellow-500">
+                                  Maximum trait limit (10) reached
+                                </p>
                               )}
                             </div>
                           </div>
@@ -1913,17 +2043,13 @@ export default function Poas() {
       <Dialog open={showPinataDialog} onOpenChange={setShowPinataDialog}>
         <DialogContent className="max-h-[80vh] w-full max-w-[90vw] overflow-y-auto p-0.5">
           {/* Sticky header with Done button */}
-          <div className="sticky top-0 z-10 flex w-full items-center justify-between gap-2 border-b bg-background/95 px-8 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <DialogTitle className="break-all text-base sm:text-lg">
-              {width && width > 450 && selectedFiles.length === 0
-                ? 'Select from Pinata files'
-                : width && width < 450 && selectedFiles.length === 0
-                  ? 'Select files'
-                  : selectedFiles.length === 0
-                    ? 'No files selected'
-                    : selectedFiles.length === 1
-                      ? '1 File Selected'
-                      : `${selectedFiles.length} Files Selected`}
+          <div className="sticky top-0 z-10 flex w-full flex-wrap items-center justify-between gap-2 border-b bg-background/95 px-8 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <DialogTitle className="text-base sm:text-lg">
+              {(() => {
+                const fileCount = pinataResponse.rows.length
+                if (fileCount === 0) return 'No files found'
+                return `${fileCount} ${fileCount === 1 ? 'file' : 'files'} available`
+              })()}
             </DialogTitle>
             <div className="flex items-center gap-2">
               <Button
@@ -1947,15 +2073,16 @@ export default function Poas() {
                   Delete Selected ({selectedForDeletion.length})
                 </Button>
               ) : (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setShowPinataDialog(false)}
-                  className="gap-2"
-                >
-                  Done
-                  <Check className="h-4 w-4" />
-                </Button>
+                selectedFiles.length > 0 && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => setShowPinataDialog(false)}
+                    className="gap-2"
+                  >
+                    <Check className="size-5" />
+                  </Button>
+                )
               )}
             </div>
           </div>
@@ -1965,6 +2092,18 @@ export default function Poas() {
             <FileGridSkeleton />
           ) : (
             <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
+              <span className="flex w-full items-center justify-center">
+                {width && width > 450 && selectedFiles.length === 0
+                  ? 'Select from Pinata files'
+                  : width && width < 450 && selectedFiles.length === 0
+                    ? 'Select files'
+                    : selectedFiles.length === 0
+                      ? 'No files selected'
+                      : selectedFiles.length === 1
+                        ? '1 File Selected'
+                        : `${selectedFiles.length} Files Selected`}
+              </span>
+
               {pinataResponse.rows.map((file) => (
                 <div
                   key={file.ipfs_pin_hash}
