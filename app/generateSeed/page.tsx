@@ -60,7 +60,7 @@ const Page = () => {
         <h1 className="text-2xl font-bold">Generate Mnemonic Seed Phrase</h1>
         <div className="flex flex-row gap-2 text-xs text-muted-foreground">
           <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
-          You can verify this page's source code on{' '}
+          You can verify this page&apos;s source code on{' '}
           <a
             href="https://github.com/ensured/cardano-degen-club/blob/main/app/generateSeed/page.tsx"
             target="_blank"
