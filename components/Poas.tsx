@@ -1290,6 +1290,115 @@ export default function Poas() {
     { step: 3, tooltip: 'Select or generate a minting policy', title: 'Policy ID' },
     { step: 4, tooltip: 'Set NFT metadata and mint', title: 'Metadata/Mint' },
   ]
+
+  const FileGrid = () => {
+    return (
+      <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
+        {pinataResponse.rows.map((file) => (
+          <div
+            key={file.ipfs_pin_hash}
+            className={`group relative rounded-lg ${
+              selectedPinataFiles.some((selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash)
+                ? 'outline outline-2 outline-primary'
+                : ''
+            }`}
+            onClick={() => {
+              if (isMultiDeleteMode) {
+                // Handle multi-delete selection
+                setSelectedForDeletion((prev) =>
+                  prev.includes(file.ipfs_pin_hash)
+                    ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
+                    : [...prev, file.ipfs_pin_hash],
+                )
+              } else {
+                // Handle file selection
+                setSelectedPinataFiles((prev) => {
+                  const isSelected = prev.some(
+                    (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                  )
+                  if (isSelected) {
+                    return prev.filter((selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash)
+                  } else {
+                    return [...prev, file]
+                  }
+                })
+
+                // Also update selectedFiles state with the file info
+                const fileInfo = {
+                  url: file.ipfs_pin_hash,
+                  name: file.metadata?.name || file.name || file.ipfs_pin_hash,
+                  date_pinned: file.date_pinned,
+                }
+
+                setSelectedFiles((prev) => {
+                  const isSelected = prev.some((selected) => selected.url === file.ipfs_pin_hash)
+                  if (isSelected) {
+                    return prev.filter((selected) => selected.url !== file.ipfs_pin_hash)
+                  } else {
+                    return [...prev, fileInfo]
+                  }
+                })
+              }
+            }}
+          >
+            <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-2 sm:p-4">
+              {isMultiDeleteMode && (
+                <div className="absolute right-6 top-6 z-10">
+                  <div
+                    className={`h-5 w-5 rounded border ${
+                      selectedForDeletion.includes(file.ipfs_pin_hash)
+                        ? 'border-destructive bg-destructive'
+                        : 'border-border bg-background'
+                    } flex items-center justify-center`}
+                  >
+                    {selectedForDeletion.includes(file.ipfs_pin_hash) && (
+                      <Check className="h-4 w-4 text-destructive-foreground" />
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-1 flex-col space-y-1">
+                <div className="relative">
+                  <ImageWithFallback
+                    src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
+                    alt={file.metadata?.name || 'Pinata file'}
+                  />
+                </div>
+
+                <div className="flex flex-1 flex-col justify-between">
+                  <div className="space-y-1">
+                    <span className="block truncate text-sm sm:text-base md:text-lg">
+                      {(() => {
+                        const fullName = file.metadata?.name || file.name || ''
+                        return fullName // Return full name including extension
+                      })()}
+                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="block text-sm text-muted-foreground sm:text-base md:text-lg">
+                        {timeAgoCompact(new Date(file.date_pinned))}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation() // Prevent file selection when clicking delete
+                          setFileToDelete(file.ipfs_pin_hash)
+                          setIsConfirmDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
   return (
     <main className="m-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 p-4 md:max-w-4xl">
       {/* Progress indicator */}
@@ -2046,176 +2155,70 @@ export default function Poas() {
 
       <Dialog open={showPinataDialog} onOpenChange={setShowPinataDialog}>
         <DialogContent className="max-h-[80vh] w-full max-w-[90vw] overflow-y-auto p-0.5">
-          {/* Sticky header with Done button */}
-          <div className="sticky top-0 z-10 flex w-full flex-wrap items-center justify-between gap-2 border-b bg-background/95 px-8 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <DialogTitle className="text-base sm:text-lg">
-              {(() => {
-                const fileCount = pinataResponse.rows.length
-                if (fileCount === 0) return 'No files found'
-                return `${fileCount} ${fileCount === 1 ? 'file' : 'files'} available`
-              })()}
-            </DialogTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsMultiDeleteMode(!isMultiDeleteMode)
-                  setSelectedForDeletion([])
-                }}
-                className={isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''}
-              >
-                {isMultiDeleteMode ? 'Cancel Delete' : 'Delete Files'}
-              </Button>
-              {isMultiDeleteMode ? (
+          {/* Sticky header */}
+          <div className="sticky top-0 z-10 flex w-full flex-col border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-6">
+            {/* Top row with title and action buttons */}
+            <div className="flex items-center justify-between gap-2">
+              <DialogTitle className="text-sm font-medium sm:text-base">
+                {(() => {
+                  const fileCount = pinataResponse.rows.length
+                  if (fileCount === 0) return 'No files found'
+                  return `${fileCount} ${fileCount === 1 ? 'file' : 'files'} available`
+                })()}
+              </DialogTitle>
+              <div className="flex shrink-0 items-center gap-2">
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
-                  onClick={handleMultiDelete}
-                  disabled={selectedForDeletion.length === 0}
+                  onClick={() => {
+                    setIsMultiDeleteMode(!isMultiDeleteMode)
+                    setSelectedForDeletion([])
+                  }}
+                  className={`text-xs sm:text-sm ${
+                    isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''
+                  }`}
                 >
-                  Delete Selected ({selectedForDeletion.length})
+                  {isMultiDeleteMode ? 'Cancel' : 'Delete'}
                 </Button>
-              ) : (
-                selectedFiles.length > 0 && (
+                {isMultiDeleteMode ? (
                   <Button
-                    variant="default"
+                    variant="destructive"
                     size="sm"
-                    onClick={() => setShowPinataDialog(false)}
-                    className="gap-2"
+                    onClick={handleMultiDelete}
+                    disabled={selectedForDeletion.length === 0}
+                    className="text-xs sm:text-sm"
                   >
-                    <Check className="size-5" />
+                    Delete ({selectedForDeletion.length})
                   </Button>
-                )
-              )}
+                ) : (
+                  selectedFiles.length > 0 && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setShowPinataDialog(false)}
+                      className="h-8 w-8 p-0 sm:h-9 sm:w-9"
+                    >
+                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Selection status text */}
+            <div className="mt-2 text-center text-xs text-muted-foreground sm:text-sm">
+              {selectedFiles.length === 0
+                ? width > 450
+                  ? 'Select from Pinata files'
+                  : 'Select files'
+                : `${selectedFiles.length} ${
+                    selectedFiles.length === 1 ? 'file' : 'files'
+                  } selected`}
             </div>
           </div>
-          <span className="flex w-full items-center justify-center">
-            {width && width > 450 && selectedFiles.length === 0
-              ? 'Select from Pinata files'
-              : width && width < 450 && selectedFiles.length === 0
-                ? 'Select files'
-                : selectedFiles.length === 0
-                  ? 'No files selected'
-                  : selectedFiles.length === 1
-                    ? '1 File Selected'
-                    : `${selectedFiles.length} Files Selected`}
-          </span>
-          {/* Rest of the dialog content */}
-          {loadingFiles ? (
-            <FileGridSkeleton />
-          ) : (
-            <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
-              {pinataResponse.rows.map((file) => (
-                <div
-                  key={file.ipfs_pin_hash}
-                  className={`group relative rounded-lg ${
-                    selectedPinataFiles.some(
-                      (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
-                    )
-                      ? 'outline outline-2 outline-primary'
-                      : ''
-                  }`}
-                  onClick={() => {
-                    if (isMultiDeleteMode) {
-                      // Handle multi-delete selection
-                      setSelectedForDeletion((prev) =>
-                        prev.includes(file.ipfs_pin_hash)
-                          ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
-                          : [...prev, file.ipfs_pin_hash],
-                      )
-                    } else {
-                      // Handle file selection
-                      setSelectedPinataFiles((prev) => {
-                        const isSelected = prev.some(
-                          (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
-                        )
-                        if (isSelected) {
-                          return prev.filter(
-                            (selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash,
-                          )
-                        } else {
-                          return [...prev, file]
-                        }
-                      })
 
-                      // Also update selectedFiles state with the file info
-                      const fileInfo = {
-                        url: file.ipfs_pin_hash,
-                        name: file.metadata?.name || file.name || file.ipfs_pin_hash,
-                        date_pinned: file.date_pinned,
-                      }
-
-                      setSelectedFiles((prev) => {
-                        const isSelected = prev.some(
-                          (selected) => selected.url === file.ipfs_pin_hash,
-                        )
-                        if (isSelected) {
-                          return prev.filter((selected) => selected.url !== file.ipfs_pin_hash)
-                        } else {
-                          return [...prev, fileInfo]
-                        }
-                      })
-                    }
-                  }}
-                >
-                  <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-2 sm:p-4">
-                    {isMultiDeleteMode && (
-                      <div className="absolute right-6 top-6 z-10">
-                        <div
-                          className={`h-5 w-5 rounded border ${
-                            selectedForDeletion.includes(file.ipfs_pin_hash)
-                              ? 'border-destructive bg-destructive'
-                              : 'border-border bg-background'
-                          } flex items-center justify-center`}
-                        >
-                          {selectedForDeletion.includes(file.ipfs_pin_hash) && (
-                            <Check className="h-4 w-4 text-destructive-foreground" />
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex flex-1 flex-col space-y-1">
-                      <div className="relative">
-                        <ImageWithFallback
-                          src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
-                          alt={file.metadata?.name || 'Pinata file'}
-                        />
-                      </div>
-
-                      <div className="flex flex-1 flex-col justify-between">
-                        <div className="space-y-1">
-                          <span className="block truncate text-sm sm:text-base md:text-lg">
-                            {(() => {
-                              const fullName = file.metadata?.name || file.name || ''
-                              return fullName // Return full name including extension
-                            })()}
-                          </span>
-                          <div className="flex items-center justify-between">
-                            <span className="block text-sm text-muted-foreground sm:text-base md:text-lg">
-                              {timeAgoCompact(new Date(file.date_pinned))}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation() // Prevent file selection when clicking delete
-                                setFileToDelete(file.ipfs_pin_hash)
-                                setIsConfirmDialogOpen(true)
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Rest of dialog content */}
+          {loadingFiles ? <FileGridSkeleton /> : <FileGrid />}
 
           {/* Update the pagination section */}
           <div className="flex w-full items-center justify-center border-t border-border py-1.5">
