@@ -2207,13 +2207,18 @@ export default function Poas() {
 
             {/* Selection status text */}
             <div className="mt-2 text-center text-xs text-muted-foreground sm:text-sm">
-              {selectedFiles.length === 0
-                ? width > 450
-                  ? 'Select from Pinata files'
-                  : 'Select files'
-                : `${selectedFiles.length} ${
-                    selectedFiles.length === 1 ? 'file' : 'files'
-                  } selected`}
+              {(() => {
+                // If no files are selected
+                if (selectedFiles.length === 0) {
+                  // Show different text based on screen width
+                  return (width ?? 0) > 450 ? 'Select from Pinata files' : 'Select files'
+                }
+
+                // Show selection count
+                const fileCount = selectedFiles.length
+                const fileText = fileCount === 1 ? 'file' : 'files'
+                return `${fileCount} ${fileText} selected`
+              })()}
             </div>
           </div>
 
