@@ -1,4 +1,4 @@
-import { connectedUsers, waitingUsers, activeMatches } from '../status/route'
+import { connectedUsers, waitingUsers, activeMatches } from './state'
 
 // Types
 type GameStats = {

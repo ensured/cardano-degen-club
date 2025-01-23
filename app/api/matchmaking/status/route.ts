@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server'
-
-// Track all connected users, not just those waiting to match
-const connectedUsers = new Set<string>()
-const waitingUsers = new Set<string>()
-const activeMatches = new Set<string>()
+import { connectedUsers, waitingUsers, activeMatches } from '../utils/state'
 
 export async function GET() {
   return NextResponse.json({

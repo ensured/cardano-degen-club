@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { waitingUsers, activeMatches, connectedUsers } from './status/route'
+import { waitingUsers, activeMatches, connectedUsers } from './utils/state'
 import { broadcastStats } from './utils/utils'
 
 export async function POST(req: Request) {
