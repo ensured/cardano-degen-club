@@ -8,6 +8,3 @@ export async function GET() {
     activeMatchesCount: activeMatches.size,
   })
 }
-
-// Export these to be used in the main matchmaking endpoint
-export { waitingUsers, activeMatches, connectedUsers }
