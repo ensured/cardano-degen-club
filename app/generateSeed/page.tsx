@@ -5,6 +5,8 @@ import Button3D from '@/components/3dButton'
 import { Separator } from '@/components/ui/separator'
 import {
   Select,
+  SelectGroup,
+  SelectLabel,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -80,19 +82,23 @@ const Page = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Select
-                value={wordCount.toString()}
-                onValueChange={(value) => setWordCount(Number(value) as 128 | 160 | 192 | 256)}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Word count" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="128">12 words</SelectItem>
-                  <SelectItem value="160">15 words</SelectItem>
-                  <SelectItem value="192">18 words</SelectItem>
-                  <SelectItem value="256">24 words</SelectItem>
-                </SelectContent>
-              </Select>
+      value={wordCount.toString()}
+      onValueChange={(value) => setWordCount(Number(value) as 128 | 160 | 192 | 256)}
+    >
+      <SelectTrigger className="w-32">
+        <SelectValue placeholder="Word count" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Word Counts</SelectLabel>
+          <SelectItem value="128">12 words</SelectItem>
+          <SelectItem value="160">15 words</SelectItem>
+          <SelectItem value="192">18 words</SelectItem>
+          <SelectItem value="256">24 words</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+              
               <Button onClick={handleGenerateMnemonic} variant="outline">
                 Generate
               </Button>
