@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { decode as cborDecode } from 'cbor-js'
 import { Address, BaseAddress } from '@emurgo/cardano-serialization-lib-asmjs'
 import { toast } from 'sonner'
-// import { getAdaHandle } from '@/app/actions'
 import { isNaN } from '@/utils/helper'
 
 export interface WalletState {
@@ -42,16 +41,6 @@ const initialWalletState: WalletState = {
 // interface WalletConnectProps {
 // 	setExpiresAt: (time: string | null) => void
 // }
-
-const getAdaHandle = async (stakeAddress: string) => {
-  const res = await fetch(`https://api.handle.me/holders/${stakeAddress}`, {
-    headers: {
-      accept: 'application/json',
-    },
-  })
-  const data = await res.json()
-  return data
-}
 
 export function useWalletConnect() {
   const [walletState, setWalletState] = useState<WalletState>(initialWalletState)
@@ -103,7 +92,14 @@ export function useWalletConnect() {
           )
 
           // Fetch handle only when stake address changes
-          const handleData = await getAdaHandle(decodedStakeAddr)
+          let handleData = null
+          if (networkId === 1) {
+            try {
+              handleData = await getAdaHandle(decodedStakeAddr)
+            } catch (error) {
+              console.error('Error fetching AdaHandle:', error)
+            }
+          }
 
           const newWalletState = {
             ...walletState,
@@ -256,6 +252,40 @@ export function useWalletConnect() {
       return walletNames
     }
     return []
+  }
+
+  const getAdaHandle = async (stakeAddress: string) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+
+    try {
+      const res = await fetch(`https://api.handle.me/holders/${stakeAddress}`, {
+        signal: controller.signal,
+      })
+
+      if (!res.ok) {
+        if (res.status === 504) {
+          toast.error('adahandle API is currently unavailable')
+        } else {
+          toast.error(`adahandle API error: ${res.status}`)
+        }
+        return { default_handle: null, total_handles: null }
+      }
+
+      const data = await res.json()
+      return data
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          toast.error('adahandle API request timed out')
+        } else {
+          toast.error('Failed to fetch handle data')
+        }
+      }
+      return { default_handle: null, total_handles: null }
+    } finally {
+      clearTimeout(timeoutId)
+    }
   }
 
   return {

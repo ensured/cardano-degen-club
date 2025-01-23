@@ -1399,6 +1399,61 @@ export default function Poas() {
       </div>
     )
   }
+
+  const FilesGridHeader = () => (
+    <div className="sticky top-0 z-10 flex w-full flex-col border-b bg-background shadow-sm">
+      <div className="mx-6 flex items-center justify-between gap-2 py-2 sm:py-3 md:py-4">
+        <DialogTitle className="text-sm font-medium sm:text-base md:text-lg lg:text-xl">
+          {(() => {
+            const totalFileCount = pinataResponse.count
+            if (totalFileCount === 0) return 'No files found'
+            if (totalFileCount >= 1000) {
+              return `${(totalFileCount / 1000).toFixed(1)}k files`
+            }
+            return `${selectedFiles.length}/${totalFileCount} ${totalFileCount === 1 || selectedFiles.length === 1 ? 'file' : 'files'} Selected`
+          })()}
+        </DialogTitle>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setIsMultiDeleteMode(!isMultiDeleteMode)
+              setSelectedForDeletion([])
+            }}
+            className={`h-7 text-xs sm:h-8 sm:text-sm md:h-9 md:text-base lg:h-10 lg:text-lg ${
+              isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''
+            }`}
+          >
+            {isMultiDeleteMode ? 'Cancel' : 'Delete'}
+          </Button>
+          {isMultiDeleteMode ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleMultiDelete}
+              disabled={selectedForDeletion.length === 0}
+              className="h-7 text-xs sm:h-8 sm:text-sm md:h-9 md:text-base lg:h-10 lg:text-lg"
+            >
+              Delete ({selectedForDeletion.length})
+            </Button>
+          ) : (
+            selectedFiles.length > 0 && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setShowPinataDialog(false)}
+                className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 lg:h-10 lg:w-10"
+              >
+                <Check className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-7 lg:w-7" />
+              </Button>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <main className="m-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 p-4 md:max-w-4xl">
       {/* Progress indicator */}
@@ -2154,79 +2209,35 @@ export default function Poas() {
       )}
 
       <Dialog open={showPinataDialog} onOpenChange={setShowPinataDialog}>
-        <DialogContent className="max-h-[80vh] w-full max-w-[90vw] overflow-y-auto p-0.5">
+        <DialogContent className="flex h-[80vh] w-full max-w-[90vw] flex-col overflow-hidden p-0.5">
           {/* Sticky header */}
-          <div className="sticky top-0 z-10 flex w-full flex-col border-b bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-6">
-            {/* Top row with title and action buttons */}
-            <div className="flex items-center justify-between gap-2">
-              <DialogTitle className="text-sm font-medium sm:text-base">
-                {(() => {
-                  const fileCount = pinataResponse.rows.length
-                  if (fileCount === 0) return 'No files found'
-                  return `${fileCount} ${fileCount === 1 ? 'file' : 'files'} available`
-                })()}
-              </DialogTitle>
-              <div className="flex shrink-0 items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setIsMultiDeleteMode(!isMultiDeleteMode)
-                    setSelectedForDeletion([])
-                  }}
-                  className={`text-xs sm:text-sm ${
-                    isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''
-                  }`}
-                >
-                  {isMultiDeleteMode ? 'Cancel' : 'Delete'}
-                </Button>
-                {isMultiDeleteMode ? (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleMultiDelete}
-                    disabled={selectedForDeletion.length === 0}
-                    className="text-xs sm:text-sm"
-                  >
-                    Delete ({selectedForDeletion.length})
-                  </Button>
-                ) : (
-                  selectedFiles.length > 0 && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => setShowPinataDialog(false)}
-                      className="h-8 w-8 p-0 sm:h-9 sm:w-9"
-                    >
-                      <Check className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </Button>
-                  )
-                )}
-              </div>
-            </div>
+          <FilesGridHeader />
 
-            {/* Selection status text */}
-            <div className="mt-2 text-center text-xs text-muted-foreground sm:text-sm">
-              {(() => {
-                // If no files are selected
-                if (selectedFiles.length === 0) {
-                  // Show different text based on screen width
-                  return (width ?? 0) > 450 ? 'Select from Pinata files' : 'Select files'
-                }
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto">
+            {loadingFiles ? <FileGridSkeleton /> : <FileGrid />}
 
-                // Show selection count
-                const fileCount = selectedFiles.length
-                const fileText = fileCount === 1 ? 'file' : 'files'
-                return `${fileCount} ${fileText} selected`
-              })()}
-            </div>
+            {/* No supported files message */}
+            {pinataResponse.rows.length > 0 &&
+              pinataResponse.rows.filter(
+                (file) =>
+                  (file.mime_type
+                    ? Object.values(VALID_IMAGE_MIMES).includes(file.mime_type)
+                    : false) ||
+                  VALID_IMAGE_EXTENSIONS.some((ext) =>
+                    file.metadata?.name?.toLowerCase().endsWith(ext),
+                  ),
+              ).length === 0 && (
+                <div className="flex flex-col items-center gap-2 p-8 text-center text-muted-foreground">
+                  <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10" />
+                  <p>No supported image files found</p>
+                  <p className="text-sm">Supported formats: {formatSupportedExtensions()}</p>
+                </div>
+              )}
           </div>
 
-          {/* Rest of dialog content */}
-          {loadingFiles ? <FileGridSkeleton /> : <FileGrid />}
-
-          {/* Update the pagination section */}
-          <div className="flex w-full items-center justify-center border-t border-border py-1.5">
+          {/* Fixed pagination */}
+          <div className="flex w-full items-center justify-center border-t border-border bg-background">
             <Pagination className="!mx-0 overflow-x-auto !px-0 sm:!px-1">
               <PaginationContent className="flex-nowrap">
                 {/* Only show Previous button if we're not on page 1 */}
@@ -2291,24 +2302,6 @@ export default function Poas() {
               </PaginationContent>
             </Pagination>
           </div>
-
-          {/* Add a message if no supported files are found */}
-          {pinataResponse.rows.length > 0 &&
-            pinataResponse.rows.filter(
-              (file) =>
-                (file.mime_type
-                  ? Object.values(VALID_IMAGE_MIMES).includes(file.mime_type)
-                  : false) ||
-                VALID_IMAGE_EXTENSIONS.some((ext) =>
-                  file.metadata?.name?.toLowerCase().endsWith(ext),
-                ),
-            ).length === 0 && (
-              <div className="flex flex-col items-center gap-2 p-8 text-center text-muted-foreground">
-                <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10" />
-                <p>No supported image files found</p>
-                <p className="text-sm">Supported formats: {formatSupportedExtensions()}</p>
-              </div>
-            )}
         </DialogContent>
       </Dialog>
 
