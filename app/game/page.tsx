@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Peer, DataConnection } from 'peerjs'
 import { Button } from '@/components/ui/button'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Send } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { toast } from 'sonner'
 
@@ -12,6 +12,7 @@ type Message = {
   sender: string
   text: string
   senderName: string
+  timestamp: number
 }
 
 type GameStats = {
@@ -32,7 +33,13 @@ type LeaveData = {
   sender: string
 }
 
-type PeerData = ChatData | LeaveData | string
+type TypingData = {
+  type: 'typing'
+  sender: string
+  isTyping: boolean
+}
+
+type PeerData = ChatData | LeaveData | TypingData | string
 
 // Components
 const ChatMessage = ({ message, isOwn }: { message: Message; isOwn: boolean }) => (
@@ -43,17 +50,24 @@ const ChatMessage = ({ message, isOwn }: { message: Message; isOwn: boolean }) =
         : 'ml-auto border-black bg-primary text-primary-foreground'
     } max-w-[80%] break-words`}
   >
-    <div className="text-xs opacity-75">{isOwn ? 'You' : message.senderName}</div>
+    <div className="flex justify-between text-xs opacity-75">
+      <span>{isOwn ? 'You' : message.senderName}</span>
+      <span>{new Date(message.timestamp).toLocaleTimeString()}</span>
+    </div>
     <div>{message.text}</div>
   </div>
 )
 
 const StatsDisplay = ({ stats }: { stats: GameStats }) => (
-  <div className="mb-4 flex gap-4 text-sm text-muted-foreground">
+  <div className="mb-4 flex flex-wrap items-center justify-center gap-1 text-sm text-muted-foreground">
     <div className="rounded-lg bg-secondary px-3 py-1">👥 Connected: {stats.connectedCount}</div>
     <div className="rounded-lg bg-secondary px-3 py-1">🔄 Searching: {stats.waitingCount}</div>
     <div className="rounded-lg bg-secondary px-3 py-1">🎮 In Game: {stats.activeMatchesCount}</div>
   </div>
+)
+
+const TypingIndicator = () => (
+  <div className="mb-2 ml-2 animate-pulse text-sm text-muted-foreground">typing...</div>
 )
 
 const GamePage = () => {
@@ -80,19 +94,46 @@ const GamePage = () => {
   const [playerName, setPlayerName] = useState('')
   const [hasSetName, setHasSetName] = useState(false)
 
+  // Add typing indicator
+  const [isTyping, setIsTyping] = useState(false)
+  const [opponentTyping, setOpponentTyping] = useState(false)
+  const [opponentName, setOpponentName] = useState<string>('')
+  const typingTimeoutRef = useRef<NodeJS.Timeout>()
+
+  // Add debounced typing notification
+  useEffect(() => {
+    if (!connection) return
+
+    const timeoutId = setTimeout(() => {
+      connection.send({ type: 'typing', isTyping: false })
+      setIsTyping(false)
+    }, 2000)
+
+    return () => clearTimeout(timeoutId)
+  }, [messageInput])
+
   const handlePeerData = (data: PeerData) => {
     if (typeof data === 'object' && 'type' in data) {
       if (data.type === 'chat') {
         setMessages((prev) => [
           ...prev,
-          { sender: data.sender, text: data.text, senderName: data.senderName },
+          {
+            sender: data.sender,
+            text: data.text,
+            senderName: data.senderName,
+            timestamp: Date.now(),
+          },
         ])
+        setOpponentName(data.senderName)
+        setOpponentTyping(false)
       } else if (data.type === 'leave') {
         setOpponentLeft(data.sender)
         if (connection) {
           connection.close()
         }
         cancelMatchmaking()
+      } else if (data.type === 'typing') {
+        setOpponentTyping(data.isTyping)
       }
     } else if (typeof data === 'string') {
       setLobbyUsers((prev) => [...prev, data])
@@ -111,6 +152,18 @@ const GamePage = () => {
     const newPeer = new Peer()
     setPeer(newPeer)
 
+    const cleanup = async (id: string) => {
+      try {
+        await fetch('/api/matchmaking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playerId: id, action: 'disconnect' }),
+        })
+      } catch (error) {
+        console.error('Cleanup error:', error)
+      }
+    }
+
     newPeer.on('open', async (id) => {
       setPlayerId(id)
       await fetch('/api/matchmaking', {
@@ -118,6 +171,16 @@ const GamePage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerId: id, action: 'connect' }),
       })
+
+      // Add beforeunload event listener
+      const handleBeforeUnload = () => cleanup(id)
+      window.addEventListener('beforeunload', handleBeforeUnload)
+
+      // Clean up event listener when component unmounts
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload)
+        cleanup(id)
+      }
     })
 
     newPeer.on('connection', (conn) => {
@@ -131,11 +194,7 @@ const GamePage = () => {
 
     return () => {
       if (playerId) {
-        fetch('/api/matchmaking', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ playerId, action: 'disconnect' }),
-        })
+        cleanup(playerId)
       }
       newPeer.destroy()
     }
@@ -251,10 +310,51 @@ const GamePage = () => {
     connection.send(messageData)
     setMessages((prev) => [
       ...prev,
-      { sender: playerId, text: messageInput.trim(), senderName: playerName },
+      {
+        sender: playerId,
+        text: messageInput.trim(),
+        senderName: playerName,
+        timestamp: Date.now(),
+      },
     ])
     setMessageInput('')
   }
+
+  // Add typing detection
+  useEffect(() => {
+    if (!connection || !messageInput) return
+
+    // Clear any existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+
+    // Send typing indicator
+    if (!isTyping) {
+      setIsTyping(true)
+      connection.send({ type: 'typing', sender: playerId, isTyping: true })
+    }
+
+    // Set timeout to clear typing indicator
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false)
+      connection.send({ type: 'typing', sender: playerId, isTyping: false })
+    }, 1500)
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
+  }, [messageInput, connection, playerId])
+
+  // Clear typing indicators when component unmounts or connection changes
+  useEffect(() => {
+    return () => {
+      setIsTyping(false)
+      setOpponentTyping(false)
+    }
+  }, [connection])
 
   return (
     <div className="flex min-h-[69vh] flex-col items-center justify-center p-4">
@@ -274,7 +374,7 @@ const GamePage = () => {
                   setHasSetName(true)
                 }
               }}
-              className="flex gap-2"
+              className="flex flex-wrap gap-2"
             >
               <input
                 type="text"
@@ -329,9 +429,9 @@ const GamePage = () => {
                   <span className="font-medium">Connection Details</span>
                   <ChevronDown className="h-4 w-4 transition-transform duration-200" />
                 </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-2 border-t border-border/50 px-3 pb-3">
+                <CollapsibleContent className="space-y-2 border-t border-border/50 p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Session ID:</span>
+                    <span className="text-muted-foreground">Session Host:</span>
                     <code className="rounded-md bg-secondary px-2 py-1 font-mono text-xs">
                       {lobbyUsers[0]}
                     </code>
@@ -373,9 +473,10 @@ const GamePage = () => {
                   {messages.map((msg, index) => (
                     <ChatMessage key={index} message={msg} isOwn={msg.sender === playerId} />
                   ))}
+                  {opponentTyping && <TypingIndicator />}
                 </div>
 
-                <form onSubmit={sendMessage} className="flex gap-2">
+                <form onSubmit={sendMessage} className="flex flex-wrap gap-1.5">
                   <input
                     type="text"
                     value={messageInput}
@@ -383,7 +484,9 @@ const GamePage = () => {
                     placeholder="Type a message..."
                     className="flex-1 rounded-lg border border-border bg-background px-3 py-2"
                   />
-                  <Button type="submit">Send</Button>
+                  <Button type="submit">
+                    <Send className="h-4 w-4" />
+                  </Button>
                 </form>
               </div>
             ) : null}

@@ -15,9 +15,9 @@ export async function POST(req: Request) {
   if (action === 'disconnect') {
     // Find and remove opponent from active matches
     let opponentId = null
-    for (const activePlayer of activeMatches) {
-      if (activePlayer !== playerId) {
-        opponentId = activePlayer
+    for (const match of activeMatches) {
+      if (match !== playerId) {
+        opponentId = match
         break
       }
     }
@@ -25,12 +25,12 @@ export async function POST(req: Request) {
     // Clean up both players
     if (opponentId) {
       activeMatches.delete(opponentId)
+      waitingUsers.delete(opponentId)
     }
     connectedUsers.delete(playerId)
     waitingUsers.delete(playerId)
     activeMatches.delete(playerId)
     broadcastStats()
-
     return NextResponse.json({ status: 'disconnected' })
   }
 
@@ -58,11 +58,11 @@ export async function POST(req: Request) {
   }
 
   if (action === 'leave') {
-    // Find and remove opponent from active matches
+    // Find the opponent in active matches
     let opponentId = null
-    for (const activePlayer of activeMatches) {
-      if (activePlayer !== playerId) {
-        opponentId = activePlayer
+    for (const match of activeMatches) {
+      if (match !== playerId) {
+        opponentId = match
         break
       }
     }
@@ -70,11 +70,12 @@ export async function POST(req: Request) {
     // Clean up both players
     if (opponentId) {
       activeMatches.delete(opponentId)
+      waitingUsers.delete(opponentId)
     }
     waitingUsers.delete(playerId)
     activeMatches.delete(playerId)
+    connectedUsers.delete(playerId)
     broadcastStats()
-
     return NextResponse.json({ status: 'left' })
   }
 
