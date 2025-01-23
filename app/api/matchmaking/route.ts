@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { waitingUsers, activeMatches, connectedUsers } from './status/route'
-import { broadcastStats } from './events/route'
+import { broadcastStats } from './utils/utils'
 
 export async function POST(req: Request) {
   const { playerId, action } = await req.json()

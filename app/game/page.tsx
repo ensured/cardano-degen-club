@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Peer, DataConnection } from 'peerjs'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, MessageCircle, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { toast } from 'sonner'
 
