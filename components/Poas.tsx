@@ -1053,7 +1053,6 @@ export default function Poas() {
           totalPages: newTotalPages,
           currentPage: prev.currentPage > newTotalPages ? newTotalPages : prev.currentPage,
         }))
-        toast.success('File deleted successfully', { position: 'bottom-center' })
       } else {
         // Revert the optimistic update if the delete fails
         setPinataResponse((prev) => ({
@@ -1317,14 +1316,12 @@ export default function Poas() {
             }`}
             onClick={() => {
               if (isMultiDeleteMode) {
-                // Handle multi-delete selection
                 setSelectedForDeletion((prev) =>
                   prev.includes(file.ipfs_pin_hash)
                     ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
                     : [...prev, file.ipfs_pin_hash],
                 )
               } else {
-                // Handle file selection
                 setSelectedPinataFiles((prev) => {
                   const isSelected = prev.some(
                     (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
@@ -1336,7 +1333,6 @@ export default function Poas() {
                   }
                 })
 
-                // Also update selectedFiles state with the file info
                 const fileInfo = {
                   url: file.ipfs_pin_hash,
                   name: file.metadata?.name || file.name || file.ipfs_pin_hash,
@@ -1388,7 +1384,7 @@ export default function Poas() {
                 <div className="flex flex-1 flex-col justify-between">
                   <div className="space-y-1 px-1">
                     <span
-                      className={`block truncate ${
+                      className={`font-cal block truncate ${
                         isMultiDeleteMode ? 'text-xs' : 'text-sm sm:text-base md:text-lg'
                       }`}
                     >
@@ -1399,7 +1395,7 @@ export default function Poas() {
                     </span>
                     <div className="flex items-center justify-between">
                       <span
-                        className={`block text-muted-foreground ${
+                        className={`block font-mono text-muted-foreground ${
                           isMultiDeleteMode ? 'text-xs' : 'text-sm sm:text-base md:text-lg'
                         }`}
                       >
@@ -1432,24 +1428,26 @@ export default function Poas() {
 
   const FilesGridHeader = () => (
     <div className="sticky top-0 z-10 flex w-full flex-col border-b bg-background shadow-sm">
-      <div className="mx-3 flex flex-col gap-2 py-2 sm:mx-6 sm:py-4 md:py-5">
+      <div className="mx-2 flex flex-col gap-1.5 py-2 sm:mx-3 sm:py-2 md:py-3">
         <div className="flex w-full items-center justify-between">
-          <DialogTitle className="text-base font-medium sm:text-lg md:text-xl lg:text-2xl">
+          <DialogTitle className="font-cal text-base font-medium tracking-wide sm:text-lg md:text-xl lg:text-2xl">
             {(() => {
               const totalFileCount = pinataResponse.count
               if (totalFileCount === 0) return 'No files found'
               if (totalFileCount >= 1000) {
                 return `${(totalFileCount / 1000).toFixed(1)}k files`
               }
-              return `${selectedFiles.length}/${totalFileCount} ${totalFileCount === 1 || selectedFiles.length === 1 ? 'file' : 'files'} selected`
+              return `${selectedFiles.length}/${totalFileCount} ${
+                totalFileCount === 1 || selectedFiles.length === 1 ? 'file' : 'files'
+              } selected`
             })()}
           </DialogTitle>
-          <DialogClose className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-secondary/80 sm:h-10 sm:w-10 md:h-12 md:w-12">
+          <DialogClose className="flex h-9 w-9 items-center justify-center rounded-lg border border-border transition-colors hover:bg-secondary/80 sm:h-10 sm:w-10 md:h-12 md:w-12">
             <X className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7" />
             <span className="sr-only">Close</span>
           </DialogClose>
         </div>
-        <div className="flex w-full justify-end gap-2">
+        <div className="flex w-full justify-end gap-1.5">
           <Button
             variant="outline"
             size="sm"
@@ -1457,7 +1455,7 @@ export default function Poas() {
               setIsMultiDeleteMode(!isMultiDeleteMode)
               setSelectedForDeletion([])
             }}
-            className={`flex h-8 items-center justify-center gap-1.5 text-base sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl ${
+            className={`flex h-9 items-center justify-center gap-1.5 text-base font-medium sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl ${
               isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''
             }`}
           >
@@ -1479,7 +1477,7 @@ export default function Poas() {
               size="sm"
               onClick={handleMultiDelete}
               disabled={selectedForDeletion.length === 0}
-              className="flex h-8 items-center justify-center gap-1.5 text-base sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl"
+              className="flex h-9 items-center justify-center gap-1.5 text-base font-medium sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl"
             >
               <Trash2 className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
               Delete ({selectedForDeletion.length})
@@ -1487,10 +1485,10 @@ export default function Poas() {
           ) : (
             selectedFiles.length > 0 && (
               <Button
-                variant="default"
+                variant="outline"
                 size="sm"
                 onClick={() => setShowPinataDialog(false)}
-                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11"
+                className="h-9 w-9 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11"
               >
                 <Check className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
               </Button>
@@ -2353,7 +2351,7 @@ export default function Poas() {
       </Dialog>
 
       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
-        <DialogContent>
+        <DialogContent onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
           </DialogHeader>
@@ -2382,36 +2380,36 @@ export default function Poas() {
               </div>
             </div>
           </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (confirmationText.toLowerCase() === 'confirm') {
-                if (selectedForDeletion.length > 0) {
-                  // Delete multiple files
-                  Promise.all(selectedForDeletion.map((hash) => deleteFile(hash)))
-                    .then(() => {
-                      setSelectedForDeletion([])
-                      setIsMultiDeleteMode(false)
-                      setIsConfirmDialogOpen(false)
-                      setConfirmationText('')
-                    })
-                    .catch((error) => {
-                      toast.error('Error deleting files: ' + error.message, {
-                        position: 'bottom-center',
-                      })
-                    })
-                } else {
-                  // Delete single file
-                  handleDeleteConfirmation()
-                }
-              }
-            }}
-          >
+          <div className="space-y-2">
             <Input
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value.toLowerCase())}
               placeholder='Type "confirm" here'
               autoCapitalize="none"
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  e.stopPropagation()
+
+                  if (confirmationText.toLowerCase() === 'confirm') {
+                    if (selectedForDeletion.length > 0) {
+                      try {
+                        await Promise.all(selectedForDeletion.map((hash) => deleteFile(hash)))
+                        setSelectedForDeletion([])
+                        setIsMultiDeleteMode(false)
+                        setIsConfirmDialogOpen(false)
+                        setConfirmationText('')
+                      } catch (error) {
+                        toast.error('Error deleting files: ' + (error as Error).message, {
+                          position: 'bottom-center',
+                        })
+                      }
+                    } else if (fileToDelete) {
+                      await handleDeleteConfirmation()
+                    }
+                  }
+                }
+              }}
             />
             <div className="mt-2 flex justify-end gap-2">
               <Button
@@ -2425,13 +2423,31 @@ export default function Poas() {
               </Button>
               <Button
                 variant="destructive"
-                type="submit"
+                onClick={async () => {
+                  if (confirmationText.toLowerCase() === 'confirm') {
+                    if (selectedForDeletion.length > 0) {
+                      try {
+                        await Promise.all(selectedForDeletion.map((hash) => deleteFile(hash)))
+                        setSelectedForDeletion([])
+                        setIsMultiDeleteMode(false)
+                        setIsConfirmDialogOpen(false)
+                        setConfirmationText('')
+                      } catch (error) {
+                        toast.error('Error deleting files: ' + (error as Error).message, {
+                          position: 'bottom-center',
+                        })
+                      }
+                    } else if (fileToDelete) {
+                      await handleDeleteConfirmation()
+                    }
+                  }
+                }}
                 disabled={confirmationText.toLowerCase() !== 'confirm'}
               >
                 Delete
               </Button>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
     </main>
