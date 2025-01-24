@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog'
-import { Check, ChevronDown, Loader2, Plus, X, Trash2, Info } from 'lucide-react'
+import { Check, ChevronDown, Loader2, Plus, X, Trash2, Info, Code } from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
@@ -631,7 +631,21 @@ export default function Poas() {
 
       const signedTx = await tx.sign.withWallet().complete()
       const txHash = await signedTx.submit()
-      toast.success(`Minted NFT with transaction hash: ${txHash}`, { position: 'bottom-center' })
+      const cscanLink =
+        CARDANO_NETWORK === 'Preview'
+          ? `https://preview.cardanoscan.io/transaction/${txHash}`
+          : `https://cardanoscan.io/transaction/${txHash}`
+      toast.success(
+        <div>
+          <p className="text-sm text-green-500">
+            Success!{' '}
+            <Link href={cscanLink} target="_blank" rel="noopener noreferrer" className="underline">
+              View on CardanoScan
+            </Link>
+          </p>
+        </div>,
+        { position: 'bottom-center' },
+      )
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message, { position: 'bottom-center' })
@@ -1306,79 +1320,84 @@ export default function Poas() {
             : 'sm:grid-cols-2 lg:grid-cols-3'
         }`}
       >
-        {pinataResponse.rows.map((file) => (
-          <div
-            key={file.ipfs_pin_hash}
-            className={`group relative rounded-lg ${
-              selectedPinataFiles.some((selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash)
-                ? 'outline outline-2 outline-primary'
-                : ''
-            }`}
-            onClick={() => {
-              if (isMultiDeleteMode) {
-                setSelectedForDeletion((prev) =>
-                  prev.includes(file.ipfs_pin_hash)
-                    ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
-                    : [...prev, file.ipfs_pin_hash],
-                )
-              } else {
-                setSelectedPinataFiles((prev) => {
-                  const isSelected = prev.some(
-                    (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
-                  )
-                  if (isSelected) {
-                    return prev.filter((selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash)
-                  } else {
-                    return [...prev, file]
-                  }
-                })
+        {pinataResponse.rows.map((file) => {
+          const fileExtension = '.' + file.metadata?.name?.split('.').pop()?.toLowerCase()
+          const isHtml =
+            fileExtension === '.html' ||
+            fileExtension === '.htm' ||
+            file.mime_type === 'text/html' ||
+            (file.metadata as any)?.keyvalues?.fileType === 'html'
 
-                const fileInfo = {
-                  url: file.ipfs_pin_hash,
-                  name: file.metadata?.name || file.name || file.ipfs_pin_hash,
-                  date_pinned: file.date_pinned,
-                }
-
-                setSelectedFiles((prev) => {
-                  const isSelected = prev.some((selected) => selected.url === file.ipfs_pin_hash)
-                  if (isSelected) {
-                    return prev.filter((selected) => selected.url !== file.ipfs_pin_hash)
-                  } else {
-                    return [...prev, fileInfo]
-                  }
-                })
-              }
-            }}
-          >
+          return (
             <div
-              className={`flex cursor-pointer flex-col rounded-lg border border-border ${
-                isMultiDeleteMode ? 'p-1' : 'p-2 sm:p-4'
+              key={file.ipfs_pin_hash}
+              className={`group relative rounded-lg ${
+                selectedPinataFiles.some(
+                  (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                )
+                  ? 'outline outline-2 outline-primary'
+                  : ''
               }`}
+              onClick={() => {
+                if (isMultiDeleteMode) {
+                  setSelectedForDeletion((prev) =>
+                    prev.includes(file.ipfs_pin_hash)
+                      ? prev.filter((hash) => hash !== file.ipfs_pin_hash)
+                      : [...prev, file.ipfs_pin_hash],
+                  )
+                } else {
+                  setSelectedPinataFiles((prev) => {
+                    const isSelected = prev.some(
+                      (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                    )
+                    if (isSelected) {
+                      return prev.filter(
+                        (selected) => selected.ipfs_pin_hash !== file.ipfs_pin_hash,
+                      )
+                    } else {
+                      return [...prev, file]
+                    }
+                  })
+
+                  const fileInfo = {
+                    url: file.ipfs_pin_hash,
+                    name: file.metadata?.name || file.name || file.ipfs_pin_hash,
+                    date_pinned: file.date_pinned,
+                  }
+
+                  setSelectedFiles((prev) => {
+                    const isSelected = prev.some((selected) => selected.url === file.ipfs_pin_hash)
+                    if (isSelected) {
+                      return prev.filter((selected) => selected.url !== file.ipfs_pin_hash)
+                    } else {
+                      return [...prev, fileInfo]
+                    }
+                  })
+                }
+              }}
             >
-              {isMultiDeleteMode && (
-                <div className="absolute right-2 top-2 z-10">
-                  <div
-                    className={`h-4 w-4 rounded border ${
-                      selectedForDeletion.includes(file.ipfs_pin_hash)
-                        ? 'border-destructive bg-destructive'
-                        : 'border-border bg-background'
-                    } flex items-center justify-center`}
-                  >
-                    {selectedForDeletion.includes(file.ipfs_pin_hash) && (
-                      <Check className="h-3 w-3 text-destructive-foreground" />
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="flex flex-1 flex-col space-y-1">
+              <div
+                className={`flex cursor-pointer flex-col rounded-lg border border-border ${
+                  isMultiDeleteMode ? 'p-1' : 'p-2 sm:p-4'
+                }`}
+              >
                 <div className="relative">
-                  <ImageWithFallback
-                    src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
-                    alt={file.metadata?.name || 'Pinata file'}
-                    className={`w-full rounded-lg object-contain ${
-                      isMultiDeleteMode ? 'h-20 sm:h-28' : 'h-32'
-                    }`}
-                  />
+                  {isHtml ? (
+                    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-muted/30">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <Code className="h-8 w-8" />
+                        <span className="text-xs">HTML File</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <ImageWithFallback
+                      src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
+                      alt={file.metadata?.name || 'Pinata file'}
+                      className={`w-full rounded-lg object-contain ${
+                        isMultiDeleteMode ? 'h-20 sm:h-28' : 'h-32'
+                      }`}
+                    />
+                  )}
                 </div>
 
                 <div className="flex flex-1 flex-col justify-between">
@@ -1420,8 +1439,8 @@ export default function Poas() {
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     )
   }
