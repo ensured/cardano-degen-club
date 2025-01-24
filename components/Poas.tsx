@@ -2293,12 +2293,12 @@ export default function Poas() {
                     <PaginationPrevious
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
-                      className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm"
+                      className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm"
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationPrevious className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm" />
+                    <PaginationPrevious className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm" />
                   </PaginationItem>
                 )}
 
@@ -2317,14 +2317,14 @@ export default function Poas() {
                         {/* Add ellipsis if there's a gap */}
                         {i > 0 && array[i] - array[i - 1] > 1 && (
                           <PaginationItem className="cursor-pointer select-none">
-                            <PaginationEllipsis className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm" />
+                            <PaginationEllipsis className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm" />
                           </PaginationItem>
                         )}
                         <PaginationItem className="cursor-pointer select-none">
                           <PaginationLink
                             onClick={() => handlePageChange(pageNumber)}
                             isActive={pageNumber === pagination.currentPage}
-                            className="h-8 w-8 text-xs sm:h-9 sm:w-9 sm:text-sm"
+                            className="h-6 w-6 text-[10px] sm:h-9 sm:w-9 sm:text-sm"
                           >
                             {pageNumber}
                           </PaginationLink>
@@ -2338,12 +2338,12 @@ export default function Poas() {
                     <PaginationNext
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       isActive={loadingFiles}
-                      className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm"
+                      className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm"
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationNext className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm" />
+                    <PaginationNext className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm" />
                   </PaginationItem>
                 )}
               </PaginationContent>

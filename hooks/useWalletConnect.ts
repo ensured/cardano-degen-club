@@ -42,6 +42,23 @@ const initialWalletState: WalletState = {
 // 	setExpiresAt: (time: string | null) => void
 // }
 
+// Add this type at the top with other interfaces
+type WalletError = {
+  code?: string
+  message: string
+}
+
+// Add this helper function
+const handleWalletError = (error: unknown): WalletError => {
+  if (error instanceof Error) {
+    if (error.message.includes('account changed')) {
+      return { code: 'ACCOUNT_CHANGED', message: 'Wallet account changed' }
+    }
+    return { message: error.message }
+  }
+  return { message: 'Unknown wallet error occurred' }
+}
+
 export function useWalletConnect() {
   const [walletState, setWalletState] = useState<WalletState>(initialWalletState)
   const [loading, setLoading] = useState(false)
@@ -73,64 +90,32 @@ export function useWalletConnect() {
         // Only proceed if stake address has changed
         if (decodedStakeAddr !== walletState.stakeAddress) {
           // Get other wallet details
-          const [walletAddresses, balanceResponse, networkId] = await Promise.all([
-            api.getUsedAddresses(),
-            api.getBalance(),
-            api.getNetworkId(),
-          ])
-
-          const primaryAddress =
-            walletAddresses.length > 0 ? walletAddresses[0] : (await api.getUnusedAddresses())[0]
-
-          const decodedAddress = decodeHexAddress(primaryAddress)
-          if (!decodedAddress) return
-
-          // Process balance
-          const balanceBytes = Buffer.from(balanceResponse, 'hex')
-          const decodedBalance = Number(
-            (cborDecode(new Uint8Array(balanceBytes).buffer)[0] / 1000000).toFixed(0),
-          )
+          const { address: decodedAddress, balance: decodedBalance } = await getWalletDetails(api)
 
           // Fetch handle only when stake address changes
-          let handleData = null
-          if (networkId === 1) {
-            try {
-              handleData = await getAdaHandle(decodedStakeAddr)
-            } catch (error) {
-              console.error('Error fetching AdaHandle:', error)
-            }
-          }
-
           const newWalletState = {
             ...walletState,
             walletAddress: decodedAddress,
-            balance: isNaN(decodedBalance) ? 0 : decodedBalance,
-            networkId,
+            balance: decodedBalance,
+            networkId: walletState.network,
             stakeAddress: decodedStakeAddr,
-            adaHandle: {
-              handle: handleData?.default_handle,
-              total_handles: handleData?.total_handles,
-            },
           }
 
-          setWalletState(newWalletState)
-
-          // Emit a custom event when wallet state changes
-          window.dispatchEvent(
-            new CustomEvent('walletStateChanged', {
-              detail: newWalletState,
-            }),
+          await updateWalletStateWithHandle(
+            newWalletState,
+            decodedStakeAddr,
+            walletState.network ?? 1,
           )
         }
       } catch (error) {
-        if (error instanceof Error && error.message.includes('account changed')) {
-          // Attempt to reconnect with the same wallet
+        const { code, message } = handleWalletError(error)
+        if (code === 'ACCOUNT_CHANGED') {
           const lastWallet = localStorage.getItem('lastWallet')
           if (lastWallet) {
             await connect(lastWallet)
           }
         } else {
-          console.error('Error checking wallet state:', error)
+          console.error('Error checking wallet state:', message)
         }
       } finally {
         isChecking = false
@@ -173,12 +158,66 @@ export function useWalletConnect() {
   // 	}
   // }
 
+  const updateWalletState = (newState: Partial<WalletState>, dispatchEvent: boolean = true) => {
+    const updatedState = { ...walletState, ...newState }
+    setWalletState(updatedState)
+
+    if (dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('walletStateChanged', { detail: updatedState }))
+    }
+    return updatedState
+  }
+
+  const updateWalletStateWithHandle = async (
+    currentState: WalletState,
+    stakeAddress: string,
+    networkId: number,
+  ) => {
+    let handleData = null
+    try {
+      handleData = await getAdaHandle(stakeAddress, networkId)
+    } catch (error) {
+      console.error('Error fetching AdaHandle:', error)
+    }
+
+    return updateWalletState({
+      ...currentState,
+      adaHandle: {
+        handle: handleData?.default_handle,
+        total_handles: handleData?.total_handles,
+      },
+    })
+  }
+
+  const getWalletDetails = async (api: any) => {
+    // Get addresses
+    const walletAddresses = await api.getUsedAddresses()
+    const primaryAddress =
+      walletAddresses.length > 0 ? walletAddresses[0] : (await api.getUnusedAddresses())[0]
+
+    const decodedAddress = decodeHexAddress(primaryAddress)
+    if (!decodedAddress) throw new Error('No address found')
+
+    // Get balance
+    const balanceResponse = await api.getBalance()
+    const balanceBytes = Buffer.from(balanceResponse, 'hex')
+    const decodedBalance = Number(
+      (cborDecode(new Uint8Array(balanceBytes).buffer)[0] / 1000000).toFixed(0),
+    )
+
+    return {
+      address: decodedAddress,
+      balance: isNaN(decodedBalance) ? 0 : decodedBalance,
+    }
+  }
+
   const connect = async (walletKey: string): Promise<boolean> => {
     setLoading(true)
-
     try {
       const walletInstance = window.cardano?.[walletKey]
-      if (!walletInstance || !walletKey || !window.cardano) throw new Error('Wallet not found')
+      if (!walletInstance || !walletKey || !window.cardano) {
+        throw new Error('Wallet not found or not supported')
+      }
 
       const api = await walletInstance.enable()
 
@@ -186,51 +225,34 @@ export function useWalletConnect() {
       localStorage.setItem('lastWallet', walletKey)
 
       // Get primary address
-      const walletAddresses = await api.getUsedAddresses()
-      const primaryAddress =
-        walletAddresses.length > 0 ? walletAddresses[0] : (await api.getUnusedAddresses())[0]
-
-      const decodedAddress = decodeHexAddress(primaryAddress)
-      if (!decodedAddress) throw new Error('No address found')
+      const { address: decodedAddress, balance: decodedBalance } = await getWalletDetails(api)
 
       // Get wallet details
-      const [balanceResponse, networkId, stakeAddress] = await Promise.all([
-        api.getBalance(),
-        api.getNetworkId(),
+      const [stakeAddress, networkId] = await Promise.all([
         api.getRewardAddresses(),
+        api.getNetworkId(),
       ])
-
-      // Process balance
-      const balanceBytes = Buffer.from(balanceResponse, 'hex')
-      const decodedBalance = Number(
-        (cborDecode(new Uint8Array(balanceBytes).buffer)[0] / 1000000).toFixed(0),
-      )
 
       // Get stake address and handle for initial connection
       const decodedStakeAddr = decodeHexAddress(stakeAddress[0])
-      const handleData = await getAdaHandle(decodedStakeAddr)
 
-      const newWalletState = {
+      const baseWalletState = {
         ...initialWalletState,
         wallet: walletInstance,
         api: api,
         walletName: walletInstance.name,
         walletAddress: decodedAddress,
         walletIcon: walletInstance.icon,
-        balance: isNaN(decodedBalance) ? 0 : decodedBalance,
-        networkId,
+        balance: decodedBalance,
+        network: networkId,
         stakeAddress: decodedStakeAddr,
-        adaHandle: {
-          handle: handleData?.default_handle,
-          total_handles: handleData?.total_handles,
-        },
       }
 
-      setWalletState(newWalletState)
-      window.dispatchEvent(new CustomEvent('walletStateChanged', { detail: newWalletState }))
+      await updateWalletStateWithHandle(baseWalletState, decodedStakeAddr, networkId)
       return true
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error) {
+      const { message } = handleWalletError(error)
+      toast.error(message)
       return false
     } finally {
       setLoading(false)
@@ -239,7 +261,7 @@ export function useWalletConnect() {
 
   const disconnect = () => {
     localStorage.removeItem('lastWallet')
-    setWalletState(initialWalletState)
+    updateWalletState(initialWalletState)
     setLoading(false)
   }
 
@@ -248,20 +270,23 @@ export function useWalletConnect() {
       const walletNames = Object.keys(window.cardano).filter(
         (key) => window.cardano?.[key]?.apiVersion !== undefined,
       )
-      setWalletState((prev) => ({ ...prev, supportedWallets: walletNames }))
+      updateWalletState({ supportedWallets: walletNames }, false)
       return walletNames
     }
     return []
   }
 
-  const getAdaHandle = async (stakeAddress: string) => {
+  const getAdaHandle = async (stakeAddress: string, networkId: number) => {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
 
     try {
-      const res = await fetch(`https://api.handle.me/holders/${stakeAddress}`, {
-        signal: controller.signal,
-      })
+      const res = await fetch(
+        `https://${networkId === 1 ? 'api' : 'preview.api'}.handle.me/holders/${stakeAddress}`,
+        {
+          signal: controller.signal,
+        },
+      )
 
       if (!res.ok) {
         if (res.status === 504) {
