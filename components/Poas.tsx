@@ -16,7 +16,14 @@ import {
 } from './ui/dropdown-menu'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog'
 import { Check, ChevronDown, Loader2, Plus, X, Trash2, Info } from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
@@ -1293,7 +1300,13 @@ export default function Poas() {
 
   const FileGrid = () => {
     return (
-      <div className="grid max-w-[100vw] grid-cols-1 gap-2 p-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        className={`grid max-w-[100vw] grid-cols-1 gap-2 p-2 ${
+          isMultiDeleteMode
+            ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
+            : 'sm:grid-cols-2 lg:grid-cols-3'
+        }`}
+      >
         {pinataResponse.rows.map((file) => (
           <div
             key={file.ipfs_pin_hash}
@@ -1341,18 +1354,22 @@ export default function Poas() {
               }
             }}
           >
-            <div className="flex h-full cursor-pointer flex-col rounded-lg border border-border p-2 sm:p-4">
+            <div
+              className={`flex cursor-pointer flex-col rounded-lg border border-border ${
+                isMultiDeleteMode ? 'p-1' : 'p-2 sm:p-4'
+              }`}
+            >
               {isMultiDeleteMode && (
-                <div className="absolute right-6 top-6 z-10">
+                <div className="absolute right-2 top-2 z-10">
                   <div
-                    className={`h-5 w-5 rounded border ${
+                    className={`h-4 w-4 rounded border ${
                       selectedForDeletion.includes(file.ipfs_pin_hash)
                         ? 'border-destructive bg-destructive'
                         : 'border-border bg-background'
                     } flex items-center justify-center`}
                   >
                     {selectedForDeletion.includes(file.ipfs_pin_hash) && (
-                      <Check className="h-4 w-4 text-destructive-foreground" />
+                      <Check className="h-3 w-3 text-destructive-foreground" />
                     )}
                   </div>
                 </div>
@@ -1362,33 +1379,46 @@ export default function Poas() {
                   <ImageWithFallback
                     src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
                     alt={file.metadata?.name || 'Pinata file'}
+                    className={`w-full rounded-lg object-contain ${
+                      isMultiDeleteMode ? 'h-20 sm:h-28' : 'h-32'
+                    }`}
                   />
                 </div>
 
                 <div className="flex flex-1 flex-col justify-between">
-                  <div className="space-y-1">
-                    <span className="block truncate text-sm sm:text-base md:text-lg">
+                  <div className="space-y-1 px-1">
+                    <span
+                      className={`block truncate ${
+                        isMultiDeleteMode ? 'text-xs' : 'text-sm sm:text-base md:text-lg'
+                      }`}
+                    >
                       {(() => {
                         const fullName = file.metadata?.name || file.name || ''
-                        return fullName // Return full name including extension
+                        return fullName
                       })()}
                     </span>
                     <div className="flex items-center justify-between">
-                      <span className="block text-sm text-muted-foreground sm:text-base md:text-lg">
+                      <span
+                        className={`block text-muted-foreground ${
+                          isMultiDeleteMode ? 'text-xs' : 'text-sm sm:text-base md:text-lg'
+                        }`}
+                      >
                         {timeAgoCompact(new Date(file.date_pinned))}
                       </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={(e) => {
-                          e.stopPropagation() // Prevent file selection when clicking delete
-                          setFileToDelete(file.ipfs_pin_hash)
-                          setIsConfirmDialogOpen(true)
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {!isMultiDeleteMode && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setFileToDelete(file.ipfs_pin_hash)
+                            setIsConfirmDialogOpen(true)
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1402,18 +1432,24 @@ export default function Poas() {
 
   const FilesGridHeader = () => (
     <div className="sticky top-0 z-10 flex w-full flex-col border-b bg-background shadow-sm">
-      <div className="mx-6 flex items-center justify-between gap-2 py-2 sm:py-3 md:py-4">
-        <DialogTitle className="text-sm font-medium sm:text-base md:text-lg lg:text-xl">
-          {(() => {
-            const totalFileCount = pinataResponse.count
-            if (totalFileCount === 0) return 'No files found'
-            if (totalFileCount >= 1000) {
-              return `${(totalFileCount / 1000).toFixed(1)}k files`
-            }
-            return `${selectedFiles.length}/${totalFileCount} ${totalFileCount === 1 || selectedFiles.length === 1 ? 'file' : 'files'} Selected`
-          })()}
-        </DialogTitle>
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+      <div className="mx-3 flex flex-col gap-2 py-2 sm:mx-6 sm:py-4 md:py-5">
+        <div className="flex w-full items-center justify-between">
+          <DialogTitle className="text-base font-medium sm:text-lg md:text-xl lg:text-2xl">
+            {(() => {
+              const totalFileCount = pinataResponse.count
+              if (totalFileCount === 0) return 'No files found'
+              if (totalFileCount >= 1000) {
+                return `${(totalFileCount / 1000).toFixed(1)}k files`
+              }
+              return `${selectedFiles.length}/${totalFileCount} ${totalFileCount === 1 || selectedFiles.length === 1 ? 'file' : 'files'} selected`
+            })()}
+          </DialogTitle>
+          <DialogClose className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-secondary/80 sm:h-10 sm:w-10 md:h-12 md:w-12">
+            <X className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7" />
+            <span className="sr-only">Close</span>
+          </DialogClose>
+        </div>
+        <div className="flex w-full justify-end gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -1421,11 +1457,21 @@ export default function Poas() {
               setIsMultiDeleteMode(!isMultiDeleteMode)
               setSelectedForDeletion([])
             }}
-            className={`h-7 text-xs sm:h-8 sm:text-sm md:h-9 md:text-base lg:h-10 lg:text-lg ${
+            className={`flex h-8 items-center justify-center gap-1.5 text-base sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl ${
               isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''
             }`}
           >
-            {isMultiDeleteMode ? 'Cancel' : 'Delete'}
+            {isMultiDeleteMode ? (
+              <>
+                <X className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
+                Cancel
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
+                Delete
+              </>
+            )}
           </Button>
           {isMultiDeleteMode ? (
             <Button
@@ -1433,8 +1479,9 @@ export default function Poas() {
               size="sm"
               onClick={handleMultiDelete}
               disabled={selectedForDeletion.length === 0}
-              className="h-7 text-xs sm:h-8 sm:text-sm md:h-9 md:text-base lg:h-10 lg:text-lg"
+              className="flex h-8 items-center justify-center gap-1.5 text-base sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl"
             >
+              <Trash2 className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
               Delete ({selectedForDeletion.length})
             </Button>
           ) : (
@@ -1443,9 +1490,9 @@ export default function Poas() {
                 variant="default"
                 size="sm"
                 onClick={() => setShowPinataDialog(false)}
-                className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 lg:h-10 lg:w-10"
+                className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 lg:h-11 lg:w-11"
               >
-                <Check className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-7 lg:w-7" />
+                <Check className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
               </Button>
             )
           )}
@@ -2237,21 +2284,20 @@ export default function Poas() {
           </div>
 
           {/* Fixed pagination */}
-          <div className="flex w-full items-center justify-center border-t border-border bg-background">
-            <Pagination className="!mx-0 overflow-x-auto !px-0 sm:!px-1">
+          <div className="flex w-full items-center justify-center border-t border-border bg-background py-1">
+            <Pagination className="!mx-0 overflow-x-auto">
               <PaginationContent className="flex-nowrap">
                 {/* Only show Previous button if we're not on page 1 */}
                 {pagination.currentPage > 1 ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationPrevious
-                      className="!px-1 !pl-0.5 !pr-0.5"
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationPrevious className="!px-1 !pl-0.5 !pr-0.5 sm:!px-1 sm:!pl-0.5 sm:!pr-0.5" />
+                    <PaginationPrevious />
                   </PaginationItem>
                 )}
 
@@ -2277,7 +2323,6 @@ export default function Poas() {
                           <PaginationLink
                             onClick={() => handlePageChange(pageNumber)}
                             isActive={pageNumber === pagination.currentPage}
-                            className="!h-6 !w-6 sm:!h-8 sm:!w-8"
                           >
                             {pageNumber}
                           </PaginationLink>
@@ -2289,14 +2334,13 @@ export default function Poas() {
                 {pagination.currentPage < pagination.totalPages ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationNext
-                      className="!px-1 !pl-0.5 !pr-0.5 sm:!px-1 sm:!pl-0.5 sm:!pr-0.5"
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       isActive={loadingFiles}
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationNext className="!px-1 !pl-0.5 !pr-0.5 sm:!px-1 sm:!pl-0.5 sm:!pr-0.5" />
+                    <PaginationNext />
                   </PaginationItem>
                 )}
               </PaginationContent>
