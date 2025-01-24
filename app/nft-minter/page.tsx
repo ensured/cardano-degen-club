@@ -1,7 +1,11 @@
 import Poas from '@/components/Poas'
 import { Loader2 } from 'lucide-react'
 import { Suspense } from 'react'
-import * as bip39 from 'bip39'
+
+// Add configuration for WebAssembly
+export const runtime = 'edge' // 'nodejs' (default) | 'edge'
+export const preferredRegion = 'auto'
+export const dynamic = 'force-dynamic'
 
 const page = async () => {
   return (

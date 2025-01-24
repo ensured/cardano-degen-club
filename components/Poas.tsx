@@ -2286,18 +2286,19 @@ export default function Poas() {
           {/* Fixed pagination */}
           <div className="flex w-full items-center justify-center border-t border-border bg-background py-1">
             <Pagination className="!mx-0 overflow-x-auto">
-              <PaginationContent className="flex-nowrap">
+              <PaginationContent className="flex-nowrap gap-0.5 sm:gap-1">
                 {/* Only show Previous button if we're not on page 1 */}
                 {pagination.currentPage > 1 ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationPrevious
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
+                      className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm"
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationPrevious />
+                    <PaginationPrevious className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm" />
                   </PaginationItem>
                 )}
 
@@ -2316,13 +2317,14 @@ export default function Poas() {
                         {/* Add ellipsis if there's a gap */}
                         {i > 0 && array[i] - array[i - 1] > 1 && (
                           <PaginationItem className="cursor-pointer select-none">
-                            <PaginationEllipsis />
+                            <PaginationEllipsis className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm" />
                           </PaginationItem>
                         )}
                         <PaginationItem className="cursor-pointer select-none">
                           <PaginationLink
                             onClick={() => handlePageChange(pageNumber)}
                             isActive={pageNumber === pagination.currentPage}
+                            className="h-8 w-8 text-xs sm:h-9 sm:w-9 sm:text-sm"
                           >
                             {pageNumber}
                           </PaginationLink>
@@ -2336,11 +2338,12 @@ export default function Poas() {
                     <PaginationNext
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       isActive={loadingFiles}
+                      className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm"
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationNext />
+                    <PaginationNext className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm" />
                   </PaginationItem>
                 )}
               </PaginationContent>
