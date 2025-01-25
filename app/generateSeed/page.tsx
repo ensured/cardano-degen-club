@@ -81,25 +81,19 @@ const Page = () => {
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Select
-                value={wordCount.toString()}
-                onValueChange={(value) => setWordCount(Number(value) as 128 | 160 | 192 | 256)}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Word count" />
-                </SelectTrigger>
-                <SelectContent
-                  ref={(ref) => ref?.addEventListener('touchend', (e) => e.preventDefault())}
+              <div className="relative w-32">
+                <select
+                  value={wordCount.toString()}
+                  onChange={(e) => setWordCount(Number(e.target.value) as 128 | 160 | 192 | 256)}
+                  className="h-10 w-full appearance-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <SelectGroup>
-                    <SelectLabel>Word Counts</SelectLabel>
-                    <SelectItem value="128">12 words</SelectItem>
-                    <SelectItem value="160">15 words</SelectItem>
-                    <SelectItem value="192">18 words</SelectItem>
-                    <SelectItem value="256">24 words</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+                  <option value="128">12 words</option>
+                  <option value="160">15 words</option>
+                  <option value="192">18 words</option>
+                  <option value="256">24 words</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-3 h-4 w-4 opacity-50" />
+              </div>
 
               <Button onClick={handleGenerateMnemonic} variant="outline">
                 Generate
