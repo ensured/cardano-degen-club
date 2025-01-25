@@ -85,24 +85,21 @@ const Page = () => {
                 value={wordCount.toString()}
                 onValueChange={(value) => setWordCount(Number(value) as 128 | 160 | 192 | 256)}
               >
-                <SelectTrigger className="w-32 touch-manipulation">
+                <SelectTrigger className="w-32">
                   <SelectValue placeholder="Word count" />
                 </SelectTrigger>
-                <SelectContent position="popper" className="min-w-[8rem]">
+                <SelectContent
+                  ref={(ref: any) =>
+                    // temporary workaround from https://github.com/shadcn-ui/ui/issues/1220
+                    ref?.addEventListener('touchend', (e: any) => e.stopPropagation())
+                  }
+                >
                   <SelectGroup>
                     <SelectLabel>Word Counts</SelectLabel>
-                    <SelectItem value="128" className="cursor-pointer">
-                      12 words
-                    </SelectItem>
-                    <SelectItem value="160" className="cursor-pointer">
-                      15 words
-                    </SelectItem>
-                    <SelectItem value="192" className="cursor-pointer">
-                      18 words
-                    </SelectItem>
-                    <SelectItem value="256" className="cursor-pointer">
-                      24 words
-                    </SelectItem>
+                    <SelectItem value="128">12 words</SelectItem>
+                    <SelectItem value="160">15 words</SelectItem>
+                    <SelectItem value="192">18 words</SelectItem>
+                    <SelectItem value="256">24 words</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
