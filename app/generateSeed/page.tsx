@@ -82,34 +82,31 @@ const Page = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Select
-  value={wordCount.toString()}
-  onValueChange={(value) => setWordCount(Number(value) as 128 | 160 | 192 | 256)}
->
-  <SelectTrigger className="w-32">
-    <SelectValue placeholder="Word count" />
-  </SelectTrigger>
-  <SelectContent 
-    onTouchStart={(e) => e.stopPropagation()}
-    onTouchMove={(e) => e.stopPropagation()}
-    onTouchEnd={(e) => e.stopPropagation()}
-  >
-    <SelectGroup>
-      <SelectLabel>Word Counts</SelectLabel>
-      <SelectItem value="128" onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
-        12 words
-      </SelectItem>
-      <SelectItem value="160" onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
-        15 words
-      </SelectItem>
-      <SelectItem value="192" onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
-        18 words
-      </SelectItem>
-      <SelectItem value="256" onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
-        24 words
-      </SelectItem>
-    </SelectGroup>
-  </SelectContent>
-</Select>
+                value={wordCount.toString()}
+                onValueChange={(value) => setWordCount(Number(value) as 128 | 160 | 192 | 256)}
+              >
+                <SelectTrigger className="w-32 touch-manipulation">
+                  <SelectValue placeholder="Word count" />
+                </SelectTrigger>
+                <SelectContent position="popper" className="min-w-[8rem]">
+                  <SelectGroup>
+                    <SelectLabel>Word Counts</SelectLabel>
+                    <SelectItem value="128" className="cursor-pointer">
+                      12 words
+                    </SelectItem>
+                    <SelectItem value="160" className="cursor-pointer">
+                      15 words
+                    </SelectItem>
+                    <SelectItem value="192" className="cursor-pointer">
+                      18 words
+                    </SelectItem>
+                    <SelectItem value="256" className="cursor-pointer">
+                      24 words
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+
               <Button onClick={handleGenerateMnemonic} variant="outline">
                 Generate
               </Button>

@@ -1477,11 +1477,11 @@ export default function Poas() {
               key={file.ipfs_pin_hash}
               className={`group relative rounded-lg ${
                 isMultiDeleteMode && selectedForDeletion.includes(file.ipfs_pin_hash)
-                  ? '!ring-2 !ring-destructive'
+                  ? '!border-2 !border-destructive'
                   : selectedPinataFiles.some(
                         (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
                       )
-                    ? 'ring-2 ring-primary'
+                    ? 'border-2 border-primary'
                     : ''
               }`}
               onClick={() => {
@@ -1818,9 +1818,16 @@ export default function Poas() {
                               <ImageWithFallback
                                 src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
                                 alt={fileInfo.name}
-                                className="h-20 w-full cursor-pointer rounded-lg object-contain sm:h-28"
+                                className={`h-20 w-full cursor-pointer rounded-lg object-contain sm:h-28 ${
+                                  thumbnailImage === fileInfo.url ? 'ring-2 ring-emerald-500' : ''
+                                }`}
                                 onClick={() => setThumbnailImage(fileInfo.url)}
                               />
+                              {thumbnailImage === fileInfo.url && (
+                                <div className="absolute left-1 top-1 rounded-md bg-emerald-500/80 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                                  Preview
+                                </div>
+                              )}
                               <Button
                                 variant="outline"
                                 size="icon"
@@ -1833,7 +1840,6 @@ export default function Poas() {
                                   setSelectedPinataFiles((prev) =>
                                     prev.filter((f) => f.ipfs_pin_hash !== fileInfo.url),
                                   )
-                                  // Clear thumbnail if this was the selected thumbnail
                                   if (thumbnailImage === fileInfo.url) {
                                     setThumbnailImage(null)
                                   }
