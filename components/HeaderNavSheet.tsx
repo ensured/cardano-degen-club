@@ -302,7 +302,7 @@ export function HeaderNavSheet() {
               </h1>
             </div>
 
-            <CustomLinkText>Generate Mnemonic</CustomLinkText>
+            <CustomLinkText>Generate Seed</CustomLinkText>
             {folderCommits.find((c) => c.folder === 'generateSeed') && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
                 (
