@@ -24,7 +24,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog'
-import { Check, ChevronDown, Loader2, Plus, X, Trash2, Info, Code } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  Loader2,
+  Plus,
+  X,
+  Trash2,
+  Info,
+  Code,
+  Upload,
+  File,
+} from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
@@ -45,6 +56,9 @@ import { Slider } from './ui/slider'
 import { Switch } from './ui/switch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WalletState } from '@/hooks/useWalletConnect'
+import { useCallback } from 'react'
+import { useDropzone } from 'react-dropzone'
+import { cn } from '@/lib/utils'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -156,17 +170,33 @@ const VALID_IMAGE_EXTENSIONS = [
   '.bmp',
   '.ico',
   '.apng',
-  '.html', // Add HTML support
-  '.htm', // Add HTM support
+  '.html',
+  '.htm',
 ]
 
-// Add this constant to define what files can be selected
-const VALID_FILE_ACCEPT = [
-  // Image MIME types
-  ...Object.values(VALID_IMAGE_MIMES),
-  // File extensions (for better browser support)
-  ...VALID_IMAGE_EXTENSIONS.map((ext) => (ext.startsWith('.') ? ext : `.${ext}`)),
-].join(',')
+// const VALID_FILE_ACCEPT = [
+//   // Image MIME types
+//   ...Object.values(VALID_IMAGE_MIMES),
+//   // File extensions (for better browser support)
+//   ...VALID_IMAGE_EXTENSIONS.map((ext) => (ext.startsWith('.') ? ext : `.${ext}`)),
+// ].join(',')
+
+const VALID_FILE_ACCEPT_FOR_DROPZONE: Record<string, string[]> = {
+  'image/*': [
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.gif',
+    '.svg',
+    '.webp',
+    '.avif',
+    '.tiff',
+    '.bmp',
+    '.ico',
+    '.apng',
+  ],
+  'application/html': ['.html', '.htm'],
+}
 
 // Update the formatSupportedExtensions helper to include HTML
 const formatSupportedExtensions = () => {
@@ -286,10 +316,133 @@ const FileGridSkeleton = () => {
   )
 }
 
+// Add props interface
+interface FileUploadAreaProps {
+  pinataJWT: string | null
+  uploadFile: (files: File[]) => Promise<void>
+  files: File[]
+  setFiles: (files: File[]) => void
+  isStepComplete: (step: number) => boolean
+  uploading: boolean
+}
+
+const FileUploadArea = ({
+  pinataJWT,
+  uploadFile,
+  files,
+  setFiles,
+  isStepComplete,
+  uploading,
+}: FileUploadAreaProps) => {
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (pinataJWT && acceptedFiles.length > 0) {
+        await uploadFile(acceptedFiles)
+      } else {
+        toast.error('Please enter a Pinata JWT and select files', { position: 'bottom-center' })
+      }
+    },
+    [pinataJWT, uploadFile],
+  )
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: VALID_FILE_ACCEPT_FOR_DROPZONE,
+  })
+
+  return (
+    <div className="w-full">
+      <div
+        {...getRootProps()}
+        className={cn(
+          'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors',
+          isDragActive
+            ? 'border-primary/50 bg-primary/5'
+            : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5',
+        )}
+      >
+        <input {...getInputProps()} />
+
+        <div className="flex flex-col items-center justify-center gap-2 text-center">
+          <div
+            className={cn(
+              'rounded-full p-2 transition-colors',
+              isDragActive ? 'bg-primary/10' : 'bg-muted',
+            )}
+          >
+            <Upload
+              className={cn('h-6 w-6', isDragActive ? 'text-primary' : 'text-muted-foreground')}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-medium">
+              {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
+            </p>
+            <p className="text-xs text-muted-foreground">or click to select files</p>
+          </div>
+        </div>
+
+        {files.length > 0 && (
+          <div className="mt-4 flex w-full flex-col gap-2">
+            {files.map((file, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-md border border-border bg-card p-2"
+              >
+                <div className="flex items-center gap-2">
+                  <File className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">{file.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFiles(files.filter((_, index) => index !== i))
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              disabled={!isStepComplete(1) || uploading || !files.length}
+              onClick={() => uploadFile(files)}
+              className="mt-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload {files.length} file{files.length > 1 ? 's' : ''}
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <p className="mt-2 text-xs text-muted-foreground">
+        Supported formats: {formatSupportedExtensions()}
+      </p>
+    </div>
+  )
+}
+
 export default function Poas() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
   const [pinataJWT, setPinataJWT] = useState<string | null>(null)
+  const [blockfrostKey, setBlockfrostKey] = useState<string | null>(null)
   const [generatingPolicy, setGeneratingPolicy] = useState(false)
   const [policyIds, setPolicyIds] = useState<PolicyInfo[]>([])
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyInfo | null>(null)
@@ -299,7 +452,6 @@ export default function Poas() {
   const [minting, setMinting] = useState(false)
   const [nftName, setNftName] = useState('')
   const [nftDescription, setNftDescription] = useState('')
-  const [blockfrostKey, setBlockfrostKey] = useState<string | null>(null)
   const [loadingFiles, setLoadingFiles] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [showPinataDialog, setShowPinataDialog] = useState(false)
@@ -336,8 +488,6 @@ export default function Poas() {
   const [traitEdits, setTraitEdits] = useState<
     Record<string, Record<number, { key: string; value: string }>>
   >({})
-
-  const { width } = useWindowSize()
 
   const formatExpiryTime = (slot?: number) => {
     if (!slot) return null
@@ -1313,13 +1463,7 @@ export default function Poas() {
 
   const FileGrid = () => {
     return (
-      <div
-        className={`grid max-w-[100vw] grid-cols-1 gap-2 p-2 ${
-          isMultiDeleteMode
-            ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'
-            : 'sm:grid-cols-2 lg:grid-cols-3'
-        }`}
-      >
+      <div className="grid max-w-[100vw] grid-cols-2 gap-2 p-2 lg:grid-cols-3">
         {pinataResponse.rows.map((file) => {
           const fileExtension = '.' + file.metadata?.name?.split('.').pop()?.toLowerCase()
           const isHtml =
@@ -1332,11 +1476,13 @@ export default function Poas() {
             <div
               key={file.ipfs_pin_hash}
               className={`group relative rounded-lg ${
-                selectedPinataFiles.some(
-                  (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
-                )
-                  ? 'outline outline-2 outline-primary'
-                  : ''
+                isMultiDeleteMode && selectedForDeletion.includes(file.ipfs_pin_hash)
+                  ? '!ring-2 !ring-destructive'
+                  : selectedPinataFiles.some(
+                        (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                      )
+                    ? 'ring-2 ring-primary'
+                    : ''
               }`}
               onClick={() => {
                 if (isMultiDeleteMode) {
@@ -1377,63 +1523,62 @@ export default function Poas() {
               }}
             >
               <div
-                className={`flex cursor-pointer flex-col rounded-lg border border-border ${
-                  isMultiDeleteMode ? 'p-1' : 'p-2 sm:p-4'
+                className={`flex cursor-pointer flex-col rounded-lg border border-border p-1 ${
+                  isMultiDeleteMode && selectedForDeletion.includes(file.ipfs_pin_hash)
+                    ? '!ring-2 !ring-destructive'
+                    : selectedPinataFiles.some(
+                          (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                        )
+                      ? 'ring-2 ring-primary'
+                      : ''
                 }`}
               >
                 <div className="relative">
-                  {isHtml ? (
-                    <div className="flex h-32 w-full items-center justify-center rounded-lg bg-muted/30">
-                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <Code className="h-8 w-8" />
-                        <span className="text-xs">HTML File</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <ImageWithFallback
-                      src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
-                      alt={file.metadata?.name || 'Pinata file'}
-                      className={`w-full rounded-lg object-contain ${
-                        isMultiDeleteMode ? 'h-20 sm:h-28' : 'h-32'
-                      }`}
-                    />
-                  )}
+                  <ImageWithFallback
+                    src={`https://gateway.pinata.cloud/ipfs/${file.ipfs_pin_hash}`}
+                    alt={file.metadata?.name || 'Pinata file'}
+                    className="h-20 w-full cursor-pointer rounded-lg object-contain sm:h-28"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-1 top-1 h-7 w-7 bg-background/80 backdrop-blur-sm hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedFiles((prev) => prev.filter((f) => f.url !== file.ipfs_pin_hash))
+                      setSelectedPinataFiles((prev) =>
+                        prev.filter((f) => f.ipfs_pin_hash !== file.ipfs_pin_hash),
+                      )
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
 
                 <div className="flex flex-1 flex-col justify-between">
                   <div className="space-y-1 px-1">
-                    <span
-                      className={`font-cal block truncate ${
-                        isMultiDeleteMode ? 'text-xs' : 'text-sm sm:text-base md:text-lg'
-                      }`}
-                    >
+                    <span className="block truncate text-xs">
                       {(() => {
                         const fullName = file.metadata?.name || file.name || ''
                         return fullName
                       })()}
                     </span>
                     <div className="flex items-center justify-between">
-                      <span
-                        className={`block font-mono text-muted-foreground ${
-                          isMultiDeleteMode ? 'text-xs' : 'text-sm sm:text-base md:text-lg'
-                        }`}
-                      >
+                      <span className="block font-mono text-xs text-muted-foreground">
                         {timeAgoCompact(new Date(file.date_pinned))}
                       </span>
-                      {!isMultiDeleteMode && (
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setFileToDelete(file.ipfs_pin_hash)
-                            setIsConfirmDialogOpen(true)
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setFileToDelete(file.ipfs_pin_hash)
+                          setIsConfirmDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1630,24 +1775,17 @@ export default function Poas() {
                   'Browse Uploaded Files'
                 )}
               </Button3D>
-
+              <span className="text-center text-sm text-muted-foreground md:text-base">or</span>
               <div className="flex gap-4">
-                <Input
-                  type="file"
-                  onChange={handleChange}
-                  disabled={!isStepComplete(1)}
-                  className="flex-1"
-                  accept={VALID_FILE_ACCEPT}
-                  multiple
+                <FileUploadArea
+                  pinataJWT={pinataJWT}
+                  uploadFile={uploadFile}
+                  files={files}
+                  setFiles={setFiles}
+                  isStepComplete={isStepComplete}
+                  uploading={uploading}
                 />
-                <Button3D
-                  disabled={!isStepComplete(1) || uploading || !files.length}
-                  onClick={() => uploadFile(files)}
-                >
-                  {uploading ? 'Uploading...' : 'Upload'}
-                </Button3D>
               </div>
-
               {/* File preview section */}
               {selectedFiles.length > 0 && (
                 <div className="flex flex-col gap-4">
@@ -1660,34 +1798,49 @@ export default function Poas() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
                     {selectedFiles.map((fileInfo) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
-                          className={`flex h-full flex-col rounded-lg border border-border bg-background/50 p-4 transition-all hover:shadow-lg hover:shadow-primary/5 hover:ring-1 hover:ring-primary/20`}
+                          className={`flex h-full flex-col rounded-lg border border-border bg-background/50 p-1 ${
+                            isMultiDeleteMode && selectedForDeletion.includes(fileInfo.url)
+                              ? '!outline !outline-2 !outline-destructive'
+                              : selectedPinataFiles.some(
+                                    (selected) => selected.ipfs_pin_hash === fileInfo.url,
+                                  )
+                                ? 'outline outline-2 outline-primary'
+                                : ''
+                          }`}
                         >
                           <div className="flex flex-1 flex-col space-y-2">
                             {/* Image preview */}
                             <div className="relative">
                               <ImageWithFallback
                                 src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
-                                fileUrl={fileInfo.url}
                                 alt={fileInfo.name}
-                                onClick={() => {
+                                className="h-20 w-full cursor-pointer rounded-lg object-contain sm:h-28"
+                                onClick={() => setThumbnailImage(fileInfo.url)}
+                              />
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="absolute right-1 top-1 h-7 w-7 bg-background/80 backdrop-blur-sm hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setSelectedFiles((prev) =>
+                                    prev.filter((f) => f.url !== fileInfo.url),
+                                  )
+                                  setSelectedPinataFiles((prev) =>
+                                    prev.filter((f) => f.ipfs_pin_hash !== fileInfo.url),
+                                  )
+                                  // Clear thumbnail if this was the selected thumbnail
                                   if (thumbnailImage === fileInfo.url) {
-                                    // Deselect the thumbnail if it's already selected
                                     setThumbnailImage(null)
-                                  } else {
-                                    // Select new thumbnail
-                                    setThumbnailImage(fileInfo.url)
                                   }
                                 }}
-                              />
-                              {thumbnailImage === fileInfo.url && (
-                                <div className="absolute right-2 top-2 rounded-md bg-primary/90 px-2 py-1 text-xs text-white backdrop-blur-sm">
-                                  Preview Image
-                                </div>
-                              )}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
                             </div>
 
                             {/* Filename editor with improved styling */}
@@ -1721,7 +1874,7 @@ export default function Poas() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 gap-1.5 px-3 font-medium transition-colors hover:bg-primary/10 hover:text-primary"
+                                className="h-8 gap-1.5 px-3 font-medium hover:bg-secondary/20"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   addTraitToImage(fileInfo.url)
@@ -1729,25 +1882,6 @@ export default function Poas() {
                               >
                                 Add Trait
                                 <Plus className="h-4 w-4" />
-                              </Button>
-
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 gap-1 font-medium transition-colors hover:bg-destructive/10 hover:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setSelectedFiles((prev) =>
-                                    prev.filter((f) => f.url !== fileInfo.url),
-                                  )
-                                  // Add this line to keep selectedPinataFiles in sync
-                                  setSelectedPinataFiles((prev) =>
-                                    prev.filter((f) => f.ipfs_pin_hash !== fileInfo.url),
-                                  )
-                                }}
-                              >
-                                Remove File
-                                <X className="h-4 w-4" />
                               </Button>
                             </div>
 
