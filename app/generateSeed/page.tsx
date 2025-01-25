@@ -89,10 +89,7 @@ const Page = () => {
                   <SelectValue placeholder="Word count" />
                 </SelectTrigger>
                 <SelectContent
-                  ref={(ref: any) =>
-                    // temporary workaround from https://github.com/shadcn-ui/ui/issues/1220
-                    ref?.addEventListener('touchend', (e: any) => e.stopPropagation())
-                  }
+                  ref={(ref) => ref?.addEventListener('touchend', (e) => e.preventDefault())}
                 >
                   <SelectGroup>
                     <SelectLabel>Word Counts</SelectLabel>

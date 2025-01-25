@@ -388,7 +388,7 @@ const FileUploadArea = ({
             {files.map((file, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between rounded-md border border-border bg-card p-2"
+                className="flex items-center justify-between rounded-lg border border-border bg-card p-2"
               >
                 <div className="flex items-center gap-2">
                   <File className="h-4 w-4 text-muted-foreground" />
@@ -1824,7 +1824,7 @@ export default function Poas() {
                                 onClick={() => setThumbnailImage(fileInfo.url)}
                               />
                               {thumbnailImage === fileInfo.url && (
-                                <div className="absolute left-1 top-1 rounded-md bg-emerald-500/80 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                                <div className="absolute left-1 top-1 rounded-lg bg-emerald-500/80 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
                                   Preview
                                 </div>
                               )}
