@@ -82,17 +82,20 @@ const Page = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="relative w-32">
-                <select
+                <Select
                   value={wordCount.toString()}
-                  onChange={(e) => setWordCount(Number(e.target.value) as 128 | 160 | 192 | 256)}
-                  className="h-10 w-full appearance-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  onValueChange={(value) => setWordCount(Number(value) as 128 | 160 | 192 | 256)}
                 >
-                  <option value="128">12 words</option>
-                  <option value="160">15 words</option>
-                  <option value="192">18 words</option>
-                  <option value="256">24 words</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-3 h-4 w-4 opacity-50" />
+                  <SelectTrigger className="h-10 w-full appearance-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    <SelectValue placeholder="Word count" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="128">12 words</SelectItem>
+                    <SelectItem value="160">15 words</SelectItem>
+                    <SelectItem value="192">18 words</SelectItem>
+                    <SelectItem value="256">24 words</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <Button3D onClick={handleGenerateMnemonic}>Generate</Button3D>
