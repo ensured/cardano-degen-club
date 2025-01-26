@@ -29,6 +29,8 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --success: 142.1 76% 36%; /* Green-600 */
+    --success-foreground: 0 0% 98%; /* Zinc-50 */
   }
 
   .dark {
@@ -56,6 +58,8 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    --success: 142.4 71% 29%; /* Green-800 */
+    --success-foreground: 143 80% 98%; /* Light green for contrast */
   }
 }
 
@@ -67,7 +71,7 @@
       var(--gradient-end) 100%
     );
   }
-} 
+}
 
 @supports (-webkit-touch-callout: none) {
   .h-screen {
@@ -137,7 +141,6 @@
   --scrollbar-thumb-hover: rgba(185, 185, 185, 0.877); /* Thumb color on hover */
   --scrollbar-thumb-active: rgba(185, 185, 185, 0.877); /* Thumb color when active */
 }
-
 
 /* Firefox
  {
@@ -288,7 +291,9 @@
 .toast-enter-active {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 200ms, transform 200ms;
+  transition:
+    opacity 200ms,
+    transform 200ms;
 }
 
 .toast-exit {
@@ -299,9 +304,10 @@
 .toast-exit-active {
   opacity: 0;
   transform: scale(0.9);
-  transition: opacity 200ms, transform 200ms;
+  transition:
+    opacity 200ms,
+    transform 200ms;
 }
-
 
 .scrollable-container {
   user-select: none;
@@ -343,12 +349,17 @@
 }
 
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .animate-gradient {
   animation: gradient 15s ease infinite;
 }
-

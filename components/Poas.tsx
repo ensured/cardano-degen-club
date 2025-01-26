@@ -1676,9 +1676,9 @@ export default function Poas() {
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
                         isStepComplete(step)
-                          ? 'border-primary bg-primary font-bold text-white shadow-lg shadow-primary/30 ring-2 ring-primary/10 ring-offset-2'
+                          ? 'border-success bg-success text-success-foreground shadow-lg shadow-success/30 ring-2 ring-success/10 ring-offset-2'
                           : step === currentStep
-                            ? 'animate-pulse-slow border-emerald-500 bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-500/10 ring-offset-2'
+                            ? 'animate-pulse-slow border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-2 ring-primary/10 ring-offset-2'
                             : 'border-muted bg-background text-muted-foreground hover:scale-110 hover:border-muted-foreground/50 hover:shadow-sm'
                       }`}
                     >
