@@ -67,7 +67,7 @@ const ResolveHandleForm = ({
           </div>
           {!handleName && (
             <p className="mt-2 text-sm text-muted-foreground/60">
-              Type your handle name (e.g. "$satoshi")
+              Type your handle name (e.g. &rdquo;$satoshi&rdquo;)
             </p>
           )}
           <Button
