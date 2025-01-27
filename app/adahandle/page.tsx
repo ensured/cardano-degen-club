@@ -75,18 +75,18 @@ const Page = () => {
               ADA Handle Statistics
             </h3>
 
-            <div className="flex flex-row items-center justify-center gap-6 p-4">
-              <div className="flex flex-col items-center rounded-lg bg-card p-6 shadow-lg transition-all hover:shadow-xl">
-                <span className="text-4xl font-bold text-primary">
+            <div className="mx-4 flex flex-col items-center justify-center gap-4 p-2 sm:mx-auto sm:max-w-2xl sm:flex-row sm:gap-6 sm:p-4">
+              <div className="flex w-full min-w-[200px] max-w-[260px] flex-col items-center rounded-lg bg-card p-4 shadow-lg transition-all hover:shadow-xl sm:p-6">
+                <span className="text-3xl font-bold text-primary sm:text-4xl">
                   {adahandleStats?.total_handles?.toLocaleString()}
                 </span>
-                <span className="mt-2 text-sm text-muted-foreground">Total Handles</span>
+                <span className="mt-2 text-xs text-muted-foreground sm:text-sm">Total Handles</span>
               </div>
-              <div className="flex flex-col items-center rounded-lg bg-card p-6 shadow-lg transition-all hover:shadow-xl">
-                <span className="text-4xl font-bold text-primary">
+              <div className="flex w-full min-w-[200px] max-w-[260px] flex-col items-center rounded-lg bg-card p-4 shadow-lg transition-all hover:shadow-xl sm:p-6">
+                <span className="text-3xl font-bold text-primary sm:text-4xl">
                   {adahandleStats?.total_holders?.toLocaleString()}
                 </span>
-                <span className="mt-2 text-sm text-muted-foreground">Total Holders</span>
+                <span className="mt-2 text-xs text-muted-foreground sm:text-sm">Total Holders</span>
               </div>
             </div>
           </div>
