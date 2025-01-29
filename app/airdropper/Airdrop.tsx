@@ -112,7 +112,7 @@ const Airdrop = () => {
                   `https://cardano-${networkMap[walletState.network! as keyof typeof networkMap].toLowerCase()}.blockfrost.io/api/v0/assets/${assetId}`,
                   {
                     headers: {
-                      project_id: blockfrostKey || 'previewllGFOnaW8EDoDl7leranWtqGA4KHn48k',
+                      project_id: blockfrostKey,
                     },
                   },
                 )
@@ -163,14 +163,14 @@ const Airdrop = () => {
 
       // Get assets by policy ID
       const assetsRes = await fetch(`${blockfrostUrl}/assets/policy/${policyId}`, {
-        headers: { project_id: blockfrostKey || 'previewllGFOnaW8EDoDl7leranWtqGA4KHn48k' },
+        headers: { project_id: blockfrostKey },
       })
       const assets = await assetsRes.json()
 
       // Get addresses for each asset
       const addressRequests = assets.map(async (asset: any) => {
         const addressRes = await fetch(`${blockfrostUrl}/assets/${asset.asset}/addresses`, {
-          headers: { project_id: blockfrostKey || 'previewllGFOnaW8EDoDl7leranWtqGA4KHn48k' },
+          headers: { project_id: blockfrostKey },
         })
         return addressRes.json()
       })
