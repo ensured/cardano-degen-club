@@ -14,6 +14,7 @@ import {
   Loader2,
   ShoppingCart,
   FileKey,
+  Send,
 } from 'lucide-react'
 import { useCommits } from './CommitContext'
 import { timeAgo } from '@/utils/timeAgo'
@@ -289,6 +290,25 @@ export function HeaderNavSheet() {
                 (
                 {timeAgoCompact(
                   folderCommits.find((c) => c.folder === 'nft-minter')?.lastCommitDate,
+                )}
+                )
+              </span>
+            )}
+          </CustomLink>
+
+          <CustomLink href={'/airdropper'} onClick={handleOpenChange} target={false}>
+            <div className="flex">
+              <h1 className="flex items-center text-lg no-underline">
+                <Send className="size-5 min-h-[24px] min-w-[24px]" />
+              </h1>
+            </div>
+
+            <CustomLinkText>Airdropper</CustomLinkText>
+            {folderCommits.find((c) => c.folder === 'airdropper') && (
+              <span className="ml-auto text-xs text-gray-500 sm:text-sm">
+                (
+                {timeAgoCompact(
+                  folderCommits.find((c) => c.folder === 'airdropper')?.lastCommitDate,
                 )}
                 )
               </span>

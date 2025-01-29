@@ -67,7 +67,7 @@ export const CARDANO_NETWORK: CardanoNetwork =
 // const testing = process.env.NODE_ENV === 'development' ? true : false
 const testing = false
 
-const getLucid = async () => {
+export const getLucid = async () => {
   const { Lucid, Blockfrost } = await import('@lucid-evolution/lucid')
   return { Lucid, Blockfrost }
 }
@@ -237,12 +237,7 @@ const extractSlotFromScript = (script: any): number | undefined => {
 }
 
 // Utility function to create a minting policy
-const createMintingPolicy = async (
-  lucid: any,
-  api: WalletApi,
-  selectedPolicy: PolicyInfo,
-  slot: number,
-) => {
+const createMintingPolicy = async (lucid: any, selectedPolicy: PolicyInfo, slot: number) => {
   const { scriptFromNative, paymentCredentialOf } = await getScriptUtils()
   const address = await lucid.wallet().address()
   const keyHash = paymentCredentialOf(address).hash
@@ -447,7 +442,6 @@ export default function Poas() {
   const [policyIds, setPolicyIds] = useState<PolicyInfo[]>([])
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyInfo | null>(null)
   const { walletState, loading } = useWallet() as WalletContextType
-  const [api, setApi] = useState<WalletApi | null>(null)
   const [scanning, setScanning] = useState(false)
   const [minting, setMinting] = useState(false)
   const [nftName, setNftName] = useState('')
@@ -560,9 +554,6 @@ export default function Poas() {
     const initializeWallet = async () => {
       if (walletState.wallet) {
         try {
-          // connect to the wallet
-          setApi(walletState.api)
-
           // initialize lucid and set it in state
           if (blockfrostKey) {
             const { Lucid, Blockfrost } = await getLucid()
@@ -704,7 +695,6 @@ export default function Poas() {
 
   const mintNFT = async (
     lucid: LucidEvolution,
-    api: WalletApi,
     selectedPolicy: PolicyInfo,
     nftName: string,
     nftDescription: string,
@@ -772,7 +762,6 @@ export default function Poas() {
         .attach.MintingPolicy(
           await createMintingPolicy(
             lucid,
-            api,
             selectedPolicy,
             selectedPolicy.slot ?? lucid.currentSlot() + 36000,
           ),
@@ -899,7 +888,7 @@ export default function Poas() {
   }
 
   const generatePolicyId = async () => {
-    if (!api) {
+    if (!walletState.api) {
       toast.error('Please connect your wallet first', { position: 'bottom-center' })
       return
     }
@@ -914,7 +903,7 @@ export default function Poas() {
         ),
         CARDANO_NETWORK,
       )
-      lucid.selectWallet.fromAPI(api)
+      lucid.selectWallet.fromAPI(walletState.api!)
       const { scriptFromNative, paymentCredentialOf, mintingPolicyToId } = await getScriptUtils()
 
       const address = await lucid.wallet().address()
@@ -989,7 +978,7 @@ export default function Poas() {
   }
 
   const loadPolicies = async () => {
-    if (!api || !blockfrostKey) {
+    if (!walletState.api || !blockfrostKey) {
       toast.error('Please connect wallet and enter Blockfrost key first', {
         position: 'bottom-center',
       })
@@ -1010,7 +999,7 @@ export default function Poas() {
         CARDANO_NETWORK,
       )
 
-      lucid.selectWallet.fromAPI(api)
+      lucid.selectWallet.fromAPI(walletState.api)
       const address = await lucid.wallet().address()
       const keyHash = paymentCredentialOf(address).hash
 
@@ -2389,10 +2378,10 @@ export default function Poas() {
               </div>
 
               <Button3D
-                disabled={!isStepComplete(4) || minting || !api}
+                disabled={!isStepComplete(4) || minting || !walletState.api}
                 onClick={() => {
-                  if (api && nftName && nftDescription && selectedFiles.length > 0) {
-                    mintNFT(lucid, api, selectedPolicy, nftName, nftDescription, selectedFiles)
+                  if (walletState.api && nftName && nftDescription && selectedFiles.length > 0) {
+                    mintNFT(lucid, selectedPolicy, nftName, nftDescription, selectedFiles)
                   } else {
                     if (!nftName || !nftDescription) {
                       toast.error('NFT name and description must be provided', {

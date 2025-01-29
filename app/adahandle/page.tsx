@@ -5,6 +5,7 @@ import ResolveHandleForm from '@/components/ResolveHandleForm'
 import { useState, useEffect } from 'react'
 import { getAddressFromHandle } from '../actions'
 import { useWallet } from '@/contexts/WalletContext'
+import Chat from '@/components/Chat'
 
 const Page = () => {
   const [handleName, setHandleName] = useState('')
@@ -89,6 +90,11 @@ const Page = () => {
                 <span className="mt-2 text-xs text-muted-foreground sm:text-sm">Total Holders</span>
               </div>
             </div>
+          </div>
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="flex flex-col items-center justify-center gap-2 rounded-lg">
+            <Chat />
           </div>
         </div>
       </div>
