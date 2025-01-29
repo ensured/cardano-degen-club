@@ -71,7 +71,7 @@ const Airdrop = () => {
     if (walletState.wallet && walletState.api) {
       const connectLucid = async () => {
         if (!blockfrostKey) {
-          toast.error('Please enter a Blockfrost API key')
+          setIsLoadingAssets(false)
           return
         }
         setIsLoadingAssets(true)
@@ -146,6 +146,8 @@ const Airdrop = () => {
         }
       }
       connectLucid()
+    } else {
+      setIsLoadingAssets(false)
     }
   }, [walletState.api, blockfrostKey])
 
@@ -292,24 +294,38 @@ const Airdrop = () => {
                     placeholder="Enter your Blockfrost API key"
                     value={blockfrostKey}
                     onChange={(e) => {
-                      if (e.target.value.length === 39 && e.target.value.startsWith('mainnet')) {
-                        setBlockfrostKey(e.target.value)
+                      setBlockfrostKey(e.target.value)
+                      if (e.target.value.length === 39) {
                         localStorage.setItem('blockfrostKey', e.target.value)
                       }
                     }}
-                    className="h-12 pr-10 text-base"
+                    className="h-12 pr-24 text-base"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowBlockfrostKey(!showBlockfrostKey)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showBlockfrostKey ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
+                  <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
+                    {blockfrostKey && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBlockfrostKey('')
+                          localStorage.removeItem('blockfrostKey')
+                        }}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
                     )}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowBlockfrostKey(!showBlockfrostKey)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {showBlockfrostKey ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 <Link
                   href="https://blockfrost.io/dashboard"
@@ -502,9 +518,15 @@ const Airdrop = () => {
               </CollapsibleContent>
             </Collapsible>
           </div>
-        ) : (
+        ) : blockfrostKey && blockfrostKey.length === 39 ? (
           <div className="flex min-h-[100px] w-full items-center justify-center rounded-2xl border border-border bg-card/50 p-6">
             <span className="text-sm text-muted-foreground">No assets found in wallet</span>
+          </div>
+        ) : (
+          <div className="flex min-h-[100px] w-full items-center justify-center rounded-2xl border border-border bg-card/50 p-6">
+            <span className="text-sm text-muted-foreground">
+              Please enter a valid Blockfrost API key
+            </span>
           </div>
         )}
 
