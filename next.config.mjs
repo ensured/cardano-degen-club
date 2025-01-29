@@ -24,10 +24,14 @@ const nextConfig = {
     return config
   },
   experimental: {
+    webpackBuildWorker: true,
     serverActions: {
       bodySizeLimit: '10mb',
     },
   },
+  transpilePackages: ['@lucid-evolution', '@anastasia-labs/cardano-multiplatform-lib-browser'],
+  serverExternalPackages: [],
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
@@ -86,7 +90,6 @@ const nextConfig = {
       },
     ],
   },
-  serverExternalPackages: ['lucid-cardano'],
 }
 
 export default nextConfig

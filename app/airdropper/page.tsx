@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 // Dynamically import the Airdrop component with no SSR
 const AirdropComponent = dynamic(() => import('./Airdrop'), {
@@ -15,8 +16,9 @@ const AirdropComponent = dynamic(() => import('./Airdrop'), {
 
 const Page = () => {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <AirdropComponent />
+    <div className="mt-10 flex flex-col items-center justify-center">
+      {/* <AirdropComponent /> */}
+      <Button variant="outline">coming soon</Button>
     </div>
   )
 }

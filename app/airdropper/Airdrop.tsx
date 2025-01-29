@@ -2,7 +2,7 @@
 
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
 import { Check, Loader2, ChevronDown, ArrowUp, Eye, EyeOff, X } from 'lucide-react'
-import { Lucid, Blockfrost, LucidEvolution, fromText } from '@lucid-evolution/lucid'
+import { Lucid, Blockfrost, LucidEvolution, fromText, Network } from '@lucid-evolution/lucid'
 import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -61,12 +61,6 @@ const Airdrop = () => {
     3: 'Custom',
   }
 
-  //   useEffect(() => {
-  //     if (policyId && policyId.length === 56 && lucid) {
-  //       handleSearch()
-  //     }
-  //   }, [policyId, walletState.api, lucid])
-
   useEffect(() => {
     if (walletState.wallet && walletState.api) {
       const connectLucid = async () => {
@@ -81,7 +75,7 @@ const Airdrop = () => {
               `https://cardano-${networkMap[walletState.network! as keyof typeof networkMap].toLowerCase()}.blockfrost.io/api/v0`,
               blockfrostKey,
             ),
-            'Preview',
+            networkMap[walletState.network! as keyof typeof networkMap] as Network,
           )
           lucidInstance.selectWallet.fromAPI(walletState.api)
           const utxos = await lucidInstance.utxosAt(walletState.walletAddress!)
@@ -97,42 +91,44 @@ const Airdrop = () => {
           // Fetch metadata for each asset
           const assetDetailsMap: Record<string, AssetMetadata> = {}
           await Promise.all(
-            Object.entries(assetMap).map(async ([assetId, amount]) => {
-              if (assetId === 'lovelace') {
-                assetDetailsMap[assetId] = {
-                  name: 'ADA',
-                  amount,
-                  assetId,
+            Object.entries(assetMap)
+              .slice(0, 20)
+              .map(async ([assetId, amount]) => {
+                if (assetId === 'lovelace') {
+                  assetDetailsMap[assetId] = {
+                    name: 'ADA',
+                    amount,
+                    assetId,
+                  }
+                  return
                 }
-                return
-              }
 
-              try {
-                const response = await fetch(
-                  `https://cardano-${networkMap[walletState.network! as keyof typeof networkMap].toLowerCase()}.blockfrost.io/api/v0/assets/${assetId}`,
-                  {
-                    headers: {
-                      project_id: blockfrostKey,
+                try {
+                  const response = await fetch(
+                    `https://cardano-${networkMap[walletState.network! as keyof typeof networkMap].toLowerCase()}.blockfrost.io/api/v0/assets/${assetId}?page=1&limit=20`,
+                    {
+                      headers: {
+                        project_id: blockfrostKey,
+                      },
                     },
-                  },
-                )
-                const metadata = await response.json()
+                  )
+                  const metadata = await response.json()
 
-                assetDetailsMap[assetId] = {
-                  name: metadata.onchain_metadata?.name || metadata.metadata?.name || 'Unknown',
-                  image: metadata.onchain_metadata?.image || metadata.metadata?.image,
-                  amount,
-                  assetId,
+                  assetDetailsMap[assetId] = {
+                    name: metadata.onchain_metadata?.name || metadata.metadata?.name || 'Unknown',
+                    image: metadata.onchain_metadata?.image || metadata.metadata?.image,
+                    amount,
+                    assetId,
+                  }
+                } catch (error) {
+                  console.error(`Error fetching metadata for asset ${assetId}:`, error)
+                  assetDetailsMap[assetId] = {
+                    name: 'Unknown',
+                    amount,
+                    assetId,
+                  }
                 }
-              } catch (error) {
-                console.error(`Error fetching metadata for asset ${assetId}:`, error)
-                assetDetailsMap[assetId] = {
-                  name: 'Unknown',
-                  amount,
-                  assetId,
-                }
-              }
-            }),
+              }),
           )
 
           setAssetDetails(assetDetailsMap)
