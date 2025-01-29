@@ -269,7 +269,7 @@ const Airdrop = () => {
             <CollapsibleTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex w-full justify-between px-6 py-6 hover:bg-accent/50"
+                className="flex w-full justify-between border border-border/40 px-6 py-6 hover:bg-accent/50"
               >
                 <div className="flex w-full items-center gap-1">
                   <span className="flex w-full items-center gap-1 text-xl font-semibold">
