@@ -540,7 +540,7 @@ const Airdrop = () => {
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5">
-                          <span>Select Token to Airdrop</span>
+                          <span>Select Token</span>
                           <div className="flex items-center justify-center gap-1">
                             <span className="mt-0.5 text-sm text-muted-foreground">
                               ({Object.keys(assetDetails).length})
