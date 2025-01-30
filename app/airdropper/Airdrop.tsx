@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/pagination'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getContractAddresses } from '@/app/actions'
+
 type AssetMetadata = {
   name: string
   image?: string
@@ -39,16 +41,6 @@ type PolicyAddresses = {
   addresses: string[]
   label?: string // Optional label for the policy
 }
-const blacklistedAddresses = [
-  //jpg.store addresses
-  'addr1zxgx3far7qygq0k6epa0zcvcvrevmn0ypsnfsue94nsn3tvpw288a4x0xf8pxgcntelxmyclq83s0ykeehchz2wtspks905plm',
-  'addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3',
-  'addr1x8rjw3pawl0kelu4mj3c8x20fsczf5pl744s9mxz9v8n7efvjel5h55fgjcxgchp830r7h2l5msrlpt8262r3nvr8ekstg4qrx',
-  'addr1zxj47sy4qxlktqzmkrw8dahe46gtv8seakrshsqz26qnvzypw288a4x0xf8pxgcntelxmyclq83s0ykeehchz2wtspksr3q9nx',
-  //explosif addresses
-  'addr1w9yr0zr530tp9yzrhly8lw5upddu0eym3yh0mjwa0qlr9pgmkzgv0',
-  'addr1wx38kptjhuurcag7zdvh5cq98rjxt0ulf6ed7jtmz5gpkfcgjyyx3',
-]
 
 const Airdrop = () => {
   const { walletState, loading } = useWallet() as WalletContextType
@@ -79,6 +71,7 @@ const Airdrop = () => {
   const [hasMoreAddresses, setHasMoreAddresses] = useState(true)
   const ADDRESSES_PER_PAGE = 50
   const [selectedTempAddresses, setSelectedTempAddresses] = useState<Set<string>>(new Set())
+  const [blacklistedAddresses, setBlacklistedAddresses] = useState<Set<string>>(new Set())
 
   const networkMap = {
     0: 'Preview',
@@ -178,6 +171,24 @@ const Airdrop = () => {
     }
   }, [walletState.api, blockfrostKey, currentPage])
 
+  useEffect(() => {
+    const fetchBlacklistedAddresses = async () => {
+      try {
+        const { addresses, error } = await getContractAddresses()
+        if (error) {
+          toast.error('Failed to load contract blacklist')
+          return
+        }
+        setBlacklistedAddresses(new Set(addresses))
+      } catch (error) {
+        console.error('Error fetching blacklist:', error)
+        toast.error('Failed to load contract blacklist')
+      }
+    }
+
+    fetchBlacklistedAddresses()
+  }, [])
+
   const handleSearch = async () => {
     if (!lucid || !policyId) return
 
@@ -195,7 +206,11 @@ const Airdrop = () => {
     try {
       await fetchPolicyAddresses(1)
     } catch (err) {
-      toast.error('Failed to fetch addresses')
+      if (err instanceof Error && err.message.includes('429')) {
+        toast.error('Too many requests. Please try again later.')
+      } else {
+        toast.error('Failed to fetch smart contract addresses to blacklist.')
+      }
     } finally {
       setIsSearching(false)
     }
@@ -258,12 +273,22 @@ const Airdrop = () => {
       return
     }
 
+    // Filter out blacklisted addresses
+    const filteredAddresses = Array.from(selectedTempAddresses).filter(
+      (address) => !blacklistedAddresses.has(address),
+    )
+
+    if (filteredAddresses.length === 0) {
+      toast.error('All selected addresses are blacklisted')
+      return
+    }
+
     // Add new policy addresses to the list
     setPolicyAddresses((prev) => [
       ...prev,
       {
         policyId,
-        addresses: Array.from(selectedTempAddresses),
+        addresses: filteredAddresses,
         label: `Policy ${prev.length + 1} (Page ${policyAddressPage})`,
       },
     ])
@@ -271,18 +296,18 @@ const Airdrop = () => {
     // Add selected addresses to the global selected set
     setSelectedAddresses((prev) => {
       const newSet = new Set(prev)
-      selectedTempAddresses.forEach((addr) => newSet.add(addr))
+      filteredAddresses.forEach((addr) => newSet.add(addr))
       return newSet
     })
 
-    // Clear temporary addresses and increment page
+    // Clear temporary addresses
     setTempPolicyAddresses([])
     setSelectedTempAddresses(new Set())
-    setPolicyAddressPage((prev) => prev + 1)
-    toast.success(`Added ${selectedTempAddresses.size} addresses from page ${policyAddressPage}`)
+    toast.success(`Added ${filteredAddresses.length} addresses from page ${policyAddressPage}`)
 
-    // Automatically load next page
-    loadNextPage()
+    // Increment the page number and fetch the next page
+    setPolicyAddressPage((prev) => prev + 1)
+    fetchPolicyAddresses(policyAddressPage + 1)
   }
 
   const handleSelectAllTemp = (select: boolean) => {
@@ -338,7 +363,7 @@ const Airdrop = () => {
 
     // Filter out blacklisted addresses
     const allAddresses = [...selectedAddresses, ...manualAddresses].filter(
-      (addr) => !blacklistedAddresses.includes(addr),
+      (addr) => !blacklistedAddresses.has(addr),
     )
 
     if (allAddresses.length === 0) {
@@ -359,7 +384,7 @@ const Airdrop = () => {
     setIsAirdropping(true)
     try {
       toast.info(
-        `Building transaction for ${allAddresses.length} addresses (excluding ${blacklistedAddresses.length} blacklisted addresses)...`,
+        `Building transaction for ${allAddresses.length} addresses (excluding ${blacklistedAddresses.size} blacklisted addresses)...`,
       )
 
       // Start building the transaction
@@ -404,6 +429,7 @@ const Airdrop = () => {
 
   return (
     <div className="mx-auto flex w-full flex-col items-center justify-center gap-8 px-4 py-12">
+      {blacklistedAddresses.size}
       <div className="w-full rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm">
         <h1 className="p-2 text-center text-sm text-muted-foreground">
           Use at your own risk. This is a beta version and may not work as expected. Always verify.
@@ -782,127 +808,125 @@ const Airdrop = () => {
               </div>
 
               {/* Policy List */}
-              {policyAddresses.length > 0 && (
-                <div className="min-w-[75vw]">
-                  <Collapsible open={isAddressesOpen} onOpenChange={setIsAddressesOpen}>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="flex w-full justify-between px-4 py-4">
-                        <span className="text-lg font-semibold">
-                          {selectedAddresses.size} Selected Addresses from {policyAddresses.length}{' '}
-                          Policies
-                        </span>
-                        <ChevronDown className="ml-2 h-5 w-5 shrink-0" />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="w-full">
-                      <div className="mt-4 space-y-4">
-                        {policyAddresses.map((policy) => (
-                          <Collapsible
-                            key={policy.policyId}
-                            open={openPolicies.has(policy.policyId)}
-                            onOpenChange={(open) => {
-                              setOpenPolicies((prev) => {
-                                const newSet = new Set(prev)
-                                if (open) {
-                                  newSet.add(policy.policyId)
-                                } else {
-                                  newSet.delete(policy.policyId)
-                                }
-                                return newSet
-                              })
-                            }}
-                          >
-                            <CollapsibleTrigger asChild>
-                              <div className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border p-4 hover:bg-accent/50">
-                                <div className="min-w-0 flex-1">
-                                  <h3 className="font-semibold">{policy.label}</h3>
-                                  <p className="break-all font-mono text-sm text-muted-foreground">
-                                    {policy.policyId}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {policy.addresses.length} holders
-                                  </p>
-                                </div>
-                                <div className="ml-2 flex shrink-0 items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    className="text-destructive hover:text-destructive"
-                                    onClick={(e) => {
-                                      e.stopPropagation() // Prevent collapsible from toggling
-                                      removePolicy(policy.policyId)
-                                    }}
-                                  >
-                                    <X className="h-5 w-5" />
-                                  </Button>
-                                  <ChevronDown
-                                    className={`h-5 w-5 transition-transform duration-200 ${
-                                      openPolicies.has(policy.policyId) ? 'rotate-180' : ''
-                                    }`}
-                                  />
-                                </div>
+              <div className="min-w-[75vw]">
+                <Collapsible open={isAddressesOpen} onOpenChange={setIsAddressesOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="outline" className="flex w-full justify-between px-4 py-4">
+                      <span className="text-lg font-semibold">
+                        {selectedAddresses.size} Selected Addresses from {policyAddresses.length}{' '}
+                        Policies
+                      </span>
+                      <ChevronDown className="ml-2 h-5 w-5 shrink-0" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="w-full">
+                    <div className="mt-4 space-y-4">
+                      {policyAddresses.map((policy) => (
+                        <Collapsible
+                          key={policy.policyId}
+                          open={openPolicies.has(policy.policyId)}
+                          onOpenChange={(open) => {
+                            setOpenPolicies((prev) => {
+                              const newSet = new Set(prev)
+                              if (open) {
+                                newSet.add(policy.policyId)
+                              } else {
+                                newSet.delete(policy.policyId)
+                              }
+                              return newSet
+                            })
+                          }}
+                        >
+                          <CollapsibleTrigger asChild>
+                            <div className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border p-4 hover:bg-accent/50">
+                              <div className="min-w-0 flex-1">
+                                <h3 className="font-semibold">{policy.label}</h3>
+                                <p className="break-all font-mono text-sm text-muted-foreground">
+                                  {policy.policyId}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {policy.addresses.length} holders
+                                </p>
                               </div>
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="w-full">
-                              <div className="mt-2 overflow-x-auto rounded-lg border border-border p-4">
-                                <Table>
-                                  <TableHeader>
-                                    <TableRow>
-                                      <TableHead className="w-[50px] whitespace-nowrap">
-                                        Include
-                                      </TableHead>
-                                      <TableHead className="whitespace-nowrap">Address</TableHead>
-                                      <TableHead className="w-[100px] whitespace-nowrap">
-                                        Action
-                                      </TableHead>
+                              <div className="ml-2 flex shrink-0 items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation() // Prevent collapsible from toggling
+                                    removePolicy(policy.policyId)
+                                  }}
+                                >
+                                  <X className="h-5 w-5" />
+                                </Button>
+                                <ChevronDown
+                                  className={`h-5 w-5 transition-transform duration-200 ${
+                                    openPolicies.has(policy.policyId) ? 'rotate-180' : ''
+                                  }`}
+                                />
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="w-full">
+                            <div className="mt-2 overflow-x-auto rounded-lg border border-border p-4">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="w-[50px] whitespace-nowrap">
+                                      Include
+                                    </TableHead>
+                                    <TableHead className="whitespace-nowrap">Address</TableHead>
+                                    <TableHead className="w-[100px] whitespace-nowrap">
+                                      Action
+                                    </TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {policy.addresses.map((addr) => (
+                                    <TableRow key={addr}>
+                                      <TableCell className="whitespace-nowrap">
+                                        <input
+                                          type="checkbox"
+                                          checked={selectedAddresses.has(addr)}
+                                          onChange={(e) => {
+                                            setSelectedAddresses((prev) => {
+                                              const newSet = new Set(prev)
+                                              if (e.target.checked) {
+                                                newSet.add(addr)
+                                              } else {
+                                                newSet.delete(addr)
+                                              }
+                                              return newSet
+                                            })
+                                          }}
+                                          className="h-4 w-4 rounded border-border"
+                                        />
+                                      </TableCell>
+                                      <TableCell className="max-w-[200px] break-all font-mono text-sm sm:max-w-none">
+                                        {addr}
+                                      </TableCell>
+                                      <TableCell className="whitespace-nowrap">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeAddress(addr)}
+                                          className="h-8 px-2 text-destructive hover:text-destructive"
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </TableCell>
                                     </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {policy.addresses.map((addr) => (
-                                      <TableRow key={addr}>
-                                        <TableCell className="whitespace-nowrap">
-                                          <input
-                                            type="checkbox"
-                                            checked={selectedAddresses.has(addr)}
-                                            onChange={(e) => {
-                                              setSelectedAddresses((prev) => {
-                                                const newSet = new Set(prev)
-                                                if (e.target.checked) {
-                                                  newSet.add(addr)
-                                                } else {
-                                                  newSet.delete(addr)
-                                                }
-                                                return newSet
-                                              })
-                                            }}
-                                            className="h-4 w-4 rounded border-border"
-                                          />
-                                        </TableCell>
-                                        <TableCell className="max-w-[200px] break-all font-mono text-sm sm:max-w-none">
-                                          {addr}
-                                        </TableCell>
-                                        <TableCell className="whitespace-nowrap">
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeAddress(addr)}
-                                            className="h-8 px-2 text-destructive hover:text-destructive"
-                                          >
-                                            <X className="h-4 w-4" />
-                                          </Button>
-                                        </TableCell>
-                                      </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
-                              </div>
-                            </CollapsibleContent>
-                          </Collapsible>
-                        ))}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
-              )}
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
             </div>
 
             {(tempPolicyAddresses.length > 0 || isLoadingMoreAddresses) && (
@@ -981,7 +1005,7 @@ const Airdrop = () => {
                           <span>Review Addresses</span>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">
-                              {selectedTempAddresses.size} selected
+                              Selected {selectedTempAddresses.size} of {tempPolicyAddresses.length}
                             </span>
                             <ChevronDown className="h-4 w-4" />
                           </div>

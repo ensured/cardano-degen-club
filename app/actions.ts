@@ -12,7 +12,9 @@ import {
   uploadBytes,
 } from 'firebase/storage'
 import { db, deleteObject, storage } from '../components/firebase/firebase'
-// import { kv } from '@vercel/kv'
+import fs from 'fs'
+import path from 'path'
+import { kv } from '@vercel/kv'
 
 export async function checkUserAuthentication() {
   const user = await currentUser()
@@ -645,3 +647,74 @@ export const getAddressFromHandle = async (handleName: string) => {
 // export const removeWalletAuth = async (stakeKey: string) => {
 // 	await kv.del(`wallet:${stakeKey}`)
 // }
+
+type CacheData = {
+  addresses: string[]
+  timestamp: number
+}
+
+const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
+
+// Add this new server action
+export async function getContractAddresses(): Promise<{ addresses: string[]; error?: string }> {
+  try {
+    // Try to get cached data from KV
+    const cached = await kv.get('contract-addresses')
+    if (cached) {
+      const { addresses, timestamp } = cached as CacheData
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        return { addresses }
+      }
+    }
+
+    // Fetch fresh data if no cache or expired
+    const response = await fetch(
+      'https://api.github.com/repos/Cardano-Fans/crfa-offchain-data-registry/contents/dApps',
+      {
+        headers: {
+          Accept: 'application/vnd.github+json',
+        },
+      },
+    )
+    const files: any[] = await response.json()
+    const dAppFiles = files.filter((file: any) => file.name.endsWith('.json'))
+
+    const addresses = new Set<string>()
+
+    for (const file of dAppFiles) {
+      try {
+        const dAppRes = await fetch(
+          `https://raw.githubusercontent.com/Cardano-Fans/crfa-offchain-data-registry/main/dApps/${file.name}`,
+          {
+            headers: {
+              Accept: 'application/vnd.github.raw',
+            },
+          },
+        )
+        const dAppData = await dAppRes.json()
+
+        dAppData.scripts?.forEach((script: any) => {
+          script.versions?.forEach((version: any) => {
+            if (version.contractAddress) {
+              addresses.add(version.contractAddress)
+            }
+          })
+        })
+      } catch (error) {
+        console.error(`Error processing ${file.name}:`, error)
+      }
+    }
+
+    // Cache the new data
+    const cacheData: CacheData = {
+      addresses: Array.from(addresses),
+      timestamp: Date.now(),
+    }
+    await kv.set('contract-addresses', cacheData, { ex: CACHE_DURATION / 1000 })
+
+    return { addresses: Array.from(addresses) }
+  } catch (error) {
+    console.error('Error fetching blacklist:', error)
+    return { addresses: [], error: 'Failed to fetch contract addresses' }
+  }
+}
