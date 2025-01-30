@@ -428,8 +428,7 @@ const Airdrop = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center justify-center gap-8 px-4 py-12">
-      {blacklistedAddresses.size}
+    <div className="mx-auto flex w-full flex-col items-center justify-center gap-6 px-4 py-10">
       <div className="w-full rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm">
         <h1 className="p-2 text-center text-sm text-muted-foreground">
           Use at your own risk. This is a beta version and may not work as expected. Always verify.
