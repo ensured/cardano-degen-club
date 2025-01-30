@@ -26,6 +26,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import Link from 'next/link'
+import Image from 'next/image'
 type AssetMetadata = {
   name: string
   image?: string
@@ -33,26 +34,51 @@ type AssetMetadata = {
   assetId: string
 }
 
+type PolicyAddresses = {
+  policyId: string
+  addresses: string[]
+  label?: string // Optional label for the policy
+}
+const blacklistedAddresses = [
+  //jpg.store addresses
+  'addr1zxgx3far7qygq0k6epa0zcvcvrevmn0ypsnfsue94nsn3tvpw288a4x0xf8pxgcntelxmyclq83s0ykeehchz2wtspks905plm',
+  'addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3',
+  'addr1x8rjw3pawl0kelu4mj3c8x20fsczf5pl744s9mxz9v8n7efvjel5h55fgjcxgchp830r7h2l5msrlpt8262r3nvr8ekstg4qrx',
+  'addr1zxj47sy4qxlktqzmkrw8dahe46gtv8seakrshsqz26qnvzypw288a4x0xf8pxgcntelxmyclq83s0ykeehchz2wtspksr3q9nx',
+  //explosif addresses
+  'addr1w9yr0zr530tp9yzrhly8lw5upddu0eym3yh0mjwa0qlr9pgmkzgv0',
+  'addr1wx38kptjhuurcag7zdvh5cq98rjxt0ulf6ed7jtmz5gpkfcgjyyx3',
+]
+
 const Airdrop = () => {
   const { walletState, loading } = useWallet() as WalletContextType
   const [lucid, setLucid] = useState<LucidEvolution | null>(null)
   const [policyId, setPolicyId] = useState(localStorage.getItem('policyId') || '')
   const [blockfrostKey, setBlockfrostKey] = useState(localStorage.getItem('blockfrostKey') || '')
-  const [addresses, setAddresses] = useState<string[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [assets, setAssets] = useState<Record<string, bigint>>({})
   const [assetDetails, setAssetDetails] = useState<Record<string, AssetMetadata>>({})
   const [selectedAsset, setSelectedAsset] = useState<AssetMetadata | null>(null)
-  const [amountPerPerson, setAmountPerPerson] = useState('')
+  const [amountPerPerson, setAmountPerPerson] = useState(1)
   const [isAirdropping, setIsAirdropping] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
   const [manualAddressesInput, setManualAddressesInput] = useState('')
   const [manualAddresses, setManualAddresses] = useState<string[]>([])
   const [isAssetSelectorOpen, setIsAssetSelectorOpen] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [showBlockfrostKey, setShowBlockfrostKey] = useState(false)
   const [isLoadingAssets, setIsLoadingAssets] = useState(true)
+  const [policyAddresses, setPolicyAddresses] = useState<PolicyAddresses[]>([])
+  const [selectedAddresses, setSelectedAddresses] = useState<Set<string>>(new Set())
+  const [isAddressesOpen, setIsAddressesOpen] = useState(false)
+  const [openPolicies, setOpenPolicies] = useState<Set<string>>(new Set())
+  const itemsPerPage = 20
+  const [policyAddressPage, setPolicyAddressPage] = useState(1)
+  const [tempPolicyAddresses, setTempPolicyAddresses] = useState<string[]>([])
+  const [isLoadingMoreAddresses, setIsLoadingMoreAddresses] = useState(false)
+  const [hasMoreAddresses, setHasMoreAddresses] = useState(true)
+  const ADDRESSES_PER_PAGE = 50
+  const [selectedTempAddresses, setSelectedTempAddresses] = useState<Set<string>>(new Set())
 
   const networkMap = {
     0: 'Preview',
@@ -80,7 +106,7 @@ const Airdrop = () => {
           lucidInstance.selectWallet.fromAPI(walletState.api)
           const utxos = await lucidInstance.utxosAt(walletState.walletAddress!)
 
-          // Calculate assets from UTXOs
+          // Calculate all assets from UTXOs
           const assetMap: Record<string, bigint> = {}
           utxos.forEach((utxo) => {
             Object.entries(utxo.assets).forEach(([asset, amount]) => {
@@ -88,51 +114,56 @@ const Airdrop = () => {
             })
           })
 
-          // Fetch metadata for each asset
+          // Set full asset map for pagination info
+          setAssets(assetMap)
+
+          // Get only the current page assets for metadata fetching
+          const startIndex = (currentPage - 1) * itemsPerPage
+          const endIndex = startIndex + itemsPerPage
+          const currentPageAssets = Object.entries(assetMap).slice(startIndex, endIndex)
+
+          // Fetch metadata only for current page assets
           const assetDetailsMap: Record<string, AssetMetadata> = {}
           await Promise.all(
-            Object.entries(assetMap)
-              .slice(0, 20)
-              .map(async ([assetId, amount]) => {
-                if (assetId === 'lovelace') {
-                  assetDetailsMap[assetId] = {
-                    name: 'ADA',
-                    amount,
-                    assetId,
-                  }
-                  return
+            currentPageAssets.map(async ([assetId, amount]) => {
+              if (assetId === 'lovelace') {
+                assetDetailsMap[assetId] = {
+                  name: 'ADA',
+                  amount,
+                  assetId,
                 }
+                return
+              }
 
-                try {
-                  const response = await fetch(
-                    `https://cardano-${networkMap[walletState.network! as keyof typeof networkMap].toLowerCase()}.blockfrost.io/api/v0/assets/${assetId}?page=1&limit=20`,
-                    {
-                      headers: {
-                        project_id: blockfrostKey,
-                      },
+              try {
+                const response = await fetch(
+                  `https://cardano-${networkMap[walletState.network! as keyof typeof networkMap].toLowerCase()}.blockfrost.io/api/v0/assets/${assetId}`,
+                  {
+                    headers: {
+                      project_id: blockfrostKey,
                     },
-                  )
-                  const metadata = await response.json()
+                  },
+                )
+                const metadata = await response.json()
 
-                  assetDetailsMap[assetId] = {
-                    name: metadata.onchain_metadata?.name || metadata.metadata?.name || 'Unknown',
-                    image: metadata.onchain_metadata?.image || metadata.metadata?.image,
-                    amount,
-                    assetId,
-                  }
-                } catch (error) {
-                  console.error(`Error fetching metadata for asset ${assetId}:`, error)
-                  assetDetailsMap[assetId] = {
-                    name: 'Unknown',
-                    amount,
-                    assetId,
-                  }
+                assetDetailsMap[assetId] = {
+                  name: metadata.onchain_metadata?.name || metadata.metadata?.name || 'Unknown',
+                  image: metadata.onchain_metadata?.image || metadata.metadata?.image,
+                  amount,
+                  assetId,
                 }
-              }),
+              } catch (error) {
+                console.error(`Error fetching metadata for asset ${assetId}:`, error)
+                assetDetailsMap[assetId] = {
+                  name: 'Unknown',
+                  amount,
+                  assetId,
+                }
+              }
+            }),
           )
 
           setAssetDetails(assetDetailsMap)
-          setAssets(assetMap)
           setLucid(lucidInstance)
         } catch (error) {
           toast.error('Failed to load assets')
@@ -145,23 +176,52 @@ const Airdrop = () => {
     } else {
       setIsLoadingAssets(false)
     }
-  }, [walletState.api, blockfrostKey])
+  }, [walletState.api, blockfrostKey, currentPage])
 
   const handleSearch = async () => {
     if (!lucid || !policyId) return
 
+    // Check if policy ID is already added
+    if (policyAddresses.some((p) => p.policyId === policyId)) {
+      toast.error('Policy ID already added')
+      return
+    }
+
     localStorage.setItem('policyId', policyId)
-
     setIsSearching(true)
+    setPolicyAddressPage(1) // Reset page when starting new search
+    setTempPolicyAddresses([]) // Clear temporary addresses
 
+    try {
+      await fetchPolicyAddresses(1)
+    } catch (err) {
+      toast.error('Failed to fetch addresses')
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const fetchPolicyAddresses = async (page: number) => {
+    setIsLoadingMoreAddresses(true)
     try {
       const blockfrostUrl = `https://cardano-${networkMap[walletState.network! as keyof typeof networkMap].toLowerCase()}.blockfrost.io/api/v0`
 
-      // Get assets by policy ID
-      const assetsRes = await fetch(`${blockfrostUrl}/assets/policy/${policyId}`, {
-        headers: { project_id: blockfrostKey },
-      })
+      // Get assets by policy ID with pagination
+      const assetsRes = await fetch(
+        `${blockfrostUrl}/assets/policy/${policyId}?page=${page}&count=${ADDRESSES_PER_PAGE}`,
+        {
+          headers: { project_id: blockfrostKey },
+        },
+      )
       const assets = await assetsRes.json()
+
+      if (!Array.isArray(assets) || assets.length === 0) {
+        setHasMoreAddresses(false)
+        // Revert to previous page
+        setPolicyAddressPage((prev) => prev - 1)
+        toast.info('No more addresses found')
+        return false // Return false to indicate no more addresses
+      }
 
       // Get addresses for each asset
       const addressRequests = assets.map(async (asset: any) => {
@@ -176,26 +236,99 @@ const Airdrop = () => {
         ...new Set(addressesResults.flatMap((result) => result.map((a: any) => a.address))),
       ]
 
-      setAddresses(uniqueAddresses)
-    } catch (err) {
+      setTempPolicyAddresses(uniqueAddresses)
+      setSelectedTempAddresses(new Set(uniqueAddresses))
+      setHasMoreAddresses(assets.length === ADDRESSES_PER_PAGE)
+      return true // Return true to indicate success
+    } catch (error) {
+      console.error('Error fetching addresses:', error)
       toast.error('Failed to fetch addresses')
+      setHasMoreAddresses(false)
+      // Revert to previous page on error
+      setPolicyAddressPage((prev) => prev - 1)
+      return false
     } finally {
-      setIsSearching(false)
+      setIsLoadingMoreAddresses(false)
     }
   }
 
+  const confirmAddAddresses = () => {
+    if (selectedTempAddresses.size === 0) {
+      toast.error('No addresses selected')
+      return
+    }
+
+    // Add new policy addresses to the list
+    setPolicyAddresses((prev) => [
+      ...prev,
+      {
+        policyId,
+        addresses: Array.from(selectedTempAddresses),
+        label: `Policy ${prev.length + 1} (Page ${policyAddressPage})`,
+      },
+    ])
+
+    // Add selected addresses to the global selected set
+    setSelectedAddresses((prev) => {
+      const newSet = new Set(prev)
+      selectedTempAddresses.forEach((addr) => newSet.add(addr))
+      return newSet
+    })
+
+    // Clear temporary addresses and increment page
+    setTempPolicyAddresses([])
+    setSelectedTempAddresses(new Set())
+    setPolicyAddressPage((prev) => prev + 1)
+    toast.success(`Added ${selectedTempAddresses.size} addresses from page ${policyAddressPage}`)
+
+    // Automatically load next page
+    loadNextPage()
+  }
+
+  const handleSelectAllTemp = (select: boolean) => {
+    if (select) {
+      setSelectedTempAddresses(new Set(tempPolicyAddresses))
+    } else {
+      setSelectedTempAddresses(new Set())
+    }
+  }
+
+  const loadNextPage = async () => {
+    setPolicyAddressPage((prev) => prev + 1)
+    await fetchPolicyAddresses(policyAddressPage + 1)
+  }
+
+  const removeAddress = (address: string) => {
+    setSelectedAddresses((prev) => {
+      const newSet = new Set(prev)
+      newSet.delete(address)
+      return newSet
+    })
+  }
+
+  const removePolicy = (policyId: string) => {
+    setPolicyAddresses((prev) => prev.filter((p) => p.policyId !== policyId))
+    // Remove all addresses associated with this policy
+    const addressesToRemove = policyAddresses.find((p) => p.policyId === policyId)?.addresses || []
+    setSelectedAddresses((prev) => {
+      const newSet = new Set(prev)
+      addressesToRemove.forEach((addr) => newSet.delete(addr))
+      return newSet
+    })
+  }
+
   const handleAirdrop = async () => {
+    if (!lucid) return
+
     if (!selectedAsset) {
       toast.error('Please select an asset')
       return
     }
 
-    if (amountPerPerson === '' || !amountPerPerson) {
+    if (amountPerPerson === 0 || !amountPerPerson) {
       toast.error('Please enter an amount')
       return
     }
-
-    if (!lucid || !policyId) return
 
     // Convert to per-person amount
     let amountPer = BigInt(amountPerPerson)
@@ -203,7 +336,16 @@ const Airdrop = () => {
       amountPer = amountPer * BigInt(1000000) // Convert ADA input to lovelace
     }
 
-    const allAddresses = [...addresses, ...manualAddresses]
+    // Filter out blacklisted addresses
+    const allAddresses = [...selectedAddresses, ...manualAddresses].filter(
+      (addr) => !blacklistedAddresses.includes(addr),
+    )
+
+    if (allAddresses.length === 0) {
+      toast.error('No valid addresses to send to after filtering blacklisted addresses')
+      return
+    }
+
     const totalAmount = amountPer * BigInt(allAddresses.length)
 
     // Check if user has enough of the selected asset
@@ -216,7 +358,9 @@ const Airdrop = () => {
 
     setIsAirdropping(true)
     try {
-      toast.info('Building transaction...')
+      toast.info(
+        `Building transaction for ${allAddresses.length} addresses (excluding ${blacklistedAddresses.length} blacklisted addresses)...`,
+      )
 
       // Start building the transaction
       let tx = lucid.newTx()
@@ -251,6 +395,7 @@ const Airdrop = () => {
   // Helper function to format IPFS URL
   const formatIpfsUrl = (ipfsUrl: string | undefined) => {
     if (!ipfsUrl) return undefined
+    if (typeof ipfsUrl !== 'string') return undefined
     if (ipfsUrl.startsWith('ipfs://')) {
       return ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
     }
@@ -258,8 +403,11 @@ const Airdrop = () => {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center gap-8 px-4 py-12">
-      <div className="rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm">
+    <div className="mx-auto flex w-full flex-col items-center justify-center gap-8 px-4 py-12">
+      <div className="w-full rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm">
+        <h1 className="p-2 text-center text-sm text-muted-foreground">
+          Use at your own risk. This is a beta version and may not work as expected. Always verify.
+        </h1>
         <div className="mb-3 w-full space-y-6">
           <Collapsible>
             <CollapsibleTrigger asChild>
@@ -345,10 +493,25 @@ const Airdrop = () => {
 
         {/* Asset Selection */}
         {isLoadingAssets ? (
-          <div className="flex min-h-[100px] w-full items-center justify-center rounded-2xl border border-border bg-card/50 p-6">
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Loading your assets...</span>
+          <div className="mb-2 min-w-[75vw] rounded-2xl border border-border bg-card/50 shadow-sm backdrop-blur-sm">
+            <div className="grid grid-cols-1 gap-1.5 p-6 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: itemsPerPage }).map((_, index) => (
+                <div
+                  key={index}
+                  className="group flex items-start gap-4 rounded-xl border border-muted/30 p-4 hover:border-primary hover:bg-accent/50"
+                >
+                  <div className="flex h-16 w-16 shrink-0 animate-pulse rounded-xl border border-border bg-muted">
+                    <span className="m-auto text-xs text-muted-foreground">No image</span>
+                  </div>
+                  <div className="flex flex-1 flex-col items-start gap-2">
+                    <span className="h-[28px] w-3/4 animate-pulse rounded-md bg-muted" />
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="h-5 w-16 animate-pulse rounded-md bg-muted" />
+                      <span className="h-6 w-24 animate-pulse rounded-md bg-muted" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ) : Object.keys(assetDetails).length > 0 ? (
@@ -361,8 +524,10 @@ const Airdrop = () => {
                 >
                   <div className="flex items-center gap-1">
                     {selectedAsset && selectedAsset.image && (
-                      <img
-                        src={formatIpfsUrl(selectedAsset.image)}
+                      <Image
+                        src={formatIpfsUrl(selectedAsset.image) || ''}
+                        width={32}
+                        height={32}
                         alt={selectedAsset.name}
                         className="h-8 w-8 rounded-lg object-cover"
                       />
@@ -391,50 +556,59 @@ const Airdrop = () => {
 
               <CollapsibleContent className="px-6 pb-6 pt-2">
                 <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {Object.values(assetDetails)
+                  {Object.entries(assets)
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                    .map((asset) => (
-                      <button
-                        key={asset.assetId}
-                        onClick={() => {
-                          setSelectedAsset(asset)
-                          setIsAssetSelectorOpen(false)
-                        }}
-                        className={`group flex items-start gap-4 rounded-xl border border-primary/50 p-4 transition-all hover:border-primary hover:bg-accent/50 ${
-                          selectedAsset?.assetId === asset.assetId
-                            ? 'border-primary bg-primary/5'
-                            : 'border-muted/30'
-                        }`}
-                      >
-                        {asset.image ? (
-                          <img
-                            src={formatIpfsUrl(asset.image)}
-                            alt={asset.name}
-                            className="h-16 w-16 rounded-xl border border-border object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-muted">
-                            <span className="text-xs text-muted-foreground">No image</span>
-                          </div>
-                        )}
-                        <div className="flex flex-1 flex-col items-start gap-2">
-                          <span className="line-clamp-2 text-lg font-semibold text-foreground">
-                            {asset.name}
-                          </span>
-                          <div className="flex flex-col items-start gap-1">
-                            <span className="text-sm text-muted-foreground">Balance</span>
-                            <span className="font-mono text-base font-medium text-primary">
-                              {asset.name === 'ADA'
-                                ? (Number(asset.amount) / 1_000_000).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })
-                                : asset.amount.toLocaleString()}
+                    .map(([assetId, amount]) => {
+                      const metadata = assetDetails[assetId]
+                      return (
+                        <button
+                          key={assetId}
+                          onClick={() => {
+                            setSelectedAsset(
+                              metadata || {
+                                name: assetId === 'lovelace' ? 'ADA' : 'Unknown',
+                                amount,
+                                assetId,
+                              },
+                            )
+                            setIsAssetSelectorOpen(false)
+                          }}
+                          className={`group flex items-start gap-4 rounded-xl border border-primary/50 p-4 transition-all hover:border-primary hover:bg-accent/50 ${
+                            selectedAsset?.assetId === assetId
+                              ? 'border-primary bg-primary/5'
+                              : 'border-muted/30'
+                          }`}
+                        >
+                          {metadata?.image ? (
+                            <img
+                              src={formatIpfsUrl(metadata.image)}
+                              alt={metadata.name}
+                              className="h-16 w-16 rounded-xl border border-border object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-muted">
+                              <span className="text-xs text-muted-foreground">No image</span>
+                            </div>
+                          )}
+                          <div className="flex flex-1 flex-col items-start gap-2">
+                            <span className="line-clamp-2 text-lg font-semibold text-foreground">
+                              {metadata?.name || (assetId === 'lovelace' ? 'ADA' : 'Loading...')}
                             </span>
+                            <div className="flex flex-col items-start gap-1">
+                              <span className="text-sm text-muted-foreground">Balance</span>
+                              <span className="font-mono text-base font-medium text-primary">
+                                {assetId === 'lovelace'
+                                  ? (Number(amount) / 1_000_000).toLocaleString(undefined, {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })
+                                  : amount.toLocaleString()}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      </button>
-                    ))}
+                        </button>
+                      )
+                    })}
                 </div>
 
                 <div className="mt-4 select-none">
@@ -450,10 +624,7 @@ const Airdrop = () => {
 
                       {Array.from(
                         {
-                          length: Math.min(
-                            5,
-                            Math.ceil(Object.keys(assetDetails).length / itemsPerPage),
-                          ),
+                          length: Math.min(5, Math.ceil(Object.keys(assets).length / itemsPerPage)),
                         },
                         (_, i) => {
                           const pageNumber = i + 1
@@ -471,7 +642,7 @@ const Airdrop = () => {
                         },
                       )}
 
-                      {Math.ceil(Object.keys(assetDetails).length / itemsPerPage) > 5 && (
+                      {Math.ceil(Object.keys(assets).length / itemsPerPage) > 5 && (
                         <>
                           <PaginationItem>
                             <PaginationEllipsis />
@@ -480,12 +651,10 @@ const Airdrop = () => {
                             <PaginationLink
                               className="cursor-pointer"
                               onClick={() =>
-                                setCurrentPage(
-                                  Math.ceil(Object.keys(assetDetails).length / itemsPerPage),
-                                )
+                                setCurrentPage(Math.ceil(Object.keys(assets).length / itemsPerPage))
                               }
                             >
-                              {Math.ceil(Object.keys(assetDetails).length / itemsPerPage)}
+                              {Math.ceil(Object.keys(assets).length / itemsPerPage)}
                             </PaginationLink>
                           </PaginationItem>
                         </>
@@ -496,15 +665,11 @@ const Airdrop = () => {
                           className="cursor-pointer"
                           onClick={() =>
                             setCurrentPage((p) =>
-                              Math.min(
-                                Math.ceil(Object.keys(assetDetails).length / itemsPerPage),
-                                p + 1,
-                              ),
+                              Math.min(Math.ceil(Object.keys(assets).length / itemsPerPage), p + 1),
                             )
                           }
                           isActive={
-                            currentPage ===
-                            Math.ceil(Object.keys(assetDetails).length / itemsPerPage)
+                            currentPage === Math.ceil(Object.keys(assets).length / itemsPerPage)
                           }
                         />
                       </PaginationItem>
@@ -527,8 +692,8 @@ const Airdrop = () => {
         )}
 
         {/* Airdrop Controls */}
-        {policyId && lucid && selectedAsset && (
-          <div className="flex min-w-[75vw] flex-col gap-2 rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm">
+        {lucid && selectedAsset && (
+          <div className="flex min-w-[75vw] flex-col gap-2 p-6 shadow-sm backdrop-blur-sm">
             <div className="rounded-xl border border-border bg-accent/50 p-4">
               <p className="mb-2 text-sm font-medium text-muted-foreground">Selected Token</p>
               <div className="flex items-center gap-3">
@@ -558,7 +723,7 @@ const Airdrop = () => {
               <Input
                 placeholder={`Amount of ${selectedAsset?.name || 'tokens'} per address`}
                 value={amountPerPerson}
-                onChange={(e) => setAmountPerPerson(e.target.value)}
+                onChange={(e) => setAmountPerPerson(Number(e.target.value))}
                 className="h-14 text-lg"
               />
 
@@ -570,19 +735,19 @@ const Airdrop = () => {
                     <br />
                     <span className="text-sm text-muted-foreground">
                       (
-                      {selectedAsset?.assetId === 'lovelace'
+                      {selectedAsset?.assetId === 'lovelace' && Number(amountPerPerson) > 0
                         ? (
                             Number(
                               BigInt(amountPerPerson || '0') *
                                 BigInt(1000000) *
-                                BigInt(addresses.length),
+                                BigInt(selectedAddresses.size),
                             ) / 1_000_000
                           ).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })
                         : (
-                            BigInt(amountPerPerson || '0') * BigInt(addresses.length)
+                            BigInt(amountPerPerson || '0') * BigInt(selectedAddresses.size)
                           ).toString()}{' '}
                       total)
                     </span>
@@ -591,90 +756,331 @@ const Airdrop = () => {
               )}
             </div>
 
-            {/* Policy ID Section with improved styling */}
+            {/* Policy ID and Addresses Section */}
             <div className="space-y-4 rounded-xl border border-border bg-accent/50 p-6">
-              <div className="space-y-2 text-center">
+              <div className="space-y-2">
                 <h2 className="text-xl font-semibold">Recipient Addresses</h2>
                 <p className="text-sm text-muted-foreground">
-                  Enter a policy ID to airdrop to all token holders
+                  Add addresses from multiple Policy IDs
                 </p>
               </div>
 
-              <div className="flex w-full flex-col items-center gap-2">
+              <div className="flex w-full flex-col items-center gap-2 sm:flex-row">
                 <Input
                   placeholder="Enter Policy ID (56 characters)"
                   value={policyId}
-                  onChange={(e) => {
-                    if (e.target.value.length === 56) {
-                      setPolicyId(e.target.value)
-                    } else {
-                      setPolicyId('')
-                      setAddresses([])
-                      localStorage.removeItem('policyId')
-                    }
-                  }}
+                  onChange={(e) => setPolicyId(e.target.value)}
                   className="h-12 w-full text-base"
                 />
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleSearch}
-                    disabled={!policyId || isSearching || !lucid}
-                    className="h-12 px-6"
-                  >
-                    {isSearching ? <Loader2 className="size-5 animate-spin" /> : 'Search Addresses'}
-                  </Button>
-                  {policyId && (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setPolicyId('')
-                        setAddresses([])
-                        localStorage.removeItem('policyId')
-                      }}
-                      className="h-12"
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
+                <Button
+                  onClick={handleSearch}
+                  disabled={!policyId || isSearching || !lucid}
+                  className="h-12 w-full whitespace-nowrap sm:w-auto"
+                >
+                  {isSearching ? <Loader2 className="size-5 animate-spin" /> : 'Add Policy'}
+                </Button>
               </div>
-              {/* Addresses Preview */}
-              {addresses.length > 0 && (
-                <div className="shadow-sm">
-                  <Collapsible>
+
+              {/* Policy List */}
+              {policyAddresses.length > 0 && (
+                <div className="min-w-[75vw]">
+                  <Collapsible open={isAddressesOpen} onOpenChange={setIsAddressesOpen}>
                     <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="flex w-full justify-between px-2 py-4">
-                        <div className="flex items-center gap-1">
-                          <span className="text-lg font-semibold">
-                            {addresses.length} holders found
-                          </span>
-                          <span className="text-muted-foreground">(from policy)</span>
-                        </div>
-                        <ChevronDown className="h-5 w-5" />
+                      <Button variant="outline" className="flex w-full justify-between px-4 py-4">
+                        <span className="text-lg font-semibold">
+                          {selectedAddresses.size} Selected Addresses from {policyAddresses.length}{' '}
+                          Policies
+                        </span>
+                        <ChevronDown className="ml-2 h-5 w-5 shrink-0" />
                       </Button>
                     </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[100px]">#</TableHead>
-                            <TableHead>Address</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {addresses.map((addr, index) => (
-                            <TableRow key={index} className="hover:bg-muted/50">
-                              <TableCell className="font-medium">{index + 1}</TableCell>
-                              <TableCell className="break-all font-mono text-sm">{addr}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                    <CollapsibleContent className="w-full">
+                      <div className="mt-4 space-y-4">
+                        {policyAddresses.map((policy) => (
+                          <Collapsible
+                            key={policy.policyId}
+                            open={openPolicies.has(policy.policyId)}
+                            onOpenChange={(open) => {
+                              setOpenPolicies((prev) => {
+                                const newSet = new Set(prev)
+                                if (open) {
+                                  newSet.add(policy.policyId)
+                                } else {
+                                  newSet.delete(policy.policyId)
+                                }
+                                return newSet
+                              })
+                            }}
+                          >
+                            <CollapsibleTrigger asChild>
+                              <div className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border p-4 hover:bg-accent/50">
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="font-semibold">{policy.label}</h3>
+                                  <p className="break-all font-mono text-sm text-muted-foreground">
+                                    {policy.policyId}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {policy.addresses.length} holders
+                                  </p>
+                                </div>
+                                <div className="ml-2 flex shrink-0 items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    className="text-destructive hover:text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation() // Prevent collapsible from toggling
+                                      removePolicy(policy.policyId)
+                                    }}
+                                  >
+                                    <X className="h-5 w-5" />
+                                  </Button>
+                                  <ChevronDown
+                                    className={`h-5 w-5 transition-transform duration-200 ${
+                                      openPolicies.has(policy.policyId) ? 'rotate-180' : ''
+                                    }`}
+                                  />
+                                </div>
+                              </div>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="w-full">
+                              <div className="mt-2 overflow-x-auto rounded-lg border border-border p-4">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-[50px] whitespace-nowrap">
+                                        Include
+                                      </TableHead>
+                                      <TableHead className="whitespace-nowrap">Address</TableHead>
+                                      <TableHead className="w-[100px] whitespace-nowrap">
+                                        Action
+                                      </TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {policy.addresses.map((addr) => (
+                                      <TableRow key={addr}>
+                                        <TableCell className="whitespace-nowrap">
+                                          <input
+                                            type="checkbox"
+                                            checked={selectedAddresses.has(addr)}
+                                            onChange={(e) => {
+                                              setSelectedAddresses((prev) => {
+                                                const newSet = new Set(prev)
+                                                if (e.target.checked) {
+                                                  newSet.add(addr)
+                                                } else {
+                                                  newSet.delete(addr)
+                                                }
+                                                return newSet
+                                              })
+                                            }}
+                                            className="h-4 w-4 rounded border-border"
+                                          />
+                                        </TableCell>
+                                        <TableCell className="max-w-[200px] break-all font-mono text-sm sm:max-w-none">
+                                          {addr}
+                                        </TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => removeAddress(addr)}
+                                            className="h-8 px-2 text-destructive hover:text-destructive"
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ))}
+                      </div>
                     </CollapsibleContent>
                   </Collapsible>
                 </div>
               )}
             </div>
+
+            {(tempPolicyAddresses.length > 0 || isLoadingMoreAddresses) && (
+              <div className="mt-4 w-full overflow-hidden rounded-lg border border-border p-4">
+                {isLoadingMoreAddresses ? (
+                  // Loading skeleton
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-1">
+                        <div className="h-7 w-64 animate-pulse rounded-md bg-muted" />
+                        <div className="h-5 w-96 animate-pulse rounded-md bg-muted" />
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="h-10 w-24 animate-pulse rounded-md bg-muted" />
+                        <div className="h-10 w-36 animate-pulse rounded-md bg-muted" />
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+                      <div className="mt-2 space-y-2">
+                        {[...Array(2)].map((_, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <div className="h-4 w-4 animate-pulse rounded bg-muted" />
+                            <div className="h-8 flex-1 animate-pulse rounded bg-muted" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Existing content
+                  <>
+                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-lg font-semibold">
+                          Found {tempPolicyAddresses.length} addresses on page {policyAddressPage}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          All addresses are selected by default. Uncheck any you want to exclude.
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            const success = await fetchPolicyAddresses(policyAddressPage + 1)
+                            if (success) {
+                              setPolicyAddressPage((prev) => prev + 1)
+                            }
+                          }}
+                          disabled={isLoadingMoreAddresses}
+                        >
+                          Skip Page
+                        </Button>
+                        <Button
+                          onClick={confirmAddAddresses}
+                          disabled={isLoadingMoreAddresses || selectedTempAddresses.size === 0}
+                          className="min-w-[140px]"
+                        >
+                          {selectedTempAddresses.size === tempPolicyAddresses.length ? (
+                            <>
+                              <Check className="mr-2 h-4 w-4" />
+                              Add All ({selectedTempAddresses.size})
+                            </>
+                          ) : (
+                            `Add Selected (${selectedTempAddresses.size})`
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <Collapsible className="mt-4">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="outline" className="flex w-full justify-between">
+                          <span>Review Addresses</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {selectedTempAddresses.size} selected
+                            </span>
+                            <ChevronDown className="h-4 w-4" />
+                          </div>
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-2 max-h-[200px] overflow-x-auto rounded-lg border border-border p-2">
+                          <div className="mb-2 flex items-center justify-between px-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedTempAddresses.size === tempPolicyAddresses.length}
+                                ref={(input) => {
+                                  if (input) {
+                                    input.indeterminate =
+                                      selectedTempAddresses.size > 0 &&
+                                      selectedTempAddresses.size < tempPolicyAddresses.length
+                                  }
+                                }}
+                                onChange={(e) => handleSelectAllTemp(e.target.checked)}
+                                className="h-4 w-4 rounded border-border"
+                              />
+                              <span className="text-sm text-muted-foreground">
+                                Selected {selectedTempAddresses.size} of{' '}
+                                {tempPolicyAddresses.length}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="min-w-[600px]">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead className="w-[50px] whitespace-nowrap">
+                                    Include
+                                  </TableHead>
+                                  <TableHead>Address</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {tempPolicyAddresses.map((address) => (
+                                  <TableRow key={address}>
+                                    <TableCell className="whitespace-nowrap">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedTempAddresses.has(address)}
+                                        onChange={(e) => {
+                                          setSelectedTempAddresses((prev) => {
+                                            const newSet = new Set(prev)
+                                            if (e.target.checked) {
+                                              newSet.add(address)
+                                            } else {
+                                              newSet.delete(address)
+                                            }
+                                            return newSet
+                                          })
+                                        }}
+                                        className="h-4 w-4 rounded border-border"
+                                      />
+                                    </TableCell>
+                                    <TableCell className="max-w-[200px] break-all font-mono text-sm sm:max-w-none">
+                                      {address}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {hasMoreAddresses && (
+                      <div className="mt-4 flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            const success = await fetchPolicyAddresses(policyAddressPage + 1)
+                            if (success) {
+                              setPolicyAddressPage((prev) => prev + 1)
+                            }
+                          }}
+                          disabled={isLoadingMoreAddresses}
+                          className="w-full"
+                        >
+                          {isLoadingMoreAddresses ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Loading next page...
+                            </>
+                          ) : (
+                            'Skip to Next Page'
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             <Collapsible>
               <CollapsibleTrigger asChild>
@@ -726,7 +1132,7 @@ const Airdrop = () => {
               ) : (
                 <>
                   <ArrowUp className="mr-2 h-5 w-5" />
-                  Airdrop to {addresses.length + manualAddresses.length} Addresses
+                  Airdrop to {selectedAddresses.size + manualAddresses.length} Addresses
                 </>
               )}
             </Button>

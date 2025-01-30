@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
 const AirdropComponent = dynamic(() => import('./Airdrop'), {
   ssr: false,
   loading: () => (
-    <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <div className="flex min-h-[69vh] items-center justify-center">
+      <Loader2 className="h-9 w-9 animate-spin text-primary" />
     </div>
   ),
 })
@@ -17,8 +17,8 @@ const AirdropComponent = dynamic(() => import('./Airdrop'), {
 const Page = () => {
   return (
     <div className="mt-10 flex flex-col items-center justify-center">
-      {/* <AirdropComponent /> */}
-      <Button variant="outline">coming soon</Button>
+      <AirdropComponent />
+      {/* <Button variant="outline">coming soon</Button> */}
     </div>
   )
 }
