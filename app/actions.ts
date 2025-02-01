@@ -1,6 +1,6 @@
 'use server'
 
-import { CARDANO_WALLET_MAX_AGE, MAX_FAVORITES } from '@/utils/consts'
+import { MAX_FAVORITES } from '@/utils/consts'
 import { extractRecipeId } from '@/utils/helper'
 import { currentUser } from '@clerk/nextjs/server'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
@@ -12,8 +12,6 @@ import {
   uploadBytes,
 } from 'firebase/storage'
 import { db, deleteObject, storage } from '../components/firebase/firebase'
-import fs from 'fs'
-import path from 'path'
 import { kv } from '@vercel/kv'
 
 export async function checkUserAuthentication() {
@@ -50,55 +48,6 @@ export async function removeItemsFirebase(userEmail, keys) {
 
   return res
 }
-
-// // @ts-ignore
-// export async function addToFavoritesFirebase({ name, url, link, metadata }) {
-//   const userEmail = await checkUserAuthentication()
-//   if (!userEmail) {
-//     return { error: "User email is required" }
-//   }
-
-//   try {
-//     // Proceed with the upload after user authentication
-//     const imageResponse = await fetch(url)
-
-//     // Check if the image response is ok (status 200-299)
-//     if (!imageResponse.ok) {
-//       return { error: "Failed to fetch the image." }
-//     }
-
-//     const imageBlob = await imageResponse.blob()
-
-//     const imageRef = storageRef(
-//       storage,
-//       `images/${userEmail}/${extractRecipeId(link)}`
-//     )
-
-//     const uploadResult = await uploadBytes(imageRef, imageBlob, metadata)
-//     const downloadUrl = await getDownloadURL(uploadResult.ref)
-
-//     // Call to handle max image count, checking for errors
-//     const res = await handleSetMaxImagesCount(false, userEmail, {
-//       increment: true,
-//     })
-
-//     if (res?.error) {
-//       // Optionally delete the uploaded image if max count exceeded
-//       await deleteObject(imageRef) // Uncomment if you want to delete the uploaded image
-
-//       return {
-//         error: res.error,
-//       }
-//     }
-
-//     return {
-//       url: downloadUrl, // The actual URL of the uploaded image
-//     }
-//   } catch (err) {
-//     console.error("Error adding favorite:", err)
-//     return { error: "Failed to add favorite." }
-//   }
-// }
 
 export async function getFavoritesFirebase(userEmail: string) {
   const folderRef = storageRef(storage, `images/${userEmail}/`)
@@ -717,4 +666,19 @@ export async function getContractAddresses(): Promise<{ addresses: string[]; err
     console.error('Error fetching blacklist:', error)
     return { addresses: [], error: 'Failed to fetch contract addresses' }
   }
+}
+
+export const fetchAddressesFromPolicy = async (policyId: string) => {
+  const response = await fetch(
+    `https://api.koios.rest/api/v1/policy_asset_addresses?_asset_policy=${policyId}`,
+    {
+      headers: {
+        accept: 'application/json',
+
+        authorization: `Bearer ${process.env.KOIOS_BEARER_TOKEN}`,
+      },
+    },
+  )
+  const data = await response.json()
+  return data
 }
