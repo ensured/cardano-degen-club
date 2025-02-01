@@ -49,8 +49,8 @@ type AssetMetadata = {
 
 type PolicyAddresses = {
   policyId: string
-  addresses: string[]
-  label?: string // Optional label for the policy
+  addresses: { address: string; selected: boolean }[]
+  label?: string
 }
 
 const Airdrop = () => {
@@ -91,7 +91,9 @@ const Airdrop = () => {
   const selectedAddresses = useMemo(() => {
     const addresses = new Set<string>()
     policyAddresses.forEach((policy) => {
-      policy.addresses.forEach((addr) => addresses.add(addr))
+      policy.addresses
+        .filter((addr) => addr.selected)
+        .forEach((addr) => addresses.add(addr.address))
     })
     return addresses
   }, [policyAddresses])
@@ -236,17 +238,20 @@ const Airdrop = () => {
 
       const addressArray = Array.from(uniqueAddresses)
 
-      // Add new policy addresses to the list
+      // Add new policy addresses with selected status
       setPolicyAddresses((prev) => [
         ...prev,
         {
           policyId,
-          addresses: addressArray,
+          addresses: addressArray.map((addr) => ({
+            address: addr,
+            selected: true, // Default to selected when added
+          })),
           label: `Policy ${prev.length + 1}`,
         },
       ])
 
-      toast.success(`Added ${addressArray.length} addresses to the list`, { duration: 5000 })
+      toast.success(`Added ${addressArray.length} addresses to the list`)
     } catch (err) {
       toast.error('Failed to fetch addresses')
       console.error('Error:', err)
@@ -262,7 +267,6 @@ const Airdrop = () => {
       return
     }
 
-    // Filter out blacklisted addresses
     const filteredAddresses = Array.from(selectedTempAddresses).filter(
       (address) => !blacklistedAddresses.has(address),
     )
@@ -272,17 +276,18 @@ const Airdrop = () => {
       return
     }
 
-    // Add new policy addresses to the list
     setPolicyAddresses((prev) => [
       ...prev,
       {
         policyId,
-        addresses: filteredAddresses,
+        addresses: filteredAddresses.map((addr) => ({
+          address: addr,
+          selected: true,
+        })),
         label: `Policy ${prev.length + 1}`,
       },
     ])
 
-    // Clear temporary addresses
     setTempPolicyAddresses([])
     setSelectedTempAddresses(new Set())
     toast.success(`Added ${filteredAddresses.length} addresses`)
@@ -303,7 +308,7 @@ const Airdrop = () => {
           if (policy.policyId === policyId) {
             return {
               ...policy,
-              addresses: policy.addresses.filter((addr) => addr !== address),
+              addresses: policy.addresses.filter((addr) => addr.address !== address),
             }
           }
           return policy
@@ -407,6 +412,24 @@ const Airdrop = () => {
       return ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
     }
     return ipfsUrl
+  }
+
+  // Add a helper function to toggle all addresses in a policy
+  const toggleAllAddressesInPolicy = (policyId: string, selected: boolean) => {
+    setPolicyAddresses((prev) =>
+      prev.map((policy) => {
+        if (policy.policyId === policyId) {
+          return {
+            ...policy,
+            addresses: policy.addresses.map((addr) => ({
+              ...addr,
+              selected,
+            })),
+          }
+        }
+        return policy
+      }),
+    )
   }
 
   return (
@@ -872,23 +895,25 @@ const Airdrop = () => {
                                 </TableHeader>
                                 <TableBody>
                                   {policy.addresses.map((addr) => (
-                                    <TableRow key={addr}>
+                                    <TableRow key={addr.address}>
                                       <TableCell className="whitespace-nowrap">
                                         <input
                                           type="checkbox"
-                                          checked={selectedAddresses.has(addr)}
+                                          checked={addr.selected}
                                           onChange={(e) => {
                                             setPolicyAddresses((prev) =>
-                                              prev.map((policy) => {
-                                                if (policy.policyId === policyId) {
+                                              prev.map((p) => {
+                                                if (p.policyId === policy.policyId) {
                                                   return {
-                                                    ...policy,
-                                                    addresses: e.target.checked
-                                                      ? [...policy.addresses, addr]
-                                                      : policy.addresses.filter((a) => a !== addr),
+                                                    ...p,
+                                                    addresses: p.addresses.map((a) =>
+                                                      a.address === addr.address
+                                                        ? { ...a, selected: e.target.checked }
+                                                        : a,
+                                                    ),
                                                   }
                                                 }
-                                                return policy
+                                                return p
                                               }),
                                             )
                                           }}
@@ -896,13 +921,15 @@ const Airdrop = () => {
                                         />
                                       </TableCell>
                                       <TableCell className="max-w-[200px] break-all font-mono text-sm sm:max-w-none">
-                                        {addr}
+                                        {addr.address}
                                       </TableCell>
                                       <TableCell className="whitespace-nowrap">
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          onClick={() => removeAddress(addr, policy.policyId)}
+                                          onClick={() =>
+                                            removeAddress(addr.address, policy.policyId)
+                                          }
                                           className="h-8 px-2 text-destructive hover:text-destructive"
                                         >
                                           <X className="h-4 w-4" />
