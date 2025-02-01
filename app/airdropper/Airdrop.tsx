@@ -3,7 +3,7 @@
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
 import { Check, Loader2, ChevronDown, ArrowUp, Eye, EyeOff, X } from 'lucide-react'
 import { Lucid, Blockfrost, LucidEvolution, fromText, Network } from '@lucid-evolution/lucid'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
@@ -73,7 +73,6 @@ const Airdrop = () => {
   const [showBlockfrostKey, setShowBlockfrostKey] = useState(false)
   const [isLoadingAssets, setIsLoadingAssets] = useState(true)
   const [policyAddresses, setPolicyAddresses] = useState<PolicyAddresses[]>([])
-  const [selectedAddresses, setSelectedAddresses] = useState<Set<string>>(new Set())
   const [isAddressesOpen, setIsAddressesOpen] = useState(false)
   const [openPolicies, setOpenPolicies] = useState<Set<string>>(new Set())
   const itemsPerPage = 20
@@ -88,6 +87,14 @@ const Airdrop = () => {
     2: 'Preprod',
     3: 'Custom',
   }
+
+  const selectedAddresses = useMemo(() => {
+    const addresses = new Set<string>()
+    policyAddresses.forEach((policy) => {
+      policy.addresses.forEach((addr) => addresses.add(addr))
+    })
+    return addresses
+  }, [policyAddresses])
 
   useEffect(() => {
     if (walletState.wallet && walletState.api) {
@@ -239,13 +246,6 @@ const Airdrop = () => {
         },
       ])
 
-      // Add selected addresses to the global selected set
-      setSelectedAddresses((prev) => {
-        const newSet = new Set(prev)
-        addressArray.forEach((addr) => newSet.add(addr))
-        return newSet
-      })
-
       toast.success(`Added ${addressArray.length} addresses to the list`, { duration: 5000 })
     } catch (err) {
       toast.error('Failed to fetch addresses')
@@ -282,13 +282,6 @@ const Airdrop = () => {
       },
     ])
 
-    // Add selected addresses to the global selected set
-    setSelectedAddresses((prev) => {
-      const newSet = new Set(prev)
-      filteredAddresses.forEach((addr) => newSet.add(addr))
-      return newSet
-    })
-
     // Clear temporary addresses
     setTempPolicyAddresses([])
     setSelectedTempAddresses(new Set())
@@ -303,23 +296,24 @@ const Airdrop = () => {
     }
   }
 
-  const removeAddress = (address: string) => {
-    setSelectedAddresses((prev) => {
-      const newSet = new Set(prev)
-      newSet.delete(address)
-      return newSet
+  const removeAddress = (address: string, policyId: string) => {
+    setPolicyAddresses((prev) => {
+      return prev
+        .map((policy) => {
+          if (policy.policyId === policyId) {
+            return {
+              ...policy,
+              addresses: policy.addresses.filter((addr) => addr !== address),
+            }
+          }
+          return policy
+        })
+        .filter((policy) => policy.addresses.length > 0)
     })
   }
 
   const removePolicy = (policyId: string) => {
     setPolicyAddresses((prev) => prev.filter((p) => p.policyId !== policyId))
-    // Remove all addresses associated with this policy
-    const addressesToRemove = policyAddresses.find((p) => p.policyId === policyId)?.addresses || []
-    setSelectedAddresses((prev) => {
-      const newSet = new Set(prev)
-      addressesToRemove.forEach((addr) => newSet.delete(addr))
-      return newSet
-    })
   }
 
   const handleAirdrop = async () => {
@@ -884,15 +878,19 @@ const Airdrop = () => {
                                           type="checkbox"
                                           checked={selectedAddresses.has(addr)}
                                           onChange={(e) => {
-                                            setSelectedAddresses((prev) => {
-                                              const newSet = new Set(prev)
-                                              if (e.target.checked) {
-                                                newSet.add(addr)
-                                              } else {
-                                                newSet.delete(addr)
-                                              }
-                                              return newSet
-                                            })
+                                            setPolicyAddresses((prev) =>
+                                              prev.map((policy) => {
+                                                if (policy.policyId === policyId) {
+                                                  return {
+                                                    ...policy,
+                                                    addresses: e.target.checked
+                                                      ? [...policy.addresses, addr]
+                                                      : policy.addresses.filter((a) => a !== addr),
+                                                  }
+                                                }
+                                                return policy
+                                              }),
+                                            )
                                           }}
                                           className="h-4 w-4 rounded border-border"
                                         />
@@ -904,7 +902,7 @@ const Airdrop = () => {
                                         <Button
                                           variant="ghost"
                                           size="sm"
-                                          onClick={() => removeAddress(addr)}
+                                          onClick={() => removeAddress(addr, policy.policyId)}
                                           className="h-8 px-2 text-destructive hover:text-destructive"
                                         >
                                           <X className="h-4 w-4" />
