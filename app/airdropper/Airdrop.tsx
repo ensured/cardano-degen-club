@@ -83,8 +83,6 @@ const Airdrop = () => {
   const [showBlockfrostKey, setShowBlockfrostKey] = useState(false)
   const [isLoadingAssets, setIsLoadingAssets] = useState(true)
   const [policyAddresses, setPolicyAddresses] = useState<PolicyAddresses[]>([])
-  const [isAddressesOpen, setIsAddressesOpen] = useState(false)
-  const [openPolicies, setOpenPolicies] = useState<Set<string>>(new Set())
   const itemsPerPage = 20
   const [tempPolicyAddresses, setTempPolicyAddresses] = useState<string[]>([])
   const [selectedTempAddresses, setSelectedTempAddresses] = useState<Set<string>>(new Set())
@@ -232,7 +230,10 @@ const Airdrop = () => {
 
     try {
       toast.info('Fetching addresses from policy...')
-      const data = await fetchAddressesFromPolicy(policyId)
+      const data = await fetchAddressesFromPolicy(
+        policyId,
+        networkMap[walletState.network! as keyof typeof networkMap].toLowerCase(),
+      )
 
       if (!data || !Array.isArray(data)) {
         toast.error('Failed to fetch addresses')
@@ -366,44 +367,60 @@ const Airdrop = () => {
       return
     }
 
-    const totalAmount = amountPer * BigInt(allAddresses.length)
+    let low = 1
+    let high = allAddresses.length
+    let optimalBatchSize = 0
+    let finalTx: any = null
 
-    // Check if user has enough of the selected asset
-    if (selectedAsset.amount < totalAmount) {
-      toast.error(
-        `Not enough ${selectedAsset.name} tokens. Need ${totalAmount.toString()} total (${amountPerPerson} * ${allAddresses.length})`,
-      )
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2)
+      const batchAmount = amountPer * BigInt(mid)
+
+      if (selectedAsset.amount < batchAmount) {
+        high = mid - 1
+        continue
+      }
+
+      try {
+        let tx = lucid.newTx()
+        const currentBatch = allAddresses.slice(0, mid)
+
+        if (selectedAsset.assetId === 'lovelace') {
+          currentBatch.forEach((address) => {
+            tx = tx.pay.ToAddress(address, { lovelace: amountPer })
+          })
+        } else {
+          const assetPayload = { [selectedAsset.assetId]: amountPer }
+          currentBatch.forEach((address) => {
+            tx = tx.pay.ToAddress(address, assetPayload)
+          })
+        }
+
+        const completedTx = await tx.complete()
+        optimalBatchSize = mid
+        finalTx = completedTx
+        low = mid + 1 // Try larger batches
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('Max transaction size')) {
+          high = mid - 1 // Reduce upper bound
+        } else {
+          throw error
+        }
+      }
+    }
+
+    if (!finalTx || optimalBatchSize === 0) {
+      toast.error('Failed to create valid transaction')
+      setIsAirdropping(false)
       return
     }
 
-    setIsAirdropping(true)
     try {
-      toast.info(
-        `Building transaction for ${allAddresses.length} addresses (${excludedCount} blacklisted addresses excluded)...`,
-      )
-
-      // Start building the transaction
-      let tx = lucid.newTx()
-
-      if (selectedAsset.assetId === 'lovelace') {
-        allAddresses.forEach((address) => {
-          tx = tx.pay.ToAddress(address, { lovelace: amountPer })
-        })
-      } else {
-        const assetPayload = { [selectedAsset.assetId]: amountPer }
-        allAddresses.forEach((address) => {
-          tx = tx.pay.ToAddress(address, assetPayload)
-        })
-      }
-      console.log(tx)
-
-      // Complete, sign and submit the transaction
-      const completedTx = await tx.complete()
-      const signedTx = await completedTx.sign.withWallet().complete()
+      const signedTx = await finalTx.sign.withWallet().complete()
       const txHash = await signedTx.submit()
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
-      toast.success(`Transaction submitted! Hash: ${txHash}`)
+      toast.success(`Transaction submitted to ${optimalBatchSize} addresses! Hash: ${txHash}`)
     } catch (error) {
       toast.error((error as Error).message)
     } finally {
@@ -422,22 +439,22 @@ const Airdrop = () => {
   }
 
   // Add a helper function to toggle all addresses in a policy
-  const toggleAllAddressesInPolicy = (policyId: string, selected: boolean) => {
-    setPolicyAddresses((prev) =>
-      prev.map((policy) => {
-        if (policy.policyId === policyId) {
-          return {
-            ...policy,
-            addresses: policy.addresses.map((addr) => ({
-              ...addr,
-              selected,
-            })),
-          }
-        }
-        return policy
-      }),
-    )
-  }
+  // const toggleAllAddressesInPolicy = (policyId: string, selected: boolean) => {
+  //   setPolicyAddresses((prev) =>
+  //     prev.map((policy) => {
+  //       if (policy.policyId === policyId) {
+  //         return {
+  //           ...policy,
+  //           addresses: policy.addresses.map((addr) => ({
+  //             ...addr,
+  //             selected,
+  //           })),
+  //         }
+  //       }
+  //       return policy
+  //     }),
+  //   )
+  // }
 
   return (
     <div className="mx-auto flex w-full flex-col items-center justify-center gap-6 px-4 py-10">
@@ -586,9 +603,12 @@ const Airdrop = () => {
                     )}
                     <span className="text-xl font-semibold">
                       {selectedAsset ? (
-                        <div className="flex items-center gap-1">
-                          <span>Token: </span>
-                          <span className="text-lg font-semibold">{selectedAsset.name}</span>
+                        <div className="flex w-full items-center justify-between gap-1">
+                          <div className="flex items-center gap-1">
+                            <span>Token: </span>
+                            <span className="text-lg font-semibold">{selectedAsset.name}</span>
+                          </div>
+                          <Check className="h-5 w-5 text-green-500/80" />
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5">

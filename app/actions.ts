@@ -668,17 +668,21 @@ export async function getContractAddresses(): Promise<{ addresses: string[]; err
   }
 }
 
-export const fetchAddressesFromPolicy = async (policyId: string) => {
-  const response = await fetch(
-    `https://api.koios.rest/api/v1/policy_asset_addresses?_asset_policy=${policyId}`,
-    {
-      headers: {
-        accept: 'application/json',
+export const fetchAddressesFromPolicy = async (policyId: string, network: string) => {
+  let fetchUrl: string
+  if (network === 'preview') {
+    fetchUrl = `https://preview.koios.rest/api/v1/policy_asset_addresses?_asset_policy=${policyId}`
+  } else {
+    fetchUrl = `https://api.koios.rest/api/v1/policy_asset_addresses?_asset_policy=${policyId}`
+  }
 
-        authorization: `Bearer ${process.env.KOIOS_BEARER_TOKEN}`,
-      },
+  const response = await fetch(fetchUrl, {
+    headers: {
+      accept: 'application/json',
+
+      authorization: `Bearer ${process.env.KOIOS_BEARER_TOKEN}`,
     },
-  )
+  })
   const data = await response.json()
   return data
 }
