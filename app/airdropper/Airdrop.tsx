@@ -28,6 +28,15 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 import { getContractAddresses } from '@/app/actions'
+
+import { fetchAddressesFromPolicy } from '@/app/actions'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,8 +46,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { fetchAddressesFromPolicy } from '@/app/actions'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 type AssetMetadata = {
   name: string
@@ -374,21 +384,18 @@ const Airdrop = () => {
 
       // Start building the transaction
       let tx = lucid.newTx()
-      let x = await lucid.utxosAtWithUnit(walletState.walletAddress!, selectedAsset.assetId)
-      console.log(x)
 
       if (selectedAsset.assetId === 'lovelace') {
-        // Now using proper lovelace amounts
         allAddresses.forEach((address) => {
           tx = tx.pay.ToAddress(address, { lovelace: amountPer })
         })
       } else {
-        // Handle other assets with combined payment
         const assetPayload = { [selectedAsset.assetId]: amountPer }
         allAddresses.forEach((address) => {
           tx = tx.pay.ToAddress(address, assetPayload)
         })
       }
+      console.log(tx)
 
       // Complete, sign and submit the transaction
       const completedTx = await tx.complete()
@@ -821,131 +828,154 @@ const Airdrop = () => {
 
               {/* Policy List */}
               <div className="min-w-[75vw]">
-                <Collapsible open={isAddressesOpen} onOpenChange={setIsAddressesOpen}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="outline" className="flex w-full justify-between px-4 py-4">
-                      <span className="text-lg font-semibold">
-                        {selectedAddresses.size} Selected Addresses from {policyAddresses.length}{' '}
-                        Policies
-                      </span>
-                      <ChevronDown className="ml-2 h-5 w-5 shrink-0" />
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="w-full">
-                    <div className="mt-4 space-y-4">
-                      {policyAddresses.map((policy) => (
-                        <Collapsible
-                          key={policy.policyId}
-                          open={openPolicies.has(policy.policyId)}
-                          onOpenChange={(open) => {
-                            setOpenPolicies((prev) => {
-                              const newSet = new Set(prev)
-                              if (open) {
-                                newSet.add(policy.policyId)
-                              } else {
-                                newSet.delete(policy.policyId)
-                              }
-                              return newSet
-                            })
-                          }}
-                        >
-                          <CollapsibleTrigger asChild>
-                            <div className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border p-4 hover:bg-accent/50">
-                              <div className="min-w-0 flex-1">
-                                <h3 className="font-semibold">{policy.label}</h3>
-                                <p className="break-all font-mono text-sm text-muted-foreground">
-                                  {policy.policyId}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {policy.addresses.length} holders
-                                </p>
-                              </div>
-                              <div className="ml-2 flex shrink-0 items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  className="text-destructive hover:text-destructive"
-                                  onClick={(e) => {
-                                    e.stopPropagation() // Prevent collapsible from toggling
-                                    removePolicy(policy.policyId)
-                                  }}
-                                >
-                                  <X className="h-5 w-5" />
-                                </Button>
-                                <ChevronDown
-                                  className={`h-5 w-5 transition-transform duration-200 ${
-                                    openPolicies.has(policy.policyId) ? 'rotate-180' : ''
-                                  }`}
-                                />
-                              </div>
+                {policyAddresses.map((policy) => (
+                  <div key={policy.policyId} className="mt-2">
+                    <div className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-border p-4 hover:bg-accent/50">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div className="min-w-0 flex-1 cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold">{policy.label}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {policy.addresses.length} holders
+                              </p>
                             </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="w-full">
-                            <div className="mt-2 overflow-x-auto rounded-lg border border-border p-4">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="w-[50px] whitespace-nowrap">
-                                      Include
-                                    </TableHead>
-                                    <TableHead className="whitespace-nowrap">Address</TableHead>
-                                    <TableHead className="w-[100px] whitespace-nowrap">
-                                      Action
-                                    </TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {policy.addresses.map((addr) => (
-                                    <TableRow key={addr.address}>
-                                      <TableCell className="whitespace-nowrap">
-                                        <input
-                                          type="checkbox"
-                                          checked={addr.selected}
-                                          onChange={(e) => {
-                                            setPolicyAddresses((prev) =>
-                                              prev.map((p) => {
-                                                if (p.policyId === policy.policyId) {
-                                                  return {
-                                                    ...p,
-                                                    addresses: p.addresses.map((a) =>
-                                                      a.address === addr.address
-                                                        ? { ...a, selected: e.target.checked }
-                                                        : a,
-                                                    ),
-                                                  }
-                                                }
-                                                return p
-                                              }),
-                                            )
-                                          }}
-                                          className="h-4 w-4 rounded border-border"
-                                        />
-                                      </TableCell>
-                                      <TableCell className="max-w-[200px] break-all font-mono text-sm sm:max-w-none">
-                                        {addr.address}
-                                      </TableCell>
-                                      <TableCell className="whitespace-nowrap">
+
+                            <p className="break-all font-mono text-sm text-muted-foreground">
+                              {policy.policyId}
+                            </p>
+                          </div>
+                        </DialogTrigger>
+
+                        <DialogContent className="max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <VisuallyHidden asChild>
+                              <DialogTitle>{policy.label} Addresses</DialogTitle>
+                            </VisuallyHidden>
+                          </DialogHeader>
+                          <Table className="compact-table">
+                            <TableHeader className="[&_tr]:h-8">
+                              <TableRow>
+                                <TableHead className="w-[40px] px-2">Include</TableHead>
+                                <TableHead className="px-2">Address</TableHead>
+                                <TableHead className="w-[80px] px-2">Action</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody className="max-h-[50vh] overflow-auto [&_tr]:h-10">
+                              {policy.addresses.map((addr) => (
+                                <TableRow key={addr.address} className="group">
+                                  <TableCell className="px-2 py-1">
+                                    <input
+                                      type="checkbox"
+                                      checked={addr.selected}
+                                      onChange={(e) => {
+                                        setPolicyAddresses((prev) =>
+                                          prev.map((p) => {
+                                            if (p.policyId === policy.policyId) {
+                                              return {
+                                                ...p,
+                                                addresses: p.addresses.map((a) =>
+                                                  a.address === addr.address
+                                                    ? { ...a, selected: e.target.checked }
+                                                    : a,
+                                                ),
+                                              }
+                                            }
+                                            return p
+                                          }),
+                                        )
+                                      }}
+                                      className="h-4 w-4 rounded border-border"
+                                    />
+                                  </TableCell>
+                                  <TableCell className="max-w-[600px] px-2 py-1 text-xs font-medium text-muted-foreground">
+                                    <Link
+                                      href={`https://pool.pm/${addr.address}`}
+                                      target="_blank"
+                                      className="break-all font-mono hover:underline"
+                                    >
+                                      <span className="break-all font-mono">{addr.address}</span>
+                                    </Link>
+                                  </TableCell>
+                                  <TableCell className="px-2 py-1">
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
                                         <Button
-                                          variant="ghost"
+                                          variant="outline"
                                           size="sm"
-                                          onClick={() =>
-                                            removeAddress(addr.address, policy.policyId)
-                                          }
                                           className="h-8 px-2 text-destructive hover:text-destructive"
                                         >
                                           <X className="h-4 w-4" />
                                         </Button>
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ))}
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>
+                                            Confirm Address Removal
+                                          </AlertDialogTitle>
+                                          <AlertDialogDescription className="font-mono">
+                                            Are you sure you want to remove address:{' '}
+                                            {addr.address.slice(0, 24)}...?
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            className="bg-destructive hover:bg-destructive/90"
+                                            onClick={() =>
+                                              removeAddress(addr.address, policy.policyId)
+                                            }
+                                          >
+                                            Confirm Removal
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </DialogContent>
+                      </Dialog>
+
+                      <div className="ml-2 flex shrink-0 items-center gap-2">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="bg-transparent text-destructive hover:text-destructive"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <X className="h-5 w-5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirm Policy Removal</AlertDialogTitle>
+                              <AlertDialogDescription className="font-mono">
+                                Are you sure you want to remove {policy.label}?
+                                <br />
+                                This will delete {policy.addresses.length} addresses from the
+                                distribution list.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive hover:bg-destructive/90"
+                                onClick={() => removePolicy(policy.policyId)}
+                              >
+                                Confirm Policy Removal
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </div>
+                ))}
               </div>
             </div>
 
