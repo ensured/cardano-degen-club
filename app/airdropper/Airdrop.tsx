@@ -1,7 +1,7 @@
 'use client'
 
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
-import { Check, Loader2, ChevronDown, ArrowUp, Eye, EyeOff, X } from 'lucide-react'
+import { Check, Loader2, ChevronDown, ArrowUp, Eye, EyeOff, X, Copy } from 'lucide-react'
 import { Lucid, Blockfrost, LucidEvolution, fromText, Network } from '@lucid-evolution/lucid'
 import { useEffect, useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
@@ -111,10 +111,11 @@ const Airdrop = () => {
   useEffect(() => {
     if (walletState.wallet && walletState.api) {
       const connectLucid = async () => {
-        if (!blockfrostKey) {
+        if (!blockfrostKey || blockfrostKey.length !== 39) {
           setIsLoadingAssets(false)
           return
         }
+
         setIsLoadingAssets(true)
         try {
           const lucidInstance = await Lucid(
@@ -187,8 +188,7 @@ const Airdrop = () => {
           setAssetDetails(assetDetailsMap)
           setLucid(lucidInstance)
         } catch (error) {
-          toast.error('Failed to load assets')
-          console.error(error)
+          toast.error('Something went wrong, check blockfrost key')
         } finally {
           setIsLoadingAssets(false)
         }
@@ -480,23 +480,37 @@ const Airdrop = () => {
                         localStorage.setItem('blockfrostKey', e.target.value)
                       }
                     }}
-                    className="h-12 pr-24 text-base"
+                    className="h-12 pr-32 text-base"
                   />
                   <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        navigator.clipboard.writeText(blockfrostKey)
+                        toast.success('Copied to clipboard')
+                      }}
+                    >
+                      <Copy className="h-5 w-5" />
+                    </Button>
+
                     {blockfrostKey && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => {
                           setBlockfrostKey('')
+
                           localStorage.removeItem('blockfrostKey')
                         }}
                         className="text-muted-foreground hover:text-foreground"
                       >
                         <X className="h-5 w-5" />
-                      </button>
+                      </Button>
                     )}
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setShowBlockfrostKey(!showBlockfrostKey)}
                       className="text-muted-foreground hover:text-foreground"
                     >
@@ -505,9 +519,10 @@ const Airdrop = () => {
                       ) : (
                         <Eye className="h-5 w-5" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
+
                 <Link
                   href="https://blockfrost.io/dashboard"
                   target="_blank"
@@ -730,7 +745,7 @@ const Airdrop = () => {
 
         {/* Airdrop Controls */}
         {lucid && selectedAsset && (
-          <div className="flex min-w-[75vw] flex-col gap-2 p-6 shadow-sm backdrop-blur-sm">
+          <div className="flex min-w-[75vw] flex-col gap-2 shadow-sm backdrop-blur-sm">
             <div className="rounded-xl border border-border bg-accent/50 p-4">
               <p className="mb-2 text-sm font-medium text-muted-foreground">Selected Token</p>
               <div className="flex items-center gap-3">
