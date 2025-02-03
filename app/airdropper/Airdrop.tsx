@@ -184,7 +184,18 @@ const Airdrop = () => {
           setAssetDetails(assetDetailsMap)
           setLucid(lucidInstance)
         } catch (error) {
-          toast.error('Something went wrong, check blockfrost key')
+          let message = ''
+          if (
+            blockfrostKey.startsWith(
+              networkMap[walletState.network! as keyof typeof networkMap].toLowerCase(),
+            )
+          ) {
+            message = 'Something went wrong, check blockfrost key'
+          } else {
+            message =
+              'invalid network, check that the blockfrost key matches the network of your wallet'
+          }
+          toast.error(message)
         } finally {
           setIsLoadingAssets(false)
         }
