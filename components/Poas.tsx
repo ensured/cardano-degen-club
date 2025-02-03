@@ -433,6 +433,26 @@ const FileUploadArea = ({
   )
 }
 
+// Update the truncateFileName function to be more explicit
+const truncateFileName = (fileName: string, maxLength: number = 64) => {
+  console.log('truncateFileName input:', fileName, 'length:', fileName.length)
+
+  if (fileName.length <= maxLength) return fileName
+
+  const extension = fileName.split('.').pop() || ''
+  const nameWithoutExt = fileName.slice(0, fileName.lastIndexOf('.'))
+
+  // Calculate how much space we need for the extension
+  const extensionLength = extension.length + 1 // +1 for the dot
+  // Calculate remaining space for the name
+  const maxNameLength = maxLength - extensionLength
+
+  // Truncate the name and add the extension back
+  const truncated = `${nameWithoutExt.slice(0, maxNameLength)}.${extension}`
+  console.log('truncated result:', truncated, 'length:', truncated.length)
+  return truncated
+}
+
 export default function Poas() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
@@ -1274,8 +1294,23 @@ export default function Poas() {
     }))
   }
 
+  // Update the handleNameChange function
   const handleNameChange = (url: string, value: string) => {
-    setImageNames((prev) => ({ ...prev, [url]: value }))
+    const originalLength = value.length
+    const truncated = truncateFileName(value)
+
+    if (originalLength !== truncated.length) {
+      toast.info(
+        <div className="flex flex-col gap-1">
+          <p>Filename has been shortened to meet the 64-character limit.</p>
+          <p className="text-xs text-muted-foreground">Original: {value}</p>
+          <p className="text-xs text-muted-foreground">Shortened: {truncated}</p>
+        </div>,
+        { position: 'bottom-center', duration: 5000 },
+      )
+    }
+
+    setImageNames((prev) => ({ ...prev, [url]: truncated }))
   }
 
   // Function to check if all images have names
@@ -1494,9 +1529,31 @@ export default function Poas() {
                     }
                   })
 
+                  // Get the original name and log it
+                  const originalName = file.metadata?.name || file.name || file.ipfs_pin_hash
+                  console.log('Original name:', originalName, 'length:', originalName.length)
+
+                  // Truncate the name
+                  const truncatedName = truncateFileName(originalName)
+                  console.log('After truncation:', truncatedName, 'length:', truncatedName.length)
+
+                  // Show toast if name was truncated
+                  if (originalName.length !== truncatedName.length) {
+                    console.log('Name was truncated, showing toast')
+                    toast.info(
+                      <div className="flex flex-col gap-1">
+                        <p>Filename has been shortened to meet the 64-character limit.</p>
+                        <p className="text-xs text-muted-foreground">Original: {originalName}</p>
+                        <p className="text-xs text-muted-foreground">Shortened: {truncatedName}</p>
+                      </div>,
+                      { position: 'bottom-center', duration: 6000 },
+                    )
+                  }
+
                   const fileInfo = {
                     url: file.ipfs_pin_hash,
-                    name: file.metadata?.name || file.name || file.ipfs_pin_hash,
+                    name: truncatedName, // Using truncated name here
+                    customName: truncatedName, // Also set customName to ensure it's used in the UI
                     date_pinned: file.date_pinned,
                   }
 
@@ -1505,6 +1562,7 @@ export default function Poas() {
                     if (isSelected) {
                       return prev.filter((selected) => selected.url !== file.ipfs_pin_hash)
                     } else {
+                      console.log('Adding file with truncated name:', fileInfo)
                       return [...prev, fileInfo]
                     }
                   })
@@ -1787,7 +1845,7 @@ export default function Poas() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3">
                     {selectedFiles.map((fileInfo) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
@@ -1807,7 +1865,7 @@ export default function Poas() {
                               <ImageWithFallback
                                 src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
                                 alt={fileInfo.name}
-                                className={`h-20 w-full cursor-pointer rounded-lg object-contain sm:h-28 ${
+                                className={`h-24 w-full cursor-pointer rounded-lg object-contain sm:h-32 ${
                                   thumbnailImage === fileInfo.url ? 'ring-2 ring-emerald-500' : ''
                                 }`}
                                 onClick={() => setThumbnailImage(fileInfo.url)}
@@ -1849,11 +1907,7 @@ export default function Poas() {
                                   e.stopPropagation()
                                   const extension = fileInfo.name.split('.').pop()
                                   const newName = `${e.target.value}.${extension}`
-                                  setSelectedFiles((prev) =>
-                                    prev.map((f) =>
-                                      f.url === fileInfo.url ? { ...f, customName: newName } : f,
-                                    ),
-                                  )
+                                  handleNameChange(fileInfo.url, newName)
                                 }}
                                 onClick={(e) => e.stopPropagation()}
                                 className="h-8 flex-1 border-none text-xs shadow-none focus-visible:ring-0"
@@ -1968,13 +2022,6 @@ export default function Poas() {
                                   <Check className="h-3 w-3" />
                                 </Button>
                               )}
-
-                              {/* Show trait count limit warning */}
-                              {Object.keys(fileInfo.properties || {}).length >= 10 && (
-                                <p className="mt-1 text-xs text-yellow-500">
-                                  Maximum trait limit (10) reached
-                                </p>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -2045,10 +2092,11 @@ export default function Poas() {
                         ) : policyIds.length === 0 ? (
                           'No policies available'
                         ) : (
-                          'Select a policy'
+                          `Select a policy (${policyIds.length + policyIds.filter((p) => p.isGenerated).length})`
                         )}
                       </span>
                     )}
+
                     <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -2058,7 +2106,7 @@ export default function Poas() {
                     <>
                       <DropdownMenuLabel className="flex items-center gap-2 font-medium text-emerald-500">
                         <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                        Generated Policies
+                        Generated Policies ({policyIds.filter((p) => p.isGenerated).length})
                       </DropdownMenuLabel>
                       {policyIds
                         .filter((policy) => policy.isGenerated)
@@ -2140,7 +2188,7 @@ export default function Poas() {
                     <>
                       <DropdownMenuLabel className="text-blue-500 flex items-center gap-2 font-medium">
                         <div className="bg-blue-500 h-2 w-2 rounded-full" />
-                        Loaded Policies
+                        Loaded Policies ({policyIds.filter((p) => !p.isGenerated).length})
                       </DropdownMenuLabel>
                       {policyIds
                         .filter((policy) => !policy.isGenerated)
