@@ -453,7 +453,7 @@ const Airdrop = () => {
     <div className="mx-auto flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
       {/* Header Section */}
       <div className="mb-0.5 space-y-1.5 text-center">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Airdrop</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Token Airdropper</h1>
         <p className="text-sm text-muted-foreground sm:text-base md:text-lg">
           Distribute tokens to multiple addresses at once
         </p>
