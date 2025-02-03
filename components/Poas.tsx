@@ -35,6 +35,7 @@ import {
   Code,
   Upload,
   File,
+  CheckSquare,
 } from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
@@ -1306,7 +1307,7 @@ export default function Poas() {
           <p className="text-xs text-muted-foreground">Original: {value}</p>
           <p className="text-xs text-muted-foreground">Shortened: {truncated}</p>
         </div>,
-        { position: 'bottom-center', duration: 5000 },
+        { position: 'top-center', duration: 5000 },
       )
     }
 
@@ -1546,7 +1547,7 @@ export default function Poas() {
                         <p className="text-xs text-muted-foreground">Original: {originalName}</p>
                         <p className="text-xs text-muted-foreground">Shortened: {truncatedName}</p>
                       </div>,
-                      { position: 'bottom-center', duration: 6000 },
+                      { position: 'top-center', duration: 6000 },
                     )
                   }
 
@@ -1658,7 +1659,119 @@ export default function Poas() {
             <span className="sr-only">Close</span>
           </DialogClose>
         </div>
-        <div className="flex w-full justify-end gap-1.5">
+        <div className="flex w-full items-center justify-end gap-1.5">
+          {/* Add Select All button */}
+          {pinataResponse.rows.length > 0 && !isMultiDeleteMode && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const currentPageFiles = pinataResponse.rows
+                const currentPageFileHashes = new Set(
+                  currentPageFiles.map((file) => file.ipfs_pin_hash),
+                )
+
+                // Check if all files from current page are selected
+                const areAllCurrentPageFilesSelected = currentPageFiles.every((file) =>
+                  selectedPinataFiles.some(
+                    (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                  ),
+                )
+
+                if (areAllCurrentPageFilesSelected) {
+                  // Deselect only the current page's files
+                  setSelectedPinataFiles((prev) =>
+                    prev.filter((file) => !currentPageFileHashes.has(file.ipfs_pin_hash)),
+                  )
+                  setSelectedFiles((prev) =>
+                    prev.filter((file) => !currentPageFileHashes.has(file.url)),
+                  )
+                } else {
+                  // Select all files from current page and track any truncated names
+                  const truncatedFiles: { original: string; truncated: string }[] = []
+
+                  // Process current page files and collect truncation info
+                  const processedFiles = currentPageFiles.map((file) => {
+                    const originalName = file.metadata?.name || file.name || file.ipfs_pin_hash
+                    const truncatedName = truncateFileName(originalName)
+
+                    // If the name was truncated, add it to our tracking array
+                    if (originalName.length !== truncatedName.length) {
+                      truncatedFiles.push({
+                        original: originalName,
+                        truncated: truncatedName,
+                      })
+                    }
+
+                    return {
+                      url: file.ipfs_pin_hash,
+                      name: truncatedName,
+                      customName: truncatedName,
+                      date_pinned: file.date_pinned,
+                    }
+                  })
+
+                  // Merge new selections with existing selections
+                  setSelectedPinataFiles((prev) => {
+                    const prevFiltered = prev.filter(
+                      (file) => !currentPageFileHashes.has(file.ipfs_pin_hash),
+                    )
+                    return [...prevFiltered, ...currentPageFiles]
+                  })
+
+                  setSelectedFiles((prev) => {
+                    const prevFiltered = prev.filter((file) => !currentPageFileHashes.has(file.url))
+                    return [...prevFiltered, ...processedFiles]
+                  })
+
+                  // If any files were truncated, show a consolidated toast
+                  if (truncatedFiles.length > 0) {
+                    toast.info(
+                      <div className="flex max-h-[300px] flex-col gap-2">
+                        <p className="font-medium">
+                          {truncatedFiles.length} filename{truncatedFiles.length > 1 ? 's' : ''}{' '}
+                          shortened to meet the 64-character limit
+                        </p>
+                        <div className="overflow-y-auto">
+                          {truncatedFiles.map(({ original, truncated }, index) => (
+                            <div key={index} className="mb-2 text-xs">
+                              <p className="text-muted-foreground">Original: {original}</p>
+                              <p className="text-muted-foreground">Shortened: {truncated}</p>
+                              {index < truncatedFiles.length - 1 && (
+                                <hr className="my-1 border-border/50" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>,
+                      {
+                        position: 'top-center',
+                        duration: 6000,
+                        className: 'max-w-md',
+                      },
+                    )
+                  }
+                }
+              }}
+              className="flex h-9 items-center justify-center gap-1.5 text-base font-medium sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl"
+            >
+              {pinataResponse.rows.every((file) =>
+                selectedPinataFiles.some(
+                  (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                ),
+              ) ? (
+                <>
+                  <X className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
+                  Deselect Page
+                </>
+              ) : (
+                <>
+                  <CheckSquare className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
+                  Select Page
+                </>
+              )}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -1845,7 +1958,7 @@ export default function Poas() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {selectedFiles.map((fileInfo) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
@@ -2479,20 +2592,20 @@ export default function Poas() {
 
           {/* Fixed pagination */}
           <div className="flex w-full items-center justify-center border-t border-border bg-background py-1">
-            <Pagination className="!mx-0 overflow-x-auto">
+            <Pagination className="overflow-x-auto">
               <PaginationContent className="flex-nowrap gap-0.5 sm:gap-1">
                 {/* Only show Previous button if we're not on page 1 */}
                 {pagination.currentPage > 1 ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationPrevious
+                      className="h-8 px-2 text-xs sm:h-9 sm:px-4 sm:text-sm [&>svg]:h-3 [&>svg]:w-3 sm:[&>svg]:h-4 sm:[&>svg]:w-4"
                       onClick={() => handlePageChange(pagination.currentPage - 1)}
                       isActive={loadingFiles || pinataResponse.rows.length === 0}
-                      className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm"
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationPrevious className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm" />
+                    <PaginationPrevious className="h-8 px-2 text-xs sm:h-9 sm:px-4 sm:text-sm [&>svg]:h-3 [&>svg]:w-3 sm:[&>svg]:h-4 sm:[&>svg]:w-4" />
                   </PaginationItem>
                 )}
 
@@ -2511,14 +2624,14 @@ export default function Poas() {
                         {/* Add ellipsis if there's a gap */}
                         {i > 0 && array[i] - array[i - 1] > 1 && (
                           <PaginationItem className="cursor-pointer select-none">
-                            <PaginationEllipsis className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm" />
+                            <PaginationEllipsis className="h-8 px-2 text-xs sm:h-9 sm:px-4 sm:text-sm [&>svg]:h-3 [&>svg]:w-3 sm:[&>svg]:h-4 sm:[&>svg]:w-4" />
                           </PaginationItem>
                         )}
                         <PaginationItem className="cursor-pointer select-none">
                           <PaginationLink
+                            className="h-8 w-8 text-xs sm:h-9 sm:w-9 sm:text-sm"
                             onClick={() => handlePageChange(pageNumber)}
                             isActive={pageNumber === pagination.currentPage}
-                            className="h-6 w-6 text-[10px] sm:h-9 sm:w-9 sm:text-sm"
                           >
                             {pageNumber}
                           </PaginationLink>
@@ -2530,14 +2643,14 @@ export default function Poas() {
                 {pagination.currentPage < pagination.totalPages ? (
                   <PaginationItem className="cursor-pointer select-none">
                     <PaginationNext
+                      className="h-8 px-2 text-xs sm:h-9 sm:px-4 sm:text-sm [&>svg]:h-3 [&>svg]:w-3 sm:[&>svg]:h-4 sm:[&>svg]:w-4"
                       onClick={() => handlePageChange(pagination.currentPage + 1)}
                       isActive={loadingFiles}
-                      className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm"
                     />
                   </PaginationItem>
                 ) : (
                   <PaginationItem className="select-none opacity-50">
-                    <PaginationNext className="h-6 px-1.5 text-[10px] sm:h-9 sm:px-3 sm:text-sm" />
+                    <PaginationNext className="h-8 px-2 text-xs sm:h-9 sm:px-4 sm:text-sm [&>svg]:h-3 [&>svg]:w-3 sm:[&>svg]:h-4 sm:[&>svg]:w-4" />
                   </PaginationItem>
                 )}
               </PaginationContent>
