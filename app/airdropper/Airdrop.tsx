@@ -318,34 +318,38 @@ const Airdrop = () => {
       return
     }
 
-    // Convert to per-person amount
-    let amountPer = BigInt(amountPerPerson)
-    if (selectedAsset.assetId === 'lovelace') {
-      amountPer = amountPer * BigInt(1000000) // Convert ADA input to lovelace
-    }
-
-    // Get all addresses before filtering
-    const totalAddressesBeforeFilter = [...selectedAddresses, ...manualAddresses].length
-
-    // Filter out blacklisted addresses
-    const allAddresses = [...selectedAddresses, ...manualAddresses].filter(
-      (addr) => !blacklistedAddresses.has(addr),
-    )
-
-    // Calculate how many were excluded
-    const excludedCount = totalAddressesBeforeFilter - allAddresses.length
-    if (excludedCount > 0) {
-      toast.info(`Excluded ${excludedCount} blacklisted addresses`)
-    }
-
-    if (allAddresses.length === 0) {
-      toast.error('No valid addresses to send to after filtering blacklisted addresses')
-      setIsAirdropping(false)
-      return
-    }
-
-    let lastTxHash = ''
     try {
+      let amountPer: bigint
+
+      if (selectedAsset.assetId === 'lovelace') {
+        // For ADA, multiply by 1_000_000 to convert to lovelace
+        amountPer = BigInt(Math.round(Number(amountPerPerson) * 1_000_000))
+      } else {
+        // For other tokens, convert to integer
+        amountPer = BigInt(Math.round(Number(amountPerPerson)))
+      }
+
+      // Get all addresses before filtering
+      const totalAddressesBeforeFilter = [...selectedAddresses, ...manualAddresses].length
+
+      // Filter out blacklisted addresses
+      const allAddresses = [...selectedAddresses, ...manualAddresses].filter(
+        (addr) => !blacklistedAddresses.has(addr),
+      )
+
+      // Calculate how many were excluded
+      const excludedCount = totalAddressesBeforeFilter - allAddresses.length
+      if (excludedCount > 0) {
+        toast.info(`Excluded ${excludedCount} blacklisted addresses`)
+      }
+
+      if (allAddresses.length === 0) {
+        toast.error('No valid addresses to send to after filtering blacklisted addresses')
+        setIsAirdropping(false)
+        return
+      }
+
+      let lastTxHash = ''
       // Find optimal batch size using binary search
       let low = 1
       let high = allAddresses.length
@@ -415,9 +419,10 @@ const Airdrop = () => {
       setTimeout(() => setIsSuccess(false), 3000)
       toast.success(`All batches submitted! Final hash: ${lastTxHash}`)
     } catch (error) {
-      console.log((error as Error).message)
-    } finally {
+      console.error(error)
+      toast.error('Invalid amount format')
       setIsAirdropping(false)
+      return
     }
   }
 
@@ -431,23 +436,16 @@ const Airdrop = () => {
     return ipfsUrl
   }
 
-  // Add a helper function to toggle all addresses in a policy
-  // const toggleAllAddressesInPolicy = (policyId: string, selected: boolean) => {
-  //   setPolicyAddresses((prev) =>
-  //     prev.map((policy) => {
-  //       if (policy.policyId === policyId) {
-  //         return {
-  //           ...policy,
-  //           addresses: policy.addresses.map((addr) => ({
-  //             ...addr,
-  //             selected,
-  //           })),
-  //         }
-  //       }
-  //       return policy
-  //     }),
-  //   )
-  // }
+  // Add this effect to handle token type changes
+  useEffect(() => {
+    if (selectedAsset && selectedAsset.assetId !== 'lovelace' && amountPerPerson % 1 !== 0) {
+      const roundedAmount = Math.round(amountPerPerson)
+      setAmountPerPerson(roundedAmount)
+      toast.info(`Amount adjusted to ${roundedAmount}. Native tokens only support whole numbers.`, {
+        duration: 4000,
+      })
+    }
+  }, [selectedAsset])
 
   return (
     <div className="mx-auto flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
@@ -495,7 +493,7 @@ const Airdrop = () => {
                         localStorage.setItem('blockfrostKey', e.target.value)
                       }
                     }}
-                    className="h-12 pr-32 text-base"
+                    className="h-12 pr-[9.4rem] text-base"
                   />
                   <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
                     <Button
@@ -763,7 +761,7 @@ const Airdrop = () => {
 
         {/* Airdrop Controls */}
         {lucid && selectedAsset && (
-          <div className="flex min-w-[75vw] flex-col gap-2 shadow-sm backdrop-blur-sm">
+          <div className="flex flex-col gap-2 shadow-sm backdrop-blur-sm">
             <div className="rounded-lg border border-border bg-accent/50 p-4">
               <p className="mb-2 text-sm font-medium text-muted-foreground">Selected Token</p>
               <div className="flex items-center gap-3">
@@ -791,9 +789,20 @@ const Airdrop = () => {
 
             <div className="space-y-4">
               <Input
-                placeholder={`Amount of ${selectedAsset?.name || 'tokens'} per address`}
+                type="number"
+                step={selectedAsset?.assetId === 'lovelace' ? '0.00001' : '1'}
+                min="1"
                 value={amountPerPerson}
-                onChange={(e) => setAmountPerPerson(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value)
+                  if (value < 1) {
+                    setAmountPerPerson(1)
+                  } else if (selectedAsset?.assetId !== 'lovelace') {
+                    setAmountPerPerson(Math.round(value)) // Round instead of floor for better UX
+                  } else {
+                    setAmountPerPerson(value)
+                  }
+                }}
                 className="h-14 text-lg"
               />
 
@@ -806,19 +815,20 @@ const Airdrop = () => {
                     <span className="text-sm text-muted-foreground">
                       (
                       {selectedAsset?.assetId === 'lovelace' && Number(amountPerPerson) > 0
-                        ? (
-                            Number(
-                              BigInt(amountPerPerson || '0') *
-                                BigInt(1000000) *
-                                BigInt(selectedAddresses.size),
-                            ) / 1_000_000
-                          ).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })
-                        : (
-                            BigInt(amountPerPerson || '0') * BigInt(selectedAddresses.size)
-                          ).toString()}{' '}
+                        ? (Number(amountPerPerson) * selectedAddresses.size).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 5,
+                            },
+                          )
+                        : (Number(amountPerPerson) * selectedAddresses.size).toLocaleString(
+                            undefined,
+                            {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 5,
+                            },
+                          )}{' '}
                       total)
                     </span>
                   </p>
