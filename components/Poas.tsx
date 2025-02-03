@@ -654,7 +654,7 @@ export default function Poas() {
     return () => {
       window.removeEventListener('walletStateChanged', handleWalletStateChange as EventListener)
     }
-  }, [currentStakeAddress])
+  }, [currentStakeAddress, walletState.network])
 
   const ImageWithFallback = ({
     src,

@@ -49,6 +49,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type AssetMetadata = {
   name: string
@@ -449,11 +450,16 @@ const Airdrop = () => {
   // }
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center justify-center gap-6 px-4 py-10">
-      <div className="w-full rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm">
-        <h1 className="p-2 text-center text-sm text-muted-foreground">
-          Use at your own risk. This is a beta version and may not work as expected. Always verify.
-        </h1>
+    <div className="mx-auto flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
+      {/* Header Section */}
+      <div className="mb-0.5 space-y-1.5 text-center">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Airdrop</h1>
+        <p className="text-sm text-muted-foreground sm:text-base md:text-lg">
+          Distribute tokens to multiple addresses at once
+        </p>
+      </div>
+
+      <div className="w-full max-w-[400px] rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm sm:max-w-[500px] md:max-w-[800px] lg:max-w-[1000px]">
         <div className="mb-3 w-full space-y-6">
           <Collapsible>
             <CollapsibleTrigger asChild>
@@ -544,39 +550,38 @@ const Airdrop = () => {
           </Collapsible>
         </div>
 
-        {/* Header Section */}
-        <div className="mb-8 space-y-2 text-center">
-          <h1 className="text-4xl font-bold tracking-tight">Token Airdropper</h1>
-          <p className="text-lg text-muted-foreground">
-            Distribute tokens to multiple addresses at once
-          </p>
-        </div>
-
         {/* Asset Selection */}
         {isLoadingAssets ? (
-          <div className="mb-2 min-w-[75vw] rounded-2xl border border-border bg-card/50 shadow-sm backdrop-blur-sm">
-            <div className="grid grid-cols-1 gap-1.5 p-6 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: itemsPerPage }).map((_, index) => (
-                <div
-                  key={index}
-                  className="group flex items-start gap-4 rounded-xl border border-muted/30 p-4 hover:border-primary hover:bg-accent/50"
-                >
-                  <div className="flex h-16 w-16 shrink-0 animate-pulse rounded-xl border border-border bg-muted">
-                    <span className="m-auto text-xs text-muted-foreground">No image</span>
-                  </div>
-                  <div className="flex flex-1 flex-col items-start gap-2">
-                    <span className="h-[28px] w-3/4 animate-pulse rounded-md bg-muted" />
-                    <div className="flex flex-col items-start gap-1">
-                      <span className="h-5 w-16 animate-pulse rounded-md bg-muted" />
-                      <span className="h-6 w-24 animate-pulse rounded-md bg-muted" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mb-2 rounded-lg border border-border bg-card/50 shadow-sm backdrop-blur-sm">
+            <Skeleton className="h-12 w-full">
+              <div className="flex h-12 w-full items-center justify-center">
+                <span className="text-sm text-muted-foreground">Loading assets...</span>
+              </div>
+            </Skeleton>
           </div>
-        ) : Object.keys(assetDetails).length > 0 ? (
-          <div className="mb-2 rounded-2xl border border-border bg-card/50 shadow-sm backdrop-blur-sm">
+        ) : // <div className="mb-2 min-w-[75vw] rounded-lg border border-border bg-card/50 shadow-sm backdrop-blur-sm">
+        //   <div className="grid grid-cols-1 gap-1.5 p-6 sm:grid-cols-2 lg:grid-cols-3">
+        //     {Array.from({ length: itemsPerPage }).map((_, index) => (
+        //       <div
+        //         key={index}
+        //         className="group flex items-start gap-4 rounded-xl border border-muted/30 p-4 hover:border-primary hover:bg-accent/50"
+        //       >
+        //         <div className="flex h-16 w-16 shrink-0 animate-pulse rounded-xl border border-border bg-muted">
+        //           <span className="m-auto text-xs text-muted-foreground">No image</span>
+        //         </div>
+        //         <div className="flex flex-1 flex-col items-start gap-2">
+        //           <span className="h-[28px] w-3/4 animate-pulse rounded-md bg-muted" />
+        //           <div className="flex flex-col items-start gap-1">
+        //             <span className="h-5 w-16 animate-pulse rounded-md bg-muted" />
+        //             <span className="h-6 w-24 animate-pulse rounded-md bg-muted" />
+        //           </div>
+        //         </div>
+        //       </div>
+        //     ))}
+        //   </div>
+        // </div>
+        Object.keys(assetDetails).length > 0 ? (
+          <div className="mb-2 rounded-lg border border-border bg-card/50 shadow-sm backdrop-blur-sm">
             <Collapsible open={isAssetSelectorOpen} onOpenChange={setIsAssetSelectorOpen}>
               <CollapsibleTrigger asChild>
                 <Button
@@ -607,7 +612,7 @@ const Airdrop = () => {
                           <span>Select Token</span>
                           <div className="flex items-center justify-center gap-1">
                             <span className="mt-0.5 text-sm text-muted-foreground">
-                              ({Object.keys(assetDetails).length})
+                              ({Object.keys(assets).length})
                             </span>
                           </div>
                         </div>
@@ -619,7 +624,7 @@ const Airdrop = () => {
               </CollapsibleTrigger>
 
               <CollapsibleContent className="px-6 pb-6 pt-2">
-                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                   {Object.entries(assets)
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                     .map(([assetId, amount]) => {
@@ -637,7 +642,7 @@ const Airdrop = () => {
                             )
                             setIsAssetSelectorOpen(false)
                           }}
-                          className={`group flex items-start gap-4 rounded-xl border border-primary/50 p-4 transition-all hover:border-primary hover:bg-accent/50 ${
+                          className={`group flex items-start gap-4 rounded-md border border-primary/50 p-4 transition-all hover:border-primary hover:bg-accent/50 ${
                             selectedAsset?.assetId === assetId
                               ? 'border-primary bg-primary/5'
                               : 'border-muted/30'
@@ -647,13 +652,14 @@ const Airdrop = () => {
                             <img
                               src={formatIpfsUrl(metadata.image)}
                               alt={metadata.name}
-                              className="h-16 w-16 rounded-xl border border-border object-cover"
+                              className="h-16 w-16 rounded-md border border-border object-cover"
                             />
                           ) : (
-                            <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border bg-muted">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-md border border-border bg-muted">
                               <span className="text-xs text-muted-foreground">No image</span>
                             </div>
                           )}
+
                           <div className="flex flex-1 flex-col items-start gap-2">
                             <span className="line-clamp-2 text-lg font-semibold text-foreground">
                               {metadata?.name || (assetId === 'lovelace' ? 'ADA' : 'Loading...')}
@@ -744,11 +750,11 @@ const Airdrop = () => {
             </Collapsible>
           </div>
         ) : blockfrostKey && blockfrostKey.length === 39 ? (
-          <div className="flex min-h-[100px] w-full items-center justify-center rounded-2xl border border-border bg-card/50 p-6">
+          <div className="flex min-h-[100px] w-full items-center justify-center rounded-lg border border-border bg-card/50 p-6">
             <span className="text-sm text-muted-foreground">No assets found in wallet</span>
           </div>
         ) : (
-          <div className="flex min-h-[100px] w-full items-center justify-center rounded-2xl border border-border bg-card/50 p-6">
+          <div className="flex min-h-[100px] w-full items-center justify-center rounded-lg border border-border bg-card/50 p-6">
             <span className="text-sm text-muted-foreground">
               Please enter a valid Blockfrost API key
             </span>
@@ -758,7 +764,7 @@ const Airdrop = () => {
         {/* Airdrop Controls */}
         {lucid && selectedAsset && (
           <div className="flex min-w-[75vw] flex-col gap-2 shadow-sm backdrop-blur-sm">
-            <div className="rounded-xl border border-border bg-accent/50 p-4">
+            <div className="rounded-lg border border-border bg-accent/50 p-4">
               <p className="mb-2 text-sm font-medium text-muted-foreground">Selected Token</p>
               <div className="flex items-center gap-3">
                 {selectedAsset.image && (
@@ -821,7 +827,7 @@ const Airdrop = () => {
             </div>
 
             {/* Policy ID and Addresses Section */}
-            <div className="space-y-4 rounded-xl border border-border bg-accent/50 p-6">
+            <div className="space-y-4 rounded-lg border border-border bg-accent/50 p-6">
               <div className="space-y-2">
                 <h2 className="text-xl font-semibold">Recipient Addresses</h2>
                 <p className="text-sm text-muted-foreground">
