@@ -84,8 +84,6 @@ const Airdrop = () => {
   const [isLoadingAssets, setIsLoadingAssets] = useState(true)
   const [policyAddresses, setPolicyAddresses] = useState<PolicyAddresses[]>([])
   const itemsPerPage = 20
-  const [tempPolicyAddresses, setTempPolicyAddresses] = useState<string[]>([])
-  const [selectedTempAddresses, setSelectedTempAddresses] = useState<Set<string>>(new Set())
   const [blacklistedAddresses, setBlacklistedAddresses] = useState<Set<string>>(new Set())
   const [isProcessingAllPages, setIsProcessingAllPages] = useState(false)
 
@@ -225,7 +223,6 @@ const Airdrop = () => {
 
     localStorage.setItem('policyId', policyId)
     setIsSearching(true)
-    setTempPolicyAddresses([])
     setIsProcessingAllPages(true)
 
     try {
@@ -272,46 +269,6 @@ const Airdrop = () => {
     }
   }
 
-  const confirmAddAddresses = () => {
-    if (selectedTempAddresses.size === 0) {
-      toast.error('No addresses selected')
-      return
-    }
-
-    const filteredAddresses = Array.from(selectedTempAddresses).filter(
-      (address) => !blacklistedAddresses.has(address),
-    )
-
-    if (filteredAddresses.length === 0) {
-      toast.error('All selected addresses are blacklisted')
-      return
-    }
-
-    setPolicyAddresses((prev) => [
-      ...prev,
-      {
-        policyId,
-        addresses: filteredAddresses.map((addr) => ({
-          address: addr,
-          selected: true,
-        })),
-        label: `Policy ${prev.length + 1}`,
-      },
-    ])
-
-    setTempPolicyAddresses([])
-    setSelectedTempAddresses(new Set())
-    toast.success(`Added ${filteredAddresses.length} addresses`)
-  }
-
-  const handleSelectAllTemp = (select: boolean) => {
-    if (select) {
-      setSelectedTempAddresses(new Set(tempPolicyAddresses))
-    } else {
-      setSelectedTempAddresses(new Set())
-    }
-  }
-
   const removeAddress = (address: string, policyId: string) => {
     setPolicyAddresses((prev) => {
       return prev
@@ -334,14 +291,18 @@ const Airdrop = () => {
 
   const handleAirdrop = async () => {
     if (!lucid) return
+    setIsAirdropping(true)
+    setIsSuccess(false)
 
     if (!selectedAsset) {
       toast.error('Please select an asset')
+      setIsAirdropping(false)
       return
     }
 
     if (amountPerPerson === 0 || !amountPerPerson) {
       toast.error('Please enter an amount')
+      setIsAirdropping(false)
       return
     }
 
@@ -361,68 +322,88 @@ const Airdrop = () => {
 
     // Calculate how many were excluded
     const excludedCount = totalAddressesBeforeFilter - allAddresses.length
+    if (excludedCount > 0) {
+      toast.info(`Excluded ${excludedCount} blacklisted addresses`)
+    }
 
     if (allAddresses.length === 0) {
       toast.error('No valid addresses to send to after filtering blacklisted addresses')
-      return
-    }
-
-    let low = 1
-    let high = allAddresses.length
-    let optimalBatchSize = 0
-    let finalTx: any = null
-
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2)
-      const batchAmount = amountPer * BigInt(mid)
-
-      if (selectedAsset.amount < batchAmount) {
-        high = mid - 1
-        continue
-      }
-
-      try {
-        let tx = lucid.newTx()
-        const currentBatch = allAddresses.slice(0, mid)
-
-        if (selectedAsset.assetId === 'lovelace') {
-          currentBatch.forEach((address) => {
-            tx = tx.pay.ToAddress(address, { lovelace: amountPer })
-          })
-        } else {
-          const assetPayload = { [selectedAsset.assetId]: amountPer }
-          currentBatch.forEach((address) => {
-            tx = tx.pay.ToAddress(address, assetPayload)
-          })
-        }
-
-        const completedTx = await tx.complete()
-        optimalBatchSize = mid
-        finalTx = completedTx
-        low = mid + 1 // Try larger batches
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('Max transaction size')) {
-          high = mid - 1 // Reduce upper bound
-        } else {
-          throw error
-        }
-      }
-    }
-
-    if (!finalTx || optimalBatchSize === 0) {
-      toast.error('Failed to create valid transaction')
       setIsAirdropping(false)
       return
     }
 
+    let lastTxHash = ''
     try {
-      const signedTx = await finalTx.sign.withWallet().complete()
-      const txHash = await signedTx.submit()
+      // Find optimal batch size using binary search
+      let low = 1
+      let high = allAddresses.length
+      let optimalBatchSize = 0
+      let testTx: any = null
+
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2)
+        const batchAmount = amountPer * BigInt(mid)
+
+        if (selectedAsset.amount < batchAmount) {
+          high = mid - 1
+          continue
+        }
+
+        try {
+          let tx = lucid.newTx()
+          const currentBatch = allAddresses.slice(0, mid)
+
+          if (selectedAsset.assetId === 'lovelace') {
+            currentBatch.forEach((address) => {
+              tx = tx.pay.ToAddress(address, { lovelace: amountPer })
+            })
+          } else {
+            const assetPayload = { [selectedAsset.assetId]: amountPer }
+            currentBatch.forEach((address) => {
+              tx = tx.pay.ToAddress(address, assetPayload)
+            })
+          }
+
+          testTx = await tx.complete()
+          optimalBatchSize = mid
+          low = mid + 1
+        } catch (error) {
+          console.error('Error in binary search:', error)
+          high = mid - 1
+        }
+      }
+
+      // Process in optimal batches
+      let processed = 0
+      while (processed < allAddresses.length) {
+        const batch = allAddresses.slice(processed, processed + optimalBatchSize)
+
+        // Build and send each batch
+        let tx = lucid.newTx()
+        batch.forEach((address) => {
+          if (selectedAsset.assetId === 'lovelace') {
+            tx = tx.pay.ToAddress(address, { lovelace: amountPer })
+          } else {
+            const assetPayload = { [selectedAsset.assetId]: amountPer }
+            tx = tx.pay.ToAddress(address, assetPayload)
+          }
+        })
+
+        const completedTx = await tx.complete()
+        const signedTx = await completedTx.sign.withWallet().complete()
+        const txHash = await signedTx.submit()
+        lastTxHash = txHash // Store the last successful hash
+        processed += batch.length
+        toast.success(
+          `Batch sent to ${batch.length} addresses (${processed}/${allAddresses.length})`,
+        )
+      }
+
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
-      toast.success(`Transaction submitted to ${optimalBatchSize} addresses! Hash: ${txHash}`)
+      toast.success(`All batches submitted! Final hash: ${lastTxHash}`)
     } catch (error) {
-      toast.error((error as Error).message)
+      console.log((error as Error).message)
     } finally {
       setIsAirdropping(false)
     }
@@ -924,13 +905,17 @@ const Airdrop = () => {
                                     />
                                   </TableCell>
                                   <TableCell className="max-w-[600px] px-2 py-1 text-xs font-medium text-muted-foreground">
-                                    <Link
-                                      href={`https://pool.pm/${addr.address}`}
-                                      target="_blank"
-                                      className="break-all font-mono hover:underline"
-                                    >
+                                    {!addr.address.startsWith('addr_test') ? (
+                                      <Link
+                                        href={`https://pool.pm/${addr.address}`}
+                                        target="_blank"
+                                        className="break-all font-mono hover:underline"
+                                      >
+                                        <span className="break-all font-mono">{addr.address}</span>
+                                      </Link>
+                                    ) : (
                                       <span className="break-all font-mono">{addr.address}</span>
-                                    </Link>
+                                    )}
                                   </TableCell>
                                   <TableCell className="px-2 py-1">
                                     <AlertDialog>
