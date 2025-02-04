@@ -15,7 +15,6 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { dark } from '@clerk/themes'
 import { useWallet } from '@/contexts/WalletContext'
-import { TransactionMonitor } from './TransactionMonitor'
 
 export default function UserLoginButtons({ extraText }: { extraText?: string }) {
   const [isOpen, setIsOpen] = useState(false)
