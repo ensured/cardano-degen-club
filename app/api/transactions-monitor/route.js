@@ -6,12 +6,13 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export async function POST(request) {
   try {
     const { type, payload } = await request.json()
+    const outputs = payload.outputs
 
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_EMAIL_FROM_TXIN,
       to: process.env.RESEND_EMAIL_TO,
       subject: 'New Transaction!',
-      text: `New transaction:\n${JSON.stringify(payload, null, 2)}`,
+      text: `New transaction:\n${JSON.stringify(outputs, null, 2)}`,
     })
 
     return NextResponse.json({ processed: true }, { status: 200 })
