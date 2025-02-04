@@ -508,18 +508,38 @@ const Airdrop = () => {
                   </Button>
 
                   {blockfrostKey && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setBlockfrostKey('')
-
-                        localStorage.removeItem('blockfrostKey')
-                      }}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirm API Key Removal</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to remove the Blockfrost API key? This will
+                            disconnect from Blockfrost services and clear any cached data.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive hover:bg-destructive/90"
+                            onClick={() => {
+                              setBlockfrostKey('')
+                              localStorage.removeItem('blockfrostKey')
+                            }}
+                          >
+                            Confirm Removal
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                   <Button
                     variant="ghost"
@@ -585,7 +605,7 @@ const Airdrop = () => {
                   variant="ghost"
                   className="flex w-full justify-between rounded-lg border-border/20 px-6 py-6 data-[state=open]:rounded-b-none data-[state=open]:border-b-0 hover:border-primary/50 hover:bg-accent/50"
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex w-full items-center gap-1">
                     {selectedAsset && selectedAsset.image && (
                       <Image
                         src={formatIpfsUrl(selectedAsset.image) || ''}
@@ -602,7 +622,7 @@ const Airdrop = () => {
                             <span>Token: </span>
                             <span className="text-lg font-semibold">{selectedAsset.name}</span>
                           </div>
-                          <Check className="h-5 w-5 text-green-500/80" />
+                          <Check className="ml-auto h-5 w-5 text-green-500/80" />
                         </div>
                       ) : (
                         <div className="flex w-full items-center justify-center gap-1.5">
