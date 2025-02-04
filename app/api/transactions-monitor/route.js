@@ -13,26 +13,6 @@ export async function POST(request) {
       timeStyle: 'long',
     })
 
-    // Remove address filtering and process all assets
-    const allAssets = payload[0].outputs.flatMap((output) => output.amount)
-
-    // Sum quantities for each asset unit
-    const assetMap = allAssets.reduce((acc, asset) => {
-      acc[asset.unit] = (acc[asset.unit] || 0) + parseInt(asset.quantity)
-      return acc
-    }, {})
-
-    // Format the summed assets
-    const formattedAmounts = Object.entries(assetMap)
-      .map(([unit, quantity]) => {
-        if (unit === 'lovelace') {
-          const ada = (quantity / 1000000).toFixed(2)
-          return `${ada} ADA`
-        }
-        return `${quantity} ${unit}`
-      })
-      .join('\n')
-
     const formattedOutputs = payload[0].outputs
       .map((output, index) => {
         const assets = output.amount
@@ -50,7 +30,7 @@ export async function POST(request) {
           })
           .join('\n')
 
-        return `Output #${index}:\n${assets}`
+        return `Output #${index + 1}:\n${assets}`
       })
       .join('\n\n')
 
@@ -62,11 +42,9 @@ Timestamp:        ${formattedDate}
 
 Transaction Outputs:
 ${formattedOutputs || 'No outputs detected'}
+`
 
-Transaction Totals:
-${formattedAmounts || 'No assets detected'}`
-
-    const { data, error } = await resend.emails.send({
+    await resend.emails.send({
       from: process.env.RESEND_EMAIL_FROM_TXIN,
       to: process.env.RESEND_EMAIL_TO,
       subject: 'New Transaction!',
