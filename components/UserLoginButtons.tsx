@@ -228,21 +228,6 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
               <Web2LoginButton currentPath={currentPath} />
             )}
           </div>
-          {/* {blockfrostApiKey ? (
-            <div className="mt-4 w-full border-t border-border/30 pt-4">
-              <h3 className="mb-2 text-sm font-semibold">Transaction Monitoring</h3>
-              {walletState.walletAddress && (
-                <TransactionMonitor
-                  address={walletState.walletAddress}
-                  blockfrostKey={blockfrostApiKey}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              <Loader2 className="size-5 animate-spin sm:size-6" />
-            </div>
-          )} */}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
