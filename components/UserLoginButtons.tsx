@@ -220,15 +220,18 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
               <Web2LoginButton currentPath={currentPath} />
             )}
           </div>
-          {/* <div className="mt-4 w-full border-t border-border/30 pt-4">
-            <h3 className="mb-2 text-sm font-semibold">Transaction Monitoring</h3>
-            {walletState.walletAddress && (
-              <TransactionMonitor
-                address={walletState.walletAddress}
-                blockfrostKey={process.env.NEXT_PUBLIC_BLOCKFROST_API_KEY}
-              />
-            )}
-          </div> */}
+          {localStorage.getItem('blockfrostKey') && (
+            <div className="mt-4 w-full border-t border-border/30 pt-4">
+              <h3 className="mb-2 text-sm font-semibold">Transaction Monitoring</h3>
+
+              {walletState.walletAddress && (
+                <TransactionMonitor
+                  address={walletState.walletAddress}
+                  blockfrostKey={localStorage.getItem('blockfrostKey')}
+                />
+              )}
+            </div>
+          )}
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

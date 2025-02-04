@@ -513,8 +513,8 @@ export default function Poas() {
     const daysRemaining = Math.ceil(slotsRemaining / 86400)
 
     if (slotsRemaining <= 0) return 'Expired'
-    if (daysRemaining === 1) return '1 day left'
-    return `${daysRemaining} days left`
+    if (daysRemaining === 1) return '1 day'
+    return `${daysRemaining} days`
   }
 
   const isStepComplete = (step: number) => {
@@ -2284,7 +2284,7 @@ export default function Poas() {
                                     : 'text-muted-foreground'
                                 }`}
                               >
-                                {formatExpiryTime(policy.slot)}
+                                expires in {formatExpiryTime(policy.slot)}
                               </span>
                             )}
                           </DropdownMenuItem>
@@ -2382,6 +2382,7 @@ export default function Poas() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+
             <div className="space-y-4 rounded-lg border border-border p-4">
               <div className="flex items-center justify-between">
                 <Label className="text-sm sm:text-base">

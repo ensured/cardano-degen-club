@@ -21,6 +21,22 @@ export async function POST(request) {
       })
     }
 
+    // Add network detection
+    const isTestnet = address.startsWith('addr_test')
+    const blockfrostUrl = `https://cardano-${isTestnet ? 'preview' : 'mainnet'}.blockfrost.io/api/v0`
+
+    // Add Blockfrost API key validation
+    const healthCheck = await fetch(`${blockfrostUrl}/health`, {
+      headers: { project_id: blockfrostKey },
+    })
+
+    if (!healthCheck.ok) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid Blockfrost API key or network mismatch' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } },
+      )
+    }
+
     // Rate limiting
     const rateLimitKey = `monitor:${address}`
     const current = await kv.get(rateLimitKey)
@@ -43,14 +59,9 @@ export async function POST(request) {
     const lastTxHash = await kv.get(lastTxKey)
 
     // Fetch latest transactions from Blockfrost
-    const response = await fetch(
-      `https://cardano-mainnet.blockfrost.io/api/v0/addresses/${address}/transactions`,
-      {
-        headers: {
-          project_id: blockfrostKey,
-        },
-      },
-    )
+    const response = await fetch(`${blockfrostUrl}/addresses/${address}/transactions`, {
+      headers: { project_id: blockfrostKey },
+    })
 
     if (!response.ok) {
       throw new Error(`Blockfrost error: ${response.status} ${response.statusText}`)
