@@ -11,7 +11,7 @@ export async function POST(request) {
       from: process.env.RESEND_EMAIL_FROM_TXIN,
       to: process.env.RESEND_EMAIL_TO,
       subject: 'New Transaction!',
-      text: `New transaction: ${payload}`,
+      text: `New transaction:\n${JSON.stringify(payload, null, 2)}`,
     })
 
     return NextResponse.json({ processed: true }, { status: 200 })
