@@ -7,20 +7,26 @@ export async function POST(request) {
   try {
     const { created, payload } = await request.json()
 
-    const userAddress = process.env.USER_ADDRESS
     const formattedDate = new Date(created * 1000).toLocaleString()
-    const outputsToUser = payload[0].outputs.filter((output) => output.address === userAddress)
 
-    const formattedAmounts = outputsToUser
-      .flatMap((output) =>
-        output.amount.map((asset) => {
-          if (asset.unit === 'lovelace') {
-            const ada = (parseInt(asset.quantity) / 1000000).toFixed(2)
-            return `${ada} ADA`
-          }
-          return `${asset.quantity} ${asset.unit}`
-        }),
-      )
+    // Remove address filtering and process all assets
+    const allAssets = payload[0].outputs.flatMap((output) => output.amount)
+
+    // Sum quantities for each asset unit
+    const assetMap = allAssets.reduce((acc, asset) => {
+      acc[asset.unit] = (acc[asset.unit] || 0) + parseInt(asset.quantity)
+      return acc
+    }, {})
+
+    // Format the summed assets
+    const formattedAmounts = Object.entries(assetMap)
+      .map(([unit, quantity]) => {
+        if (unit === 'lovelace') {
+          const ada = (quantity / 1000000).toFixed(2)
+          return `${ada} ADA`
+        }
+        return `${quantity} ${unit}`
+      })
       .join('\n')
 
     const emailText = `New transaction detected!
@@ -29,8 +35,8 @@ Transaction Hash: ${payload[0].tx.hash}
 Block Height:     ${payload[0].tx.block_height}
 Timestamp:        ${formattedDate}
 
-Received Amounts:
-${formattedAmounts || 'No assets received'}`
+Transaction Totals:
+${formattedAmounts || 'No assets detected'}`
 
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_EMAIL_FROM_TXIN,
