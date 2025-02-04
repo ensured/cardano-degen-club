@@ -639,9 +639,9 @@ const Airdrop = () => {
                             )
                             setIsAssetSelectorOpen(false)
                           }}
-                          className={`group flex items-start gap-4 rounded-lg border !border-border p-4 transition-all hover:bg-green-400/50 ${
+                          className={`group flex items-start gap-4 rounded-lg border !border-border p-4 transition-all hover:!border-green-300 hover:!bg-green-300/20 dark:hover:!bg-green-300/10 ${
                             selectedAsset?.assetId === assetId &&
-                            '!border-green-400 bg-green-400/20'
+                            '!border-green-400 bg-green-300/20'
                           }`}
                         >
                           {metadata?.image ? (
