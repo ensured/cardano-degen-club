@@ -60,6 +60,7 @@ import { WalletState } from '@/hooks/useWalletConnect'
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { cn } from '@/lib/utils'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork =
@@ -436,7 +437,7 @@ const FileUploadArea = ({
 
 // Update the truncateFileName function to be more explicit
 const truncateFileName = (fileName: string, maxLength: number = 64) => {
-  console.log('truncateFileName input:', fileName, 'length:', fileName.length)
+  if (fileName.length <= maxLength) return fileName
 
   if (fileName.length <= maxLength) return fileName
 
@@ -450,7 +451,7 @@ const truncateFileName = (fileName: string, maxLength: number = 64) => {
 
   // Truncate the name and add the extension back
   const truncated = `${nameWithoutExt.slice(0, maxNameLength)}.${extension}`
-  console.log('truncated result:', truncated, 'length:', truncated.length)
+  return truncated
   return truncated
 }
 
@@ -641,11 +642,12 @@ export default function Poas() {
           }
         }
       } catch (error) {
-        console.log('error', error)
         if (error instanceof Error && error.message.includes('account changed')) {
           if (currentStakeAddress) {
-            console.log('Account change detected')
             setSelectedPolicy(null)
+            toast.error('Account changed, please reconnect your wallet', {
+              position: 'top-center',
+            })
             setPolicyIds([])
           }
         } else {
@@ -890,7 +892,6 @@ export default function Poas() {
       // Automatically open the browse dialog after upload
       loadPinataFiles(1)
     } catch (e) {
-      console.log(e)
       setUploading(false)
       toast.error('Trouble uploading files to IPFS', { position: 'bottom-center' })
     }
@@ -1532,15 +1533,12 @@ export default function Poas() {
 
                   // Get the original name and log it
                   const originalName = file.metadata?.name || file.name || file.ipfs_pin_hash
-                  console.log('Original name:', originalName, 'length:', originalName.length)
 
                   // Truncate the name
                   const truncatedName = truncateFileName(originalName)
-                  console.log('After truncation:', truncatedName, 'length:', truncatedName.length)
 
                   // Show toast if name was truncated
                   if (originalName.length !== truncatedName.length) {
-                    console.log('Name was truncated, showing toast')
                     toast.info(
                       <div className="flex flex-col gap-1">
                         <p>Filename has been shortened to meet the 64-character limit.</p>
@@ -1563,7 +1561,6 @@ export default function Poas() {
                     if (isSelected) {
                       return prev.filter((selected) => selected.url !== file.ipfs_pin_hash)
                     } else {
-                      console.log('Adding file with truncated name:', fileInfo)
                       return [...prev, fileInfo]
                     }
                   })
@@ -2567,6 +2564,10 @@ export default function Poas() {
         <DialogContent className="flex h-[80vh] w-full max-w-[90vw] flex-col overflow-hidden p-0.5">
           {/* Sticky header */}
           <FilesGridHeader />
+
+          <VisuallyHidden>
+            <DialogDescription>lolkek</DialogDescription>
+          </VisuallyHidden>
 
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto">

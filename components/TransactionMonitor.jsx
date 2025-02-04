@@ -9,13 +9,11 @@ export function TransactionMonitor({ address, blockfrostKey }) {
   const startMonitoring = async () => {
     setIsMonitoring(true)
     try {
-      if (!address || !blockfrostKey) {
-        throw new Error('Missing required parameters: address and Blockfrost API key')
-      }
-
       const response = await fetch('/api/transactions-monitor', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ address, blockfrostKey }),
       })
 
@@ -31,15 +29,7 @@ export function TransactionMonitor({ address, blockfrostKey }) {
   }
 
   return (
-    <Button // onClick={startMonitoring}
-      onClick={() =>
-        toast.info('Coming soon!', {
-          icon: '🚧',
-        })
-      }
-      disabled={isMonitoring}
-      variant="outline"
-    >
+    <Button onClick={startMonitoring} disabled={isMonitoring} variant="outline">
       {isMonitoring ? 'Monitoring...' : 'Monitor Address'}
     </Button>
   )
