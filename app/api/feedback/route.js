@@ -51,7 +51,7 @@ export async function POST(request) {
     const { feedback } = await request.json()
 
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_EMAIL_FROM,
+      from: process.env.RESEND_EMAIL_FROM_FEEDBACK,
       to: process.env.RESEND_EMAIL_TO,
       subject: 'New Feedback!',
       text: feedback,
