@@ -409,7 +409,7 @@ export async function getEpochData(network: string = 'mainnet') {
     },
   })
   const data = await response.json()
-  console.log('epoch: ', data.epoch, 'start_time: ', data.start_time, 'tx_count: ', data.tx_count)
+  // console.log('epoch: ', data.epoch, 'start_time: ', data.start_time, 'tx_count: ', data.tx_count)
   return data
 }
 
