@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Textarea } from './ui/textarea'
 import { MessageCircleIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
 export function FeedbackForm() {
   const [feedbackText, setFeedbackText] = useState('')
@@ -23,28 +24,33 @@ export function FeedbackForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-wallet-address': window.cardano?.selectedAddress || '',
         },
         body: JSON.stringify({ feedback: feedbackText }),
       })
 
-      if (response.ok) {
-        setIsSubmitted(true)
-        setFeedbackText('')
-        setTimeout(() => {
-          setIsSubmitted(false)
-          setIsOpen(false)
-        }, 2000)
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit feedback')
       }
+
+      setIsSubmitted(true)
+      setFeedbackText('')
+      setTimeout(() => {
+        setIsSubmitted(false)
+        // setIsOpen(false)
+      }, 1600)
     } catch (error) {
-      console.error('Error submitting feedback:', error)
+      toast.error(error.message)
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <MessageCircleIcon className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10">
+          <MessageCircleIcon className="size-5 sm:size-6" />
         </Button>
       </DialogTrigger>
       <DialogContent>

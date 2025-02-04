@@ -16,7 +16,7 @@ const AirdropComponent = dynamic(() => import('./Airdrop'), {
 
 const Page = () => {
   return (
-    <div className="mt-10 flex flex-col items-center justify-center">
+    <div className="mt-8 flex flex-col items-center justify-center">
       <AirdropComponent />
       {/* <Button variant="outline">coming soon</Button> */}
     </div>

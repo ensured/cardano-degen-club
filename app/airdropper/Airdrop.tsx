@@ -448,7 +448,7 @@ const Airdrop = () => {
   }, [selectedAsset])
 
   return (
-    <div className="mx-auto flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
+    <div className="flex w-full flex-col items-center justify-center gap-6 p-4">
       {/* Header Section */}
       <div className="mb-0.5 space-y-1.5 text-center">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Token Airdropper</h1>
@@ -457,13 +457,13 @@ const Airdrop = () => {
         </p>
       </div>
 
-      <div className="w-full max-w-[400px] rounded-2xl border border-border bg-card/50 p-6 shadow-sm backdrop-blur-sm sm:max-w-[500px] md:max-w-[800px] lg:max-w-[1000px]">
+      <div className="w-full max-w-[98vw] rounded-lg border border-border/40 bg-accent/20 p-4 sm:max-w-[500px] md:max-w-[800px] lg:max-w-[1000px]">
         <div className="mb-3 w-full space-y-6">
           <Collapsible>
             <CollapsibleTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex w-full justify-between border border-border/40 px-6 py-6 hover:bg-accent/50"
+                className="flex w-full justify-between rounded-lg border border-border px-6 py-6 shadow-sm data-[state=open]:rounded-b-none hover:border-border hover:bg-accent/50 hover:backdrop-blur-sm"
               >
                 <div className="flex w-full items-center gap-1">
                   <span className="flex w-full items-center gap-1 text-xl font-semibold">
@@ -481,69 +481,68 @@ const Airdrop = () => {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <div className="space-y-4">
-                <div className="relative">
-                  <Input
-                    type={showBlockfrostKey ? 'text' : 'password'}
-                    placeholder="Enter your Blockfrost API key"
-                    value={blockfrostKey}
-                    onChange={(e) => {
-                      setBlockfrostKey(e.target.value)
-                      if (e.target.value.length === 39) {
-                        localStorage.setItem('blockfrostKey', e.target.value)
-                      }
+              <div className="relative">
+                <Input
+                  type={showBlockfrostKey ? 'text' : 'password'}
+                  placeholder="Enter your Blockfrost API key"
+                  value={blockfrostKey}
+                  onChange={(e) => {
+                    setBlockfrostKey(e.target.value)
+                    if (e.target.value.length === 39) {
+                      localStorage.setItem('blockfrostKey', e.target.value)
+                    }
+                  }}
+                  className="h-12 rounded-b-lg rounded-t-none border-x-0 border-b border-l border-r border-t-0 border-border/50 pr-[9.4rem] text-base"
+                />
+                <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      navigator.clipboard.writeText(blockfrostKey)
+                      toast.success('Copied to clipboard')
                     }}
-                    className="h-12 pr-[9.4rem] text-base"
-                  />
-                  <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-2">
+                  >
+                    <Copy className="h-5 w-5" />
+                  </Button>
+
+                  {blockfrostKey && (
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => {
-                        navigator.clipboard.writeText(blockfrostKey)
-                        toast.success('Copied to clipboard')
+                        setBlockfrostKey('')
+
+                        localStorage.removeItem('blockfrostKey')
                       }}
-                    >
-                      <Copy className="h-5 w-5" />
-                    </Button>
-
-                    {blockfrostKey && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setBlockfrostKey('')
-
-                          localStorage.removeItem('blockfrostKey')
-                        }}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <X className="h-5 w-5" />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowBlockfrostKey(!showBlockfrostKey)}
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      {showBlockfrostKey ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
+                      <X className="h-5 w-5" />
                     </Button>
-                  </div>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowBlockfrostKey(!showBlockfrostKey)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {showBlockfrostKey ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </Button>
                 </div>
-
-                <Link
-                  href="https://blockfrost.io/dashboard"
-                  target="_blank"
-                  className="text-xs text-muted-foreground underline"
-                >
-                  Need an API key? Get one here
-                </Link>
               </div>
+
+              <Link
+                href="https://blockfrost.io/dashboard"
+                target="_blank"
+                className="text-xs text-muted-foreground underline"
+              >
+                Need an API key? Get one here
+              </Link>
             </CollapsibleContent>
           </Collapsible>
         </div>
@@ -584,7 +583,7 @@ const Airdrop = () => {
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="flex w-full justify-between px-6 py-6 hover:bg-accent/50"
+                  className="flex w-full justify-between rounded-lg border-border/20 px-6 py-6 data-[state=open]:rounded-b-none data-[state=open]:border-b-0 hover:border-primary/50 hover:bg-accent/50"
                 >
                   <div className="flex items-center gap-1">
                     {selectedAsset && selectedAsset.image && (
@@ -596,9 +595,9 @@ const Airdrop = () => {
                         className="h-8 w-8 rounded-lg object-cover"
                       />
                     )}
-                    <span className="text-xl font-semibold">
+                    <span className="flex w-full text-xl font-semibold">
                       {selectedAsset ? (
-                        <div className="flex w-full items-center justify-between gap-1">
+                        <div className="flex w-full items-center justify-between">
                           <div className="flex items-center gap-1">
                             <span>Token: </span>
                             <span className="text-lg font-semibold">{selectedAsset.name}</span>
@@ -606,7 +605,7 @@ const Airdrop = () => {
                           <Check className="h-5 w-5 text-green-500/80" />
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex w-full items-center justify-center gap-1.5">
                           <span>Select Token</span>
                           <div className="flex items-center justify-center gap-1">
                             <span className="mt-0.5 text-sm text-muted-foreground">
@@ -621,7 +620,7 @@ const Airdrop = () => {
                 </Button>
               </CollapsibleTrigger>
 
-              <CollapsibleContent className="px-6 pb-6 pt-2">
+              <CollapsibleContent className="border-t border-border px-6 pb-6 pt-2">
                 <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                   {Object.entries(assets)
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
@@ -640,10 +639,9 @@ const Airdrop = () => {
                             )
                             setIsAssetSelectorOpen(false)
                           }}
-                          className={`group flex items-start gap-4 rounded-md border border-primary/50 p-4 transition-all hover:border-primary hover:bg-accent/50 ${
-                            selectedAsset?.assetId === assetId
-                              ? 'border-primary bg-primary/5'
-                              : 'border-muted/30'
+                          className={`group flex items-start gap-4 rounded-lg border !border-border p-4 transition-all hover:bg-green-400/50 ${
+                            selectedAsset?.assetId === assetId &&
+                            '!border-green-400 bg-green-400/20'
                           }`}
                         >
                           {metadata?.image ? (
