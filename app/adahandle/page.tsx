@@ -92,11 +92,14 @@ const Page = () => {
             </div>
           </div>
         </div>
+        {/*
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center justify-center gap-2 rounded-lg">
             <Chat />
           </div>
         </div>
+        */}
+        
       </div>
     </Animation>
   )
