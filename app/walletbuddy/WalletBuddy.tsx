@@ -120,7 +120,7 @@ const InstructionsList = () => (
         target="_blank"
         className="ml-1 text-primary hover:underline"
       >
-        <Button variant={'link'} className="flex items-center gap-1">
+        <Button variant={'link'} className="flex items-center gap-1 !px-1">
           <LucideLinkIcon className="h-4 w-4" /> Blockfrost Webhooks
         </Button>
       </Link>
