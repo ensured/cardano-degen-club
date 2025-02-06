@@ -3,7 +3,7 @@ import Animation from '@/components/Animation'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { useWallet } from '@/contexts/WalletContext'
-import { CopyIcon, CheckIcon } from 'lucide-react'
+import { CopyIcon, CheckIcon, Loader2 } from 'lucide-react'
 
 const WalletBuddy = () => {
   const [copied, setCopied] = useState(false)
@@ -17,7 +17,7 @@ const WalletBuddy = () => {
     setTimeout(() => setCopied(false), 1100)
   }
 
-  const { walletState } = useWallet()
+  const { walletState, loading } = useWallet()
 
   return (
     <Animation>
@@ -98,7 +98,11 @@ const WalletBuddy = () => {
           <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-4">
             <h1 className="text-3xl font-bold">Wallet Buddy Webhook Service</h1>
             <p className="text-base-content/70 text-center text-sm">
-              Please connect your wallet to continue
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                'Please connect your wallet to continue'
+              )}
             </p>
           </div>
         )}
