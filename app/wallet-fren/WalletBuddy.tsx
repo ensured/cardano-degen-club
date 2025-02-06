@@ -1,5 +1,4 @@
 'use client'
-import Animation from '@/components/Animation'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { useWallet } from '@/contexts/WalletContext'
@@ -9,6 +8,7 @@ import Button3D from '@/components/3dButton'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useUser } from '@clerk/nextjs'
 const WebhookRegistrationForm = ({
   webhookId,
   setWebhookId,
@@ -134,7 +134,9 @@ const InstructionsList = () => (
 )
 
 const WalletBuddy = () => {
-  const [copied, setCopied] = useState(false)
+  // auth stuff
+  const { user } = useUser()
+  const userEmail = user?.externalAccounts[0].emailAddress
   const webhookUrl = 'https://cardanodegen.shop/api/transactions-monitor'
   const [webhookId, setWebhookId] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -146,8 +148,9 @@ const WalletBuddy = () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('webhookEmail') || ''
     }
-    return ''
+    return userEmail || ''
   })
+  const [copied, setCopied] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
@@ -191,71 +194,67 @@ const WalletBuddy = () => {
       setIsSubmitting(false)
     }
   }
+  const header = (
+    <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-8">
+      <h1 className="flex flex-row items-center gap-2 text-2xl font-bold sm:text-3xl lg:text-4xl">
+        Wallet Fren {loading && <Loader2 className="animate-spin" />}
+      </h1>
 
-  if (!walletState.walletAddress) {
-    return (
-      <Animation>
-        <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-8">
-          <h1 className="text-3xl font-bold">Wallet Buddy</h1>
-          <p className="text-center text-2xl text-muted-foreground">
-            {loading ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              'Connect your wallet to set up transaction notifications'
-            )}
-          </p>
-        </div>
-      </Animation>
-    )
+      <div className="text-center text-2xl text-muted-foreground">
+        {!walletState.walletAddress && !userEmail ? (
+          'Connect your wallet or sign in to set up transaction notifications'
+        ) : (
+          <span className="text-base text-muted-foreground sm:text-lg lg:text-xl">
+            Email notifications for all new incoming transactions
+          </span>
+        )}
+      </div>
+    </div>
+  )
+
+  if (!walletState.walletAddress && !userEmail) {
+    return header
   }
 
   return (
-    <Animation>
-      <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-        <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-6 p-3 sm:mt-6 sm:gap-8 sm:p-4 lg:mt-8 lg:gap-10 lg:p-5">
-          {/* Header Section */}
-          <header className="space-y-2 text-center sm:space-y-3 lg:space-y-4">
-            <h1 className="text-2xl font-bold sm:text-3xl lg:text-4xl">Wallet Buddy</h1>
-            <p className="text-base text-muted-foreground sm:text-lg lg:text-xl">
-              Email notifications for all new incoming transactions
-            </p>
-          </header>
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+      <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-6 p-3 sm:mt-6 sm:gap-8 sm:p-4 lg:mt-8 lg:gap-10 lg:p-5">
+        {header}
 
-          {/* Main Content Card */}
-          <div className="overflow-hidden rounded-lg bg-background shadow-md sm:rounded-xl">
-            {/* Step 2: Setup Instructions */}
-            <div className="border-b border-border p-4 sm:p-5 lg:p-6">
-              <h2 className="mb-2 text-lg font-medium sm:mb-3 sm:text-xl lg:text-2xl">
-                1. Copy Webhook URL
-              </h2>
-              <WebhookUrlDisplay
-                webhookUrl={webhookUrl}
-                copied={copied}
-                copyToClipboard={copyToClipboard}
-              />
-              <InstructionsList />
-            </div>
+        {/* Main Content Card */}
+        <div className="overflow-hidden rounded-lg bg-background shadow-md sm:rounded-xl">
+          {/* Step 2: Setup Instructions */}
+          <div className="border-b border-border p-4 sm:p-5 lg:p-6">
+            <h2 className="mb-2 text-lg font-medium sm:mb-3 sm:text-xl lg:text-2xl">
+              1. Copy Webhook URL
+            </h2>
+            <WebhookUrlDisplay
+              webhookUrl={webhookUrl}
+              copied={copied}
+              copyToClipboard={copyToClipboard}
+            />
+            <InstructionsList />
+          </div>
 
-            {/* Step 3: Register Webhook */}
-            <div className="p-4 sm:p-5 lg:p-6">
-              <h2 className="mb-3 text-xl font-semibold sm:mb-4 sm:text-2xl lg:text-3xl">
-                Register your ID
-              </h2>
-              <WebhookRegistrationForm
-                webhookId={webhookId}
-                setWebhookId={setWebhookId}
-                email={email}
-                setEmail={setEmail}
-                isSubmitting={isSubmitting}
-                registrationStatus={registrationStatus}
-                errorMessage={errorMessage}
-                handleSubmit={handleSubmit}
-              />
-            </div>
+          {/* Step 3: Register Webhook */}
+          <div className="p-4 sm:p-5 lg:p-6">
+            <h2 className="mb-3 text-xl font-semibold sm:mb-4 sm:text-2xl lg:text-3xl">
+              Register your ID
+            </h2>
+            <WebhookRegistrationForm
+              webhookId={webhookId}
+              setWebhookId={setWebhookId}
+              email={userEmail ?? email}
+              setEmail={setEmail}
+              isSubmitting={isSubmitting}
+              registrationStatus={registrationStatus}
+              errorMessage={errorMessage}
+              handleSubmit={handleSubmit}
+            />
           </div>
         </div>
       </div>
-    </Animation>
+    </div>
   )
 }
 

@@ -24,23 +24,14 @@ export default function UserLoginButtons({ extraText }: { extraText?: string }) 
   const [currentPath, setCurrentPath] = useState(pathname)
   const { openUserProfile, signOut } = useClerk()
   const { user } = useUser()
+  const userEmail = user?.externalAccounts[0].emailAddress
   const { walletState, loading } = useWallet()
   const [hiddenEmail, setHiddenEmail] = useState('')
-  const userEmail = user?.externalAccounts[0].emailAddress
   const [isWalletAddressVisible, setIsWalletAddressVisible] = useState(true)
   const [isAdaHandleVisible, setIsAdaHandleVisible] = useState(true)
-  const [blockfrostApiKey, setBlockfrostApiKey] = useState('')
   useEffect(() => {
     setCurrentPath(pathname)
   }, [pathname])
-
-  // useEffect for setting the current blockfrostApiKey from localstorage as soon as it's available
-  useEffect(() => {
-    const blockfrostApiKey = window.localStorage.getItem('blockfrostKey')
-    if (blockfrostApiKey) {
-      setBlockfrostApiKey(blockfrostApiKey)
-    }
-  }, [])
 
   useEffect(() => {
     if (userEmail) {
