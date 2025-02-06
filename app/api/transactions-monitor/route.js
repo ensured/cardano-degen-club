@@ -45,8 +45,7 @@ export async function POST(request) {
           })
           .join(', ')
 
-        const isToMe = output.address === userAddress ? '(ME) ' : ''
-        return `${isToMe}${formatAddress(output.address)}: ${amounts}`
+        return `${formatAddress(output.address)}: ${amounts}`
       })
       .join('\n')
 
