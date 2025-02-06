@@ -1,4 +1,4 @@
-import Poas from '@/components/Poas'
+import NFTMinter from '@/components/NFTMinter'
 import { Loader2 } from 'lucide-react'
 import { Suspense } from 'react'
 
@@ -11,7 +11,7 @@ const page = async () => {
         </div>
       }
     >
-      <Poas />
+      <NFTMinter />
     </Suspense>
   )
 }

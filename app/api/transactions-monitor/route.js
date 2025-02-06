@@ -7,42 +7,30 @@ export async function POST(request) {
   try {
     const { created, payload } = await request.json()
 
-    const formattedDate = new Date(created * 1000).toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
-      dateStyle: 'medium',
-      timeStyle: 'long',
-    })
+    const userAddress = process.env.USER_ADDRESS
+    const formattedDate = new Date(created * 1000).toLocaleString()
+    const outputsToUser = payload[0].outputs.filter((output) => output.address === userAddress)
 
-    const formattedOutputs = payload[0].outputs
-      .map((output, index) => {
-        const assets = output.amount
-          .map((asset) => {
-            if (asset.unit === 'lovelace') {
-              const ada = (parseInt(asset.quantity) / 1000000).toFixed(2)
-              return `  - ${ada.padEnd(10)} ADA`
-            }
-            // Shorten long asset IDs for readability
-            const shortUnit =
-              asset.unit.length > 12
-                ? `${asset.unit.slice(0, 8)}...${asset.unit.slice(-4)}`
-                : asset.unit
-            return `  - ${asset.quantity.toString().padEnd(6)} ${shortUnit}`
-          })
-          .join('\n')
+    const formattedAmounts = outputsToUser
+      .flatMap((output) =>
+        output.amount.map((asset) => {
+          if (asset.unit === 'lovelace') {
+            const ada = (parseInt(asset.quantity) / 1000000).toFixed(2)
+            return `${ada} ADA`
+          }
+          return `${asset.quantity} ${asset.unit}`
+        }),
+      )
+      .join('\n')
 
-        return `Output #${index + 1}:\n${assets}`
-      })
-      .join('\n\n')
-
-    const emailText = `New transaction detected! 🔔
-════════════════════════════
+    const emailText = `New transaction detected!
+-----------------------------
 Transaction Hash: ${payload[0].tx.hash}
 Block Height:     ${payload[0].tx.block_height}
 Timestamp:        ${formattedDate}
 
-Transaction Outputs:
-${formattedOutputs || 'No outputs detected'}
-`
+Received Amounts:
+${formattedAmounts || 'No assets received'}`
 
     await resend.emails.send({
       from: process.env.RESEND_EMAIL_FROM_TXIN,
@@ -53,6 +41,7 @@ ${formattedOutputs || 'No outputs detected'}
 
     return NextResponse.json({ processed: true }, { status: 200 })
   } catch (error) {
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 })
+    console.error('Error sending email:', error)
+    return NextResponse.json({ processed: false }, { status: 500 })
   }
 }

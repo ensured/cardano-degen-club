@@ -63,11 +63,7 @@ import { cn } from '@/lib/utils'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
-export const CARDANO_NETWORK: CardanoNetwork =
-  process.env.NODE_ENV === 'development' ? 'Preview' : 'Mainnet'
-
-// const testing = process.env.NODE_ENV === 'development' ? true : false
-const testing = false
+export const CARDANO_NETWORK: CardanoNetwork = 'Mainnet'
 
 export const getLucid = async () => {
   const { Lucid, Blockfrost } = await import('@lucid-evolution/lucid')
@@ -455,12 +451,16 @@ const truncateFileName = (fileName: string, maxLength: number = 64) => {
   return truncated
 }
 
-export default function Poas() {
+// Add this helper function for delay
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export default function NFTMinter() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
   const [pinataJWT, setPinataJWT] = useState<string | null>(null)
   const [blockfrostKey, setBlockfrostKey] = useState<string | null>(null)
   const [generatingPolicy, setGeneratingPolicy] = useState(false)
+
   const [policyIds, setPolicyIds] = useState<PolicyInfo[]>([])
   const [selectedPolicy, setSelectedPolicy] = useState<PolicyInfo | null>(null)
   const { walletState, loading } = useWallet() as WalletContextType
@@ -574,7 +574,7 @@ export default function Poas() {
 
   useEffect(() => {
     const initializeWallet = async () => {
-      if (walletState.wallet) {
+      if (walletState.walletAddress) {
         try {
           // initialize lucid and set it in state
           if (blockfrostKey) {
@@ -590,19 +590,14 @@ export default function Poas() {
             setLucid(lucidInstance)
           }
         } catch (error) {
-          if (error instanceof TypeError) {
-            toast.error('Blockfrost key is not valid', { position: 'bottom-center' })
+          if (error instanceof Error) {
+            toast.error(error.message, { position: 'bottom-center' })
           } else {
-            toast.error(
-              'Unexpected error during wallet connection: ' +
-                (error instanceof Error ? error.message : String(error)),
-              {
-                position: 'bottom-center',
-              },
-            )
+            toast.error('An unexpected error occurred', { position: 'bottom-center' })
           }
         }
       }
+
       setInitializing(false)
     }
 
@@ -897,18 +892,6 @@ export default function Poas() {
     }
   }
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || [])
-
-    setFiles(selectedFiles)
-    // submit if there's an api key and files
-    if (pinataJWT && selectedFiles.length > 0) {
-      await uploadFile(selectedFiles)
-    } else {
-      toast.error('Please enter a Pinata JWT and select files', { position: 'bottom-center' })
-    }
-  }
-
   const generatePolicyId = async () => {
     if (!walletState.api) {
       toast.error('Please connect your wallet first', { position: 'bottom-center' })
@@ -954,6 +937,7 @@ export default function Poas() {
       )
 
       const policyId = mintingPolicyToId(mintingPolicy)
+      console.log(policyId)
 
       const newPolicy: PolicyInfo = {
         policyId,
@@ -999,6 +983,7 @@ export default function Poas() {
     }
   }
 
+  // Modify the loadPolicies function
   const loadPolicies = async () => {
     if (!walletState.api || !blockfrostKey) {
       toast.error('Please connect wallet and enter Blockfrost key first', {
@@ -1036,52 +1021,59 @@ export default function Poas() {
         }
       }
 
-      // Create array of promises for all policy ID fetches
-      const policyPromises = Array.from(policyIdsFromUtxos.keys()).map(async (policyId) => {
-        try {
-          const scriptDetailsResponse = await fetch(
-            `https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0/scripts/${policyId}/json`,
-            {
-              headers: {
-                project_id: blockfrostKey,
+      // Process policy IDs in batches with delays
+      const batchSize = 10 // Adjust this number based on your needs
+      const policyIds = Array.from(policyIdsFromUtxos.keys())
+      const results = []
+
+      for (let i = 0; i < policyIds.length; i += batchSize) {
+        const batch = policyIds.slice(i, i + batchSize)
+        const batchPromises = batch.map(async (policyId) => {
+          try {
+            const scriptDetailsResponse = await fetch(
+              `https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0/scripts/${policyId}/json`,
+              {
+                headers: {
+                  project_id: blockfrostKey,
+                },
               },
-            },
-          )
+            )
 
-          if (!scriptDetailsResponse.ok) return null
+            if (!scriptDetailsResponse.ok) return null
 
-          const scriptDetails = await scriptDetailsResponse.json()
-          const keyHashMatches = scriptDetails?.json
-            ? scriptDetails.json.keyHash
-              ? scriptDetails.json.keyHash === keyHash
-              : scriptDetails.json.scripts?.[0]?.keyHash === keyHash
-            : false
+            const scriptDetails = await scriptDetailsResponse.json()
+            const keyHashMatches = scriptDetails?.json
+              ? scriptDetails.json.keyHash === keyHash || // Check direct keyHash
+                scriptDetails.json.scripts?.[0]?.keyHash === keyHash || // Check first script
+                scriptDetails.json.scripts?.[1]?.keyHash === keyHash // Check second script
+              : false
 
-          if (keyHashMatches) {
-            return {
-              policyId,
-              slot: extractSlotFromScript(scriptDetails.json),
-              script: scriptDetails.json,
-              keyHash,
+            if (keyHashMatches) {
+              return {
+                policyId,
+                slot: extractSlotFromScript(scriptDetails.json),
+                script: scriptDetails.json,
+                keyHash,
+              }
             }
+            return null
+          } catch (error) {
+            console.error(`Error fetching policy ${policyId}:`, error)
+            return null
           }
-          return null
-        } catch (error) {
-          console.error(`Error fetching policy ${policyId}:`, error)
-          return null
+        })
+
+        // Process batch
+        const batchResults = await Promise.all(batchPromises)
+        results.push(...batchResults.filter((result) => result !== null))
+
+        // Add delay between batches if not the last batch
+        if (i + batchSize < policyIds.length) {
+          await delay(50) // 50ms delay between batches
         }
-      })
+      }
 
-      // Wait for all promises to resolve
-      const policyResults = await Promise.all(policyPromises)
-
-      // Filter out null results and add to policies Map
-      const policies = new Map(
-        policyResults
-          .filter((result): result is NonNullable<typeof result> => result !== null)
-          .map((policy) => [policy.policyId, policy]),
-      )
-
+      // Rest of the function remains the same
       const balance = await walletState.api.getBalance()
       if (Number(balance) < 1000000) {
         toast.error('Insufficient balance, please add funds to your wallet', {
@@ -1090,7 +1082,7 @@ export default function Poas() {
         return
       }
 
-      const validPolicies = Array.from(policies.values())
+      const validPolicies = results
         .filter((p: any) => {
           const policyId = typeof p === 'string' ? p : p.policyId
           return policyId.length === 56
