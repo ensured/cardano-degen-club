@@ -75,6 +75,6 @@ ${formattedOutputs}`
     return NextResponse.json({ processed: true }, { status: 200 })
   } catch (error) {
     console.error('Error sending email:', error)
-    return NextResponse.json({ processed: false }, { status: 500 })
+    return NextResponse.json({ processed: false, error: error.message }, { status: 500 })
   }
 }
