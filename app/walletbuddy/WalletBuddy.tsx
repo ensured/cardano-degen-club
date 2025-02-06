@@ -125,9 +125,9 @@ const InstructionsList = () => (
         </Button>
       </Link>
     </li>
-    <li>3. Use this webhook URL as the 'Endpoint URL'</li>
-    <li>4. Choose 'Cardano Mainnet' as Network</li>
-    <li>5. Choose Transaction for 'Trigger'</li>
+    <li>3. Use this webhook URL as the &lsquo;Endpoint URL&lsquo;</li>
+    <li>4. Choose &lsquo;Cardano Mainnet&lsquo; as Network</li>
+    <li>5. Choose Transaction for &lsquo;Trigger&lsquo;</li>
     <li>6. Add a trigger condition for recipient equal to your wallet address</li>
     <li>7. Save Webhook</li>
   </ol>
