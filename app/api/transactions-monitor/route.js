@@ -8,8 +8,16 @@ export async function POST(request) {
     const { created, payload } = await request.json()
 
     const userAddress = process.env.USER_ADDRESS
-    const formattedDate = new Date(created * 1000).toLocaleString()
-    const outputsToUser = payload[0].outputs.filter((output) => output.address === userAddress)
+    const formattedDate = new Date(created * 1000).toLocaleString('en-US', {
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: true,
+    })
 
     const formatAddress = (address) => {
       return `${address.slice(0, 12)}...${address.slice(-8)}`
@@ -32,11 +40,17 @@ export async function POST(request) {
       })
       .join('\n')
 
+    // check if the addresses have test in them if so append preview to cardanoscan.io
+    const txHash = payload[0].tx.hash
+    const isPreview = txHash.includes('test') ? 'preview.' : ''
+
     const emailText = `New transaction detected!
 -----------------------------
-Transaction Hash: ${payload[0].tx.hash}
+Tx: https://${isPreview}cardanoscan.io/transaction/${payload[0].tx.hash}
 Block Height:     ${payload[0].tx.block_height}
 Timestamp:        ${formattedDate}
+
+
 
 Transaction Outputs:
 ${formattedOutputs}`

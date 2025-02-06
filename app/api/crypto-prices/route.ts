@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { handleError } from '@/app/utils/errorHandler'
+import { handleError } from '@/utils/errorHandler'
 
 const PRICES_CONFIG = [
   { symbol: 'BINANCE:ADAUSD', pair: 'cardano', name: 'ADA/USD' },
