@@ -686,3 +686,57 @@ export const fetchAddressesFromPolicy = async (policyId: string, network: string
   const data = await response.json()
   return data
 }
+
+export async function storeWebhookIdInVercelKV(
+  webHookId: string,
+  email: string,
+): Promise<{ success: boolean; webhookId?: string; error?: string; exists?: boolean }> {
+  try {
+    // Validate email format
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { success: false, error: 'Invalid email address' }
+    }
+
+    // Check if webhook ID already exists
+    const existingWebhook = await kv.get(`webhook:${webHookId}`)
+    if (existingWebhook) {
+      // Update email if webhook exists
+      await kv.set(`webhook:${webHookId}`, {
+        id: webHookId,
+        email,
+        created: (existingWebhook as any).created,
+        updated: Date.now(),
+      })
+      return {
+        success: true,
+        webhookId: webHookId,
+        exists: true,
+      }
+    }
+
+    // Store in Vercel KV with webhook ID as key
+    await kv.set(`webhook:${webHookId}`, {
+      id: webHookId,
+      email,
+      created: Date.now(),
+    })
+
+    const webhook = await kv.get(`webhook:${webHookId}`)
+    if (!webhook) {
+      return { success: false, error: 'Failed to verify storage' }
+    }
+
+    return { success: true, webhookId: webHookId, exists: false }
+  } catch (error) {
+    console.error('Webhook creation failed:', error)
+    return { success: false, error: 'Internal server error' }
+  }
+}
+
+export async function validateWebhookId(blockfrostAuthKey: string) {
+  const webhook = await kv.get(`webhook:${blockfrostAuthKey}`)
+  if (!webhook) {
+    return false
+  }
+  return true
+}

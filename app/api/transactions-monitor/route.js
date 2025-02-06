@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { kv } from '@vercel/kv'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request) {
   try {
-    const { created, payload } = await request.json()
+    const { created, payload, webhook_id } = await request.json()
 
-    const userAddress = process.env.USER_ADDRESS
+    // Validate webhook registration and get stored data
+    const storedWebhook = await kv.get(`webhook:${webhook_id}`)
+    if (!storedWebhook || storedWebhook.id !== webhook_id) {
+      console.error('Invalid webhook ID or unregistered user')
+      return NextResponse.json({ processed: false, error: 'Unauthorized webhook' }, { status: 401 })
+    }
+
+    // Get the user's email from stored webhook data
+    const userEmail = storedWebhook.email
+
     const formattedDate = new Date(created * 1000).toLocaleString('en-US', {
       timeZone: 'UTC',
       year: 'numeric',
@@ -57,7 +67,7 @@ ${formattedOutputs}`
 
     await resend.emails.send({
       from: process.env.RESEND_EMAIL_FROM_TXIN,
-      to: process.env.RESEND_EMAIL_TO,
+      to: userEmail, // Use the stored email address
       subject: 'New Transaction!',
       text: emailText,
     })
