@@ -148,7 +148,7 @@ const HelpDialog = () => (
       <VisuallyHidden>
         <DialogTitle>Blockfrost Webhook ID</DialogTitle>
       </VisuallyHidden>
-      <div className="mx-auto w-full md:max-w-[90vw] lg:max-w-[80vw]">
+      <div className="mx-auto w-full xl:max-w-[65vw] 2xl:max-w-[50vw]">
         <Image
           src={blockfrostHighlightImg}
           alt="Blockfrost Highlight"
@@ -266,12 +266,12 @@ const WalletBuddy = () => {
             <div className="border-base-300 border-b p-6">
               <h2 className="mb-4 text-xl font-semibold">Step 2: Configure Blockfrost Webhook</h2>
               <InstructionsList />
-              <HelpDialog />
             </div>
 
             {/* Step 3: Register Webhook */}
             <div className="p-6">
-              <h2 className="mb-4 text-xl font-semibold">Step 3: Register Your Webhook ID</h2>
+              <h2 className="mb-4 text-xl font-semibold">Step 3: Register Your Identifier</h2>
+
               <WebhookRegistrationForm
                 webhookId={webhookId}
                 setWebhookId={setWebhookId}
