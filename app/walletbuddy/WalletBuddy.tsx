@@ -139,29 +139,6 @@ const InstructionsList = () => (
   </ol>
 )
 
-const HelpDialog = () => (
-  <Dialog>
-    <DialogTrigger asChild className="!m-6">
-      <Button3D className="font-semibold">Need help finding it?</Button3D>
-    </DialogTrigger>
-    <DialogContent className="max-w-[100vw] !p-0">
-      <VisuallyHidden>
-        <DialogTitle>Blockfrost Webhook ID</DialogTitle>
-      </VisuallyHidden>
-      <div className="mx-auto w-full xl:max-w-[65vw] 2xl:max-w-[50vw]">
-        <Image
-          src={blockfrostHighlightImg}
-          alt="Blockfrost Highlight"
-          className="h-full w-full object-contain"
-        />
-      </div>
-      <DialogClose asChild>
-        <Button3D className="font-semibold">Close</Button3D>
-      </DialogClose>
-    </DialogContent>
-  </Dialog>
-)
-
 const WalletBuddy = () => {
   const [copied, setCopied] = useState(false)
   const webhookUrl = 'https://cardanodegen.shop/api/transactions-monitor'
