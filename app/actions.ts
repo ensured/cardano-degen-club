@@ -728,6 +728,7 @@ export async function storeWebhookIdInVercelKV(
       id: webHookId,
       email,
       created: Date.now(),
+      timezone: userTimezone,
     })
 
     const webhook = await kv.get(`webhook:${webHookId}`)
