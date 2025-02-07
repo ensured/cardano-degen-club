@@ -209,7 +209,7 @@ const WalletBuddy = () => {
     }
   }
   const header = (
-    <div className="mx-auto mb-6 w-full max-w-3xl px-4 sm:mb-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-3xl px-4">
       <div className="rounded-2xl bg-gradient-to-br from-indigo-900/30 to-purple-900/30 p-6 shadow-xl backdrop-blur-sm sm:p-8 lg:p-10">
         <div className="flex flex-col items-center gap-3 text-center">
           <h1 className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl lg:text-5xl">
@@ -252,9 +252,7 @@ const WalletBuddy = () => {
         <div className="overflow-hidden rounded-lg bg-background shadow-md sm:rounded-xl">
           {/* Step 2: Setup Instructions */}
           <div className="border-b border-border p-4 sm:p-5 lg:p-6">
-            <h2 className="mb-2 text-lg font-medium sm:mb-3 sm:text-xl lg:text-2xl">
-              1. Copy Webhook URL
-            </h2>
+            <h2 className="mb-2 text-base font-medium sm:mb-3 sm:text-xl">1. Copy Webhook URL</h2>
             <WebhookUrlDisplay
               webhookUrl={webhookUrl}
               copied={copied}
