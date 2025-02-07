@@ -39,6 +39,9 @@ const WebhookRegistrationForm = ({
   const isValidUUID = (id: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
+  // Add email validation
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 lg:space-y-4">
       <div className="relative">
@@ -72,7 +75,14 @@ const WebhookRegistrationForm = ({
 
         <div className="relative px-4 py-2">
           <label className="mb-1.5 block text-lg font-medium sm:text-xl lg:text-2xl">
-            Email Address
+            <span className="flex items-center gap-2">
+              Email Address
+              {isValidEmail(email) ? (
+                <CheckIcon className="size-5 text-emerald-400" />
+              ) : (
+                <XIcon className="size-5 text-rose-400" />
+              )}
+            </span>
             <Input
               type="email"
               value={email}
