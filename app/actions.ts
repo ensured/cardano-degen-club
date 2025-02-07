@@ -811,3 +811,14 @@ export async function updateWebhookAddresses(
     return { success: false, error: 'Failed to update addresses' }
   }
 }
+
+export async function getWebhooksCount() {
+  try {
+    // Get all keys that start with 'webhook:'
+    const keys = await kv.keys('webhook:*')
+    return { count: keys.length }
+  } catch (error) {
+    console.error('Error getting webhook count:', error)
+    return { count: 0, error: 'Failed to get webhook count' }
+  }
+}

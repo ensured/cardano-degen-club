@@ -10,7 +10,12 @@ import {
   Link as LucideLinkIcon,
   CheckCircle,
 } from 'lucide-react'
-import { storeWebhookIdInVercelKV, getWebhookData, updateWebhookAddresses } from '../actions'
+import {
+  storeWebhookIdInVercelKV,
+  getWebhookData,
+  updateWebhookAddresses,
+  getWebhooksCount,
+} from '../actions'
 import Button3D from '@/components/3dButton'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -77,6 +82,17 @@ const WebhookRegistrationForm = ({
     const newAddresses = [...otherWalletAddresses]
     const trimmedValue = value.trim()
 
+    // Check if trying to add the connected wallet's address
+    if (
+      walletState.stakeAddress &&
+      trimmedValue.toLowerCase() === walletState.stakeAddress.toLowerCase()
+    ) {
+      toast.error('This address is already connected via your wallet', {
+        duration: 2000,
+      })
+      return
+    }
+
     // Check for duplicates including the main wallet address
     const addressSet = new Set([
       ...(walletStakeAddress ? [walletStakeAddress.toLowerCase()] : []),
@@ -88,14 +104,6 @@ const WebhookRegistrationForm = ({
       newAddresses[index].toLowerCase() !== trimmedValue.toLowerCase()
     ) {
       toast.error('This address has already been added', {
-        duration: 2000,
-      })
-      return
-    }
-
-    // Check if trying to add the connected wallet's address
-    if (walletStakeAddress && trimmedValue.toLowerCase() === walletStakeAddress.toLowerCase()) {
-      toast.error('This address is already connected via your wallet', {
         duration: 2000,
       })
       return
@@ -182,6 +190,17 @@ const WebhookRegistrationForm = ({
           Wallet Addresses
         </label>
         <div className="space-y-3">
+          {!walletStakeAddress && walletState.stakeAddress && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setWalletStakeAddress(walletState.stakeAddress || undefined)}
+              className="w-full border-2 border-indigo-500/20 bg-accent/20"
+            >
+              Add Connected Wallet Address
+            </Button>
+          )}
+
           {walletStakeAddress && (
             <div className="flex flex-col gap-2 sm:flex-row">
               <div className="flex flex-1 gap-2">
@@ -399,6 +418,7 @@ const WalletFren = () => {
   const [selectedWalletStakeAddress, setSelectedWalletStakeAddress] = useState<string | undefined>(
     walletState.stakeAddress || undefined,
   )
+  const [webhookCount, setWebhookCount] = useState<number>(0)
 
   // Load last used webhook ID from localStorage on mount
   useEffect(() => {
@@ -484,6 +504,33 @@ const WalletFren = () => {
     }
   }, [])
 
+  // Modified useEffect to handle duplicates
+  useEffect(() => {
+    if (walletState.stakeAddress && !selectedWalletStakeAddress) {
+      setSelectedWalletStakeAddress(walletState.stakeAddress)
+
+      // Remove any duplicate addresses from otherWalletAddresses
+      const filteredAddresses = otherWalletAddresses.filter(
+        (addr) => addr.toLowerCase() !== walletState.stakeAddress?.toLowerCase(),
+      )
+
+      // Only update if we actually removed something
+      if (filteredAddresses.length !== otherWalletAddresses.length) {
+        setOtherWalletAddresses(filteredAddresses)
+      }
+    }
+  }, [walletState.stakeAddress])
+
+  useEffect(() => {
+    const fetchWebhookCount = async () => {
+      const result = await getWebhooksCount()
+      if (!result.error) {
+        setWebhookCount(result.count)
+      }
+    }
+    fetchWebhookCount()
+  }, [])
+
   const copyToClipboard = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -561,10 +608,15 @@ const WalletFren = () => {
                 <br className="hidden sm:block" />
               </p>
             ) : (
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-6 w-6 text-emerald-400 sm:h-7 sm:w-7" />
-                <p className="text-xl font-medium text-gray-200 sm:text-2xl lg:text-3xl">
-                  Transaction Monitoring
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-6 w-6 text-emerald-400 sm:h-7 sm:w-7" />
+                  <p className="text-xl font-medium text-gray-200 sm:text-2xl lg:text-3xl">
+                    Transaction Monitoring
+                  </p>
+                </div>
+                <p className="text-base text-gray-400 sm:text-lg">
+                  {webhookCount} {webhookCount === 1 ? 'webhook' : 'webhooks'} registered
                 </p>
               </div>
             )}
