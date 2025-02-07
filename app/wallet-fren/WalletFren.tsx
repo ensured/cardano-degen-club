@@ -1,6 +1,6 @@
 'use client'
 import { toast } from 'sonner'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useWallet } from '@/contexts/WalletContext'
 import {
   CopyIcon,
@@ -34,64 +34,78 @@ const WebhookRegistrationForm = ({
   registrationStatus: 'idle' | 'success' | 'error'
   errorMessage: string
   handleSubmit: (e: React.FormEvent) => Promise<void>
-}) => (
-  <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 lg:space-y-8">
-    <div>
-      <label className="mb-1.5 block text-base font-medium sm:text-lg lg:text-xl">
-        {registrationStatus === 'success' || webhookId ? (
-          <span className="flex items-center gap-1.5 text-lg sm:text-xl lg:text-2xl">
-            Webhook ID <CheckIcon className="size-4 text-success sm:size-5 lg:size-6" />
-          </span>
-        ) : (
-          <span className="flex items-center gap-1.5 text-lg sm:text-xl lg:text-2xl">
-            Webhook ID <XIcon className="size-4 sm:size-5 lg:size-6" />
-          </span>
-        )}
-        <Input
-          type="text"
-          value={webhookId}
-          placeholder="35bb67f5-a262-41f0-b22d-6525e8c7cf8b"
-          onChange={(e) => setWebhookId(e.target.value)}
-          className="mt-1.5 border border-border/80 text-base sm:text-lg lg:text-xl"
-          required
-        />
-      </label>
-    </div>
+}) => {
+  // Add UUID validation function
+  const isValidUUID = (id: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 
-    <div>
-      <label className="mb-1.5 block text-lg font-medium sm:text-xl lg:text-2xl">
-        Email Address
-        <Input
-          type="email"
-          value={email}
-          placeholder="your@email.com"
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1.5 border border-border/80 text-base sm:text-lg lg:text-xl"
-          required
-        />
-      </label>
-      <p className="mt-1.5 text-sm text-muted-foreground sm:text-base lg:text-lg">
-        Transaction notifications will be sent to this email address
-      </p>
-    </div>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 lg:space-y-4">
+      <div className="relative">
+        <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10" />
+        <label className="block">
+          {isValidUUID(webhookId) && registrationStatus === 'success' && (
+            <div className="absolute -inset-[2px] animate-pulse rounded-xl bg-gradient-to-r from-emerald-400/40 to-teal-400/40" />
+          )}
+          <div className="relative px-4 py-2">
+            <label className="block text-lg font-medium sm:text-xl lg:text-2xl">
+              {isValidUUID(webhookId) ? (
+                <span className="flex items-center gap-2 text-emerald-400">
+                  Webhook ID <CheckIcon className="size-5 text-success" />
+                </span>
+              ) : (
+                <span className="flex items-center gap-2 text-rose-400">
+                  Webhook ID <XIcon className="size-5" />
+                </span>
+              )}
+              <Input
+                type="text"
+                value={webhookId}
+                placeholder="35bb67f5-a262-41f0-b22d-6525e8c7cf8b"
+                onChange={(e) => setWebhookId(e.target.value)}
+                className="mt-2 border-2 border-border/50 bg-background/80 text-lg transition-all hover:border-primary/30 focus:border-primary/50 sm:text-xl lg:text-2xl"
+                required
+              />
+            </label>
+          </div>
+        </label>
 
-    {registrationStatus === 'error' && (
-      <div className="bg-error/10 text-error rounded-md p-2.5 text-sm sm:p-3 sm:text-base lg:text-lg">
-        ❌ Error: {errorMessage}
+        <div className="relative px-4 py-2">
+          <label className="mb-1.5 block text-lg font-medium sm:text-xl lg:text-2xl">
+            Email Address
+            <Input
+              type="email"
+              value={email}
+              placeholder="your@email.com"
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1.5 border border-border/80 text-base sm:text-lg lg:text-xl"
+              required
+            />
+          </label>
+          <p className="mt-1.5 text-sm text-muted-foreground sm:text-base lg:text-lg">
+            Transaction notifications will be sent to this email address
+          </p>
+        </div>
       </div>
-    )}
 
-    <Button3D
-      className="mt-2 p-4 text-lg sm:p-5 sm:text-xl lg:p-6 lg:text-2xl"
-      disabled={isSubmitting}
-    >
-      {isSubmitting && (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
+      {registrationStatus === 'error' && (
+        <div className="bg-error/10 text-error rounded-md p-2.5 text-sm sm:p-3 sm:text-base lg:text-lg">
+          ❌ Error: {errorMessage}
+        </div>
       )}
-      {isSubmitting ? 'Registering...' : 'Register Webhook ID'}
-    </Button3D>
-  </form>
-)
+
+      <Button3D
+        className="mt-4 w-full bg-gradient-to-r from-indigo-400 to-purple-300 p-5 text-lg font-medium text-background transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.4)] sm:text-xl lg:text-2xl"
+        disabled={isSubmitting}
+      >
+        {isSubmitting && (
+          <Loader2 className="mr-2 h-5 w-5 animate-spin text-purple-800 sm:h-6 sm:w-6" />
+        )}
+        {isSubmitting ? 'Registering...' : 'Register Webhook ID'}
+      </Button3D>
+    </form>
+  )
+}
 
 const WebhookUrlDisplay = ({
   webhookUrl,
@@ -100,43 +114,94 @@ const WebhookUrlDisplay = ({
 }: {
   webhookUrl: string
   copied: boolean
-  copyToClipboard: () => void
-}) => (
-  <div className="flex max-w-full items-center justify-between rounded-lg border border-border/80 bg-background p-2.5 shadow-sm sm:p-3.5 lg:p-4">
-    <code className="flex-1 break-all text-base sm:text-lg lg:text-xl">{webhookUrl}</code>
-    <button
-      onClick={copyToClipboard}
-      className="ml-2 rounded-md border border-border/80 bg-accent/50 p-2 transition-colors hover:bg-accent/70 sm:ml-3 sm:p-2.5 lg:p-3"
-      aria-label="Copy webhook URL"
-    >
-      {copied ? (
-        <CheckIcon className="size-4 sm:size-5 lg:size-6" />
-      ) : (
-        <CopyIcon className="size-4 sm:size-5 lg:size-6" />
-      )}
-    </button>
-  </div>
-)
+  copyToClipboard: (e: React.MouseEvent) => void
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  return (
+    <div className="group relative flex max-w-full items-center justify-between rounded-xl border-2 border-border/50 bg-background/80 p-3 shadow-sm transition-all hover:border-primary/30 hover:shadow-[0_0_15px_-3px_rgba(99,102,241,0.2)] sm:p-4 lg:p-5">
+      {/* Hidden input for mobile devices */}
+      <input
+        ref={inputRef}
+        type="text"
+        value={webhookUrl}
+        readOnly
+        className="absolute h-0 w-0 opacity-0"
+        aria-hidden="true"
+      />
+
+      <code className="flex-1 break-all text-lg sm:text-xl lg:text-2xl">{webhookUrl}</code>
+      <button
+        onClick={(e) => {
+          // Mobile fallback: Select text in hidden input
+          inputRef.current?.select()
+          inputRef.current?.setSelectionRange(0, 99999)
+          copyToClipboard(e)
+        }}
+        className="ml-3 rounded-lg border-2 border-border/50 bg-accent/20 p-2.5 transition-all hover:bg-accent/40 hover:shadow-sm active:scale-95"
+        aria-label="Copy webhook URL"
+        type="button"
+      >
+        {copied ? (
+          <CheckIcon className="size-5 animate-pulse text-emerald-400 sm:size-6" />
+        ) : (
+          <CopyIcon className="size-5 text-primary sm:size-6" />
+        )}
+      </button>
+    </div>
+  )
+}
 
 const InstructionsList = () => (
-  <ol className="mb-4 mt-3 list-inside space-y-1.5 text-base sm:mb-6 sm:mt-4 sm:space-y-2 sm:text-lg lg:space-y-3 lg:text-xl">
-    <li className="flex items-center">
-      2. Go to{' '}
-      <Link
-        href="https://blockfrost.io/dashboard/webhooks/add"
-        target="_blank"
-        className="ml-1 text-primary hover:underline"
-      >
-        <Button variant={'link'} className="flex items-center gap-1 !px-1">
-          <LucideLinkIcon className="h-4 w-4" /> Blockfrost Webhooks
+  <ol className="mb-6 mt-4 space-y-3 text-lg sm:space-y-4 sm:text-xl lg:space-y-5 lg:text-2xl">
+    <li className="flex items-center gap-3">
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+        2
+      </span>
+      Go to{' '}
+      <Link href="https://blockfrost.io/dashboard/webhooks/add" target="_blank">
+        <Button variant="ghost" className="group flex items-center gap-2 px-2 text-lg font-medium">
+          <LucideLinkIcon className="h-5 w-5 text-primary transition-transform group-hover:-rotate-12" />
+          <span className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-transparent">
+            Blockfrost Webhooks
+          </span>
         </Button>
       </Link>
     </li>
-    <li>3. Use this webhook URL as the &lsquo;Endpoint URL&lsquo;</li>
-    <li>4. Choose &lsquo;Cardano Mainnet&lsquo; as Network</li>
-    <li>5. Choose Transaction for &lsquo;Trigger&lsquo;</li>
-    <li>6. Add a trigger condition for recipient equal to your wallet address</li>
-    <li>7. Save Webhook</li>
+    <li className="flex items-center gap-3">
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+        3
+      </span>{' '}
+      Use this webhook URL as the &lsquo;Endpoint URL&lsquo;
+    </li>
+    <li className="flex items-center gap-3">
+      {' '}
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+        4
+      </span>{' '}
+      Choose &lsquo;Cardano Mainnet&lsquo; as Network
+    </li>
+    <li className="flex items-center gap-3">
+      {' '}
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+        5
+      </span>{' '}
+      Choose Transaction for &lsquo;Trigger&lsquo;
+    </li>
+    <li className="flex items-center gap-3">
+      {' '}
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+        6
+      </span>{' '}
+      Add a trigger condition for recipient equal to your wallet address
+    </li>
+    <li className="flex items-center gap-3">
+      {' '}
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+        7
+      </span>{' '}
+      Save Webhook
+    </li>
   </ol>
 )
 
@@ -170,11 +235,61 @@ const WalletFren = () => {
     }
   }, [])
 
-  const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(webhookUrl)
-    setCopied(true)
-    toast.success('Webhook URL copied to clipboard!')
-    setTimeout(() => setCopied(false), 1100)
+  const copyToClipboard = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Copy button clicked') // Debug log
+
+    try {
+      // Check if we're in a secure context
+      if (!window.isSecureContext) {
+        toast.error('Clipboard access requires HTTPS', { duration: 3000 })
+        return
+      }
+
+      // Modern clipboard API
+      if (navigator.clipboard) {
+        console.log('Using modern clipboard API')
+        await navigator.clipboard.writeText(webhookUrl)
+      } else {
+        // Fallback for older browsers
+        console.log('Using legacy execCommand')
+        const textarea = document.createElement('textarea')
+        textarea.value = webhookUrl
+        textarea.style.position = 'fixed'
+        textarea.style.top = '0'
+        textarea.style.left = '0'
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+
+        const success = document.execCommand('copy')
+        document.body.removeChild(textarea)
+
+        if (!success) throw new Error('execCommand failed')
+      }
+
+      console.log('Copy successful')
+      setCopied(true)
+
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Copy error:', err)
+      toast.error('Failed to copy - check console', {
+        position: 'top-center',
+        duration: 3000,
+        icon: <XIcon className="h-5 w-5 text-rose-400" />,
+      })
+
+      // Fallback: Show text for manual copy
+      const input = document.createElement('input')
+      input.value = webhookUrl
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -209,13 +324,14 @@ const WalletFren = () => {
     }
   }
   const header = (
-    <div className="mx-auto w-full max-w-3xl px-4">
-      <div className="rounded-2xl bg-gradient-to-br from-indigo-900/30 to-purple-900/30 p-6 shadow-xl backdrop-blur-sm sm:p-8 lg:p-10">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <h1 className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl lg:text-5xl">
+    <div className="mx-auto w-full max-w-4xl px-4">
+      <div className="hover:shadow-3xl rounded-3xl bg-gradient-to-br from-indigo-900/40 to-purple-900/40 p-8 shadow-2xl backdrop-blur-lg transition-all sm:p-10 lg:p-12">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#4f46e510_1px,transparent_1px)] bg-[length:20px_20px] opacity-20" />
+        <div className="relative flex flex-col items-center gap-4 text-center">
+          <h1 className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-sm [text-shadow:_0_2px_4px_rgba(0,0,0,0.2)] sm:text-5xl lg:text-6xl">
             Wallet Fren
             {loading && (
-              <Loader2 className="ml-3 mt-2 inline-block h-8 w-8 animate-spin text-purple-300 sm:h-10 sm:w-10" />
+              <Loader2 className="ml-4 mt-2 inline-block h-10 w-10 animate-spin text-purple-300 sm:h-12 sm:w-12" />
             )}
           </h1>
 
@@ -244,15 +360,20 @@ const WalletFren = () => {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-      <div className="mx-auto mt-3 flex w-full max-w-3xl flex-col">
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-indigo-900/20 to-purple-900/20">
+      <div className="mx-auto mt-6 w-full max-w-4xl px-4">
         {header}
-
-        {/* Main Content Card */}
-        <div className="overflow-hidden rounded-lg bg-background shadow-md sm:rounded-xl">
-          {/* Step 2: Setup Instructions */}
-          <div className="border-b border-border p-4 sm:p-5 lg:p-6">
-            <h2 className="mb-2 text-base font-medium sm:mb-3 sm:text-xl">1. Copy Webhook URL</h2>
+        <div className="hover:shadow-3xl mt-8 overflow-hidden rounded-2xl border-2 border-border/50 bg-background/80 shadow-2xl backdrop-blur-sm transition-all sm:rounded-3xl">
+          <div className="border-b-2 border-border/50 p-6 sm:p-8 lg:p-10">
+            <div className="mb-6 flex items-baseline justify-between">
+              <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl lg:text-2xl">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+                  1
+                </span>{' '}
+                Copy Webhook URL
+              </h2>
+              <span className="text-sm text-muted-foreground sm:text-base">Step 1 of 2</span>
+            </div>
             <WebhookUrlDisplay
               webhookUrl={webhookUrl}
               copied={copied}
@@ -261,11 +382,11 @@ const WalletFren = () => {
             <InstructionsList />
           </div>
 
-          {/* Step 3: Register Webhook */}
           <div className="p-4 sm:p-5 lg:p-6">
-            <h2 className="mb-3 text-xl font-semibold sm:mb-4 sm:text-2xl lg:text-3xl">
-              Register your ID
-            </h2>
+            <div className="mb-6 flex items-baseline justify-between">
+              <h2 className="text-xl font-semibold sm:text-2xl lg:text-3xl">Register your ID</h2>
+              <span className="text-sm text-muted-foreground sm:text-base">Step 2 of 2</span>
+            </div>
             <WebhookRegistrationForm
               webhookId={webhookId}
               setWebhookId={setWebhookId}
