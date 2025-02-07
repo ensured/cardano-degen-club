@@ -371,7 +371,7 @@ const WalletFren = () => {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-indigo-900/20 to-purple-900/20">
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-indigo-900/20 to-purple-900/20 pb-8">
       <div className="mx-auto mt-6 w-full max-w-4xl px-4">
         {header}
         <div className="hover:shadow-3xl mt-8 overflow-hidden rounded-2xl border-2 border-border/50 bg-background/80 shadow-2xl backdrop-blur-sm transition-all sm:rounded-3xl">
