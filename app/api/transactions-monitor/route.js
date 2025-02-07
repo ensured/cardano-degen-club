@@ -31,7 +31,6 @@ export async function POST(request) {
     // Get the user's email from stored webhook data
     const userEmail = storedWebhook.email
     const userTimezone = storedWebhook.timezone
-    const addresses = storedWebhook.addresses
     const formattedDate = new Date(created * 1000).toLocaleString('en-US', {
       timeZone: userTimezone,
       year: 'numeric',
@@ -77,10 +76,9 @@ export async function POST(request) {
         ${payload[0].outputs
           .map(
             (output) => `
-          <div style="padding: 0.75rem 0; border-bottom: 1px solid #3f3f46; ${addresses.includes(output.address) ? 'background-color: #1e3a1e;' : ''}">
-            <div style="font-family: 'SF Mono', Menlo, monospace; color: ${addresses.includes(output.address) ? '#22c55e' : '#4f46e5'}; margin-bottom: 0.25rem;">
+          <div style="padding: 0.75rem 0; border-bottom: 1px solid #3f3f46;">
+            <div style="font-family: 'SF Mono', Menlo, monospace; color: #4f46e5; margin-bottom: 0.25rem;">
               ${formatAddress(output.address)}
-              ${addresses.includes(output.address) ? '<span style="margin-left: 8px; background-color: #14532d; color: #86efac; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Your Address</span>' : ''}
             </div>
             <div style="color: #d4d4d8;">
               ${formatOutputAmount(output.amount)}

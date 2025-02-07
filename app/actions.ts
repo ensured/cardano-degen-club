@@ -691,23 +691,18 @@ export async function storeWebhookIdInVercelKV(
   webHookId: string,
   email: string,
   userTimezone: string,
-  addresses: string[],
 ): Promise<{
   success: boolean
   webhookId?: string
   error?: string
   exists?: boolean
   userTimezone?: string
-  addresses?: string[]
 }> {
   try {
     // Validate email format
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return { success: false, error: 'Invalid email address' }
     }
-
-    // Remove duplicates and empty addresses from addresses before processing
-    const uniqueAddresses = [...new Set(addresses.filter((addr) => addr))]
 
     // Check if webhook ID already exists
     const existingWebhook = await kv.get(`webhook:${webHookId}`)
@@ -718,14 +713,12 @@ export async function storeWebhookIdInVercelKV(
         email,
         created: (existingWebhook as any).created,
         updated: Date.now(),
-        addresses: uniqueAddresses,
         timezone: userTimezone,
       })
       return {
         success: true,
         webhookId: webHookId,
         exists: true,
-        addresses: uniqueAddresses,
         userTimezone,
       }
     }
@@ -736,7 +729,6 @@ export async function storeWebhookIdInVercelKV(
       email,
       created: Date.now(),
       updated: Date.now(),
-      addresses: uniqueAddresses,
       timezone: userTimezone,
     })
 
@@ -750,7 +742,6 @@ export async function storeWebhookIdInVercelKV(
       success: true,
       webhookId: webHookId,
       exists: false,
-      addresses: uniqueAddresses,
       userTimezone,
     }
   } catch (error) {
@@ -770,7 +761,6 @@ export async function validateWebhookId(blockfrostAuthKey: string) {
 interface WebhookData {
   id: string
   email: string
-  addresses: string[]
   timezone: string
   created: number
   updated: number
