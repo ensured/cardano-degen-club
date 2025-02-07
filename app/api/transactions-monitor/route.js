@@ -18,7 +18,7 @@ export async function POST(request) {
     // Get the user's email from stored webhook data
     const userEmail = storedWebhook.email
     const userTimezone = storedWebhook.timezone
-
+    const addresses = storedWebhook.addresses
     const formattedDate = new Date(created * 1000).toLocaleString('en-US', {
       timeZone: userTimezone,
       year: 'numeric',
@@ -36,7 +36,7 @@ export async function POST(request) {
 
     // check if the addresses have test in them if so append preview to cardanoscan.io
     const txHash = payload[0].tx.hash
-    const isPreview = txHash.includes('test') ? 'preview.' : ''
+    const isPreview = payload[0].outputs[0].address.includes('test') ? 'preview.' : ''
 
     const emailHtml = `<div style="font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #0a0a0a; color: #ffffff; padding: 2rem;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 8px; padding: 2rem; border: 1px solid #2d2d2d;">
@@ -65,9 +65,10 @@ export async function POST(request) {
         ${payload[0].outputs
           .map(
             (output) => `
-          <div style="padding: 0.75rem 0; border-bottom: 1px solid #3f3f46;">
-            <div style="font-family: 'SF Mono', Menlo, monospace; color: #4f46e5; margin-bottom: 0.25rem;">
+          <div style="padding: 0.75rem 0; border-bottom: 1px solid #3f3f46; ${addresses.includes(output.address) ? 'background-color: #1e3a1e;' : ''}">
+            <div style="font-family: 'SF Mono', Menlo, monospace; color: ${addresses.includes(output.address) ? '#22c55e' : '#4f46e5'}; margin-bottom: 0.25rem;">
               ${formatAddress(output.address)}
+              ${addresses.includes(output.address) ? '<span style="margin-left: 8px; background-color: #14532d; color: #86efac; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Your Address</span>' : ''}
             </div>
             <div style="color: #d4d4d8;">
               ${output.amount

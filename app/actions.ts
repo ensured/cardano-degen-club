@@ -691,12 +691,14 @@ export async function storeWebhookIdInVercelKV(
   webHookId: string,
   email: string,
   userTimezone: string,
+  addresses: string[],
 ): Promise<{
   success: boolean
   webhookId?: string
   error?: string
   exists?: boolean
   userTimezone?: string
+  addresses?: string[]
 }> {
   try {
     // Validate email format
@@ -713,13 +715,15 @@ export async function storeWebhookIdInVercelKV(
         email,
         created: (existingWebhook as any).created,
         updated: Date.now(),
+        addresses: addresses,
         timezone: userTimezone,
       })
       return {
         success: true,
         webhookId: webHookId,
         exists: true,
-        userTimezone: userTimezone,
+        addresses: addresses,
+        userTimezone,
       }
     }
 
@@ -729,6 +733,8 @@ export async function storeWebhookIdInVercelKV(
       email,
       created: Date.now(),
       timezone: userTimezone,
+      addresses: addresses,
+      updated: Date.now(),
     })
 
     const webhook = await kv.get(`webhook:${webHookId}`)

@@ -25,6 +25,9 @@ const WebhookRegistrationForm = ({
   registrationStatus,
   errorMessage,
   handleSubmit,
+  otherWalletAddresses,
+  setOtherWalletAddresses,
+  handleWebhookIdChange,
 }: {
   webhookId: string
   setWebhookId: (webhookId: string) => void
@@ -34,6 +37,9 @@ const WebhookRegistrationForm = ({
   registrationStatus: 'idle' | 'success' | 'error'
   errorMessage: string
   handleSubmit: (e: React.FormEvent) => Promise<void>
+  otherWalletAddresses: string[]
+  setOtherWalletAddresses: (addresses: string[]) => void
+  handleWebhookIdChange: (webhookId: string) => void
 }) => {
   // Add UUID validation function
   const isValidUUID = (id: string) =>
@@ -41,6 +47,59 @@ const WebhookRegistrationForm = ({
 
   // Add email validation
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
+  const { walletState } = useWallet()
+
+  const handleAddAddress = () => {
+    if (otherWalletAddresses.length < 5) {
+      setOtherWalletAddresses([...otherWalletAddresses, ''])
+    } else {
+      toast.error('Maximum of 5 additional addresses allowed', {
+        duration: 2000,
+      })
+    }
+  }
+
+  const handleRemoveAddress = (index: number) => {
+    setOtherWalletAddresses(otherWalletAddresses.filter((_, i) => i !== index))
+  }
+
+  const handleAddressChange = (index: number, value: string) => {
+    const newAddresses = [...otherWalletAddresses]
+    const trimmedValue = value.trim()
+
+    // Check for duplicates including the main wallet address
+    const addressSet = new Set([
+      ...(walletState.walletAddress ? [walletState.walletAddress.toLowerCase()] : []),
+      ...otherWalletAddresses.map((addr) => addr.toLowerCase()),
+    ])
+
+    if (
+      addressSet.has(trimmedValue.toLowerCase()) &&
+      newAddresses[index].toLowerCase() !== trimmedValue.toLowerCase()
+    ) {
+      toast.error('This address has already been added', {
+        duration: 2000,
+      })
+      return
+    }
+
+    newAddresses[index] = trimmedValue
+    setOtherWalletAddresses(newAddresses)
+  }
+
+  const handleCopyAddress = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address)
+      toast.success('Address copied to clipboard!', {
+        duration: 2000,
+      })
+    } catch (err) {
+      toast.error('Failed to copy address', {
+        duration: 2000,
+      })
+    }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 lg:space-y-4">
@@ -65,7 +124,10 @@ const WebhookRegistrationForm = ({
                 type="text"
                 value={webhookId}
                 placeholder="35bb67f5-a262-41f0-b22d-6525e8c7cf8b"
-                onChange={(e) => setWebhookId(e.target.value)}
+                onChange={(e) => {
+                  setWebhookId(e.target.value)
+                  handleWebhookIdChange(e.target.value)
+                }}
                 className="mt-2 border-2 border-border/50 bg-background/80 text-lg transition-all hover:border-primary/30 focus:border-primary/50 sm:text-xl lg:text-2xl"
                 required
               />
@@ -96,6 +158,56 @@ const WebhookRegistrationForm = ({
             Transaction notifications will be sent to this email address
           </p>
         </div>
+      </div>
+
+      <div className="relative px-4 py-2">
+        <label className="mb-1.5 block text-lg font-medium sm:text-xl lg:text-2xl">
+          Add Wallet Addresses (same as blockfrost webhook)
+        </label>
+        <div className="space-y-3">
+          {otherWalletAddresses.map((address, index) => (
+            <div key={index} className="flex gap-2">
+              <Input
+                type="text"
+                value={address}
+                placeholder="addr1..."
+                onChange={(e) => handleAddressChange(index, e.target.value)}
+                className="flex-1 border border-border/80 text-base sm:text-lg lg:text-xl"
+              />
+              {address && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => handleCopyAddress(address)}
+                  className="text-primary hover:text-primary/80"
+                >
+                  <CopyIcon className="size-5" />
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => handleRemoveAddress(index)}
+                className="text-rose-400 hover:text-rose-500"
+              >
+                <XIcon className="size-5" />
+              </Button>
+            </div>
+          ))}
+        </div>
+        {otherWalletAddresses.length < 5 && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddAddress}
+            className="mt-3 w-full"
+          >
+            Add Another Address
+          </Button>
+        )}
+        <p className="mt-1.5 text-sm text-muted-foreground sm:text-base lg:text-lg">
+          Monitor up to 5 wallet addresses
+        </p>
       </div>
 
       {registrationStatus === 'error' && (
@@ -239,6 +351,46 @@ const WalletFren = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const { walletState, loading } = useWallet()
   const [userTimezone, setUserTimezone] = useState('UTC')
+  const [otherWalletAddresses, setOtherWalletAddresses] = useState<string[]>(() => {
+    if (typeof window !== 'undefined' && webhookId) {
+      const savedAddresses = localStorage.getItem(webhookId)
+      if (savedAddresses) {
+        const addresses = JSON.parse(savedAddresses)
+        return addresses.filter((addr: string) => addr !== walletState.walletAddress)
+      }
+    }
+    return []
+  })
+
+  // Modify the webhook ID setter to trigger address loading
+  const handleWebhookIdChange = (newWebhookId: string) => {
+    setWebhookId(newWebhookId)
+
+    if (typeof window !== 'undefined' && newWebhookId) {
+      const savedAddresses = localStorage.getItem(newWebhookId)
+      if (savedAddresses) {
+        const addresses = JSON.parse(savedAddresses)
+        setOtherWalletAddresses(
+          addresses.filter((addr: string) => addr !== walletState.walletAddress),
+        )
+      } else {
+        setOtherWalletAddresses([])
+      }
+    } else {
+      setOtherWalletAddresses([])
+    }
+  }
+
+  // Save addresses whenever they change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && webhookId) {
+      const addressSet = new Set([
+        ...(walletState.walletAddress ? [walletState.walletAddress] : []),
+        ...otherWalletAddresses,
+      ])
+      localStorage.setItem(webhookId, JSON.stringify([...addressSet]))
+    }
+  }, [otherWalletAddresses, walletState.walletAddress, webhookId])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -310,7 +462,10 @@ const WalletFren = () => {
     setErrorMessage('')
 
     try {
-      const result = await storeWebhookIdInVercelKV(webhookId, email, userTimezone)
+      const result = await storeWebhookIdInVercelKV(webhookId, email, userTimezone, [
+        walletState.walletAddress || '',
+        ...otherWalletAddresses,
+      ])
 
       if (result.success) {
         setRegistrationStatus('success')
@@ -399,14 +554,17 @@ const WalletFren = () => {
               <span className="text-sm text-muted-foreground sm:text-base">Step 2 of 2</span>
             </div>
             <WebhookRegistrationForm
+              handleWebhookIdChange={handleWebhookIdChange}
               webhookId={webhookId}
-              setWebhookId={setWebhookId}
+              setWebhookId={handleWebhookIdChange}
               email={userEmail ?? email}
               setEmail={setEmail}
               isSubmitting={isSubmitting}
               registrationStatus={registrationStatus}
               errorMessage={errorMessage}
               handleSubmit={handleSubmit}
+              otherWalletAddresses={otherWalletAddresses}
+              setOtherWalletAddresses={setOtherWalletAddresses}
             />
           </div>
         </div>
