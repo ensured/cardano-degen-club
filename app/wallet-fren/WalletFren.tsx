@@ -164,36 +164,37 @@ const WebhookUrlDisplay = ({
 
 const InstructionsList = () => (
   <ol className="mb-6 mt-4 space-y-3 text-lg sm:space-y-4 sm:text-xl lg:space-y-5 lg:text-2xl">
-    <li className="flex items-center gap-3">
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+    <li className="flex flex-row items-center gap-3">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
         2
       </span>
-      Go to{' '}
+      <span className="whitespace-nowrap">Go to </span>
       <Link href="https://blockfrost.io/dashboard/webhooks/add" target="_blank">
         <Button variant="ghost" className="group flex items-center gap-2 px-2 text-lg font-medium">
           <LucideLinkIcon className="h-5 w-5 text-primary transition-transform group-hover:-rotate-12" />
-          <span className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-transparent">
-            Blockfrost Webhooks
+          <span className="whitespace-pre-wrap bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-left text-transparent">
+            Blockfrost <br className="hidden sm:inline" />
+            Webhooks
           </span>
         </Button>
       </Link>
     </li>
     <li className="flex items-center gap-3">
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
         3
       </span>{' '}
       Use this webhook URL as the &lsquo;Endpoint URL&lsquo;
     </li>
     <li className="flex items-center gap-3">
       {' '}
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
         4
       </span>{' '}
       Choose &lsquo;Cardano Mainnet&lsquo; as Network
     </li>
     <li className="flex items-center gap-3">
       {' '}
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
         5
       </span>{' '}
       Choose Transaction for &lsquo;Trigger&lsquo;
@@ -207,7 +208,7 @@ const InstructionsList = () => (
     </li>
     <li className="flex items-center gap-3">
       {' '}
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 text-indigo-300 shadow-sm">
         7
       </span>{' '}
       Save Webhook
