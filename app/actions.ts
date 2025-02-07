@@ -706,46 +706,53 @@ export async function storeWebhookIdInVercelKV(
       return { success: false, error: 'Invalid email address' }
     }
 
-    // Remove duplicates from addresses before processing
-    const uniqueAddresses = [...new Set(addresses)]
+    // Remove duplicates and empty addresses from addresses before processing
+    const uniqueAddresses = [...new Set(addresses.filter((addr) => addr))]
 
     // Check if webhook ID already exists
     const existingWebhook = await kv.get(`webhook:${webHookId}`)
     if (existingWebhook) {
-      // Update email if webhook exists
+      // Update webhook if it exists
       await kv.set(`webhook:${webHookId}`, {
         id: webHookId,
         email,
         created: (existingWebhook as any).created,
         updated: Date.now(),
-        addresses: uniqueAddresses, // Use unique addresses here
+        addresses: uniqueAddresses,
         timezone: userTimezone,
       })
       return {
         success: true,
         webhookId: webHookId,
         exists: true,
-        addresses: uniqueAddresses, // Return unique addresses
+        addresses: uniqueAddresses,
         userTimezone,
       }
     }
 
-    // Store in Vercel KV with webhook ID as key
+    // Store new webhook in Vercel KV
     await kv.set(`webhook:${webHookId}`, {
       id: webHookId,
       email,
       created: Date.now(),
-      timezone: userTimezone,
-      addresses: uniqueAddresses, // Use unique addresses here
       updated: Date.now(),
+      addresses: uniqueAddresses,
+      timezone: userTimezone,
     })
 
+    // Verify storage
     const webhook = await kv.get(`webhook:${webHookId}`)
     if (!webhook) {
       return { success: false, error: 'Failed to verify storage' }
     }
 
-    return { success: true, webhookId: webHookId, exists: false }
+    return {
+      success: true,
+      webhookId: webHookId,
+      exists: false,
+      addresses: uniqueAddresses,
+      userTimezone,
+    }
   } catch (error) {
     console.error('Webhook creation failed:', error)
     return { success: false, error: 'Internal server error' }
@@ -758,4 +765,49 @@ export async function validateWebhookId(blockfrostAuthKey: string) {
     return false
   }
   return true
+}
+
+interface WebhookData {
+  id: string
+  email: string
+  addresses: string[]
+  timezone: string
+  created: number
+  updated: number
+}
+
+export async function getWebhookData(webhookId: string): Promise<WebhookData | null> {
+  try {
+    const webhook = await kv.get(`webhook:${webhookId}`)
+    return webhook as WebhookData | null
+  } catch (error) {
+    console.error('Error fetching webhook data:', error)
+    return null
+  }
+}
+
+export async function updateWebhookAddresses(
+  webhookId: string,
+  addresses: string[],
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const webhook = await kv.get(`webhook:${webhookId}`)
+    if (!webhook) {
+      return { success: false, error: 'Webhook not found' }
+    }
+
+    // Remove duplicates and empty addresses
+    const uniqueAddresses = [...new Set(addresses.filter((addr) => addr))]
+
+    await kv.set(`webhook:${webhookId}`, {
+      ...webhook,
+      addresses: uniqueAddresses,
+      updated: Date.now(),
+    })
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating webhook addresses:', error)
+    return { success: false, error: 'Failed to update addresses' }
+  }
 }

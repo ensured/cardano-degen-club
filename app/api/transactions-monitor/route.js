@@ -4,6 +4,19 @@ import { kv } from '@vercel/kv'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+const formatOutputAmount = (amount) => {
+  const ada = amount.find((asset) => asset.unit === 'lovelace')
+  const otherAssets = amount.filter((asset) => asset.unit !== 'lovelace')
+
+  let formattedAmount = `${(parseInt(ada?.quantity || '0') / 1000000).toFixed(2)} ADA`
+
+  if (otherAssets.length > 0) {
+    formattedAmount += ` + ${otherAssets.length} token${otherAssets.length > 1 ? 's' : ''}`
+  }
+
+  return formattedAmount
+}
+
 export async function POST(request) {
   try {
     const { created, payload, webhook_id } = await request.json()
@@ -70,13 +83,7 @@ export async function POST(request) {
               ${addresses.includes(output.address) ? '<span style="margin-left: 8px; background-color: #14532d; color: #86efac; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Your Address</span>' : ''}
             </div>
             <div style="color: #d4d4d8;">
-              ${output.amount
-                .map((asset) =>
-                  asset.unit === 'lovelace'
-                    ? `${(parseInt(asset.quantity) / 1000000).toFixed(2)} ADA`
-                    : `${asset.quantity} ${asset.unit}`,
-                )
-                .join(', ')}
+              ${formatOutputAmount(output.amount)}
             </div>
           </div>
         `,
