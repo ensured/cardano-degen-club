@@ -24,6 +24,12 @@ import { useUser } from '@clerk/nextjs'
 
 const WEBHOOK_ID_KEY = 'lastWebhookId'
 
+const isValidUUID = (id: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+// Add email validation
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
 const WebhookRegistrationForm = ({
   webhookId,
   setWebhookId,
@@ -47,15 +53,6 @@ const WebhookRegistrationForm = ({
   handleWebhookIdChange: (webhookId: string) => void
   webhookExists: boolean
 }) => {
-  // Add UUID validation function
-  const isValidUUID = (id: string) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
-
-  // Add email validation
-  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-
-  const { walletState } = useWallet()
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 lg:space-y-4">
       <div className="relative">
@@ -250,12 +247,21 @@ const WalletFren = () => {
   const { walletState, loading } = useWallet()
   const [userTimezone, setUserTimezone] = useState('UTC')
   const [webhookExists, setWebhookExists] = useState(false)
+  const [webhookCount, setWebhookCount] = useState(0)
 
   // Load last used webhook ID from localStorage on mount
   useEffect(() => {
     const savedWebhookId = localStorage.getItem(WEBHOOK_ID_KEY)
     if (savedWebhookId) {
       handleWebhookIdChange(savedWebhookId)
+      // Fetch webhook data to get the email
+      const fetchWebhookData = async () => {
+        const webhookData = await getWebhookData(savedWebhookId)
+        if (webhookData?.email) {
+          setEmail(webhookData.email)
+        }
+      }
+      fetchWebhookData()
     }
   }, [])
 
@@ -378,6 +384,16 @@ const WalletFren = () => {
     }
   }
 
+  useEffect(() => {
+    const fetchWebhookCount = async () => {
+      const webhookCount = await getWebhooksCount()
+      if (webhookCount.count) {
+        setWebhookCount(webhookCount.count)
+      }
+    }
+    fetchWebhookCount()
+  }, [])
+
   const header = (
     <div className="mx-auto mt-4 w-full max-w-4xl px-4">
       <div className="hover:shadow-3xl rounded-3xl bg-gradient-to-br from-indigo-900/40 to-purple-900/40 p-8 shadow-2xl backdrop-blur-lg transition-all sm:p-10 lg:p-12">
@@ -399,12 +415,17 @@ const WalletFren = () => {
               </p>
             ) : (
               <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-6 w-6 text-emerald-400 sm:h-7 sm:w-7" />
-                  <p className="text-xl font-medium text-gray-200 sm:text-2xl lg:text-3xl">
+                <div className="flex flex-wrap items-center justify-center gap-2 text-center">
+                  <CheckCircle className="h-6 w-6 shrink-0 text-emerald-400 sm:h-7 sm:w-7" />
+                  <p className="text-lg font-medium text-gray-200 sm:text-xl lg:text-2xl">
                     Transaction Monitoring
                   </p>
                 </div>
+                {webhookCount > 0 && (
+                  <p className="text-sm text-gray-400 sm:text-base lg:text-lg">
+                    {webhookCount} {webhookCount === 1 ? 'webhook' : 'webhooks'} registered
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -441,7 +462,9 @@ const WalletFren = () => {
 
           <div className="p-4 sm:p-5 lg:p-6">
             <div className="mb-6 flex items-baseline justify-between">
-              <h2 className="text-xl font-semibold sm:text-2xl lg:text-3xl">Register your ID</h2>
+              <h2 className="text-xl font-semibold sm:text-2xl lg:text-3xl">
+                Register your ID {isValidUUID(webhookId) && isValidEmail(email) ? '✅' : ''}
+              </h2>
             </div>
             <WebhookRegistrationForm
               handleWebhookIdChange={handleWebhookIdChange}
