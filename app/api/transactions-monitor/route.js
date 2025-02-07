@@ -46,14 +46,11 @@ export async function POST(request) {
       return `${address.slice(0, 14)}...${address.slice(-8)}`
     }
 
-    // check if the addresses have test in them if so append preview to cardanoscan.io
-    const isPreview = payload[0].outputs[0].address.includes('test') ? 'preview.' : ''
-
     const emailHtml = `<div style="font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #0a0a0a; color: #ffffff; padding: 2rem;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 8px; padding: 2rem; border: 1px solid #2d2d2d;">
     
     <div style="margin-bottom: 1.5rem;">
-      <a href="https://${isPreview}cardanoscan.io/transaction/${payload[0].tx.hash}" 
+      <a href="https://cardanoscan.io/transaction/${payload[0].tx.hash}" 
          style="background-color: #4f46e5; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: 500; transition: background-color 0.2s;"
          onmouseover="this.style.backgroundColor='#4338ca'" 
          onmouseout="this.style.backgroundColor='#4f46e5'">
