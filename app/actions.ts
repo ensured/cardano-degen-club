@@ -706,6 +706,9 @@ export async function storeWebhookIdInVercelKV(
       return { success: false, error: 'Invalid email address' }
     }
 
+    // Remove duplicates from addresses before processing
+    const uniqueAddresses = [...new Set(addresses)]
+
     // Check if webhook ID already exists
     const existingWebhook = await kv.get(`webhook:${webHookId}`)
     if (existingWebhook) {
@@ -715,14 +718,14 @@ export async function storeWebhookIdInVercelKV(
         email,
         created: (existingWebhook as any).created,
         updated: Date.now(),
-        addresses: [...new Set(addresses)],
+        addresses: uniqueAddresses, // Use unique addresses here
         timezone: userTimezone,
       })
       return {
         success: true,
         webhookId: webHookId,
         exists: true,
-        addresses: addresses,
+        addresses: uniqueAddresses, // Return unique addresses
         userTimezone,
       }
     }
@@ -733,7 +736,7 @@ export async function storeWebhookIdInVercelKV(
       email,
       created: Date.now(),
       timezone: userTimezone,
-      addresses: addresses,
+      addresses: uniqueAddresses, // Use unique addresses here
       updated: Date.now(),
     })
 

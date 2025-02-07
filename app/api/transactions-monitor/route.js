@@ -35,7 +35,6 @@ export async function POST(request) {
     }
 
     // check if the addresses have test in them if so append preview to cardanoscan.io
-    const txHash = payload[0].tx.hash
     const isPreview = payload[0].outputs[0].address.includes('test') ? 'preview.' : ''
 
     const emailHtml = `<div style="font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #0a0a0a; color: #ffffff; padding: 2rem;">

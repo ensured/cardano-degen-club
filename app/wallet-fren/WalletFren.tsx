@@ -498,16 +498,17 @@ const WalletFren = () => {
         <div className="relative flex flex-col items-center gap-4 text-center">
           <h1 className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-sm [text-shadow:_0_2px_4px_rgba(0,0,0,0.2)] sm:text-5xl lg:text-6xl">
             Wallet Fren
-            {loading && (
-              <Loader2 className="ml-4 mt-2 inline-block h-10 w-10 animate-spin text-purple-300 sm:h-12 sm:w-12" />
-            )}
           </h1>
 
           <div className="mt-2 space-y-2">
             {!walletState.walletAddress && !userEmail ? (
               <p className="text-lg text-gray-300 sm:text-xl lg:text-2xl">
-                Connect your wallet or sign in to enable
-                <br className="hidden sm:block" /> real-time transaction alerts
+                {loading ? (
+                  <Loader2 className="ml-4 mt-2 inline-block h-10 w-10 animate-spin text-purple-300 sm:h-12 sm:w-12" />
+                ) : (
+                  'Connect your wallet or sign in to enable real-time transaction alerts'
+                )}
+                <br className="hidden sm:block" />
               </p>
             ) : (
               <div className="flex items-center gap-2">
