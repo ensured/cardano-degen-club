@@ -1,8 +1,15 @@
 'use client'
 import { toast } from 'sonner'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWallet } from '@/contexts/WalletContext'
-import { CopyIcon, CheckIcon, Loader2, XIcon, Link as LucideLinkIcon } from 'lucide-react'
+import {
+  CopyIcon,
+  CheckIcon,
+  Loader2,
+  XIcon,
+  Link as LucideLinkIcon,
+  CheckCircle,
+} from 'lucide-react'
 import { storeWebhookIdInVercelKV } from '../actions'
 import Button3D from '@/components/3dButton'
 import { Input } from '@/components/ui/input'
@@ -95,7 +102,7 @@ const WebhookUrlDisplay = ({
   copied: boolean
   copyToClipboard: () => void
 }) => (
-  <div className="flex max-w-full items-center justify-between rounded-lg border border-border/80 bg-background p-2.5 shadow-sm sm:max-w-[36rem] sm:p-3.5 lg:p-4">
+  <div className="flex max-w-full items-center justify-between rounded-lg border border-border/80 bg-background p-2.5 shadow-sm sm:p-3.5 lg:p-4">
     <code className="flex-1 break-all text-base sm:text-lg lg:text-xl">{webhookUrl}</code>
     <button
       onClick={copyToClipboard}
@@ -155,6 +162,13 @@ const WalletBuddy = () => {
   const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const { walletState, loading } = useWallet()
+  const [userTimezone, setUserTimezone] = useState('UTC')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+    }
+  }, [])
 
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(webhookUrl)
@@ -170,7 +184,7 @@ const WalletBuddy = () => {
     setErrorMessage('')
 
     try {
-      const result = await storeWebhookIdInVercelKV(webhookId, email)
+      const result = await storeWebhookIdInVercelKV(webhookId, email, userTimezone)
 
       if (result.success) {
         setRegistrationStatus('success')
@@ -195,19 +209,32 @@ const WalletBuddy = () => {
     }
   }
   const header = (
-    <div className="mx-auto flex max-w-2xl flex-col items-center justify-center gap-6 p-8">
-      <h1 className="flex flex-row items-center gap-2 text-2xl font-bold sm:text-3xl lg:text-4xl">
-        Wallet Fren {loading && <Loader2 className="animate-spin" />}
-      </h1>
+    <div className="mx-auto mb-6 w-full max-w-3xl px-4 sm:mb-8 sm:px-6 lg:px-8">
+      <div className="rounded-2xl bg-gradient-to-br from-indigo-900/30 to-purple-900/30 p-6 shadow-xl backdrop-blur-sm sm:p-8 lg:p-10">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <h1 className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl lg:text-5xl">
+            Wallet Fren
+            {loading && (
+              <Loader2 className="ml-3 mt-2 inline-block h-8 w-8 animate-spin text-purple-300 sm:h-10 sm:w-10" />
+            )}
+          </h1>
 
-      <div className="text-center text-2xl text-muted-foreground">
-        {!walletState.walletAddress && !userEmail ? (
-          'Connect your wallet or sign in to set up transaction notifications'
-        ) : (
-          <span className="text-base text-muted-foreground sm:text-lg lg:text-xl">
-            Email notifications for all new incoming transactions
-          </span>
-        )}
+          <div className="mt-2 space-y-2">
+            {!walletState.walletAddress && !userEmail ? (
+              <p className="text-lg text-gray-300 sm:text-xl lg:text-2xl">
+                Connect your wallet or sign in to enable
+                <br className="hidden sm:block" /> real-time transaction alerts
+              </p>
+            ) : (
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-6 w-6 text-emerald-400 sm:h-7 sm:w-7" />
+                <p className="text-xl font-medium text-gray-200 sm:text-2xl lg:text-3xl">
+                  Transaction Monitoring
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -218,7 +245,7 @@ const WalletBuddy = () => {
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-      <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-6 p-3 sm:mt-6 sm:gap-8 sm:p-4 lg:mt-8 lg:gap-10 lg:p-5">
+      <div className="mx-auto mt-3 flex w-full max-w-3xl flex-col">
         {header}
 
         {/* Main Content Card */}

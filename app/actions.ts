@@ -690,7 +690,14 @@ export const fetchAddressesFromPolicy = async (policyId: string, network: string
 export async function storeWebhookIdInVercelKV(
   webHookId: string,
   email: string,
-): Promise<{ success: boolean; webhookId?: string; error?: string; exists?: boolean }> {
+  userTimezone: string,
+): Promise<{
+  success: boolean
+  webhookId?: string
+  error?: string
+  exists?: boolean
+  userTimezone?: string
+}> {
   try {
     // Validate email format
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -706,11 +713,13 @@ export async function storeWebhookIdInVercelKV(
         email,
         created: (existingWebhook as any).created,
         updated: Date.now(),
+        timezone: userTimezone,
       })
       return {
         success: true,
         webhookId: webHookId,
         exists: true,
+        userTimezone: userTimezone,
       }
     }
 

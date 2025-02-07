@@ -17,9 +17,10 @@ export async function POST(request) {
 
     // Get the user's email from stored webhook data
     const userEmail = storedWebhook.email
+    const userTimezone = storedWebhook.timezone
 
     const formattedDate = new Date(created * 1000).toLocaleString('en-US', {
-      timeZone: 'UTC',
+      timeZone: userTimezone,
       year: 'numeric',
       month: 'numeric',
       day: 'numeric',
@@ -32,22 +33,6 @@ export async function POST(request) {
     const formatAddress = (address) => {
       return `${address.slice(0, 12)}...${address.slice(-8)}`
     }
-
-    const formattedOutputs = payload[0].outputs
-      .map((output) => {
-        const amounts = output.amount
-          .map((asset) => {
-            if (asset.unit === 'lovelace') {
-              const ada = (parseInt(asset.quantity) / 1000000).toFixed(2)
-              return `${ada} ADA`
-            }
-            return `${asset.quantity} ${asset.unit}`
-          })
-          .join(', ')
-
-        return `${formatAddress(output.address)}: ${amounts}`
-      })
-      .join('\n')
 
     // check if the addresses have test in them if so append preview to cardanoscan.io
     const txHash = payload[0].tx.hash
