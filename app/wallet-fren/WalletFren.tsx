@@ -162,7 +162,7 @@ const WebhookRegistrationForm = ({
 
       <div className="relative px-4 py-2">
         <label className="mb-1.5 block text-lg font-medium sm:text-xl lg:text-2xl">
-          Add Wallet Addresses (same as blockfrost webhook)
+          Wallet Addresses (same as blockfrost webhook)
         </label>
         <div className="space-y-3">
           {otherWalletAddresses.map((address, index) => (
@@ -368,18 +368,25 @@ const WalletFren = () => {
   const handleWebhookIdChange = (newWebhookId: string) => {
     setWebhookId(newWebhookId)
 
-    if (typeof window !== 'undefined' && newWebhookId) {
-      const savedAddresses = localStorage.getItem(newWebhookId)
-      if (savedAddresses) {
-        const addresses = JSON.parse(savedAddresses)
-        setOtherWalletAddresses(
-          addresses.filter((addr: string) => addr !== walletState.walletAddress),
-        )
+    if (typeof window !== 'undefined') {
+      if (newWebhookId) {
+        const savedAddresses = localStorage.getItem(newWebhookId)
+        if (savedAddresses) {
+          const addresses = JSON.parse(savedAddresses)
+          // Ensure we include both saved addresses and current wallet address
+          const uniqueAddresses = [
+            ...new Set([
+              ...(walletState.walletAddress ? [walletState.walletAddress] : []),
+              ...addresses,
+            ]),
+          ]
+          setOtherWalletAddresses(uniqueAddresses)
+        } else {
+          setOtherWalletAddresses(walletState.walletAddress ? [walletState.walletAddress] : [])
+        }
       } else {
-        setOtherWalletAddresses([])
+        setOtherWalletAddresses(walletState.walletAddress ? [walletState.walletAddress] : [])
       }
-    } else {
-      setOtherWalletAddresses([])
     }
   }
 
@@ -492,7 +499,7 @@ const WalletFren = () => {
     }
   }
   const header = (
-    <div className="mx-auto w-full max-w-4xl px-4">
+    <div className="mx-auto mt-4 w-full max-w-4xl px-4">
       <div className="hover:shadow-3xl rounded-3xl bg-gradient-to-br from-indigo-900/40 to-purple-900/40 p-8 shadow-2xl backdrop-blur-lg transition-all sm:p-10 lg:p-12">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#4f46e510_1px,transparent_1px)] bg-[length:20px_20px] opacity-20" />
         <div className="relative flex flex-col items-center gap-4 text-center">
