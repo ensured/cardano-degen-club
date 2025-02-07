@@ -1,7 +1,7 @@
-import WalletBuddy from './WalletBuddy'
+import WalletFren from './WalletFren'
 
 const page = () => {
-  return <WalletBuddy />
+  return <WalletFren />
 }
 
 export default page

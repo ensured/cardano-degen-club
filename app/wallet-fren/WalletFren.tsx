@@ -140,7 +140,7 @@ const InstructionsList = () => (
   </ol>
 )
 
-const WalletBuddy = () => {
+const WalletFren = () => {
   // auth stuff
   const { user } = useUser()
   const userEmail = user?.externalAccounts[0].emailAddress
@@ -283,4 +283,4 @@ const WalletBuddy = () => {
   )
 }
 
-export default WalletBuddy
+export default WalletFren
