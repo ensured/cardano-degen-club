@@ -43,7 +43,7 @@ export async function POST(request) {
     })
 
     const formatAddress = (address) => {
-      return `${address.slice(0, 12)}...${address.slice(-8)}`
+      return `${address.slice(0, 14)}...${address.slice(-8)}`
     }
 
     // check if the addresses have test in them if so append preview to cardanoscan.io
