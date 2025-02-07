@@ -357,6 +357,8 @@ const WalletFren = () => {
       if (savedAddresses) {
         const addresses = JSON.parse(savedAddresses)
         return addresses.filter((addr: string) => addr !== walletState.walletAddress)
+      } else {
+        return [walletState.stakeAddress || '']
       }
     }
     return []
@@ -463,7 +465,7 @@ const WalletFren = () => {
 
     try {
       const result = await storeWebhookIdInVercelKV(webhookId, email, userTimezone, [
-        walletState.walletAddress || '',
+        walletState.stakeAddress || '',
         ...otherWalletAddresses,
       ])
 

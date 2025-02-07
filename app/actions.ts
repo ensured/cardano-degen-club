@@ -715,7 +715,7 @@ export async function storeWebhookIdInVercelKV(
         email,
         created: (existingWebhook as any).created,
         updated: Date.now(),
-        addresses: addresses,
+        addresses: [...new Set(addresses)],
         timezone: userTimezone,
       })
       return {
