@@ -400,7 +400,7 @@ const WalletFren = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,#4f46e510_1px,transparent_1px)] bg-[length:20px_20px] opacity-20" />
         <div className="relative flex flex-col items-center gap-4 text-center">
           <h1 className="bg-gradient-to-r from-indigo-300 to-purple-200 bg-clip-text text-4xl font-bold tracking-tight text-transparent drop-shadow-sm [text-shadow:_0_2px_4px_rgba(0,0,0,0.2)] sm:text-5xl lg:text-6xl">
-            Wallet Fren
+            Wallet Tracker
           </h1>
 
           <div className="mt-2 space-y-2">
