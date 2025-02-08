@@ -258,7 +258,7 @@ export function HeaderNavSheet() {
               </h1>
             </div>
 
-            <CustomLinkText>Wallet Fren</CustomLinkText>
+            <CustomLinkText>Wallet Tracker</CustomLinkText>
             {folderCommits.find((c) => c.folder === 'wallet-fren') && (
               <span className="ml-auto text-xs text-gray-500 sm:text-sm">
                 (
