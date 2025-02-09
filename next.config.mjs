@@ -24,7 +24,6 @@ const nextConfig = {
     return config
   },
   experimental: {
-    webpackBuildWorker: true,
     serverActions: {
       bodySizeLimit: '10mb',
     },
