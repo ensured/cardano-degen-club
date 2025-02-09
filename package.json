@@ -51,6 +51,7 @@
     "@react-pdf/renderer": "^3.4.2",
     "@tsparticles/engine": "^3.3.0",
     "@tsparticles/react": "^3.0.0",
+    "@types/node": "^22.13.1",
     "@types/pdfjs-dist": "^2.10.378",
     "@uidotdev/usehooks": "^2.4.1",
     "@vercel/analytics": "^1.4.1",
@@ -111,7 +112,6 @@
   "devDependencies": {
     "@types/cbor-js": "^0.1.1",
     "@types/memory-cache": "^0.2.5",
-    "@types/node": "^18.20.6",
     "@types/prismjs": "^1.26.5",
     "@types/punycode": "^2.1.4",
     "@types/react": "^18.3.18",
