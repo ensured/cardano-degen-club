@@ -470,7 +470,7 @@ const AsteroidsGame = () => {
       )}
 
       {isPaused && isPlaying && !gameOver && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-black/80 p-6 text-center backdrop-blur-sm">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 text-center">
           <h2 className="mb-4 text-2xl font-bold text-white">Game Paused</h2>
           <div className="flex flex-col gap-3">
             <button
@@ -495,8 +495,9 @@ const AsteroidsGame = () => {
       )}
 
       {gameOver && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-black/80 p-6 text-center backdrop-blur-sm">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 text-center">
           <h2 className="text-2xl font-bold text-white">Game Over!</h2>
+
           <p className="mb-2 text-sm text-gray-400">{formatStakeAddress(username)}</p>
           <p className="mb-4 text-xl text-white">Final Score: {scoreRef.current}</p>
           <button

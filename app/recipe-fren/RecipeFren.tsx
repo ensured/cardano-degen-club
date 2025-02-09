@@ -21,7 +21,7 @@ import UserLoginButtons from '@/components/UserLoginButtons'
 
 const TOAST_OPTIONS = {
   className: 'dark:bg-zinc-950 dark:text-slate-100',
-  position: 'bottom-center',
+  position: 'bottom-center' as const,
   success: {
     style: {
       background: 'green',
