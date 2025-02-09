@@ -52,7 +52,6 @@
     "@tsparticles/engine": "^3.3.0",
     "@tsparticles/react": "^3.0.0",
     "@types/node": "^22.13.1",
-    "@types/pdfjs-dist": "^2.10.378",
     "@uidotdev/usehooks": "^2.4.1",
     "@vercel/analytics": "^1.4.1",
     "@vercel/kv": "^3.0.0",

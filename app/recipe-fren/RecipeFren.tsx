@@ -60,7 +60,6 @@ const RecipeFrenPage = () => {
 
   return (
     <Animation>
-      <h1>Recipe Fren - Your Recipe Fren</h1>
       <SearchRecipes />
       <Toaster toastOptions={TOAST_OPTIONS} />
     </Animation>
