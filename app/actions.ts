@@ -13,6 +13,8 @@ import {
 } from 'firebase/storage'
 import { db, deleteObject, storage } from '../components/firebase/firebase'
 import { kv } from '@vercel/kv'
+import { sql } from '@vercel/postgres'
+import { revalidatePath } from 'next/cache'
 
 export async function checkUserAuthentication() {
   const user = await currentUser()
@@ -391,26 +393,28 @@ export async function getImagesBase64(urls: string[]) {
   }
 }
 
-export async function getEpochData(network: string = 'mainnet') {
-  const blockfrostApiKey =
-    network.toLowerCase() === 'mainnet'
-      ? process.env.BLOCKFROST_API_KEY
-      : process.env.BLOCKFROST_API_KEY_PREVIEW
+export async function getEpochData() {
+  const blockfrostApiKey = process.env.BLOCKFROST_API_KEY
   if (!blockfrostApiKey) {
     return { error: 'Blockfrost API key not found' }
   }
-  const url = `https://cardano-${network}.blockfrost.io/api/v0/epochs/latest`
-  const response = await fetch(url, {
-    headers: {
-      project_id: blockfrostApiKey,
-    },
-    next: {
-      revalidate: 0,
-    },
-  })
-  const data = await response.json()
-  // console.log('epoch: ', data.epoch, 'start_time: ', data.start_time, 'tx_count: ', data.tx_count)
-  return data
+  try {
+    const url = `https://cardano-mainnet.blockfrost.io/api/v0/epochs/latest`
+    const response = await fetch(url, {
+      headers: {
+        project_id: blockfrostApiKey,
+      },
+      next: {
+        revalidate: 0,
+      },
+    })
+    const data = await response.json()
+    // console.log('epoch: ', data.epoch, 'start_time: ', data.start_time, 'tx_count: ', data.tx_count)
+    return data
+  } catch (error) {
+    console.error('Error fetching epoch data:', error)
+    return { error: 'Failed to fetch epoch data' }
+  }
 }
 
 const cache: { [key: string]: { data: any; timestamp: number } } = {}
@@ -810,5 +814,83 @@ export async function getWebhooksCount() {
   } catch (error) {
     console.error('Error getting webhook count:', error)
     return { count: 0, error: 'Failed to get webhook count' }
+  }
+}
+
+export async function submitScore(username: string, score: number) {
+  try {
+    // First check if user already has a score
+    const { rows: existingScores } = await sql`
+      SELECT id, score
+      FROM leaderboard
+      WHERE username = ${username}
+    `
+
+    let newScore
+    if (existingScores.length > 0) {
+      // If existing score is lower, update it
+      if (existingScores[0].score < score) {
+        const {
+          rows: [updated],
+        } = await sql`
+          UPDATE leaderboard
+          SET score = ${score}, updated_at = NOW()
+          WHERE username = ${username}
+          RETURNING id, username, score, created_at, updated_at
+        `
+        newScore = updated
+      } else {
+        // If existing score is higher, return it with current rank
+        newScore = existingScores[0]
+      }
+    } else {
+      // Insert new score if user doesn't have one
+      const {
+        rows: [inserted],
+      } = await sql`
+        INSERT INTO leaderboard (username, score)
+        VALUES (${username}, ${score})
+        RETURNING id, username, score, created_at, updated_at
+      `
+      newScore = inserted
+    }
+
+    // Get the rank of the score
+    const {
+      rows: [rank],
+    } = await sql`
+      SELECT rank
+      FROM (
+        SELECT username, score,
+        RANK() OVER (ORDER BY score DESC) as rank
+        FROM leaderboard
+      ) rankings
+      WHERE username = ${username}
+    `
+
+    revalidatePath('/game')
+    return {
+      success: true,
+      data: newScore,
+      rank: rank.rank,
+    }
+  } catch (error) {
+    console.error('Error saving score:', error)
+    return { success: false, error: 'Failed to save score' }
+  }
+}
+
+export async function getLeaderboard() {
+  try {
+    const { rows } = await sql`
+      SELECT username, score, created_at
+      FROM leaderboard
+      ORDER BY score DESC
+      LIMIT 100
+    `
+    return { success: true, data: rows }
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error)
+    return { success: false, error: 'Failed to fetch leaderboard' }
   }
 }
