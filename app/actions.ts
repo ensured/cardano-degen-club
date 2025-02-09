@@ -404,9 +404,6 @@ export async function getEpochData() {
       headers: {
         project_id: blockfrostApiKey,
       },
-      next: {
-        revalidate: 0,
-      },
     })
     const data = await response.json()
     // console.log('epoch: ', data.epoch, 'start_time: ', data.start_time, 'tx_count: ', data.tx_count)
