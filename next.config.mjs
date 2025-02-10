@@ -3,11 +3,11 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     config.resolve.alias.canvas = false
 
+    // Add WASM support
     config.experiments = {
+      ...config.experiments,
       asyncWebAssembly: true,
-      syncWebAssembly: true,
       layers: true,
-      topLevelAwait: true,
     }
 
     config.module.rules.push({
@@ -15,21 +15,21 @@ const nextConfig = {
       type: 'webassembly/async',
     })
 
-    if (isServer) {
-      config.output.webassemblyModuleFilename = './../static/wasm/[modulehash].wasm'
-    } else {
-      config.output.webassemblyModuleFilename = 'static/wasm/[modulehash].wasm'
-    }
+    // Important: Mark WASM files as async chunks
+    config.output.webassemblyModuleFilename =
+      (isServer ? '../' : '') + 'static/wasm/[modulehash].wasm'
 
     return config
   },
+  // Add transpilation for problematic packages
+  transpilePackages: ['@emurgo/cardano-serialization-lib-asmjs'],
+  // Disable server-side rendering for WASM-dependent features
+  serverExternalPackages: ['@lucid-evolution', '@anastasia-labs/cardano-multiplatform-lib-browser'],
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
   },
-  transpilePackages: ['@lucid-evolution', '@anastasia-labs/cardano-multiplatform-lib-browser'],
-  serverExternalPackages: [],
   output: 'standalone',
   images: {
     remotePatterns: [
