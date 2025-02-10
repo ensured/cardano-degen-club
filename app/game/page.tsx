@@ -1,12 +1,14 @@
 import AsteroidsGame from '@/components/AsteroidsGame'
-import Leaderboard from '@/components/Leaderboard'
-
+import { LeaderboardDialog } from '@/components/LeaderboardDialog'
 export default function GamePage() {
   return (
     <div className="container mx-auto flex flex-col items-center gap-8 py-8">
-      <h1 className="text-4xl font-bold">Asteroids</h1>
+      <div className="flex flex-col items-center gap-2">
+        <h1 className="text-3xl font-bold">ADAsteroids</h1>
+        <LeaderboardDialog />
+      </div>
+
       <AsteroidsGame />
-      <Leaderboard />
     </div>
   )
 }

@@ -12,6 +12,7 @@ export interface WalletState {
   walletIcon: string | null
   walletName: string | null
   walletAddress: string | null
+  unusedAddresses: string[]
   adaHandle: {
     handle: string | null
     total_handles: number | null
@@ -29,6 +30,7 @@ const initialWalletState: WalletState = {
   walletIcon: null,
   walletName: null,
   walletAddress: null,
+  unusedAddresses: [],
   adaHandle: {
     handle: null,
     total_handles: null,
@@ -91,6 +93,10 @@ export function useWalletConnect() {
         if (decodedStakeAddr !== walletState.stakeAddress) {
           // Get other wallet details
           const { address: decodedAddress, balance: decodedBalance } = await getWalletDetails(api)
+          const unusedAddresses = []
+          for (const address of await api.getUnusedAddresses()) {
+            unusedAddresses.push(decodeHexAddress(address))
+          }
 
           // Fetch handle only when stake address changes
           const newWalletState = {
@@ -99,6 +105,7 @@ export function useWalletConnect() {
             balance: decodedBalance,
             networkId: walletState.network,
             stakeAddress: decodedStakeAddr,
+            unusedAddresses: unusedAddresses,
           }
 
           await updateWalletStateWithHandle(
@@ -192,10 +199,11 @@ export function useWalletConnect() {
   const getWalletDetails = async (api: any) => {
     // Get addresses
     const walletAddresses = await api.getUsedAddresses()
-    const primaryAddress =
-      walletAddresses.length > 0 ? walletAddresses[0] : (await api.getUnusedAddresses())[0]
+    const unusedAddresses = await api.getUnusedAddresses()
+    const primaryAddress = walletAddresses.length > 0 ? walletAddresses[0] : unusedAddresses[0]
 
     const decodedAddress = decodeHexAddress(primaryAddress)
+
     if (!decodedAddress) throw new Error('No address found')
 
     // Get balance
@@ -246,9 +254,11 @@ export function useWalletConnect() {
         balance: decodedBalance,
         network: networkId,
         stakeAddress: decodedStakeAddr,
+        unusedAddresses: [],
       }
 
       await updateWalletStateWithHandle(baseWalletState, decodedStakeAddr, networkId)
+
       return true
     } catch (error) {
       const { message } = handleWalletError(error)
@@ -291,8 +301,6 @@ export function useWalletConnect() {
       if (!res.ok) {
         if (res.status === 504) {
           toast.error('adahandle API is currently unavailable')
-        } else {
-          toast.error(`adahandle API error: ${res.status}`)
         }
         return { default_handle: null, total_handles: null }
       }

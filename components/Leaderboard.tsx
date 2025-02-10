@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { getLeaderboard } from '@/app/actions'
 import { useWallet } from '@/contexts/WalletContext'
+import { eventEmitter } from '@/lib/eventEmitter'
+import { Skeleton } from './ui/skeleton'
 
 type LeaderboardEntry = {
   username: string
@@ -11,7 +13,7 @@ type LeaderboardEntry = {
   created_at: string
 }
 
-const Leaderboard = () => {
+export const Leaderboard = () => {
   const [scores, setScores] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -33,7 +35,20 @@ const Leaderboard = () => {
   }
 
   useEffect(() => {
+    // Initial fetch
     fetchLeaderboard()
+
+    // Listen for score updates
+    const handleScoreUpdate = () => {
+      fetchLeaderboard()
+    }
+
+    eventEmitter.on('SCORE_UPDATED', handleScoreUpdate)
+
+    // Cleanup
+    return () => {
+      eventEmitter.off('SCORE_UPDATED', handleScoreUpdate)
+    }
   }, [])
 
   const formatStakeAddress = (address: string) => {
@@ -42,57 +57,58 @@ const Leaderboard = () => {
     return `${address.slice(0, 9)}...${address.slice(-9)}`
   }
 
-  if (loading) return <Loader2 className="animate-spin" />
+  if (loading)
+    return (
+      <div className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-border p-2">
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+      </div>
+    )
 
   return (
-    <div className="w-full max-w-2xl">
+    <div className="w-full">
       {(walletState?.adaHandle?.handle || walletState?.walletAddress) &&
         walletState.network === 1 && (
-          <>
-            <h2 className="mb-4 text-2xl font-bold">Global Leaderboard</h2>
-
-            <div className="rounded-lg border">
-              <table className="w-full">
-                <thead className="">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Rank
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Username
-                    </th>
-                    <th className="text-leloading...ft px-6 py-3 text-xs font-medium uppercase tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Date
-                    </th>
+          <div className="rounded-lg border border-border">
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Rank
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Username
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Score
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Date
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {scores.map((entry, index) => (
+                  <tr key={index}>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                      {index + 1}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-muted-foreground">
+                      {formatStakeAddress(entry.username)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                      {entry.score}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
+                      {new Date(entry.created_at).toLocaleDateString()}
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {scores.map((entry, index) => (
-                    <tr key={index}>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-                        {index + 1}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-muted-foreground">
-                        {formatStakeAddress(entry.username)}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-                        {entry.score}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-                        {new Date(entry.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
     </div>
   )
 }
-
-export default Leaderboard

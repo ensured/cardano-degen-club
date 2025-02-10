@@ -9,6 +9,7 @@ export type WalletContextType = {
   connect: (walletKey: string) => Promise<boolean>
   disconnect: () => void
   getSupportedWallets: () => string[]
+  network: number | null
 }
 
 // Create context with the correct type

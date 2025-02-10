@@ -5,17 +5,20 @@ import { toast } from 'sonner'
 import { eventEmitter } from '@/lib/eventEmitter'
 import { submitScore } from '@/app/actions'
 import { useWallet } from '@/contexts/WalletContext'
-
+import { LeaderboardDialog } from './LeaderboardDialog'
+import { Button } from './ui/button'
+import Button3D from './3dButton'
 const AsteroidsGame = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const scoreRef = useRef(0)
-  const [score, setScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { walletState, loading } = useWallet()
-  const username = '$' + (walletState?.adaHandle?.handle || walletState?.walletAddress || '') || ''
+  const { walletState, loading, network } = useWallet()
+  const username = walletState?.adaHandle?.handle
+    ? '$' + walletState?.adaHandle?.handle
+    : walletState?.walletAddress
 
   // Game state refs
   const shipX = useRef(400)
@@ -39,12 +42,21 @@ const AsteroidsGame = () => {
 
   // Add a shooting cooldown ref
   const lastShotTime = useRef(0)
-  const SHOT_COOLDOWN = 100 // milliseconds between shots
+  const SHOT_COOLDOWN = 150 // milliseconds between shots
 
   // Add these refs for difficulty scaling
   const difficultyLevel = useRef(1)
   const lastDifficultyIncrease = useRef(0)
-  const DIFFICULTY_SCORE_INTERVAL = 1000 // Increase difficulty every 1000 points
+  const DIFFICULTY_SCORE_INTERVAL = 2000 // Increase difficulty every 1000 points
+
+  // Add this ref at the top with other refs
+  const shootingInterval = useRef<NodeJS.Timeout | null>(null)
+
+  // Add these refs at the top with other refs
+  const rotationVelocity = useRef(0)
+  const MAX_ROTATION_SPEED = 0.05
+  const ROTATION_ACCELERATION = 0.003
+  const ROTATION_FRICTION = 0.97
 
   const initGame = () => {
     if (!canvasRef.current) return
@@ -62,12 +74,29 @@ const AsteroidsGame = () => {
     asteroids.current = []
     bullets.current = []
     scoreRef.current = 0
-    setScore(0)
     setGameOver(false)
+
+    // Reset all key states
+    keys.current = {}
+
+    // Reset shooting cooldown
+    lastShotTime.current = 0
 
     // Reset difficulty
     difficultyLevel.current = 1
     lastDifficultyIncrease.current = 0
+
+    // Reset pause state if it was paused
+    setIsPaused(false)
+
+    // Clear any existing shooting interval
+    if (shootingInterval.current) {
+      clearInterval(shootingInterval.current)
+      shootingInterval.current = null
+    }
+
+    // Reset rotation velocity
+    rotationVelocity.current = 0
 
     // Create initial asteroids
     for (let i = 0; i < 5; i++) {
@@ -91,11 +120,11 @@ const AsteroidsGame = () => {
     return points
   }
 
-  // Modify getDifficultyValues to reduce speed
+  // Modify getDifficultyValues to reduce speed scaling
   const getDifficultyValues = () => {
     const level = difficultyLevel.current
     return {
-      asteroidSpeed: Math.min(0.5 + level * 0.2, 2), // Significantly reduced speed, caps at 2
+      asteroidSpeed: Math.min(0.3 + level * 0.1, 1.2), // Significantly reduced speed and max speed
       asteroidSpawnRate: Math.min(0.005 + level * 0.002, 0.02),
       asteroidSizeRange: {
         min: Math.max(10, 20 - level * 2),
@@ -155,14 +184,32 @@ const AsteroidsGame = () => {
 
     // Only update positions if game is not paused
     if (!isPaused) {
-      // Update ship position based on keys
-      if (keys.current['ArrowUp'] || keys.current['w']) {
-        const thrust = 0.0333
+      // Thrust
+      if (keys.current['ArrowUp'] || keys.current['KeyW']) {
+        const thrust = 0.02
         velocity.current.x += Math.cos(shipAngle.current - Math.PI / 2) * thrust
         velocity.current.y += Math.sin(shipAngle.current - Math.PI / 2) * thrust
       }
-      if (keys.current['ArrowLeft'] || keys.current['a']) shipAngle.current -= 0.1
-      if (keys.current['ArrowRight'] || keys.current['d']) shipAngle.current += 0.1
+
+      // Rotation with momentum
+      if (keys.current['ArrowLeft'] || keys.current['KeyA']) {
+        rotationVelocity.current -= ROTATION_ACCELERATION
+      }
+      if (keys.current['ArrowRight'] || keys.current['KeyD']) {
+        rotationVelocity.current += ROTATION_ACCELERATION
+      }
+
+      // Clamp rotation speed
+      rotationVelocity.current = Math.max(
+        -MAX_ROTATION_SPEED,
+        Math.min(MAX_ROTATION_SPEED, rotationVelocity.current),
+      )
+
+      // Apply rotation friction
+      rotationVelocity.current *= ROTATION_FRICTION
+
+      // Apply rotation
+      shipAngle.current += rotationVelocity.current
 
       // Apply stronger friction to slow down faster
       velocity.current.x *= 0.988
@@ -203,6 +250,16 @@ const AsteroidsGame = () => {
     ctx.lineTo(10, 20)
     ctx.closePath()
     ctx.stroke()
+
+    // Add thruster flame when moving forward
+    if ((keys.current['ArrowUp'] || keys.current['KeyW']) && !isPaused) {
+      ctx.beginPath()
+      ctx.moveTo(-5, 20)
+      ctx.lineTo(0, 30)
+      ctx.lineTo(5, 20)
+      ctx.strokeStyle = 'orange'
+      ctx.stroke()
+    }
     ctx.restore()
 
     // Draw bullets
@@ -240,7 +297,11 @@ const AsteroidsGame = () => {
       }
 
       ctx.stroke()
-      asteroid.rotation += asteroid.rotationSpeed // Update rotation
+
+      // Only update rotation if game is not paused
+      if (!isPaused) {
+        asteroid.rotation += asteroid.rotationSpeed
+      }
     })
 
     // Rest of collision detection and game logic only if not paused
@@ -253,18 +314,6 @@ const AsteroidsGame = () => {
         toast.info(`Difficulty increased to level ${difficultyLevel.current}!`, {
           duration: 2000,
         })
-      }
-
-      // Add shooting logic to updateGame
-      const now = Date.now()
-      if (keys.current[' '] && now - lastShotTime.current > SHOT_COOLDOWN) {
-        bullets.current.push({
-          x: shipX.current,
-          y: shipY.current,
-          dx: Math.cos(shipAngle.current - Math.PI / 2) * 7,
-          dy: Math.sin(shipAngle.current - Math.PI / 2) * 7,
-        })
-        lastShotTime.current = now
       }
 
       // Update and draw bullets
@@ -284,10 +333,6 @@ const AsteroidsGame = () => {
           if (distance < asteroid.size) {
             hitAsteroid = true
             scoreRef.current += 100
-            setScore((prev) => {
-              const newScore = prev + 100
-              return newScore
-            })
             if (asteroid.size > 20) {
               // Split asteroid
               for (let i = 0; i < 2; i++) {
@@ -369,6 +414,7 @@ const AsteroidsGame = () => {
         console.log('Attempting to submit score:', { username, finalScore })
 
         const result = await submitScore(username, finalScore)
+        console.log(result)
 
         if (!result.success) {
           throw new Error(result.error || 'Failed to save score')
@@ -387,6 +433,7 @@ const AsteroidsGame = () => {
           duration: 5000,
         })
 
+        // Emit event to update leaderboard
         eventEmitter.emit('SCORE_UPDATED')
       } catch (error) {
         console.error('Error saving score:', error)
@@ -408,10 +455,11 @@ const AsteroidsGame = () => {
   }
 
   const startGame = () => {
-    if (!walletState?.walletAddress || !walletState?.adaHandle?.handle) {
+    if (!walletState?.walletAddress) {
       toast.error('Please connect your wallet to play')
       return
     }
+
     setIsPlaying(true)
     initGame()
   }
@@ -440,10 +488,10 @@ const AsteroidsGame = () => {
           'ArrowDown',
           'ArrowLeft',
           'ArrowRight',
-          'w',
-          'a',
-          's',
-          'd',
+          'KeyW',
+          'KeyA',
+          'KeyS',
+          'KeyD',
           'Escape',
         ].includes(e.code)
       ) {
@@ -458,21 +506,39 @@ const AsteroidsGame = () => {
 
       // Only process other keys if game is not paused
       if (!isPaused) {
-        if (e.code === 'Space') {
-          keys.current[' '] = true
-        } else {
-          keys.current[e.key] = true
+        keys.current[e.code] = true
+
+        // Handle shooting separately from movement
+        if (e.code === 'Space' && !shootingInterval.current) {
+          // Create a shoot function
+          const shoot = () => {
+            if (!isPaused) {
+              bullets.current.push({
+                x: shipX.current,
+                y: shipY.current,
+                dx: Math.cos(shipAngle.current - Math.PI / 2) * 7,
+                dy: Math.sin(shipAngle.current - Math.PI / 2) * 7,
+              })
+            }
+          }
+
+          // Shoot immediately
+          shoot()
+
+          // Set up interval for continuous shooting
+          shootingInterval.current = setInterval(shoot, SHOT_COOLDOWN)
         }
       }
     }
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (!isPaused) {
-        if (e.code === 'Space') {
-          keys.current[' '] = false
-        } else {
-          keys.current[e.key] = false
-        }
+      // Always process key up events to prevent stuck keys
+      keys.current[e.code] = false
+
+      // Clear shooting interval when space is released
+      if (e.code === 'Space' && shootingInterval.current) {
+        clearInterval(shootingInterval.current)
+        shootingInterval.current = null
       }
     }
 
@@ -493,6 +559,11 @@ const AsteroidsGame = () => {
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
+      // Clear shooting interval on cleanup
+      if (shootingInterval.current) {
+        clearInterval(shootingInterval.current)
+        shootingInterval.current = null
+      }
     }
   }, [isPlaying, isPaused]) // Add isPaused to dependencies
 
@@ -515,24 +586,22 @@ const AsteroidsGame = () => {
         backgroundColor: isPlaying ? 'black' : 'transparent',
       }}
     >
-      {!isPlaying && !gameOver ? (
-        <div className="flex flex-col items-center gap-4">
-          {/* if mainnet and wallet connected show button */}
-          {(walletState?.adaHandle?.handle || walletState?.walletAddress) &&
-          walletState.network === 1 ? (
-            <button
-              onClick={startGame}
-              className="bg-blue-500 hover:bg-blue-600 rounded px-4 py-2 text-white"
-            >
-              Start Game
-            </button>
-          ) : (
-            <div className="text-lg font-bold">please connect to mainnet to play</div>
-          )}
-        </div>
-      ) : (
-        <canvas ref={canvasRef} className="h-full w-full" />
-      )}
+      <div className="flex gap-2">
+        {!isPlaying && !gameOver ? (
+          <div className="flex flex-col items-center gap-4">
+            {/* if mainnet and wallet connected show button */}
+            {(walletState?.adaHandle?.handle || walletState?.walletAddress) && network === 1 ? (
+              <Button3D variant={'outline'} onClick={startGame}>
+                Start Game
+              </Button3D>
+            ) : (
+              <div className="text-lg font-bold">please connect to mainnet to play</div>
+            )}
+          </div>
+        ) : (
+          <canvas ref={canvasRef} className="h-full w-full" />
+        )}
+      </div>
 
       {isPaused && isPlaying && !gameOver && (
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 text-center">
@@ -540,7 +609,7 @@ const AsteroidsGame = () => {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setIsPaused(false)}
-              className="bg-blue-500 hover:bg-blue-600 w-full rounded px-4 py-2 text-white"
+              className="w-full rounded border border-border/50 bg-blue/30 px-4 py-2 hover:bg-blue/25"
             >
               Resume
             </button>
@@ -550,7 +619,7 @@ const AsteroidsGame = () => {
                 setIsPlaying(false)
                 setGameOver(false)
               }}
-              className="w-full rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+              className="w-full rounded bg-red-600/30 px-4 py-2 hover:bg-red-700/30"
             >
               Quit Game
             </button>
@@ -560,15 +629,12 @@ const AsteroidsGame = () => {
       )}
 
       {gameOver && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 text-center">
-          <h2 className="text-2xl font-bold text-white">Game Over!</h2>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-background/80 p-8 text-center backdrop-blur-sm">
+          <h2 className="text-2xl font-bold">Game Over!</h2>
 
-          <p className="mb-2 text-sm text-gray-400">{formatAddress(username)}</p>
-          <p className="mb-4 text-xl text-white">Final Score: {scoreRef.current}</p>
-          <button
-            onClick={startGame}
-            className="bg-blue-500 hover:bg-blue-600 rounded px-4 py-2 text-white"
-          >
+          <p className="mb-2 text-sm">{formatAddress(username)}</p>
+          <p className="mb-4 text-xl">Final Score: {scoreRef.current}</p>
+          <button onClick={startGame} className="bg-blue-500 hover:bg-blue-600 rounded px-4 py-2">
             Play Again
           </button>
         </div>
