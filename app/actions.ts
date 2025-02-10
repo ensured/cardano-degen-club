@@ -759,7 +759,7 @@ export async function validateWebhookId(blockfrostAuthKey: string) {
   return true
 }
 
-interface WebhookData {
+export interface WebhookData {
   id: string
   email: string
   timezone: string
@@ -774,32 +774,6 @@ export async function getWebhookData(webhookId: string): Promise<WebhookData | n
   } catch (error) {
     console.error('Error fetching webhook data:', error)
     return null
-  }
-}
-
-export async function updateWebhookAddresses(
-  webhookId: string,
-  addresses: string[],
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const webhook = await kv.get(`webhook:${webhookId}`)
-    if (!webhook) {
-      return { success: false, error: 'Webhook not found' }
-    }
-
-    // Remove duplicates and empty addresses
-    const uniqueAddresses = [...new Set(addresses.filter((addr) => addr))]
-
-    await kv.set(`webhook:${webhookId}`, {
-      ...webhook,
-      addresses: uniqueAddresses,
-      updated: Date.now(),
-    })
-
-    return { success: true }
-  } catch (error) {
-    console.error('Error updating webhook addresses:', error)
-    return { success: false, error: 'Failed to update addresses' }
   }
 }
 

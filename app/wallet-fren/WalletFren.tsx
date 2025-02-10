@@ -10,12 +10,7 @@ import {
   Link as LucideLinkIcon,
   CheckCircle,
 } from 'lucide-react'
-import {
-  storeWebhookIdInVercelKV,
-  getWebhookData,
-  updateWebhookAddresses,
-  getWebhooksCount,
-} from '../actions'
+import { storeWebhookIdInVercelKV, getWebhookData, getWebhooksCount, WebhookData } from '../actions'
 import Button3D from '@/components/3dButton'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -273,7 +268,7 @@ const WalletFren = () => {
       // Save to localStorage
       localStorage.setItem(WEBHOOK_ID_KEY, newWebhookId)
 
-      const webhookData = await getWebhookData(newWebhookId)
+      const webhookData: WebhookData | null = await getWebhookData(newWebhookId)
       if (webhookData) {
         setRegistrationStatus('success')
         setWebhookExists(true)
