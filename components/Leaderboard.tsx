@@ -6,6 +6,7 @@ import { getLeaderboard } from '@/app/actions'
 import { useWallet } from '@/contexts/WalletContext'
 import { eventEmitter } from '@/lib/eventEmitter'
 import { Skeleton } from './ui/skeleton'
+import Link from 'next/link'
 
 type LeaderboardEntry = {
   username: string
@@ -94,9 +95,12 @@ export const Leaderboard = () => {
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
                       {index + 1}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-muted-foreground">
-                      {formatStakeAddress(entry.username)}
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-muted-foreground hover:underline">
+                      <Link href={`https://pool.pm/${entry.username}`} target="_blank">
+                        {formatStakeAddress(entry.username)}
+                      </Link>
                     </td>
+
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
                       {entry.score}
                     </td>

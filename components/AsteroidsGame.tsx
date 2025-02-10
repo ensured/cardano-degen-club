@@ -632,11 +632,11 @@ const AsteroidsGame = () => {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-background/80 p-8 text-center backdrop-blur-sm">
           <h2 className="text-2xl font-bold">Game Over!</h2>
 
-          <p className="mb-2 text-sm">{formatAddress(username)}</p>
+          <p className="mb-2 text-sm">{username ?? ''}</p>
           <p className="mb-4 text-xl">Final Score: {scoreRef.current}</p>
-          <button onClick={startGame} className="bg-blue-500 hover:bg-blue-600 rounded px-4 py-2">
+          <Button variant={'outline'} onClick={startGame}>
             Play Again
-          </button>
+          </Button>
         </div>
       )}
     </div>
