@@ -30,6 +30,12 @@ export async function POST(request) {
 
     // Get the user's email from stored webhook data
     const userEmail = storedWebhook.email
+    if (!userEmail) {
+      return NextResponse.json(
+        { processed: false, error: 'No email found for webhook' },
+        { status: 400 },
+      )
+    }
     const userTimezone = storedWebhook.timezone
     const formattedDate = new Date(created * 1000).toLocaleString('en-US', {
       timeZone: userTimezone,

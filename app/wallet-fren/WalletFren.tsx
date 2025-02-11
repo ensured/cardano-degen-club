@@ -10,7 +10,13 @@ import {
   Link as LucideLinkIcon,
   CheckCircle,
 } from 'lucide-react'
-import { storeWebhookIdInVercelKV, getWebhookData, getWebhooksCount, WebhookData } from '../actions'
+import {
+  storeWebhookIdInVercelKV,
+  getWebhookData,
+  getWebhooksCount,
+  WebhookData,
+  removeWebhookEmail,
+} from '../actions'
 import Button3D from '@/components/3dButton'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -33,6 +39,8 @@ const WebhookRegistrationForm = ({
   isSubmitting,
   registrationStatus,
   errorMessage,
+  setRegistrationStatus,
+  setWebhookExists,
   handleSubmit,
   handleWebhookIdChange,
   webhookExists,
@@ -44,10 +52,38 @@ const WebhookRegistrationForm = ({
   isSubmitting: boolean
   registrationStatus: 'idle' | 'success' | 'error'
   errorMessage: string
+  setRegistrationStatus: (status: 'idle' | 'success' | 'error') => void
+  setWebhookExists: (exists: boolean) => void
   handleSubmit: (e: React.FormEvent) => Promise<void>
   handleWebhookIdChange: (webhookId: string) => void
   webhookExists: boolean
 }) => {
+  const handleRemoveEmail = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!webhookId || !isValidUUID(webhookId)) {
+      toast.error('Invalid Webhook ID')
+      return
+    }
+
+    try {
+      console.log('Removing email for webhook ID:', webhookId)
+      const result = await removeWebhookEmail(webhookId)
+      if (result.success) {
+        toast.success('Email removed successfully. You will no longer receive notifications.')
+        setWebhookId('')
+        setEmail(email || '')
+        localStorage.removeItem(WEBHOOK_ID_KEY)
+        setRegistrationStatus('idle')
+        setWebhookExists(false)
+      } else {
+        toast.error(result.error || 'Failed to remove email')
+      }
+    } catch (error) {
+      console.error('Error removing email:', error)
+      toast.error('Failed to remove email')
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 lg:space-y-4">
       <div className="relative">
@@ -126,6 +162,25 @@ const WebhookRegistrationForm = ({
             ? 'Update Webhook ID'
             : 'Register Webhook ID'}
       </Button3D>
+
+      <div className="mt-4">
+        <Button
+          variant="destructive"
+          onClick={handleRemoveEmail}
+          disabled={!webhookExists || isSubmitting}
+          className="w-full text-lg hover:bg-destructive/90"
+        >
+          {isSubmitting ? (
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          ) : (
+            <XIcon className="mr-2 h-5 w-5" />
+          )}
+          Remove Email Subscription
+        </Button>
+        <p className="mt-2 text-sm text-muted-foreground">
+          This will stop all email notifications for this Webhook ID
+        </p>
+      </div>
     </form>
   )
 }
@@ -462,6 +517,8 @@ const WalletFren = () => {
               </h2>
             </div>
             <WebhookRegistrationForm
+              setRegistrationStatus={setRegistrationStatus}
+              setWebhookExists={setWebhookExists}
               handleWebhookIdChange={handleWebhookIdChange}
               webhookId={webhookId}
               setWebhookId={handleWebhookIdChange}

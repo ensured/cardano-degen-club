@@ -867,3 +867,29 @@ export async function getLeaderboard() {
     return { success: false, error: 'Failed to fetch leaderboard' }
   }
 }
+
+export async function removeWebhookEmail(
+  webhookId: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Delete the email from the webhook entry from KV
+    const webhook = await kv.get(`webhook:${webhookId}`)
+    if (!webhook) {
+      return { success: false, error: 'Webhook not found' }
+    }
+    await kv.set(`webhook:${webhookId}`, {
+      ...webhook,
+      email: '',
+      updated: Date.now(),
+    })
+    // verify email is empty
+    const updatedWebhook = await kv.get(`webhook:${webhookId}`)
+    if ((updatedWebhook as any).email !== '') {
+      return { success: false, error: 'Failed to remove email subscription' }
+    }
+    return { success: true }
+  } catch (error) {
+    console.error('Error removing webhook email:', error)
+    return { success: false, error: 'Failed to remove email subscription' }
+  }
+}
