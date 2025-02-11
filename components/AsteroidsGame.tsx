@@ -21,13 +21,15 @@ const GAME_CONSTANTS = {
   POWER_UP_DROP_CHANCE: 0.2,
   POWER_UP_LIFETIME: 15000,
   POWER_UP_BLINK_START: 3000,
-  SHIP_SIZE: 20,
+  SHIP_SIZE: 18,
   THRUST_POWER: 0.02,
   FRICTION: 0.988,
+  LASER_RANGE: 300,
+  LASER_DAMAGE_INTERVAL: 10,
 } as const
 
 // Types and Interfaces
-type PowerUpType = 'spreadShot' | 'rapidFire' | 'shield' | 'speedBoost'
+type PowerUpType = 'spreadShot' | 'rapidFire' | 'shield' | 'speedBoost' | 'laser'
 
 interface PowerUp {
   x: number
@@ -100,23 +102,82 @@ const drawShip = (
   ctx.translate(x, y)
   ctx.rotate(angle)
 
-  // Draw ship body
-  ctx.strokeStyle = 'white'
+  // New ship design parameters
+  const shipSize = GAME_CONSTANTS.SHIP_SIZE
+  const wingSpan = shipSize * 0.8
+  const bodyWidth = shipSize * 0.4
+  const cockpitSize = shipSize * 0.4
+
+  // Create gradients
+  const bodyGradient = ctx.createLinearGradient(-shipSize, 0, shipSize, 0)
+  bodyGradient.addColorStop(0, '#4a5568')
+  bodyGradient.addColorStop(0.5, '#2d3748')
+  bodyGradient.addColorStop(1, '#4a5568')
+
+  const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, shipSize)
+  glowGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)')
+  glowGradient.addColorStop(1, 'rgba(59, 130, 246, 0)')
+
+  // Ship glow effect
+  ctx.save()
   ctx.beginPath()
-  ctx.moveTo(0, -GAME_CONSTANTS.SHIP_SIZE)
-  ctx.lineTo(-10, GAME_CONSTANTS.SHIP_SIZE)
-  ctx.lineTo(10, GAME_CONSTANTS.SHIP_SIZE)
+  ctx.arc(0, 0, shipSize * 1.2, 0, Math.PI * 2)
+  ctx.fillStyle = glowGradient
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.fill()
+  ctx.restore()
+
+  // Main ship body
+  ctx.fillStyle = bodyGradient
+  ctx.strokeStyle = '#cbd5e1'
+  ctx.lineWidth = 2
+
+  ctx.beginPath()
+  ctx.moveTo(0, -shipSize)
+  ctx.lineTo(-bodyWidth, shipSize * 0.5)
+  ctx.lineTo(-wingSpan, shipSize * 0.8)
+  ctx.lineTo(0, shipSize * 0.6)
+  ctx.lineTo(wingSpan, shipSize * 0.8)
+  ctx.lineTo(bodyWidth, shipSize * 0.5)
   ctx.closePath()
+  ctx.fill()
   ctx.stroke()
 
-  // Draw thruster
+  // Cockpit canopy
+  ctx.fillStyle = 'rgba(96, 165, 250, 0.3)'
+  ctx.strokeStyle = '#bfdbfe'
+  ctx.beginPath()
+  ctx.arc(0, -shipSize * 0.2, cockpitSize, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.stroke()
+
+  // Engine glow
   if (isThrusting) {
+    ctx.save()
+    const thrustSize = shipSize * 1.5
+    const thrustGradient = ctx.createRadialGradient(0, shipSize, 0, 0, shipSize, thrustSize)
+    thrustGradient.addColorStop(0, 'rgba(251, 191, 36, 0.8)')
+    thrustGradient.addColorStop(1, 'rgba(251, 191, 36, 0)')
+
     ctx.beginPath()
-    ctx.moveTo(-5, GAME_CONSTANTS.SHIP_SIZE)
-    ctx.lineTo(0, GAME_CONSTANTS.SHIP_SIZE + 10)
-    ctx.lineTo(5, GAME_CONSTANTS.SHIP_SIZE)
-    ctx.strokeStyle = 'orange'
-    ctx.stroke()
+    ctx.arc(0, shipSize, thrustSize, 0, Math.PI * 2)
+    ctx.fillStyle = thrustGradient
+    ctx.globalCompositeOperation = 'lighter'
+    ctx.fill()
+    ctx.restore()
+  }
+
+  // Thrust particles
+  if (isThrusting) {
+    ctx.save()
+    ctx.translate(0, shipSize)
+    for (let i = 0; i < 5; i++) {
+      ctx.fillStyle = `hsl(${40 + Math.random() * 10}, 100%, 50%)`
+      ctx.beginPath()
+      ctx.arc((Math.random() - 0.5) * 10, Math.random() * 30, Math.random() * 2 + 1, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    ctx.restore()
   }
 
   ctx.restore()
@@ -166,6 +227,7 @@ const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
     rapidFire: '#ff0000',
     shield: '#0000ff',
     speedBoost: '#ffff00',
+    laser: '#ff00ff',
   }
 
   ctx.strokeStyle = colors[powerUp.type]
@@ -199,6 +261,13 @@ const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
       ctx.moveTo(-3, -5)
       ctx.lineTo(3, 0)
       ctx.lineTo(-3, 5)
+      break
+    case 'laser':
+      // Lightning-like zigzag
+      ctx.moveTo(-5, -5)
+      ctx.lineTo(0, 0)
+      ctx.lineTo(5, -5)
+      ctx.lineTo(0, 5)
       break
   }
   ctx.stroke()
@@ -300,6 +369,9 @@ const AsteroidsGame = () => {
   // Add this ref near the top with other refs
   const lastStartButtonState = useRef(false)
 
+  // Add this ref at the top with other refs
+  const lastLaserDamageTime = useRef(0)
+
   // Add this function near the top with other function definitions
   const shoot = () => {
     if (!isPaused && isPlaying) {
@@ -326,6 +398,84 @@ const AsteroidsGame = () => {
           dx: Math.cos(shipAngle.current - Math.PI / 2) * (hasRapidFire ? 10 : 7),
           dy: Math.sin(shipAngle.current - Math.PI / 2) * (hasRapidFire ? 10 : 7),
         })
+      }
+    }
+  }
+
+  const updateLaser = (
+    ctx: CanvasRenderingContext2D,
+    shipX: number,
+    shipY: number,
+    asteroids: Asteroid[],
+  ) => {
+    const hasLaser = activePowerUps.current.some((p) => p.type === 'laser')
+    if (!hasLaser) return
+
+    // Find nearby asteroids within range
+    const nearbyAsteroids = asteroids.filter((asteroid) => {
+      const dx = asteroid.x - shipX
+      const dy = asteroid.y - shipY
+      return Math.sqrt(dx * dx + dy * dy) <= GAME_CONSTANTS.LASER_RANGE
+    })
+
+    if (nearbyAsteroids.length > 0) {
+      // Draw laser effect
+      ctx.save()
+      ctx.strokeStyle = '#ff00ff'
+      ctx.lineWidth = 2
+
+      nearbyAsteroids.forEach((asteroid) => {
+        // Create lightning effect
+        ctx.beginPath()
+        ctx.moveTo(shipX, shipY)
+
+        // Generate lightning segments
+        let currentX = shipX
+        let currentY = shipY
+        const segments = 3
+        for (let i = 1; i <= segments; i++) {
+          const t = i / segments
+          const targetX = asteroid.x
+          const targetY = asteroid.y
+
+          // Add random offset for zigzag effect
+          const offsetX = (Math.random() - 0.5) * 20
+          const offsetY = (Math.random() - 0.5) * 20
+
+          const x = currentX + (targetX - currentX) * t + offsetX
+          const y = currentY + (targetY - currentY) * t + offsetY
+
+          ctx.lineTo(x, y)
+          currentX = x
+          currentY = y
+        }
+
+        ctx.lineTo(asteroid.x, asteroid.y)
+        ctx.stroke()
+
+        // Add glow effect
+        ctx.shadowColor = '#ff00ff'
+        ctx.shadowBlur = 10
+        ctx.stroke()
+      })
+
+      ctx.restore()
+
+      // Damage asteroids at intervals
+      if (Date.now() - lastLaserDamageTime.current > GAME_CONSTANTS.LASER_DAMAGE_INTERVAL) {
+        // Collect asteroids to remove first
+        const asteroidsToRemove = nearbyAsteroids.filter((asteroid) => asteroids.includes(asteroid))
+
+        // Remove them after iteration
+        asteroidsToRemove.forEach((asteroid) => {
+          const index = asteroids.indexOf(asteroid)
+          if (index !== -1) {
+            asteroids.splice(index, 1)
+            scoreRef.current += 100
+          }
+        })
+
+        lastLaserDamageTime.current = Date.now()
       }
     }
   }
@@ -486,36 +636,34 @@ const AsteroidsGame = () => {
       // Check shield collisions if shield is active
       const hasShield = activePowerUps.current.some((p) => p.type === 'shield')
       if (hasShield) {
-        const shieldRadius = GAME_CONSTANTS.SHIP_SIZE + 10
-        asteroids.current = asteroids.current.filter((asteroid) => {
-          const dx = shipX.current - asteroid.x
-          const dy = shipY.current - asteroid.y
-          const distance = Math.sqrt(dx * dx + dy * dy)
+        const shield = activePowerUps.current.find((p) => p.type === 'shield')!
+        const timeLeft = shield.expiresAt - Date.now()
+        const isBlinking = timeLeft < GAME_CONSTANTS.POWER_UP_BLINK_START
 
-          // If asteroid touches shield, destroy it and add score
-          if (distance < shieldRadius + asteroid.size) {
-            scoreRef.current += 50 // Half points for shield destruction
+        // Calculate blink rate - gets faster as time runs out
+        const shouldShow =
+          !isBlinking ||
+          Math.floor(Date.now() / (100 + (timeLeft / GAME_CONSTANTS.POWER_UP_BLINK_START) * 400)) %
+            2 ===
+            0
 
-            // Chance to drop power-up
-            if (Math.random() < GAME_CONSTANTS.POWER_UP_DROP_CHANCE) {
-              createPowerUp(asteroid.x, asteroid.y)
-            }
+        if (shouldShow) {
+          const shieldRadius = GAME_CONSTANTS.SHIP_SIZE + 10
+          const pulseAmount = Math.sin(Date.now() / 200) * 2 // Pulsing effect
 
-            // Add visual feedback for shield hit
-            if (canvasRef.current?.getContext('2d')) {
-              const ctx = canvasRef.current.getContext('2d')!
-              ctx.strokeStyle = '#ffffff'
-              ctx.lineWidth = 3
-              ctx.beginPath()
-              ctx.arc(shipX.current, shipY.current, shieldRadius, 0, Math.PI * 2)
-              ctx.stroke()
-              ctx.lineWidth = 1
-            }
+          ctx.strokeStyle = '#0000ff'
+          ctx.lineWidth = 2
+          ctx.beginPath()
+          ctx.arc(shipX.current, shipY.current, shieldRadius + pulseAmount, 0, Math.PI * 2)
+          ctx.stroke()
+          ctx.lineWidth = 1
 
-            return false // Remove the asteroid
-          }
-          return true
-        })
+          // Add inner shield ring
+          ctx.strokeStyle = '#4444ff'
+          ctx.beginPath()
+          ctx.arc(shipX.current, shipY.current, shieldRadius - 2 - pulseAmount, 0, Math.PI * 2)
+          ctx.stroke()
+        }
       }
 
       // Update collision detection to not trigger game over if shield is active
@@ -699,21 +847,34 @@ const AsteroidsGame = () => {
     // Draw shield if active
     const hasShield = activePowerUps.current.some((p) => p.type === 'shield')
     if (hasShield) {
-      const shieldRadius = GAME_CONSTANTS.SHIP_SIZE + 10
-      const pulseAmount = Math.sin(Date.now() / 200) * 2 // Pulsing effect
+      const shield = activePowerUps.current.find((p) => p.type === 'shield')!
+      const timeLeft = shield.expiresAt - Date.now()
+      const isBlinking = timeLeft < GAME_CONSTANTS.POWER_UP_BLINK_START
 
-      ctx.strokeStyle = '#0000ff'
-      ctx.lineWidth = 2
-      ctx.beginPath()
-      ctx.arc(shipX.current, shipY.current, shieldRadius + pulseAmount, 0, Math.PI * 2)
-      ctx.stroke()
-      ctx.lineWidth = 1
+      // Calculate blink rate - gets faster as time runs out
+      const shouldShow =
+        !isBlinking ||
+        Math.floor(Date.now() / (100 + (timeLeft / GAME_CONSTANTS.POWER_UP_BLINK_START) * 400)) %
+          2 ===
+          0
 
-      // Add inner shield ring
-      ctx.strokeStyle = '#4444ff'
-      ctx.beginPath()
-      ctx.arc(shipX.current, shipY.current, shieldRadius - 2 - pulseAmount, 0, Math.PI * 2)
-      ctx.stroke()
+      if (shouldShow) {
+        const shieldRadius = GAME_CONSTANTS.SHIP_SIZE + 10
+        const pulseAmount = Math.sin(Date.now() / 200) * 2 // Pulsing effect
+
+        ctx.strokeStyle = '#0000ff'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(shipX.current, shipY.current, shieldRadius + pulseAmount, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.lineWidth = 1
+
+        // Add inner shield ring
+        ctx.strokeStyle = '#4444ff'
+        ctx.beginPath()
+        ctx.arc(shipX.current, shipY.current, shieldRadius - 2 - pulseAmount, 0, Math.PI * 2)
+        ctx.stroke()
+      }
     }
 
     // Draw UI
@@ -729,6 +890,11 @@ const AsteroidsGame = () => {
         const timeLeft = Math.ceil((powerUp.expiresAt - Date.now()) / 1000)
         ctx.fillText(`${powerUp.type}: ${timeLeft}s`, 10, 90 + index * 25)
       })
+    }
+
+    // Add this near where you draw other effects
+    if (!isPaused) {
+      updateLaser(ctx, shipX.current, shipY.current, asteroids.current)
     }
   }
 
@@ -805,7 +971,7 @@ const AsteroidsGame = () => {
 
   // Add this function to create power-ups
   const createPowerUp = (x: number, y: number) => {
-    const types: PowerUpType[] = ['spreadShot', 'rapidFire', 'shield', 'speedBoost']
+    const types: PowerUpType[] = ['spreadShot', 'rapidFire', 'shield', 'speedBoost', 'laser']
     const randomType = types[Math.floor(Math.random() * types.length)]
 
     powerUps.current.push({
@@ -1073,6 +1239,7 @@ const AsteroidsGame = () => {
         width: '100%',
         height: '100%',
         backgroundColor: isPlaying ? 'black' : 'transparent',
+        cursor: isPlaying && !isPaused ? 'none' : 'auto',
       }}
     >
       <div className="flex gap-2">
