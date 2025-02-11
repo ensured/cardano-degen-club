@@ -70,11 +70,8 @@ const WebhookRegistrationForm = ({
       const result = await removeWebhookEmail(webhookId)
       if (result.success) {
         toast.success('Email removed successfully. You will no longer receive notifications.')
-        setWebhookId('')
-        setEmail(email || '')
-        localStorage.removeItem(WEBHOOK_ID_KEY)
+        setEmail('')
         setRegistrationStatus('idle')
-        setWebhookExists(false)
       } else {
         toast.error(result.error || 'Failed to remove email')
       }
