@@ -31,20 +31,7 @@ const isValidUUID = (id: string) =>
 // Add email validation
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
-const WebhookRegistrationForm = ({
-  webhookId,
-  setWebhookId,
-  email,
-  setEmail,
-  isSubmitting,
-  registrationStatus,
-  errorMessage,
-  setRegistrationStatus,
-  setWebhookExists,
-  handleSubmit,
-  handleWebhookIdChange,
-  webhookExists,
-}: {
+interface WebhookRegistrationFormProps {
   webhookId: string
   setWebhookId: (webhookId: string) => void
   email: string
@@ -57,41 +44,53 @@ const WebhookRegistrationForm = ({
   handleSubmit: (e: React.FormEvent) => Promise<void>
   handleWebhookIdChange: (webhookId: string) => void
   webhookExists: boolean
-}) => {
+  emailAddressInputRef: React.RefObject<HTMLInputElement>
+}
+
+const WebhookRegistrationForm = (props: WebhookRegistrationFormProps) => {
   const handleRemoveEmail = async (e: React.MouseEvent) => {
     e.preventDefault()
-    if (!webhookId || !isValidUUID(webhookId)) {
-      toast.error('Invalid Webhook ID')
+    if (!props.webhookId || !isValidUUID(props.webhookId)) {
+      toast.error('Invalid Webhook ID', {
+        position: 'bottom-center',
+      })
       return
     }
 
     try {
-      console.log('Removing email for webhook ID:', webhookId)
-      const result = await removeWebhookEmail(webhookId)
+      console.log('Removing email for webhook ID:', props.webhookId)
+      const result = await removeWebhookEmail(props.webhookId)
       if (result.success) {
-        toast.success('Email removed successfully. You will no longer receive notifications.')
-        setEmail('')
-        setRegistrationStatus('idle')
+        toast.success('Email removed successfully. You will no longer receive notifications.', {
+          position: 'bottom-center',
+        })
+        props.setEmail('')
+        props.setRegistrationStatus('idle')
+        props.emailAddressInputRef.current?.focus()
       } else {
-        toast.error(result.error || 'Failed to remove email')
+        toast.error(result.error || 'Failed to remove email', {
+          position: 'bottom-center',
+        })
       }
     } catch (error) {
       console.error('Error removing email:', error)
-      toast.error('Failed to remove email')
+      toast.error('Failed to remove email', {
+        position: 'bottom-center',
+      })
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 lg:space-y-4">
+    <form onSubmit={props.handleSubmit} className="space-y-6 sm:space-y-8 lg:space-y-4">
       <div className="relative">
         <div className="absolute inset-0 -z-10 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10" />
         <label className="block">
-          {isValidUUID(webhookId) && registrationStatus === 'success' && (
+          {isValidUUID(props.webhookId) && props.registrationStatus === 'success' && (
             <div className="absolute -inset-[2px] animate-pulse rounded-xl bg-gradient-to-r from-emerald-400/40 to-teal-400/40" />
           )}
           <div className="relative px-4 py-2">
             <label className="block text-lg font-medium sm:text-xl lg:text-2xl">
-              {isValidUUID(webhookId) ? (
+              {isValidUUID(props.webhookId) ? (
                 <span className="flex items-center gap-2 text-emerald-400">
                   Webhook ID <CheckIcon className="size-5 text-success" />
                 </span>
@@ -102,11 +101,11 @@ const WebhookRegistrationForm = ({
               )}
               <Input
                 type="text"
-                value={webhookId}
+                value={props.webhookId}
                 placeholder="35bb67f5-a262-41f0-b22d-6525e8c7cf8b"
                 onChange={(e) => {
-                  setWebhookId(e.target.value)
-                  handleWebhookIdChange(e.target.value)
+                  props.setWebhookId(e.target.value)
+                  props.handleWebhookIdChange(e.target.value)
                 }}
                 className="mt-2 border-2 border-border/50 bg-background/80 text-base transition-all hover:border-primary/30 focus:border-primary/50 sm:text-lg lg:text-xl"
                 required
@@ -119,7 +118,7 @@ const WebhookRegistrationForm = ({
           <label className="mb-1.5 block text-lg font-medium sm:text-xl lg:text-2xl">
             <span className="flex items-center gap-2">
               Email Address
-              {isValidEmail(email) ? (
+              {isValidEmail(props.email) ? (
                 <CheckIcon className="size-5 text-emerald-400" />
               ) : (
                 <XIcon className="size-5 text-rose-400" />
@@ -127,9 +126,10 @@ const WebhookRegistrationForm = ({
             </span>
             <Input
               type="email"
-              value={email}
+              value={props.email}
+              ref={props.emailAddressInputRef}
               placeholder="your@email.com"
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => props.setEmail(e.target.value)}
               className="mt-1.5 border border-border/80 text-base sm:text-lg lg:text-xl"
               required
             />
@@ -140,22 +140,22 @@ const WebhookRegistrationForm = ({
         </div>
       </div>
 
-      {registrationStatus === 'error' && (
+      {props.registrationStatus === 'error' && (
         <div className="bg-error/10 text-error rounded-md p-2.5 text-sm sm:p-3 sm:text-base lg:text-lg">
-          ❌ Error: {errorMessage}
+          ❌ Error: {props.errorMessage}
         </div>
       )}
 
       <Button3D
         className="mt-4 w-full bg-gradient-to-r from-indigo-400 to-purple-300 p-5 text-lg font-medium text-background transition-all hover:scale-[1.02] hover:shadow-[0_0_25px_-5px_rgba(99,102,241,0.4)] sm:text-xl lg:text-2xl"
-        disabled={isSubmitting}
+        disabled={props.isSubmitting}
       >
-        {isSubmitting && (
+        {props.isSubmitting && (
           <Loader2 className="mr-2 h-5 w-5 animate-spin text-purple-800 sm:h-6 sm:w-6" />
         )}
-        {isSubmitting
+        {props.isSubmitting
           ? 'Registering...'
-          : webhookExists
+          : props.webhookExists
             ? 'Update Webhook ID'
             : 'Register Webhook ID'}
       </Button3D>
@@ -164,10 +164,10 @@ const WebhookRegistrationForm = ({
         <Button
           variant="destructive"
           onClick={handleRemoveEmail}
-          disabled={!webhookExists || isSubmitting}
+          disabled={!props.webhookExists || props.isSubmitting}
           className="w-full text-lg hover:bg-destructive/90"
         >
-          {isSubmitting ? (
+          {props.isSubmitting ? (
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
             <XIcon className="mr-2 h-5 w-5" />
@@ -295,6 +295,25 @@ const WalletFren = () => {
   const [userTimezone, setUserTimezone] = useState('UTC')
   const [webhookExists, setWebhookExists] = useState(false)
   const [webhookCount, setWebhookCount] = useState(0)
+  const emailAddressInputRef = useRef<HTMLInputElement>(null)
+  const [subscriptionActive, setSubscriptionActive] = useState(false)
+
+  useEffect(() => {
+    // get the kv webhook email with the webhook id and set the setSubscriptionActive to true if the email is not empty
+    const fetchWebhookData = async () => {
+      // check if the webhook id is valid
+      if (isValidUUID(webhookId)) {
+        const webhookData = await getWebhookData(webhookId)
+        if (webhookData?.email) {
+          setEmail(webhookData.email)
+          setSubscriptionActive(true)
+        } else {
+          setSubscriptionActive(false)
+        }
+      }
+    }
+    fetchWebhookData()
+  }, [webhookId])
 
   // Load last used webhook ID from localStorage on mount
   useEffect(() => {
@@ -350,19 +369,28 @@ const WalletFren = () => {
         setRegistrationStatus('success')
         setWebhookExists(true)
         if (result.exists) {
-          toast.success('Data updated successfully.')
+          toast.success('Data updated successfully.', {
+            position: 'bottom-center',
+          })
+          setSubscriptionActive(true)
         } else {
-          toast.success('Webhook registered successfully!')
+          toast.success('Webhook registered successfully!', {
+            position: 'bottom-center',
+          })
         }
       } else {
         setRegistrationStatus('error')
         setErrorMessage(result.error || 'Registration failed')
-        toast.error(result.error || 'Error registering webhook')
+        toast.error(result.error || 'Error registering webhook', {
+          position: 'bottom-center',
+        })
       }
     } catch (error) {
       setRegistrationStatus('error')
       setErrorMessage('An unexpected error occurred')
-      toast.error('Failed to register webhook')
+      toast.error('Failed to register webhook', {
+        position: 'bottom-center',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -382,7 +410,10 @@ const WalletFren = () => {
     try {
       // Check if we're in a secure context
       if (!window.isSecureContext) {
-        toast.error('Clipboard access requires HTTPS', { duration: 3000 })
+        toast.error('Clipboard access requires HTTPS', {
+          position: 'bottom-center',
+          duration: 3000,
+        })
         return
       }
 
@@ -416,7 +447,7 @@ const WalletFren = () => {
     } catch (err) {
       console.error('Copy error:', err)
       toast.error('Failed to copy - check console', {
-        position: 'top-center',
+        position: 'bottom-center',
         duration: 3000,
         icon: <XIcon className="h-5 w-5 text-rose-400" />,
       })
@@ -510,15 +541,21 @@ const WalletFren = () => {
           <div className="p-4 sm:p-5 lg:p-6">
             <div className="mb-6 flex items-baseline justify-between">
               <h2 className="text-xl font-semibold sm:text-2xl lg:text-3xl">
-                Register your ID {isValidUUID(webhookId) && isValidEmail(email) ? '✅' : ''}
+                Register your ID{' '}
+                {isValidUUID(webhookId) && isValidEmail(email) ? (
+                  <>| {subscriptionActive ? '✅ Recieving Emails' : '❌ Not Recieving Emails'}</>
+                ) : (
+                  ''
+                )}
               </h2>
             </div>
             <WebhookRegistrationForm
+              emailAddressInputRef={emailAddressInputRef}
               setRegistrationStatus={setRegistrationStatus}
               setWebhookExists={setWebhookExists}
               handleWebhookIdChange={handleWebhookIdChange}
               webhookId={webhookId}
-              setWebhookId={handleWebhookIdChange}
+              setWebhookId={setWebhookId}
               email={userEmail ?? email}
               setEmail={setEmail}
               isSubmitting={isSubmitting}
