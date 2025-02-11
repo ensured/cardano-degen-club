@@ -796,7 +796,7 @@ export async function submitScore(username: string, score: number) {
       FROM leaderboard
       WHERE username = ${username}
     `
-
+    let updated_at = null
     let newScore
     if (existingScores.length > 0) {
       // If existing score is lower, update it
@@ -810,6 +810,7 @@ export async function submitScore(username: string, score: number) {
           RETURNING id, username, score, created_at, updated_at
         `
         newScore = updated
+        updated_at = updated.updated_at
       } else {
         // If existing score is higher, return it with current rank
         newScore = existingScores[0]
@@ -844,6 +845,7 @@ export async function submitScore(username: string, score: number) {
       success: true,
       data: newScore,
       rank: rank.rank,
+      updated_at: updated_at,
     }
   } catch (error) {
     console.error('Error saving score:', error)
@@ -854,7 +856,7 @@ export async function submitScore(username: string, score: number) {
 export async function getLeaderboard() {
   try {
     const { rows } = await sql`
-      SELECT username, score, created_at
+      SELECT username, score, created_at, updated_at
       FROM leaderboard
       ORDER BY score DESC
       LIMIT 100

@@ -12,6 +12,7 @@ type LeaderboardEntry = {
   username: string
   score: number
   created_at: string
+  updated_at: string
 }
 
 export const Leaderboard = () => {
@@ -105,7 +106,14 @@ export const Leaderboard = () => {
                       {entry.score}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-muted-foreground">
-                      {new Date(entry.created_at).toLocaleDateString()}
+                      {new Date(entry.updated_at || entry.created_at).toLocaleDateString('en-US', {
+                        year: '2-digit',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZoneName: 'short',
+                      })}
                     </td>
                   </tr>
                 ))}
