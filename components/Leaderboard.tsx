@@ -61,7 +61,20 @@ export const Leaderboard = () => {
 
   if (loading)
     return (
-      <div className="flex flex-col items-center justify-center gap-1.5 rounded-lg border border-border p-2">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border p-2">
+        {/* 15 rows of skeletons each 20px high */}
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-5 w-full" />
         <Skeleton className="h-5 w-full" />
         <Skeleton className="h-5 w-full" />
         <Skeleton className="h-5 w-full" />
@@ -72,7 +85,7 @@ export const Leaderboard = () => {
     <div className="w-full">
       {(walletState?.adaHandle?.handle || walletState?.walletAddress) &&
         walletState.network === 1 && (
-          <div className="rounded-lg border border-border">
+          <div className="h-[430px] rounded-lg border border-border">
             <table className="w-full">
               <thead>
                 <tr>

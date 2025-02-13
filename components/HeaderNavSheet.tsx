@@ -40,6 +40,7 @@ import { Button } from './ui/button'
 import { Sheet, SheetDescription, SheetTitle, SheetTrigger } from './ui/sheet'
 import { timeAgoCompact } from '../lib/helper'
 import { Separator } from './ui/separator'
+import CardanoDonationDialog from './cardano-donation-dialog'
 
 export function HeaderNavSheet() {
   const { folderCommits, latestRepoCommit, loading, error } = useCommits()
@@ -429,6 +430,8 @@ export function HeaderNavSheet() {
               </span>
             )}
           </CustomLink>
+
+          <CardanoDonationDialog />
         </div>
 
         <VisuallyHidden>
