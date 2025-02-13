@@ -12,9 +12,9 @@ import { BrowserView, MobileView } from 'react-device-detect'
 
 // Constants
 const GAME_CONSTANTS = {
-  SHOT_COOLDOWN: 120, // Base 500ms = 2 shots/sec
-  RAPID_FIRE_MULTIPLIER: 3, // 6x faster when active
-  DIFFICULTY_SCORE_INTERVAL: 2000,
+  SHOT_COOLDOWN: 120,
+  RAPID_FIRE_MULTIPLIER: 3, // 3x faster when active
+  DIFFICULTY_SCORE_INTERVAL: 100,
   MAX_ROTATION_SPEED: 0.05,
   ROTATION_ACCELERATION: 0.003,
   ROTATION_FRICTION: 0.93,
@@ -23,7 +23,7 @@ const GAME_CONSTANTS = {
   POWER_UP_LIFETIME: 20000,
   POWER_UP_BLINK_START: 3000,
   SHIP_SIZE: 12,
-  THRUST_POWER: 0.022,
+  THRUST_POWER: 0.0223,
   FRICTION: 0.988,
   LASER_RANGE: 300,
   LASER_DAMAGE_INTERVAL: 50,
@@ -37,7 +37,7 @@ const GAME_CONSTANTS = {
   MAX_BULLETS: 50,
   BOSS_BULLET_DAMAGE: 1,
   BOSS_BULLET_SPEED: 1.69, // Slightly slower bullets
-  BOSS_ATTACK_COOLDOWN: 10000, // 5 seconds between attacks
+  BOSS_ATTACK_COOLDOWN: 10000,
   BOSS_HEALTH_MULTIPLIER: 1.1,
   SHIELD_BASE_HEALTH: 120, // Increased from 200
   SHIELD_DAMAGE_NORMAL: 100, // Fixed value per asteroid hit
@@ -565,9 +565,15 @@ const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
   }
 
   if (asteroid.isBoss) {
+    // Add charge progress calculation
+    const chargeProgress = Math.min(
+      1,
+      (Date.now() - asteroid.lastAttackTime) / GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION,
+    )
+
     // Pulsing core glow
     const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5
-    const coreGradient = ctx.createRadialGradient(
+    const coreGradientBoss = ctx.createRadialGradient(
       asteroid.x,
       asteroid.y,
       0,
@@ -575,61 +581,125 @@ const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
       asteroid.y,
       asteroid.size,
     )
-    coreGradient.addColorStop(0, `rgba(255, 0, 0, ${0.4 + pulse * 0.3})`)
-    coreGradient.addColorStop(1, 'rgba(255, 0, 0, 0)')
+    coreGradientBoss.addColorStop(0, `rgba(255, 0, 0, ${0.4 + pulse * 0.3})`)
+    coreGradientBoss.addColorStop(1, 'rgba(255, 0, 0, 0)')
 
-    ctx.fillStyle = coreGradient
+    ctx.fillStyle = coreGradientBoss
     ctx.beginPath()
     ctx.arc(asteroid.x, asteroid.y, asteroid.size, 0, Math.PI * 2)
     ctx.fill()
 
     // Energy particles
-    for (let i = 0; i < 10; i++) {
+    ctx.save()
+    for (let i = 0; i < 20; i++) {
+      // Increased particle count
+      const lifeProgress = (Date.now() % 2000) / 2000 // 2 second cycle
       const angle = Math.random() * Math.PI * 2
-      const radius = asteroid.size * (0.8 + Math.random() * 0.2)
-      ctx.fillStyle = `rgba(255, ${Math.random() * 100}, 0, ${0.5})`
-      ctx.beginPath()
-      ctx.arc(
+      const radius = asteroid.size * (0.7 + Math.sin(Date.now() / 100 + i * 0.3) * 0.3)
+      const particleSize = 3 + Math.sin(Date.now() / 50 + i) * 2
+      const hue = 30 + Math.sin(Date.now() / 200 + i) * 20
+
+      // Create gradient for particle
+      const gradient = ctx.createRadialGradient(
         asteroid.x + Math.cos(angle) * radius,
         asteroid.y + Math.sin(angle) * radius,
-        2 + Math.random() * 3,
         0,
-        Math.PI * 2,
+        asteroid.x + Math.cos(angle) * radius,
+        asteroid.y + Math.sin(angle) * radius,
+        particleSize * 2,
       )
-      ctx.fill()
-    }
+      gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, ${0.8 - lifeProgress * 0.5})`)
+      gradient.addColorStop(1, `hsla(${hue}, 100%, 30%, 0)`)
 
-    // Pulsing core during charge-up
-    if (asteroid.isCharging) {
-      const chargeProgress =
-        (Date.now() -
-          (asteroid.lastAttackTime +
-            GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN -
-            GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION)) /
-        GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION
-      const pulse = Math.sin(Date.now() / 50) * (1 + chargeProgress * 2)
+      ctx.fillStyle = gradient
 
-      // Warning circle
-      ctx.strokeStyle = `hsl(${30 * (1 - chargeProgress)}, 100%, 50%)`
-      ctx.lineWidth = 2 + pulse
-      ctx.beginPath()
-      ctx.arc(asteroid.x, asteroid.y, asteroid.size + 20 + pulse * 10, 0, Math.PI * 2)
-      ctx.stroke()
+      // Add rotation and different shapes
+      ctx.save()
+      ctx.translate(asteroid.x + Math.cos(angle) * radius, asteroid.y + Math.sin(angle) * radius)
+      ctx.rotate(Date.now() / 500 + i)
 
-      // Target lines
-      ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)'
-      ctx.lineWidth = 1
-      for (let i = 0; i < 16; i++) {
-        const angle = (i * Math.PI) / 8
+      // Random shape (circle or triangle)
+      if (Math.random() > 0.5) {
         ctx.beginPath()
-        ctx.moveTo(asteroid.x, asteroid.y)
-        ctx.lineTo(
-          asteroid.x + Math.cos(angle) * (asteroid.size + 50 + pulse * 20),
-          asteroid.y + Math.sin(angle) * (asteroid.size + 50 + pulse * 20),
+        ctx.arc(0, 0, particleSize, 0, Math.PI * 2)
+        ctx.fill()
+      } else {
+        ctx.beginPath()
+        ctx.moveTo(0, -particleSize)
+        ctx.lineTo(particleSize, particleSize)
+        ctx.lineTo(-particleSize, particleSize)
+        ctx.closePath()
+        ctx.fill()
+      }
+
+      // Add trailing particles
+      if (Math.random() > 0.7) {
+        ctx.beginPath()
+        ctx.arc(
+          (Math.random() - 0.5) * particleSize * 2,
+          (Math.random() - 0.5) * particleSize * 2,
+          particleSize * 0.5,
+          0,
+          Math.PI * 2,
         )
+        ctx.fill()
+      }
+
+      ctx.restore()
+    }
+    ctx.restore()
+
+    // Add core pulse effect
+    const corePulse = Math.sin(Date.now() / 150) * 0.5 + 0.5
+    const coreGradient = ctx.createRadialGradient(
+      asteroid.x,
+      asteroid.y,
+      0,
+      asteroid.x,
+      asteroid.y,
+      asteroid.size * 1.5,
+    )
+    coreGradient.addColorStop(0, `hsla(30, 100%, 70%, ${0.3 + corePulse * 0.2})`)
+    coreGradient.addColorStop(1, 'hsla(30, 100%, 50%, 0)')
+
+    ctx.fillStyle = coreGradient
+    ctx.beginPath()
+    ctx.arc(asteroid.x, asteroid.y, asteroid.size * 1.2, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Accurate target lines matching bullet spread
+    if (asteroid.isCharging) {
+      ctx.save()
+      // Add conditional check
+      const bulletCount = 8
+      const bulletSpread = Math.PI * 2
+      const startRadius = asteroid.size + 10
+
+      ctx.strokeStyle = `hsla(${30 * (1 - chargeProgress)}, 100%, 50%, ${0.5 + chargeProgress * 0.3})`
+      ctx.lineWidth = 1 + chargeProgress * 2
+
+      for (let i = 0; i < bulletCount; i++) {
+        const angle = (i * bulletSpread) / bulletCount
+        const startX = asteroid.x + Math.cos(angle) * startRadius
+        const startY = asteroid.y + Math.sin(angle) * startRadius
+        const endX = startX + Math.cos(angle) * 150 * pulse
+        const endY = startY + Math.sin(angle) * 150 * pulse
+
+        // Draw tapered line
+        ctx.beginPath()
+        ctx.moveTo(startX, startY)
+        ctx.lineTo(endX, endY)
+
+        // Create gradient for line
+        const lineGradient = ctx.createLinearGradient(startX, startY, endX, endY)
+        lineGradient.addColorStop(0, `hsla(30, 100%, 70%, ${0.8 + chargeProgress * 0.2})`)
+        lineGradient.addColorStop(1, `hsla(30, 100%, 50%, 0)`)
+        ctx.strokeStyle = lineGradient
+
         ctx.stroke()
       }
     }
+    ctx.restore() // End isolation
   }
 }
 
@@ -1300,28 +1370,30 @@ const AsteroidsGame = () => {
 
     const now = Date.now()
     const timeSinceLastAttack = now - asteroid.lastAttackTime
-    const bulletSpeed = GAME_CONSTANTS.BOSS_BULLET_SPEED
 
-    // New attack phase logic
     if (
       timeSinceLastAttack >
-      GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - GAME_CONSTANTS.BOSS_ATTACK_WARNING_DURATION
+      GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION
     ) {
-      // Warning phase
       asteroid.isCharging =
         timeSinceLastAttack >
         GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION
 
       if (timeSinceLastAttack >= GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN) {
-        // Attack phase
-        for (let i = 0; i < 8; i++) {
-          // Reduced from 16 to 8
-          const angle = (i * Math.PI) / 4 // Reduced from 8 to 4
+        const bulletCount = 8 // Match target line count
+        const bulletSpread = Math.PI * 2
+        const startRadius = asteroid.size + 10
+
+        for (let i = 0; i < bulletCount; i++) {
+          const angle = (i * bulletSpread) / bulletCount
+          const startX = asteroid.x + Math.cos(angle) * startRadius
+          const startY = asteroid.y + Math.sin(angle) * startRadius
+
           asteroid.bullets.push({
-            x: asteroid.x + Math.cos(angle) * (asteroid.size + 20),
-            y: asteroid.y + Math.sin(angle) * (asteroid.size + 20),
-            dx: Math.cos(angle) * bulletSpeed,
-            dy: Math.sin(angle) * bulletSpeed,
+            x: startX,
+            y: startY,
+            dx: Math.cos(angle) * GAME_CONSTANTS.BOSS_BULLET_SPEED,
+            dy: Math.sin(angle) * GAME_CONSTANTS.BOSS_BULLET_SPEED,
             createdAt: Date.now(),
           })
         }
@@ -1499,13 +1571,26 @@ const AsteroidsGame = () => {
       activePowerUps.current,
     )
 
-    // Draw bullets
+    // Draw player bullets
     ctx.beginPath()
     bullets.current.forEach((bullet) => {
       ctx.moveTo(bullet.x + 2, bullet.y)
       ctx.arc(bullet.x, bullet.y, 2, 0, Math.PI * 2)
     })
     ctx.fillStyle = 'white'
+    ctx.fill()
+
+    // Add boss bullets drawing
+    ctx.beginPath()
+    asteroids.current.forEach((asteroid) => {
+      if (asteroid.isBoss) {
+        asteroid.bullets.forEach((bullet) => {
+          ctx.moveTo(bullet.x + 3, bullet.y)
+          ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2)
+        })
+      }
+    })
+    ctx.fillStyle = 'red'
     ctx.fill()
 
     // Draw asteroids
@@ -1678,56 +1763,80 @@ const AsteroidsGame = () => {
       }
     }
 
-    // Update active power-ups
-    activePowerUps.current = activePowerUps.current.filter(
-      (powerUp) => Date.now() < powerUp.expiresAt,
-    )
+    // Only update these if not paused
+    if (!isPaused) {
+      // Update active power-ups
+      activePowerUps.current = activePowerUps.current.filter(
+        (powerUp) => Date.now() < powerUp.expiresAt,
+      )
 
-    // Update power-up collection logic
-    powerUps.current = powerUps.current.filter((powerUp) => {
-      const dx = shipX.current - powerUp.x
-      const dy = shipY.current - powerUp.y
-      const distance = Math.sqrt(dx * dx + dy * dy)
-      const powerUpAge = Date.now() - powerUp.createdAt
+      // Update power-up collection logic
+      powerUps.current = powerUps.current.filter((powerUp) => {
+        const dx = shipX.current - powerUp.x
+        const dy = shipY.current - powerUp.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        const powerUpAge = Date.now() - powerUp.createdAt
 
-      if (distance < 20 || powerUpAge > GAME_CONSTANTS.POWER_UP_LIFETIME) {
-        if (distance < 20) {
-          const existingPowerUpIndex = activePowerUps.current.findIndex(
-            (p) => p.type === powerUp.type,
-          )
+        if (distance < 20 || powerUpAge > GAME_CONSTANTS.POWER_UP_LIFETIME) {
+          if (distance < 20) {
+            const existingPowerUpIndex = activePowerUps.current.findIndex(
+              (p) => p.type === powerUp.type,
+            )
 
-          if (existingPowerUpIndex !== -1) {
-            activePowerUps.current[existingPowerUpIndex].expiresAt =
-              Date.now() + GAME_CONSTANTS.POWER_UP_DURATION
-          } else {
-            activePowerUps.current.push({
-              type: powerUp.type,
-              expiresAt: Date.now() + GAME_CONSTANTS.POWER_UP_DURATION,
-            })
+            if (existingPowerUpIndex !== -1) {
+              activePowerUps.current[existingPowerUpIndex].expiresAt =
+                Date.now() + GAME_CONSTANTS.POWER_UP_DURATION
+            } else {
+              activePowerUps.current.push({
+                type: powerUp.type,
+                expiresAt: Date.now() + GAME_CONSTANTS.POWER_UP_DURATION,
+              })
 
-            // Immediate effect for rapid fire
-            if (powerUp.type === 'rapidFire' && shootingInterval.current) {
-              clearInterval(shootingInterval.current)
-              shootingInterval.current = null
-              if (keys.current['Space'] || keys.current['KeyM']) {
-                shootHandler() // Restart shooting with new rate
+              // Immediate effect for rapid fire
+              if (powerUp.type === 'rapidFire' && shootingInterval.current) {
+                clearInterval(shootingInterval.current)
+                shootingInterval.current = null
+                if (keys.current['Space'] || keys.current['KeyM']) {
+                  shootHandler() // Restart shooting with new rate
+                }
               }
             }
+
+            toast.success(`${powerUp.type} power-up collected!`, {
+              duration: 2000,
+            })
           }
-
-          toast.success(`${powerUp.type} power-up collected!`, {
-            duration: 2000,
-          })
+          return false
         }
-        return false
-      }
-      return true
-    })
+        return true
+      })
 
-    // Draw power-ups
-    powerUps.current.forEach((powerUp) => {
-      drawPowerUp(ctx, powerUp)
-    })
+      // Draw power-ups
+      powerUps.current.forEach((powerUp) => {
+        drawPowerUp(ctx, powerUp)
+      })
+
+      // Update boss behavior
+      asteroids.current.forEach((asteroid) => {
+        if (asteroid.isBoss) {
+          updateBossBehavior(asteroid)
+        }
+      })
+
+      // Update boss bullet positions
+      asteroids.current.forEach((asteroid) => {
+        if (asteroid.isBoss) {
+          asteroid.bullets.forEach((b) => {
+            b.x += b.dx
+            b.y += b.dy
+          })
+
+          asteroid.bullets = asteroid.bullets.filter(
+            (b) => b.x > -50 && b.x < canvas.width + 50 && b.y > -50 && b.y < canvas.height + 50,
+          )
+        }
+      })
+    }
 
     // Draw UI
     ctx.save()
@@ -1788,27 +1897,6 @@ const AsteroidsGame = () => {
     // Add this new function to draw disintegration particles
     drawDisintegration(ctx)
 
-    // Update boss behavior
-    asteroids.current.forEach((asteroid) => {
-      if (asteroid.isBoss) {
-        updateBossBehavior(asteroid)
-      }
-    })
-
-    // Draw boss bullets with better visibility
-    ctx.save()
-    ctx.globalCompositeOperation = 'lighten'
-    asteroids.current.forEach((asteroid) => {
-      asteroid.bullets.forEach((b) => {
-        // Replace gradient with solid color
-        ctx.fillStyle = 'rgba(255, 100, 0, 0.7)'
-        ctx.beginPath()
-        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2) // Reduced from 10 to 4
-        ctx.fill()
-      })
-    })
-    ctx.restore()
-
     // Add this right after the existing asteroid collision checks
     // But before the boss behavior updates
     asteroids.current.forEach((asteroid) => {
@@ -1830,22 +1918,6 @@ const AsteroidsGame = () => {
           asteroid.bullets.splice(bulletIndex, 1)
         }
       })
-    })
-
-    // Add this in the updateGame function where boss bullets are processed:
-    asteroids.current.forEach((asteroid) => {
-      if (asteroid.isBoss) {
-        // Update boss bullet positions
-        asteroid.bullets.forEach((b) => {
-          b.x += b.dx
-          b.y += b.dy
-        })
-
-        // Remove bullets that go off-screen
-        asteroid.bullets = asteroid.bullets.filter(
-          (b) => b.x > -50 && b.x < canvas.width + 50 && b.y > -50 && b.y < canvas.height + 50,
-        )
-      }
     })
 
     // Check for expired rapid fire and reset shooting
