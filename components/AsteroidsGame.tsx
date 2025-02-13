@@ -5,31 +5,56 @@ import { toast } from 'sonner'
 import { eventEmitter } from '@/lib/eventEmitter'
 import { submitScore } from '@/app/actions'
 import { useWallet } from '@/contexts/WalletContext'
-import { LeaderboardDialog } from './LeaderboardDialog'
 import { Button } from './ui/button'
 import Button3D from './3dButton'
 import { Progress } from './ui/progress'
+import { BrowserView, MobileView } from 'react-device-detect'
 
 // Constants
 const GAME_CONSTANTS = {
-  SHOT_COOLDOWN: 150,
-  DIFFICULTY_SCORE_INTERVAL: 2000,
+  SHOT_COOLDOWN: 120, // Base 500ms = 2 shots/sec
+  RAPID_FIRE_MULTIPLIER: 3, // 6x faster when active
+  DIFFICULTY_SCORE_INTERVAL: 1000,
   MAX_ROTATION_SPEED: 0.05,
   ROTATION_ACCELERATION: 0.003,
-  ROTATION_FRICTION: 0.97,
+  ROTATION_FRICTION: 0.93,
   POWER_UP_DURATION: 15000,
-  POWER_UP_DROP_CHANCE: 0.2,
+  POWER_UP_DROP_CHANCE: 1,
   POWER_UP_LIFETIME: 15000,
   POWER_UP_BLINK_START: 3000,
-  SHIP_SIZE: 18,
-  THRUST_POWER: 0.02,
+  SHIP_SIZE: 12,
+  THRUST_POWER: 0.022,
   FRICTION: 0.988,
   LASER_RANGE: 300,
-  LASER_DAMAGE_INTERVAL: 10,
+  LASER_DAMAGE_INTERVAL: 50,
+  LASER_DAMAGE_PER_TICK: 0.25,
+  ASTEROID_COLLISION_FACTOR: 0.6, // Reduced from 0.8 for tighter fit
+  BULLET_DAMAGE: 1,
+  BULLET_SPEED: 10,
+  BOSS_SPAWN_INTERVAL: 1, // Every level
+  MAX_BOSSES: 1,
+  MAX_ASTEROIDS: 20,
+  BOSS_BULLET_DAMAGE: 1,
+  BOSS_BULLET_SPEED: 1.69, // Slightly slower bullets
+  BOSS_ATTACK_COOLDOWN: 3000, // 5 seconds between attacks
+  BOSS_HEALTH_MULTIPLIER: 5,
+  SHIELD_BASE_HEALTH: 120, // Increased from 200
+  SHIELD_DAMAGE_NORMAL: 100, // Fixed value per asteroid hit
+  SHIELD_DAMAGE_BOSS: 250, // Fixed value per boss hit
+  SHIP_COLLISION_RADIUS: 12, // More precise hitbox
+  SHIELD_VULNERABILITY: 0.2, // 20% of damage penetrates shield
 } as const
 
+// Add this helper function in the Constants section
+const getBulletProperties = (hasRapidFire: boolean) => ({
+  bulletSpeed: hasRapidFire ? 7 : 4, // Increased normal speed from 2 to 4
+  cooldown: hasRapidFire
+    ? GAME_CONSTANTS.SHOT_COOLDOWN / GAME_CONSTANTS.RAPID_FIRE_MULTIPLIER
+    : GAME_CONSTANTS.SHOT_COOLDOWN,
+})
+
 // Types and Interfaces
-type PowerUpType = 'spreadShot' | 'rapidFire' | 'shield' | 'speedBoost' | 'laser'
+type PowerUpType = 'spreadShot' | 'rapidFire' | 'speedBoost' | 'laser'
 
 interface PowerUp {
   x: number
@@ -47,6 +72,18 @@ interface Asteroid {
   points: Array<{ x: number; y: number }>
   rotation: number
   rotationSpeed: number
+  collisionRadius: number
+  health: number
+  initialHealth: number
+  isBoss: boolean
+  attackCooldown: number
+  bullets: BossBullet[]
+  bounds: {
+    minX: number
+    maxX: number
+    minY: number
+    maxY: number
+  }
 }
 
 interface Bullet {
@@ -54,6 +91,38 @@ interface Bullet {
   y: number
   dx: number
   dy: number
+  damage: number
+}
+
+interface ExplosionParticle {
+  x: number
+  y: number
+  dx: number
+  dy: number
+  size: number
+  createdAt: number
+  color?: string
+}
+
+// Add new particle type
+interface DisintegrationParticle {
+  x: number
+  y: number
+  dx: number
+  dy: number
+  size: number
+  rotation: number
+  rotationSpeed: number
+  createdAt: number
+  color?: string
+}
+
+type BossBullet = {
+  x: number
+  y: number
+  dx: number
+  dy: number
+  createdAt: number
 }
 
 // Helper Functions
@@ -97,90 +166,221 @@ const drawShip = (
   y: number,
   angle: number,
   isThrusting: boolean,
+  currentShieldHealth: number,
+  activePowerUps: { type: PowerUpType; expiresAt: number }[],
 ) => {
+  // Add rapid fire visual effect
+  const hasRapidFire = activePowerUps.some((p) => p.type === 'rapidFire')
+
   ctx.save()
+  if (hasRapidFire) {
+    // Add red glow effect
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, 50)
+    glow.addColorStop(0, 'rgba(255, 50, 50, 0.4)')
+    glow.addColorStop(1, 'rgba(255, 0, 0, 0)')
+    ctx.fillStyle = glow
+    ctx.fillRect(x - 50, y - 50, 100, 100)
+  }
   ctx.translate(x, y)
   ctx.rotate(angle)
 
-  // New ship design parameters
   const shipSize = GAME_CONSTANTS.SHIP_SIZE
-  const wingSpan = shipSize * 0.8
-  const bodyWidth = shipSize * 0.4
-  const cockpitSize = shipSize * 0.4
+  const wingSpan = shipSize * 1.2 // Increased wing span
+  const bodyLength = shipSize * 1.5 // Longer body
 
-  // Create gradients
-  const bodyGradient = ctx.createLinearGradient(-shipSize, 0, shipSize, 0)
-  bodyGradient.addColorStop(0, '#4a5568')
-  bodyGradient.addColorStop(0.5, '#2d3748')
-  bodyGradient.addColorStop(1, '#4a5568')
+  // Main hull gradient
+  const hullGradient = ctx.createLinearGradient(-shipSize, 0, shipSize, 0)
+  hullGradient.addColorStop(0, '#2d3748')
+  hullGradient.addColorStop(0.5, '#4a5568')
+  hullGradient.addColorStop(1, '#2d3748')
 
-  const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, shipSize)
-  glowGradient.addColorStop(0, 'rgba(59, 130, 246, 0.8)')
-  glowGradient.addColorStop(1, 'rgba(59, 130, 246, 0)')
+  // Glow effect
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, shipSize * 2)
+  glow.addColorStop(0, 'rgba(59, 130, 246, 0.4)')
+  glow.addColorStop(1, 'rgba(59, 130, 246, 0)')
 
-  // Ship glow effect
+  // Ship glow
   ctx.save()
   ctx.beginPath()
-  ctx.arc(0, 0, shipSize * 1.2, 0, Math.PI * 2)
-  ctx.fillStyle = glowGradient
+  ctx.arc(0, 0, shipSize * 1.5, 0, Math.PI * 2)
+  ctx.fillStyle = glow
   ctx.globalCompositeOperation = 'lighter'
   ctx.fill()
   ctx.restore()
 
-  // Main ship body
-  ctx.fillStyle = bodyGradient
-  ctx.strokeStyle = '#cbd5e1'
+  // Main hull
+  ctx.fillStyle = hullGradient
+  ctx.strokeStyle = '#cbd5e0'
   ctx.lineWidth = 2
 
+  // Angular hull design
   ctx.beginPath()
-  ctx.moveTo(0, -shipSize)
-  ctx.lineTo(-bodyWidth, shipSize * 0.5)
-  ctx.lineTo(-wingSpan, shipSize * 0.8)
-  ctx.lineTo(0, shipSize * 0.6)
-  ctx.lineTo(wingSpan, shipSize * 0.8)
-  ctx.lineTo(bodyWidth, shipSize * 0.5)
+  ctx.moveTo(0, -bodyLength) // Top point
+  ctx.lineTo(-shipSize * 0.6, -shipSize * 0.2) // Left shoulder
+  ctx.lineTo(-wingSpan, shipSize * 0.8) // Left wing tip
+  ctx.lineTo(-shipSize * 0.4, shipSize * 0.6) // Left inner wing
+  ctx.lineTo(0, shipSize * 0.4) // Rear center
+  ctx.lineTo(shipSize * 0.4, shipSize * 0.6) // Right inner wing
+  ctx.lineTo(wingSpan, shipSize * 0.8) // Right wing tip
+  ctx.lineTo(shipSize * 0.6, -shipSize * 0.2) // Right shoulder
   ctx.closePath()
   ctx.fill()
   ctx.stroke()
 
-  // Cockpit canopy
-  ctx.fillStyle = 'rgba(96, 165, 250, 0.3)'
-  ctx.strokeStyle = '#bfdbfe'
+  // Central spine
+  ctx.strokeStyle = '#93c5fd'
+  ctx.lineWidth = 3
   ctx.beginPath()
-  ctx.arc(0, -shipSize * 0.2, cockpitSize, 0, Math.PI * 2)
-  ctx.fill()
+  ctx.moveTo(0, -bodyLength)
+  ctx.lineTo(0, shipSize * 0.4)
+  ctx.stroke()
+
+  // Wing details
+  ctx.strokeStyle = '#93c5fd'
+  ctx.lineWidth = 1
+  // Left wing details
+  ctx.beginPath()
+  ctx.moveTo(-shipSize * 0.5, -shipSize * 0.1)
+  ctx.lineTo(-wingSpan * 0.8, shipSize * 0.7)
+  ctx.stroke()
+  // Right wing details
+  ctx.beginPath()
+  ctx.moveTo(shipSize * 0.5, -shipSize * 0.1)
+  ctx.lineTo(wingSpan * 0.8, shipSize * 0.7)
   ctx.stroke()
 
   // Engine glow
   if (isThrusting) {
     ctx.save()
-    const thrustSize = shipSize * 1.5
-    const thrustGradient = ctx.createRadialGradient(0, shipSize, 0, 0, shipSize, thrustSize)
-    thrustGradient.addColorStop(0, 'rgba(251, 191, 36, 0.8)')
-    thrustGradient.addColorStop(1, 'rgba(251, 191, 36, 0)')
+    const thrustLength = shipSize * 2.5
+    const thrustWidth = shipSize * 1.2
 
+    // Main thrust gradient
+    const thrustGradient = ctx.createLinearGradient(0, 0, 0, thrustLength)
+    thrustGradient.addColorStop(0, 'rgba(255, 100, 0, 0.9)') // Core color
+    thrustGradient.addColorStop(0.3, 'rgba(255, 200, 0, 0.5)') // Middle glow
+    thrustGradient.addColorStop(1, 'rgba(255, 80, 0, 0)') // Fade out
+
+    // Thrust shape (flame-like)
     ctx.beginPath()
-    ctx.arc(0, shipSize, thrustSize, 0, Math.PI * 2)
+    ctx.moveTo(-thrustWidth / 2, shipSize * 0.4)
+    ctx.quadraticCurveTo(0, shipSize * 0.4 + thrustLength * 0.7, thrustWidth / 2, shipSize * 0.4)
+    ctx.lineTo(0, shipSize * 0.4 + thrustLength)
+    ctx.closePath()
     ctx.fillStyle = thrustGradient
     ctx.globalCompositeOperation = 'lighter'
     ctx.fill()
+
+    // Core glow
+    const coreGradient = ctx.createRadialGradient(0, shipSize * 0.4, 0, 0, shipSize * 0.4, shipSize)
+    coreGradient.addColorStop(0, 'rgba(255, 255, 200, 0.9)')
+    coreGradient.addColorStop(1, 'rgba(255, 100, 0, 0)')
+
+    ctx.beginPath()
+    ctx.arc(0, shipSize * 0.4, shipSize * 0.8, 0, Math.PI * 2)
+    ctx.fillStyle = coreGradient
+    ctx.fill()
+
+    // Particle effect
+    for (let i = 0; i < 15; i++) {
+      const angle = ((Math.random() - 0.5) * Math.PI) / 2 // Wider angle spread
+      const speed = Math.random() * 3 + 2
+      const size = Math.random() * 2 + 1
+      const alpha = Math.random() * 0.5 + 0.3
+
+      // Calculate direction based on angle relative to ship
+      const dirX = Math.sin(angle) * speed * 2
+      const dirY = Math.cos(angle) * speed * 5
+
+      ctx.fillStyle = `rgba(255, ${200 + Math.random() * 55}, 0, ${alpha})`
+      ctx.beginPath()
+      ctx.arc(
+        dirX, // X position based on angle
+        shipSize * 0.4 + dirY, // Y position
+        size,
+        0,
+        Math.PI * 2,
+      )
+      ctx.fill()
+    }
+
     ctx.restore()
   }
 
-  // Thrust particles
-  if (isThrusting) {
-    ctx.save()
-    ctx.translate(0, shipSize)
-    for (let i = 0; i < 5; i++) {
-      ctx.fillStyle = `hsl(${40 + Math.random() * 10}, 100%, 50%)`
-      ctx.beginPath()
-      ctx.arc((Math.random() - 0.5) * 10, Math.random() * 30, Math.random() * 2 + 1, 0, Math.PI * 2)
-      ctx.fill()
-    }
-    ctx.restore()
+  // Improved hitbox visualization
+  if (currentShieldHealth > 0) {
+    ctx.strokeStyle = 'rgba(0, 150, 255, 0.3)' // Softer blue
+    ctx.lineWidth = 1.5 // Thinner line
+    ctx.beginPath()
+    ctx.arc(0, 0, GAME_CONSTANTS.SHIP_COLLISION_RADIUS, 0, Math.PI * 2)
+    ctx.stroke()
+  }
+
+  // Add pulsating core for better orientation
+  const pulse = Math.sin(Date.now() / 100) * 0.5 + 1.5
+  ctx.fillStyle = 'rgba(59, 130, 246, 0.3)'
+  ctx.beginPath()
+  ctx.arc(0, 0, 3 * pulse, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Draw shield health bar below the ship
+  if (currentShieldHealth > 0) {
+    const shieldBarWidth = GAME_CONSTANTS.SHIP_SIZE * 1.5 // 18px
+    const shieldBarHeight = 3
+    const shieldBarY = GAME_CONSTANTS.SHIP_SIZE
+
+    // Background
+    ctx.fillStyle = 'rgba(0, 0, 50, 0.5)'
+    ctx.fillRect(-shieldBarWidth / 2, shieldBarY, shieldBarWidth, shieldBarHeight)
+
+    // Current health (percentage of base health)
+    ctx.fillStyle = 'rgba(0, 150, 255, 0.8)'
+    ctx.fillRect(
+      -shieldBarWidth / 2,
+      shieldBarY,
+      shieldBarWidth * (currentShieldHealth / GAME_CONSTANTS.SHIELD_BASE_HEALTH),
+      shieldBarHeight,
+    )
   }
 
   ctx.restore()
+
+  // Power-up timer display
+  const powerUpDisplayStartX = window.innerWidth - 160
+  const powerUpDisplayStartY = 20
+  let timerYOffset = 0
+
+  activePowerUps.forEach((powerUp) => {
+    const timeLeft = powerUp.expiresAt - Date.now()
+    if (timeLeft > 0) {
+      const progress = timeLeft / GAME_CONSTANTS.POWER_UP_DURATION
+
+      // Timer bar
+      ctx.fillStyle = '#333'
+      ctx.fillRect(powerUpDisplayStartX, powerUpDisplayStartY + timerYOffset, 150, 14)
+
+      // Progress bar
+      ctx.fillStyle = {
+        rapidFire: '#ff4444',
+        spreadShot: '#44ff44',
+        speedBoost: '#ffff44',
+        laser: '#ff44ff',
+        shield: '#4444ff',
+      }[powerUp.type]
+      ctx.fillRect(powerUpDisplayStartX, powerUpDisplayStartY + timerYOffset, 150 * progress, 14)
+
+      // Timer text
+      ctx.fillStyle = 'black'
+      ctx.font = 'bold 12px Arial'
+      ctx.fillText(
+        `${powerUp.type}: ${(timeLeft / 1000).toFixed(1)}s`,
+        powerUpDisplayStartX + 5,
+        powerUpDisplayStartY + timerYOffset + 11,
+      )
+
+      timerYOffset += 15
+    }
+  })
 }
 
 const rotatePoint = (point: { x: number; y: number }, angle: number) => {
@@ -191,18 +391,92 @@ const rotatePoint = (point: { x: number; y: number }, angle: number) => {
 }
 
 const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
-  ctx.strokeStyle = 'white'
-  ctx.beginPath()
+  // Health-based color
+  const healthColor = `hsl(${30 * (asteroid.health / asteroid.initialHealth)}, 100%, 70%)`
+  ctx.strokeStyle = healthColor
 
+  // Draw asteroid shape
+  ctx.beginPath()
   const startPoint = rotatePoint(asteroid.points[0], asteroid.rotation)
   ctx.moveTo(asteroid.x + startPoint.x, asteroid.y + startPoint.y)
-
   asteroid.points.forEach((point, i) => {
     const rotated = rotatePoint(point, asteroid.rotation)
     ctx.lineTo(asteroid.x + rotated.x, asteroid.y + rotated.y)
   })
-
   ctx.closePath()
+  ctx.stroke()
+
+  // Draw health bar when damaged
+  if (asteroid.health < asteroid.initialHealth) {
+    const healthPercentage = asteroid.health / asteroid.initialHealth
+    const barWidth = 40
+    const barHeight = 4
+    const yOffset = asteroid.size + 12
+
+    // Health bar background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+    ctx.fillRect(asteroid.x - barWidth / 2, asteroid.y + yOffset, barWidth, barHeight)
+
+    // Health bar fill
+    ctx.fillStyle = `hsl(${120 * healthPercentage}, 100%, 50%)`
+    ctx.fillRect(
+      asteroid.x - barWidth / 2,
+      asteroid.y + yOffset,
+      barWidth * healthPercentage,
+      barHeight,
+    )
+
+    // Health text
+    ctx.fillStyle = 'white'
+    ctx.font = '12px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText(
+      `${Math.ceil(asteroid.health)}/${asteroid.initialHealth}`,
+      asteroid.x,
+      asteroid.y + yOffset + barHeight + 14,
+    )
+  }
+
+  if (asteroid.isBoss) {
+    // Pulsing core glow
+    const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5
+    const coreGradient = ctx.createRadialGradient(
+      asteroid.x,
+      asteroid.y,
+      0,
+      asteroid.x,
+      asteroid.y,
+      asteroid.size,
+    )
+    coreGradient.addColorStop(0, `rgba(255, 0, 0, ${0.4 + pulse * 0.3})`)
+    coreGradient.addColorStop(1, 'rgba(255, 0, 0, 0)')
+
+    ctx.fillStyle = coreGradient
+    ctx.beginPath()
+    ctx.arc(asteroid.x, asteroid.y, asteroid.size, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Energy particles
+    for (let i = 0; i < 10; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const radius = asteroid.size * (0.8 + Math.random() * 0.2)
+      ctx.fillStyle = `rgba(255, ${Math.random() * 100}, 0, ${0.5})`
+      ctx.beginPath()
+      ctx.arc(
+        asteroid.x + Math.cos(angle) * radius,
+        asteroid.y + Math.sin(angle) * radius,
+        2 + Math.random() * 3,
+        0,
+        Math.PI * 2,
+      )
+      ctx.fill()
+    }
+  }
+
+  // Collision radius visualization
+  ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)'
+  ctx.beginPath()
+  ctx.arc(asteroid.x, asteroid.y, asteroid.collisionRadius, 0, Math.PI * 2)
   ctx.stroke()
 }
 
@@ -252,10 +526,10 @@ const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
         ctx.arc(i, 0, 1, 0, Math.PI * 2)
       }
       break
-    case 'shield':
-      // Circle
-      ctx.arc(0, 0, 5, 0, Math.PI * 2)
-      break
+    // case 'shield':
+    //   // Circle
+    //   ctx.arc(0, 0, 5, 0, Math.PI * 2)
+    //   break
     case 'speedBoost':
       // Lightning bolt
       ctx.moveTo(-3, -5)
@@ -275,42 +549,74 @@ const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
   ctx.restore()
 }
 
-// Game Logic Functions
-const handleCollisions = (
-  bullets: Bullet[],
-  asteroids: Asteroid[],
-  powerUps: PowerUp[],
-  shipPosition: { x: number; y: number },
-  onAsteroidHit: (x: number, y: number) => void,
-  onGameOver: () => void,
-) => {
-  // Bullet-Asteroid collisions
-  bullets.forEach((bullet, bulletIndex) => {
-    asteroids.forEach((asteroid, asteroidIndex) => {
-      const dx = bullet.x - asteroid.x
-      const dy = bullet.y - asteroid.y
-      const distance = Math.sqrt(dx * dx + dy * dy)
-
-      if (distance < asteroid.size) {
-        // Handle collision
-        onAsteroidHit(asteroid.x, asteroid.y)
-        // Remove bullet and asteroid
-        bullets.splice(bulletIndex, 1)
-        asteroids.splice(asteroidIndex, 1)
-      }
-    })
-  })
-
-  // Ship-Asteroid collisions
-  asteroids.forEach((asteroid) => {
-    const dx = shipPosition.x - asteroid.x
-    const dy = shipPosition.y - asteroid.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
-
-    if (distance < asteroid.size + 10) {
-      onGameOver()
+// Add these helper functions
+const polygonCircleCollision = (
+  polygon: Array<{ x: number; y: number }>,
+  circlePos: { x: number; y: number },
+  circleRadius: number,
+  asteroidPos: { x: number; y: number },
+  asteroidRotation: number,
+): boolean => {
+  // Transform polygon points to world space
+  const worldPoly = polygon.map((p) => {
+    const rotated = rotatePoint(p, asteroidRotation)
+    return {
+      x: rotated.x + asteroidPos.x,
+      y: rotated.y + asteroidPos.y,
     }
   })
+
+  // Check if any polygon point is inside the circle
+  for (const point of worldPoly) {
+    const dx = point.x - circlePos.x
+    const dy = point.y - circlePos.y
+    if (dx * dx + dy * dy < circleRadius * circleRadius) {
+      return true
+    }
+  }
+
+  // Check circle center against polygon
+  let inside = false
+  for (let i = 0, j = worldPoly.length - 1; i < worldPoly.length; j = i++) {
+    const xi = worldPoly[i].x,
+      yi = worldPoly[i].y
+    const xj = worldPoly[j].x,
+      yj = worldPoly[j].y
+
+    const intersect =
+      yi > circlePos.y !== yj > circlePos.y &&
+      circlePos.x < ((xj - xi) * (circlePos.y - yi)) / (yj - yi) + xi
+    if (intersect) inside = !inside
+  }
+  if (inside) return true
+
+  // Check circle edge against polygon edges
+  for (let i = 0, j = worldPoly.length - 1; i < worldPoly.length; j = i++) {
+    const A = worldPoly[j]
+    const B = worldPoly[i]
+    const closest = closestPointOnSegment(circlePos, A, B)
+    const dx = closest.x - circlePos.x
+    const dy = closest.y - circlePos.y
+    if (dx * dx + dy * dy < circleRadius * circleRadius) {
+      return true
+    }
+  }
+
+  return false
+}
+
+const closestPointOnSegment = (
+  point: { x: number; y: number },
+  A: { x: number; y: number },
+  B: { x: number; y: number },
+) => {
+  const AP = { x: point.x - A.x, y: point.y - A.y }
+  const AB = { x: B.x - A.x, y: B.y - A.y }
+  const ab2 = AB.x * AB.x + AB.y * AB.y
+  const ap_ab = AP.x * AB.x + AP.y * AB.y
+  let t = ap_ab / ab2
+  t = Math.min(1, Math.max(0, t))
+  return { x: A.x + AB.x * t, y: A.y + AB.y * t }
 }
 
 // Main Component
@@ -372,32 +678,74 @@ const AsteroidsGame = () => {
   // Add this ref at the top with other refs
   const lastLaserDamageTime = useRef(0)
 
-  // Add this function near the top with other function definitions
+  // Add these refs at the top with other refs
+  const explosions = useRef<ExplosionParticle[]>([])
+
+  // Add to component refs
+  const disintegrationParticles = useRef<DisintegrationParticle[]>([])
+
+  // Add near other state declarations
+  const [currentShieldHealth, setCurrentShieldHealth] = useState<number>(0)
+
+  // Add this ref at the top of the component with other refs
+  const lastUpdateTime = useRef(Date.now())
+
+  // Add near top with other refs:
+  const currentShieldHealthRef = useRef(currentShieldHealth)
+
+  // Update whenever shield health changes:
+  useEffect(() => {
+    currentShieldHealthRef.current = currentShieldHealth
+  }, [currentShieldHealth])
+
+  // Add this new state at the top of the component
+  const [controlMode, _setControlMode] = useState<'keyboard' | 'controller'>('keyboard')
+
+  // Add this ref near other refs
+  const controlModeRef = useRef(controlMode)
+
+  // Add this ref near other refs
+  const lastControlChangeTime = useRef(0)
+
+  // Update the state setter to track changes
+  const setControlMode = (mode: 'keyboard' | 'controller') => {
+    if (controlModeRef.current !== mode) {
+      lastControlChangeTime.current = Date.now()
+      controlModeRef.current = mode
+      _setControlMode(mode)
+    }
+  }
+
+  // Update the shoot function
   const shoot = () => {
-    if (!isPaused && isPlaying) {
+    const now = Date.now()
+    const hasRapidFire = activePowerUps.current.some((p) => p.type === 'rapidFire')
+    const { cooldown } = getBulletProperties(hasRapidFire)
+
+    if (!isPaused && isPlaying && now - lastShotTime.current > cooldown) {
+      lastShotTime.current = now
+      const { bulletSpeed } = getBulletProperties(hasRapidFire)
       const hasSpreadShot = activePowerUps.current.some((p) => p.type === 'spreadShot')
-      const hasRapidFire = activePowerUps.current.some((p) => p.type === 'rapidFire')
+
+      // Calculate bullet spawn position at ship's nose
+      const bodyLength = GAME_CONSTANTS.SHIP_SIZE * 1.5
+      const baseShoot = (angle: number) => {
+        const offsetX = Math.cos(angle - Math.PI / 2) * bodyLength
+        const offsetY = Math.sin(angle - Math.PI / 2) * bodyLength
+
+        bullets.current.push({
+          x: shipX.current + offsetX,
+          y: shipY.current + offsetY,
+          dx: Math.cos(angle - Math.PI / 2) * bulletSpeed,
+          dy: Math.sin(angle - Math.PI / 2) * bulletSpeed,
+          damage: GAME_CONSTANTS.BULLET_DAMAGE,
+        })
+      }
 
       if (hasSpreadShot) {
-        // Create 3 bullets in a spread pattern
-        const angles = [-0.2, 0, 0.2]
-        angles.forEach((angleOffset) => {
-          const angle = shipAngle.current + angleOffset
-          bullets.current.push({
-            x: shipX.current,
-            y: shipY.current,
-            dx: Math.cos(angle - Math.PI / 2) * (hasRapidFire ? 10 : 7),
-            dy: Math.sin(angle - Math.PI / 2) * (hasRapidFire ? 10 : 7),
-          })
-        })
+        ;[-0.2, 0, 0.2].forEach((offset) => baseShoot(shipAngle.current + offset))
       } else {
-        // Normal single shot
-        bullets.current.push({
-          x: shipX.current,
-          y: shipY.current,
-          dx: Math.cos(shipAngle.current - Math.PI / 2) * (hasRapidFire ? 10 : 7),
-          dy: Math.sin(shipAngle.current - Math.PI / 2) * (hasRapidFire ? 10 : 7),
-        })
+        baseShoot(shipAngle.current)
       }
     }
   }
@@ -411,77 +759,124 @@ const AsteroidsGame = () => {
     const hasLaser = activePowerUps.current.some((p) => p.type === 'laser')
     if (!hasLaser) return
 
-    // Find nearby asteroids within range
-    const nearbyAsteroids = asteroids.filter((asteroid) => {
-      const dx = asteroid.x - shipX
-      const dy = asteroid.y - shipY
-      return Math.sqrt(dx * dx + dy * dy) <= GAME_CONSTANTS.LASER_RANGE
-    })
+    const now = Date.now()
+    const timeSinceLastDamage = now - lastLaserDamageTime.current
 
+    // Declare variable in outer scope
+    let nearbyAsteroids: Asteroid[] = []
+
+    if (timeSinceLastDamage > GAME_CONSTANTS.LASER_DAMAGE_INTERVAL) {
+      nearbyAsteroids = asteroids.filter((asteroid) => {
+        const dx = asteroid.x - shipX
+        const dy = asteroid.y - shipY
+        return Math.sqrt(dx * dx + dy * dy) <= GAME_CONSTANTS.LASER_RANGE
+      })
+
+      nearbyAsteroids.forEach((asteroid) => {
+        // Apply damage
+        asteroid.health = Math.max(0, asteroid.health - GAME_CONSTANTS.LASER_DAMAGE_PER_TICK)
+
+        // Create particles
+        const particleCount = Math.ceil(8 * GAME_CONSTANTS.LASER_DAMAGE_PER_TICK)
+        for (let i = 0; i < particleCount; i++) {
+          disintegrationParticles.current.push({
+            x: asteroid.x + (Math.random() - 0.5) * asteroid.size,
+            y: asteroid.y + (Math.random() - 0.5) * asteroid.size,
+            dx: (Math.random() - 0.5) * 4,
+            dy: (Math.random() - 0.5) * 4,
+            size: Math.random() * 4 + 2,
+            rotation: Math.random() * Math.PI * 2,
+            rotationSpeed: (Math.random() - 0.5) * 0.15,
+            createdAt: now,
+            color: `hsl(210, 100%, ${50 + Math.random() * 30}%)`, // Blueish particles
+          })
+        }
+
+        // Remove if health depleted
+        if (asteroid.health <= 0) {
+          const index = asteroids.indexOf(asteroid)
+          if (index !== -1) {
+            asteroids.splice(index, 1)
+            scoreRef.current += 100 * (asteroid.isBoss ? 3 : 1)
+          }
+        }
+      })
+
+      lastLaserDamageTime.current = now
+    }
+
+    // Visual effects using the same nearbyAsteroids
     if (nearbyAsteroids.length > 0) {
       // Draw laser effect
       ctx.save()
       ctx.strokeStyle = '#ff00ff'
       ctx.lineWidth = 2
+      ctx.shadowColor = '#ff00ff'
+      ctx.shadowBlur = 15
 
       nearbyAsteroids.forEach((asteroid) => {
-        // Create lightning effect
+        // Visual feedback: pulsating outline
+        const pulse = Math.sin(Date.now() / 50) * 0.5 + 1.0
+        ctx.strokeStyle = `hsl(${300 * (asteroid.health / asteroid.initialHealth)}, 100%, 50%)`
+        ctx.lineWidth = 2 * pulse
         ctx.beginPath()
-        ctx.moveTo(shipX, shipY)
-
-        // Generate lightning segments
-        let currentX = shipX
-        let currentY = shipY
-        const segments = 3
-        for (let i = 1; i <= segments; i++) {
-          const t = i / segments
-          const targetX = asteroid.x
-          const targetY = asteroid.y
-
-          // Add random offset for zigzag effect
-          const offsetX = (Math.random() - 0.5) * 20
-          const offsetY = (Math.random() - 0.5) * 20
-
-          const x = currentX + (targetX - currentX) * t + offsetX
-          const y = currentY + (targetY - currentY) * t + offsetY
-
-          ctx.lineTo(x, y)
-          currentX = x
-          currentY = y
-        }
-
-        ctx.lineTo(asteroid.x, asteroid.y)
-        ctx.stroke()
-
-        // Add glow effect
-        ctx.shadowColor = '#ff00ff'
-        ctx.shadowBlur = 10
+        ctx.arc(asteroid.x, asteroid.y, asteroid.collisionRadius, 0, Math.PI * 2)
         ctx.stroke()
       })
 
       ctx.restore()
-
-      // Damage asteroids at intervals
-      if (Date.now() - lastLaserDamageTime.current > GAME_CONSTANTS.LASER_DAMAGE_INTERVAL) {
-        // Collect asteroids to remove first
-        const asteroidsToRemove = nearbyAsteroids.filter((asteroid) => asteroids.includes(asteroid))
-
-        // Remove them after iteration
-        asteroidsToRemove.forEach((asteroid) => {
-          const index = asteroids.indexOf(asteroid)
-          if (index !== -1) {
-            asteroids.splice(index, 1)
-            scoreRef.current += 100
-          }
-        })
-
-        lastLaserDamageTime.current = Date.now()
-      }
     }
+  }
+
+  const quitGame = () => {
+    setIsPaused(false)
+    setIsPlaying(false)
+    setGameOver(false)
+    scoreRef.current = 0
+    setCurrentShieldHealth(0)
+    difficultyLevel.current = 1
+    // Reset game state with new center position
+    shipX.current = window.innerWidth / 2
+    shipY.current = window.innerHeight / 2
+    shipAngle.current = 0
+    velocity.current = { x: 0, y: 0 }
+    asteroids.current = []
+    bullets.current = []
+    scoreRef.current = 0
+    setGameOver(false)
+
+    // Reset all key states
+    keys.current = {}
+
+    // Reset shooting cooldown
+    lastShotTime.current = 0
+
+    // Reset difficulty
+    difficultyLevel.current = 1
+    lastDifficultyIncrease.current = 0
+
+    // Reset pause state if it was paused
+    setIsPaused(false)
+
+    // Clear any existing shooting interval
+    if (shootingInterval.current) {
+      clearInterval(shootingInterval.current)
+      shootingInterval.current = null
+    }
+
+    // Reset rotation velocity
+    rotationVelocity.current = 0
   }
 
   const initGame = () => {
     if (!canvasRef.current) return
+
+    const currentTime = Date.now()
+    const deltaTime = currentTime - lastUpdateTime.current // Calculate deltaTime
+    lastUpdateTime.current = currentTime // Update for next frame
+
+    // Reset shield health on new game
+    setCurrentShieldHealth(0)
 
     // Adjust canvas size to window size
     const canvas = canvasRef.current
@@ -526,47 +921,137 @@ const AsteroidsGame = () => {
     }
   }
 
-  const createAsteroid = () => {
-    const { asteroidSpeed, asteroidSizeRange } = getDifficultyValues(difficultyLevel.current)
-    const size =
-      Math.random() * (asteroidSizeRange.max - asteroidSizeRange.min) + asteroidSizeRange.min
-    let x, y
+  const createAsteroid = (isBoss = false) => {
+    const { asteroidSizeRange } = getDifficultyValues(difficultyLevel.current)
+    const baseSize = isBoss
+      ? Math.min(100, 20 + difficultyLevel.current * 15)
+      : Math.random() * (asteroidSizeRange.max - asteroidSizeRange.min) + asteroidSizeRange.min
+
+    const size = isBoss ? baseSize * 1.2 : baseSize
+    const initialHealth = isBoss ? Math.ceil(size * 0.25) : Math.ceil(size * 0.1)
+    let x = 0
+    let y = 0
     const canvas = canvasRef.current
     if (!canvas) return
 
-    // Ensure asteroids spawn outside the center area and away from the ship
-    const safeDistance = 150 // Minimum safe distance from ship
-    let distanceFromShip = 0
-    do {
-      // Randomly choose to spawn on horizontal or vertical edges
-      if (Math.random() < 0.5) {
-        x = Math.random() < 0.5 ? -size : canvas.width + size
-        y = Math.random() * canvas.height
-      } else {
-        x = Math.random() * canvas.width
-        y = Math.random() < 0.5 ? -size : canvas.height + size
+    // Enhanced boss spawning logic
+    const safeDistance = isBoss ? Math.min(window.innerWidth, window.innerHeight) * 0.6 : 150
+    let attempts = 0
+    let validPosition = false
+
+    while (!validPosition && attempts < 100) {
+      attempts++
+
+      // Force boss to always spawn on edges
+      const edge = Math.floor(Math.random() * 4)
+      switch (edge) {
+        case 0: // top
+          x = Math.random() * canvas.width
+          y = -size
+          break
+        case 1: // right
+          x = canvas.width + size
+          y = Math.random() * canvas.height
+          break
+        case 2: // bottom
+          x = Math.random() * canvas.width
+          y = canvas.height + size
+          break
+        case 3: // left
+          x = -size
+          y = Math.random() * canvas.height
+          break
       }
 
-      // Calculate distance from ship
-      const dx = x - shipX.current
+      // Calculate actual distance including asteroid size
+      const dx = x && x - shipX.current
       const dy = y - shipY.current
-      distanceFromShip = Math.sqrt(dx * dx + dy * dy)
-    } while (distanceFromShip < safeDistance)
+      const distanceFromShip = Math.sqrt(dx * dx + dy * dy) - size
 
-    asteroids.current.push({
+      validPosition = distanceFromShip > safeDistance
+    }
+
+    // Ensure boss movement
+    const { asteroidSpeed } = getDifficultyValues(difficultyLevel.current)
+    const speedMultiplier = isBoss ? 1.2 : 1 // Bosses move faster
+
+    // Calculate direction to player without random variation for bosses
+    const angle = Math.atan2(shipY.current - y, shipX.current - x)
+    const baseSpeed = asteroidSpeed * speedMultiplier
+    const dx = Math.cos(angle) * baseSpeed
+    const dy = Math.sin(angle) * baseSpeed
+
+    const asteroid: Asteroid = {
       x,
       y,
       size,
-      dx: (Math.random() - 0.5) * asteroidSpeed * 2,
-      dy: (Math.random() - 0.5) * asteroidSpeed * 2,
+      dx: isBoss ? dx : dx + (Math.random() - 0.5), // Bosses move directly at player
+      dy: isBoss ? dy : dy + (Math.random() - 0.5), // Regular asteroids get random variation
       points: generateAsteroidPoints(size),
       rotation: Math.random() * Math.PI * 2,
       rotationSpeed: (Math.random() - 0.5) * 0.02, // Random rotation speed
-    })
+      collisionRadius: size * GAME_CONSTANTS.ASTEROID_COLLISION_FACTOR,
+      health: initialHealth,
+      initialHealth,
+      isBoss,
+      attackCooldown: 0,
+      bullets: [],
+      bounds: {
+        // Add actual bounding box
+        minX: Math.min(...generateAsteroidPoints(size).map((p) => p.x)) + x,
+        maxX: Math.max(...generateAsteroidPoints(size).map((p) => p.x)) + x,
+        minY: Math.min(...generateAsteroidPoints(size).map((p) => p.y)) + y,
+        maxY: Math.max(...generateAsteroidPoints(size).map((p) => p.y)) + y,
+      },
+    }
+
+    if (isBoss) {
+      // Enhanced boss properties
+      asteroid.size *= 1.5
+      asteroid.health *= 5
+      asteroid.initialHealth = asteroid.health
+      asteroid.rotationSpeed *= 2
+      asteroid.dx *= 0.8
+      asteroid.dy *= 0.8
+    }
+
+    asteroids.current.push(asteroid)
+  }
+
+  const updateBossBehavior = (asteroid: Asteroid) => {
+    if (!asteroid.isBoss) return
+
+    const now = Date.now()
+    const bulletSpeed = GAME_CONSTANTS.BOSS_BULLET_SPEED
+
+    // Calculate time since last update
+    const deltaTime = now - lastUpdateTime.current
+    asteroid.attackCooldown = Math.max(0, asteroid.attackCooldown - deltaTime)
+
+    if (asteroid.attackCooldown <= 0) {
+      // Shoot in 16 directions for full coverage
+      for (let i = 0; i < 16; i++) {
+        const angle = (i * Math.PI) / 8
+        asteroid.bullets.push({
+          x: asteroid.x + Math.cos(angle) * (asteroid.size + 20),
+          y: asteroid.y + Math.sin(angle) * (asteroid.size + 20),
+          dx: Math.cos(angle) * bulletSpeed,
+          dy: Math.sin(angle) * bulletSpeed,
+          createdAt: Date.now(),
+        })
+      }
+      asteroid.attackCooldown = GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN
+    }
   }
 
   const updateGame = () => {
-    if (!canvasRef.current || gameOver) return
+    if (!canvasRef.current) return
+
+    const now = Date.now()
+    const deltaTime = now - lastFrameTime.current // Correct deltaTime calculation
+    lastFrameTime.current = now
+
+    lastUpdateTime.current = now
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -575,8 +1060,8 @@ const AsteroidsGame = () => {
     ctx.fillStyle = 'black'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-    // Only update positions if game is not paused
-    if (!isPaused) {
+    // Only update game state if not game over and not paused
+    if (!gameOver && !isPaused) {
       // Apply speed boost to thrust if active
       const hasSpeedBoost = activePowerUps.current.some((p) => p.type === 'speedBoost')
       const thrustMultiplier = hasSpeedBoost ? 1.5 : 1
@@ -627,68 +1112,102 @@ const AsteroidsGame = () => {
 
       // Update asteroid positions
       asteroids.current.forEach((asteroid) => {
+        // Remove the else clause to update boss positions too
         asteroid.x += asteroid.dx
         asteroid.y += asteroid.dy
         asteroid.x = (asteroid.x + canvas.width) % canvas.width
         asteroid.y = (asteroid.y + canvas.height) % canvas.height
+
+        if (asteroid.isBoss) {
+          updateBossBehavior(asteroid)
+        }
       })
 
       // Check shield collisions if shield is active
-      const hasShield = activePowerUps.current.some((p) => p.type === 'shield')
-      if (hasShield) {
-        const shield = activePowerUps.current.find((p) => p.type === 'shield')!
-        const timeLeft = shield.expiresAt - Date.now()
-        const isBlinking = timeLeft < GAME_CONSTANTS.POWER_UP_BLINK_START
+      // const hasShield =
+      //   activePowerUps.current.some((p) => p.type === 'shield') && currentShieldHealth > 0
+      // if (hasShield) {
+      //   const shield = activePowerUps.current.find((p) => p.type === 'shield')!
+      //   const timeLeft = shield.expiresAt - Date.now()
+      //   const isBlinking = timeLeft < GAME_CONSTANTS.POWER_UP_BLINK_START
 
-        // Calculate blink rate - gets faster as time runs out
-        const shouldShow =
-          !isBlinking ||
-          Math.floor(Date.now() / (100 + (timeLeft / GAME_CONSTANTS.POWER_UP_BLINK_START) * 400)) %
-            2 ===
-            0
+      //   // Calculate blink rate - gets faster as time runs out
+      //   const shouldShow =
+      //     !isBlinking ||
+      //     Math.floor(Date.now() / (100 + (timeLeft / GAME_CONSTANTS.POWER_UP_BLINK_START) * 400)) %
+      //       2 ===
+      //       0
 
-        if (shouldShow) {
-          const shieldRadius = GAME_CONSTANTS.SHIP_SIZE + 10
-          const pulseAmount = Math.sin(Date.now() / 200) * 2 // Pulsing effect
+      //   if (shouldShow) {
+      //     const shieldRadius = GAME_CONSTANTS.SHIP_COLLISION_RADIUS
+      //     const pulseAmount = Math.sin(Date.now() / 150) * 3 // Faster pulse
 
-          ctx.strokeStyle = '#0000ff'
-          ctx.lineWidth = 2
-          ctx.beginPath()
-          ctx.arc(shipX.current, shipY.current, shieldRadius + pulseAmount, 0, Math.PI * 2)
-          ctx.stroke()
-          ctx.lineWidth = 1
+      //     ctx.strokeStyle = '#0000ff'
+      //     ctx.lineWidth = 2
+      //     ctx.beginPath()
+      //     ctx.arc(shipX.current, shipY.current, shieldRadius + pulseAmount, 0, Math.PI * 2)
+      //     ctx.stroke()
 
-          // Add inner shield ring
-          ctx.strokeStyle = '#4444ff'
-          ctx.beginPath()
-          ctx.arc(shipX.current, shipY.current, shieldRadius - 2 - pulseAmount, 0, Math.PI * 2)
-          ctx.stroke()
+      //     // Add shield particles
+      //     for (let i = 0; i < 5; i++) {
+      //       const angle = Math.random() * Math.PI * 2
+      //       const radius = shieldRadius + pulseAmount
+      //       ctx.fillStyle = `rgba(0, 0, 255, ${Math.random() * 0.5})`
+      //       ctx.beginPath()
+      //       ctx.arc(
+      //         Math.cos(angle) * radius,
+      //         Math.sin(angle) * radius,
+      //         1 + Math.random() * 2,
+      //         0,
+      //         Math.PI * 2,
+      //       )
+      //       ctx.fill()
+      //     }
+      //   }
+      // }
+
+      // Improved collision detection function
+      const checkCollision = (asteroid: Asteroid, shipX: number, shipY: number) => {
+        // First check bounding box
+        if (
+          shipX < asteroid.bounds.minX ||
+          shipX > asteroid.bounds.maxX ||
+          shipY < asteroid.bounds.minY ||
+          shipY > asteroid.bounds.maxY
+        ) {
+          return false
         }
+
+        // Then check precise polygon collision
+        return polygonCircleCollision(
+          asteroid.points,
+          { x: shipX, y: shipY },
+          GAME_CONSTANTS.SHIP_COLLISION_RADIUS,
+          { x: asteroid.x, y: asteroid.y },
+          asteroid.rotation,
+        )
       }
 
-      // Update collision detection to not trigger game over if shield is active
-      asteroids.current.forEach((asteroid) => {
-        const dx = shipX.current - asteroid.x
-        const dy = shipY.current - asteroid.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-
-        if (distance < asteroid.size + 10 && !gameOver) {
-          // Only trigger game over if no shield
-          if (!hasShield) {
+      asteroids.current.forEach((asteroid, asteroidIndex) => {
+        if (checkCollision(asteroid, shipX.current, shipY.current)) {
+          if (currentShieldHealthRef.current > 0) {
+            handleShieldCollision(asteroid)
+          } else {
             handleGameOver()
           }
         }
       })
     }
 
-    // Draw everything regardless of pause state
-    // Draw ship
+    // Always draw everything regardless of game state
     drawShip(
       ctx,
       shipX.current,
       shipY.current,
       shipAngle.current,
-      (keys.current['ArrowUp'] || keys.current['KeyW']) && !isPaused,
+      (keys.current['ArrowUp'] || keys.current['KeyW']) && !isPaused && !gameOver,
+      currentShieldHealthRef.current,
+      activePowerUps.current,
     )
 
     // Draw bullets
@@ -702,9 +1221,8 @@ const AsteroidsGame = () => {
     // Draw asteroids
     asteroids.current.forEach((asteroid) => {
       drawAsteroid(ctx, asteroid)
-
-      // Only update rotation if game is not paused
-      if (!isPaused) {
+      // Only update rotation if game is not paused and not game over
+      if (!isPaused && !gameOver) {
         asteroid.rotation += asteroid.rotationSpeed
       }
     })
@@ -718,20 +1236,23 @@ const AsteroidsGame = () => {
       ) {
         difficultyLevel.current++
         lastDifficultyIncrease.current = scoreRef.current
-        // Visual feedback for difficulty increase
-        toast.info(`Difficulty increased to level ${difficultyLevel.current}!`, {
-          duration: 2000,
-        })
+
+        // Spawn boss every 3 levels
+
+        if (difficultyLevel.current % GAME_CONSTANTS.BOSS_SPAWN_INTERVAL === 0) {
+          if (asteroids.current.filter((a) => a.isBoss).length < GAME_CONSTANTS.MAX_BOSSES) {
+            createAsteroid(true)
+            toast.info(`BOSS INCOMING!`, { duration: 2000 })
+          }
+        } else {
+          toast.info(`Difficulty increased to level ${difficultyLevel.current}!`, {
+            duration: 2000,
+          })
+        }
       }
 
       // Update and draw bullets
       bullets.current = bullets.current.filter((bullet) => {
-        // Remove bullets that go off screen
-        if (bullet.x < 0 || bullet.x > canvas.width || bullet.y < 0 || bullet.y > canvas.height) {
-          return false
-        }
-
-        // Check collision with asteroids
         let hitAsteroid = false
         asteroids.current = asteroids.current.filter((asteroid) => {
           const dx = bullet.x - asteroid.x
@@ -740,34 +1261,60 @@ const AsteroidsGame = () => {
 
           if (distance < asteroid.size) {
             hitAsteroid = true
-            scoreRef.current += 100
+            asteroid.health -= bullet.damage
 
-            // Chance to drop power-up
-            if (Math.random() < GAME_CONSTANTS.POWER_UP_DROP_CHANCE) {
-              createPowerUp(asteroid.x, asteroid.y)
-            }
+            if (asteroid.health <= 0) {
+              // Always add score
+              scoreRef.current += 100 * (asteroid.isBoss ? 5 : 1)
 
-            if (asteroid.size > 20) {
-              // Split asteroid
-              for (let i = 0; i < 2; i++) {
-                asteroids.current.push({
-                  x: asteroid.x,
-                  y: asteroid.y,
-                  size: asteroid.size / 2,
-                  dx: (Math.random() - 0.5) * 4,
-                  dy: (Math.random() - 0.5) * 4,
-                  points: generateAsteroidPoints(asteroid.size / 2),
-                  rotation: Math.random() * Math.PI * 2,
-                  rotationSpeed: (Math.random() - 0.5) * 0.02,
-                })
+              // Drop power-up for destroyed asteroids
+              if (Math.random() < GAME_CONSTANTS.POWER_UP_DROP_CHANCE || asteroid.isBoss) {
+                createPowerUp(asteroid.x, asteroid.y)
               }
+
+              // Split only if not boss and size > 20
+              if (!asteroid.isBoss && asteroid.size > 20) {
+                // Split asteroid
+                for (let i = 0; i < 2; i++) {
+                  asteroids.current.push({
+                    x: asteroid.x,
+                    y: asteroid.y,
+                    size: asteroid.size / 2,
+                    dx: (Math.random() - 0.5) * 4,
+                    dy: (Math.random() - 0.5) * 4,
+                    points: generateAsteroidPoints(asteroid.size / 2),
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.02,
+                    collisionRadius: (asteroid.size / 2) * GAME_CONSTANTS.ASTEROID_COLLISION_FACTOR,
+                    health: Math.ceil(asteroid.size / 10),
+                    initialHealth: Math.ceil(asteroid.size / 10),
+                    isBoss: false,
+                    attackCooldown: 0,
+                    bullets: [],
+                    bounds: {
+                      // Add actual bounding box
+                      minX:
+                        Math.min(...generateAsteroidPoints(asteroid.size / 2).map((p) => p.x)) +
+                        asteroid.x,
+                      maxX:
+                        Math.max(...generateAsteroidPoints(asteroid.size / 2).map((p) => p.x)) +
+                        asteroid.x,
+                      minY:
+                        Math.min(...generateAsteroidPoints(asteroid.size / 2).map((p) => p.y)) +
+                        asteroid.y,
+                      maxY:
+                        Math.max(...generateAsteroidPoints(asteroid.size / 2).map((p) => p.y)) +
+                        asteroid.y,
+                    },
+                  })
+                }
+              }
+              return false
             }
-            return false
+            return true // Keep asteroid if still alive
           }
           return true
         })
-
-        // Remove bullet if it hit an asteroid
         return !hitAsteroid
       })
 
@@ -779,20 +1326,16 @@ const AsteroidsGame = () => {
         const distance = Math.sqrt(dx * dx + dy * dy)
 
         if (distance < asteroid.size + 10 && !gameOver) {
-          console.log('Collision detected:', {
-            shipPos: { x: shipX.current, y: shipY.current },
-            asteroidPos: { x: asteroid.x, y: asteroid.y },
-            distance,
-            threshold: asteroid.size + 10,
-            currentScore: scoreRef.current,
-          })
           handleGameOver()
         }
       })
 
       // Update asteroid spawn logic with dynamic rate
       const { asteroidSpawnRate } = getDifficultyValues(difficultyLevel.current)
-      if (Math.random() < asteroidSpawnRate) {
+      if (
+        Math.random() < asteroidSpawnRate &&
+        asteroids.current.length < GAME_CONSTANTS.MAX_ASTEROIDS
+      ) {
         createAsteroid()
       }
     }
@@ -809,32 +1352,36 @@ const AsteroidsGame = () => {
       const distance = Math.sqrt(dx * dx + dy * dy)
       const powerUpAge = Date.now() - powerUp.createdAt
 
-      // Remove if collected or older than lifetime
       if (distance < 20 || powerUpAge > GAME_CONSTANTS.POWER_UP_LIFETIME) {
         if (distance < 20) {
-          // Find existing power-up of same type
           const existingPowerUpIndex = activePowerUps.current.findIndex(
             (p) => p.type === powerUp.type,
           )
 
           if (existingPowerUpIndex !== -1) {
-            // Update existing power-up expiration time
             activePowerUps.current[existingPowerUpIndex].expiresAt =
               Date.now() + GAME_CONSTANTS.POWER_UP_DURATION
           } else {
-            // Add new power-up
             activePowerUps.current.push({
               type: powerUp.type,
               expiresAt: Date.now() + GAME_CONSTANTS.POWER_UP_DURATION,
             })
+
+            // Immediate effect for rapid fire
+            if (powerUp.type === 'rapidFire' && shootingInterval.current) {
+              clearInterval(shootingInterval.current)
+              shootingInterval.current = null
+              if (keys.current['Space'] || keys.current['KeyM']) {
+                shootHandler() // Restart shooting with new rate
+              }
+            }
           }
 
-          // Show toast notification for power-up collection
           toast.success(`${powerUp.type} power-up collected!`, {
             duration: 2000,
           })
         }
-        return false // Remove power-up
+        return false
       }
       return true
     })
@@ -845,90 +1392,220 @@ const AsteroidsGame = () => {
     })
 
     // Draw shield if active
-    const hasShield = activePowerUps.current.some((p) => p.type === 'shield')
-    if (hasShield) {
-      const shield = activePowerUps.current.find((p) => p.type === 'shield')!
-      const timeLeft = shield.expiresAt - Date.now()
-      const isBlinking = timeLeft < GAME_CONSTANTS.POWER_UP_BLINK_START
+    // const hasShield = activePowerUps.current.some((p) => p.type === 'shield')
+    // if (hasShield) {
+    //   const shield = activePowerUps.current.find((p) => p.type === 'shield')!
+    //   const timeLeft = shield.expiresAt - Date.now()
+    //   const isBlinking = timeLeft < GAME_CONSTANTS.POWER_UP_BLINK_START
 
-      // Calculate blink rate - gets faster as time runs out
-      const shouldShow =
-        !isBlinking ||
-        Math.floor(Date.now() / (100 + (timeLeft / GAME_CONSTANTS.POWER_UP_BLINK_START) * 400)) %
-          2 ===
-          0
+    //   // Calculate blink rate - gets faster as time runs out
+    //   const shouldShow =
+    //     !isBlinking ||
+    //     Math.floor(Date.now() / (100 + (timeLeft / GAME_CONSTANTS.POWER_UP_BLINK_START) * 400)) %
+    //       2 ===
+    //       0
 
-      if (shouldShow) {
-        const shieldRadius = GAME_CONSTANTS.SHIP_SIZE + 10
-        const pulseAmount = Math.sin(Date.now() / 200) * 2 // Pulsing effect
+    //   if (shouldShow) {
+    //     const shieldRadius = GAME_CONSTANTS.SHIP_COLLISION_RADIUS
+    //     const pulseAmount = Math.sin(Date.now() / 150) * 3 // Faster pulse
 
-        ctx.strokeStyle = '#0000ff'
-        ctx.lineWidth = 2
-        ctx.beginPath()
-        ctx.arc(shipX.current, shipY.current, shieldRadius + pulseAmount, 0, Math.PI * 2)
-        ctx.stroke()
-        ctx.lineWidth = 1
+    //     ctx.strokeStyle = '#0000ff'
+    //     ctx.lineWidth = 2
+    //     ctx.beginPath()
+    //     ctx.arc(shipX.current, shipY.current, shieldRadius + pulseAmount, 0, Math.PI * 2)
+    //     ctx.stroke()
 
-        // Add inner shield ring
-        ctx.strokeStyle = '#4444ff'
-        ctx.beginPath()
-        ctx.arc(shipX.current, shipY.current, shieldRadius - 2 - pulseAmount, 0, Math.PI * 2)
-        ctx.stroke()
+    //     // Add shield particles
+    //     for (let i = 0; i < 5; i++) {
+    //       const angle = Math.random() * Math.PI * 2
+    //       const radius = shieldRadius + pulseAmount
+    //       ctx.fillStyle = `rgba(0, 0, 255, ${Math.random() * 0.5})`
+    //       ctx.beginPath()
+    //       ctx.arc(
+    //         Math.cos(angle) * radius,
+    //         Math.sin(angle) * radius,
+    //         1 + Math.random() * 2,
+    //         0,
+    //         Math.PI * 2,
+    //       )
+    //       ctx.fill()
+    //     }
+    //   }
+    // }
+
+    // Draw UI
+    ctx.save()
+    // Background for readability
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'
+    ctx.beginPath()
+    ctx.roundRect(10, 10, 120, 50, 6)
+    ctx.fill()
+
+    // Text styling
+    ctx.fillStyle = '#ababab'
+    ctx.font = 'bold 14px Arial, sans-serif'
+    ctx.textBaseline = 'top'
+    ctx.textAlign = 'left'
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.9)'
+    ctx.shadowBlur = 4
+
+    // Score and level text
+    ctx.fillText(`SCORE: ${scoreRef.current}`, 0, 2)
+    ctx.fillText(`LEVEL ${difficultyLevel.current}`, 0, 18)
+
+    // Control mode icon (only show for 2 seconds after change)
+    const timeSinceControlChange = Date.now() - lastControlChangeTime.current
+    if (timeSinceControlChange < 2000) {
+      if (controlModeRef.current === 'keyboard') {
+        drawKeyboardIcon(ctx, window.innerWidth - 42, 2)
+      } else {
+        drawGamepadIcon(ctx, window.innerWidth - 42, 2)
       }
     }
 
-    // Draw UI
-    ctx.fillStyle = 'white'
-    ctx.font = '20px Arial'
-    ctx.fillText(`Score: ${scoreRef.current}`, 10, 30)
-    ctx.fillText(`Level: ${difficultyLevel.current}`, 10, 60)
-
-    // Update the UI to show all active power-ups
-    if (activePowerUps.current.length > 0) {
-      ctx.fillStyle = '#00ff00'
-      activePowerUps.current.forEach((powerUp, index) => {
-        const timeLeft = Math.ceil((powerUp.expiresAt - Date.now()) / 1000)
-        ctx.fillText(`${powerUp.type}: ${timeLeft}s`, 10, 90 + index * 25)
-      })
-    }
+    ctx.restore()
 
     // Add this near where you draw other effects
     if (!isPaused) {
       updateLaser(ctx, shipX.current, shipY.current, asteroids.current)
     }
+
+    // Update and draw explosions
+    explosions.current = explosions.current.filter((particle) => {
+      const age = Date.now() - particle.createdAt
+      return age < 1000 // Keep particles for 1 second
+    })
+
+    ctx.save()
+    ctx.globalCompositeOperation = 'lighter'
+    explosions.current.forEach((particle) => {
+      const age = Date.now() - particle.createdAt
+      const progress = age / 1000
+      const alpha = 1 - progress
+
+      ctx.fillStyle = `rgba(0, 100, 255, ${alpha})`
+      ctx.beginPath()
+      ctx.arc(
+        particle.x + particle.dx * progress * 50,
+        particle.y + particle.dy * progress * 50,
+        particle.size * (1 - progress),
+        0,
+        Math.PI * 2,
+      )
+      ctx.fill()
+    })
+    ctx.restore()
+
+    // Add this new function to draw disintegration particles
+    drawDisintegration(ctx)
+
+    // Update boss behavior
+    asteroids.current.forEach((asteroid) => {
+      if (asteroid.isBoss) {
+        updateBossBehavior(asteroid)
+      }
+    })
+
+    // Draw boss bullets with better visibility
+    ctx.save()
+    ctx.globalCompositeOperation = 'lighten'
+    asteroids.current.forEach((asteroid) => {
+      asteroid.bullets.forEach((b) => {
+        // Glowing bullet core
+        const gradient = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 15)
+        gradient.addColorStop(0, 'rgba(255, 100, 0, 0.9)')
+        gradient.addColorStop(1, 'rgba(255, 0, 0, 0)')
+
+        ctx.fillStyle = gradient
+        ctx.beginPath()
+        ctx.arc(b.x, b.y, 10, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Add pulsating effect
+        const pulse = Math.sin(Date.now() / 50) * 3 + 3
+        ctx.fillStyle = `rgba(255, 50, 0, 0.3)`
+        ctx.beginPath()
+        ctx.arc(
+          b.x + b.dx * pulse, // X position
+          b.y + b.dy * pulse, // Y position
+          6, // Radius
+          0, // Start angle
+          Math.PI * 2, // End angle
+        )
+        ctx.fill()
+      })
+    })
+    ctx.restore()
+
+    // Add this right after the existing asteroid collision checks
+    // But before the boss behavior updates
+    asteroids.current.forEach((asteroid) => {
+      asteroid.bullets.forEach((bullet, bulletIndex) => {
+        const dx = shipX.current - bullet.x
+        const dy = shipY.current - bullet.y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+
+        if (distance < 20) {
+          // 10 (ship) + 10 (bullet)
+          if (currentShieldHealthRef.current > 0) {
+            const shieldDamage = asteroid.isBoss
+              ? GAME_CONSTANTS.SHIELD_DAMAGE_BOSS * 100
+              : GAME_CONSTANTS.SHIELD_DAMAGE_NORMAL * 100
+            setCurrentShieldHealth((prev) => Math.max(0, prev - shieldDamage))
+          } else {
+            handleGameOver()
+          }
+          asteroid.bullets.splice(bulletIndex, 1)
+        }
+      })
+    })
+
+    // Add this in the updateGame function where boss bullets are processed:
+    asteroids.current.forEach((asteroid) => {
+      if (asteroid.isBoss) {
+        // Update boss bullet positions
+        asteroid.bullets.forEach((b) => {
+          b.x += b.dx
+          b.y += b.dy
+        })
+
+        // Remove bullets that go off-screen
+        asteroid.bullets = asteroid.bullets.filter(
+          (b) => b.x > -50 && b.x < canvas.width + 50 && b.y > -50 && b.y < canvas.height + 50,
+        )
+      }
+    })
+
+    // Check for expired rapid fire and reset shooting
+    const rapidFireActive = activePowerUps.current.some((p) => p.type === 'rapidFire')
+    if (!rapidFireActive && shootingInterval.current) {
+      clearInterval(shootingInterval.current)
+      shootingInterval.current = null
+
+      // If still holding fire button, restart with normal rate
+      if (keys.current['Space'] || keys.current['KeyM']) {
+        shootHandler()
+      }
+    }
   }
 
   const handleGameOver = async () => {
     if (gameOver) {
-      console.log('Game already over, preventing duplicate call')
       return
     }
 
-    // Use scoreRef instead of score state
     const finalScore = scoreRef.current
-    console.log('Game Over triggered:', {
-      username,
-      finalScore,
-      currentScore: scoreRef.current,
-      gameOverState: gameOver,
-      isPlayingState: isPlaying,
-    })
 
     setGameOver(true)
-    setIsPlaying(false)
+    setIsPaused(true)
 
     if (username && finalScore > 0) {
       try {
-        console.log('Attempting to submit score:', { username, finalScore })
-
         const result = await submitScore(username, finalScore)
-        console.log(result)
 
         if (!result.success) {
           throw new Error(result.error || 'Failed to save score')
         }
-
-        console.log('Score submitted successfully:', result.data)
 
         toast.success(`Score saved to leaderboard! You are in ${getOrdinal(result.rank)} place!`, {
           duration: 5000,
@@ -941,12 +1618,6 @@ const AsteroidsGame = () => {
         toast.error(error instanceof Error ? error.message : 'Failed to save score')
       }
     } else {
-      console.log('Score validation failed:', {
-        hasUsername: !!username,
-        username,
-        finalScore,
-        isScorePositive: finalScore > 0,
-      })
       if (!username) {
         toast.error('No username provided')
       } else if (finalScore <= 0) {
@@ -971,8 +1642,17 @@ const AsteroidsGame = () => {
 
   // Add this function to create power-ups
   const createPowerUp = (x: number, y: number) => {
-    const types: PowerUpType[] = ['spreadShot', 'rapidFire', 'shield', 'speedBoost', 'laser']
-    const randomType = types[Math.floor(Math.random() * types.length)]
+    const types: PowerUpType[] = ['spreadShot', 'rapidFire', 'speedBoost', 'laser']
+
+    // Get current active power-up types
+    const activeTypes = activePowerUps.current.map((p) => p.type)
+
+    // Filter out currently active power-ups (50% chance to avoid duplicates)
+    const availableTypes = types.filter(
+      (type) => !activeTypes.includes(type) || Math.random() > 0.5,
+    )
+
+    const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)]
 
     powerUps.current.push({
       x,
@@ -990,53 +1670,57 @@ const AsteroidsGame = () => {
     const gamepad = gamepadIndex.current !== null ? gamepads[gamepadIndex.current] : null
 
     if (gamepad) {
-      // Only process non-pause inputs if game is not paused
-      if (!isPaused) {
-        // Movement Controls
-        const stickThreshold = 0.3
-        const leftStickX = gamepad.axes[0]
-        const rightStickX = gamepad.axes[2] // Added right stick support
+      // Detect ANY gamepad input
+      const hasInput =
+        gamepad.buttons.some((b) => b.pressed) || gamepad.axes.some((a) => Math.abs(a) > 0.1)
 
-        // Allow both sticks or d-pad for rotation
-        if (
-          leftStickX < -stickThreshold ||
-          rightStickX < -stickThreshold ||
-          gamepad.buttons[14].pressed
-        ) {
-          keys.current['ArrowLeft'] = true
-          keys.current['ArrowRight'] = false
-        } else if (
-          leftStickX > stickThreshold ||
-          rightStickX > stickThreshold ||
-          gamepad.buttons[15].pressed
-        ) {
-          keys.current['ArrowRight'] = true
-          keys.current['ArrowLeft'] = false
-        } else {
-          keys.current['ArrowLeft'] = false
-          keys.current['ArrowRight'] = false
+      if (hasInput) {
+        setControlMode('controller')
+        // Clear keyboard inputs when switching modes
+        keys.current = {}
+      }
+
+      // Only process inputs if in controller mode
+      if (controlModeRef.current === 'controller' && !isPaused) {
+        const deadZone = 0.1
+        const leftStickY = gamepad.axes[1] // Left stick vertical
+        const rightStickX = gamepad.axes[2] // Right stick horizontal
+
+        // Forward thrust only with left stick (push forward)
+        if (leftStickY < -deadZone) {
+          const thrustInput = -leftStickY // Invert and normalize (0-1)
+          const thrustPower = GAME_CONSTANTS.THRUST_POWER * Math.min(thrustInput, 1)
+          velocity.current.x += Math.cos(shipAngle.current - Math.PI / 2) * thrustPower
+          velocity.current.y += Math.sin(shipAngle.current - Math.PI / 2) * thrustPower
         }
 
-        // Thrust - RT (button 7) or A button (button 0) or LT (button 6)
-        keys.current['ArrowUp'] =
-          gamepad.buttons[7].pressed || gamepad.buttons[0].pressed || gamepad.buttons[6].pressed
+        // Rotation only with right stick
+        if (Math.abs(rightStickX) > deadZone) {
+          const stickPosition = Math.abs(rightStickX) - deadZone
+          const direction = rightStickX > 0 ? 1 : -1
+          const normalizedPosition = stickPosition / (1 - deadZone)
+          const speedScale = Math.pow(normalizedPosition, 3) // Cubic sensitivity curve
+          rotationVelocity.current = direction * speedScale * GAME_CONSTANTS.MAX_ROTATION_SPEED
+        } else {
+          rotationVelocity.current *= GAME_CONSTANTS.ROTATION_FRICTION
+        }
 
-        // Shooting - X button (button 2) or RB (button 5)
-        if (
-          (gamepad.buttons[2].pressed || gamepad.buttons[5].pressed) &&
-          Date.now() - lastShotTime.current > GAME_CONSTANTS.SHOT_COOLDOWN
-        ) {
-          shoot()
-          lastShotTime.current = Date.now()
+        // Clamp rotation speed
+        rotationVelocity.current = Math.max(
+          -GAME_CONSTANTS.MAX_ROTATION_SPEED,
+          Math.min(GAME_CONSTANTS.MAX_ROTATION_SPEED, rotationVelocity.current),
+        )
 
-          if (gamepad.vibrationActuator) {
-            gamepad.vibrationActuator.playEffect('dual-rumble', {
-              startDelay: 0,
-              duration: 100,
-              weakMagnitude: 0.8,
-              strongMagnitude: 0.4,
-            })
-          }
+        // Shooting control
+        const shootButton = gamepad.buttons[7].pressed || gamepad.buttons[2].pressed
+        if (shootButton && !shootingInterval.current) {
+          shootHandler()
+        }
+
+        // Stop shooting when button released
+        if (!shootButton && shootingInterval.current) {
+          clearInterval(shootingInterval.current)
+          shootingInterval.current = null
         }
       }
 
@@ -1124,12 +1808,6 @@ const AsteroidsGame = () => {
     }
   }, [])
 
-  // Modify the gameLoop function to include gamepad update
-  const gameLoop = () => {
-    updateGame()
-    requestAnimationFrame(gameLoop)
-  }
-
   useEffect(() => {
     if (!isPlaying) return
 
@@ -1141,7 +1819,27 @@ const AsteroidsGame = () => {
       canvasRef.current.height = window.innerHeight
     }
 
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 0) {
+        // Left mouse button
+        setControlMode('keyboard')
+        if (!shootingInterval.current) {
+          shootHandler()
+        }
+      }
+    }
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 0 && shootingInterval.current) {
+        clearInterval(shootingInterval.current)
+        shootingInterval.current = null
+      }
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Force keyboard mode on any key press
+      setControlMode('keyboard')
+
       // Prevent default actions for game controls
       if (
         [
@@ -1171,22 +1869,13 @@ const AsteroidsGame = () => {
         return
       }
 
-      // Only process other keys if game is not paused
-      if (!isPaused) {
+      // Only process keys if in keyboard mode (using ref for real-time check)
+      if (controlModeRef.current === 'keyboard' && !isPaused) {
         keys.current[e.code] = true
 
-        // Handle shooting with rapid fire power-up
-        if (e.code === 'Space' && !shootingInterval.current) {
-          const hasRapidFire = activePowerUps.current.some((p) => p.type === 'rapidFire')
-          const shootCooldown = hasRapidFire
-            ? GAME_CONSTANTS.SHOT_COOLDOWN / 2
-            : GAME_CONSTANTS.SHOT_COOLDOWN
-
-          // Shoot immediately
-          shoot()
-
-          // Set up interval for continuous shooting
-          shootingInterval.current = setInterval(shoot, shootCooldown)
+        // Shooting logic - keep spacebar and add mouse
+        if ((e.code === 'Space' || e.code === 'KeyM') && !shootingInterval.current) {
+          shootHandler()
         }
       }
     }
@@ -1211,6 +1900,8 @@ const AsteroidsGame = () => {
     window.addEventListener('resize', handleResize)
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
+    window.addEventListener('mousedown', handleMouseDown)
+    window.addEventListener('mouseup', handleMouseUp)
     handleResize()
 
     gameLoop()
@@ -1220,6 +1911,8 @@ const AsteroidsGame = () => {
       window.removeEventListener('resize', handleResize)
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('mouseup', handleMouseUp)
       // Clear shooting interval on cleanup
       if (shootingInterval.current) {
         clearInterval(shootingInterval.current)
@@ -1228,81 +1921,320 @@ const AsteroidsGame = () => {
     }
   }, [isPlaying, isPaused]) // Add isPaused to dependencies
 
+  // Add this new function
+  const createShieldExplosion = (x: number, y: number) => {
+    const particleCount = 20
+    for (let i = 0; i < particleCount; i++) {
+      explosions.current.push({
+        x,
+        y,
+        dx: (Math.random() - 0.5) * 3,
+        dy: (Math.random() - 0.5) * 3,
+        size: Math.random() * 3 + 2,
+        createdAt: Date.now(),
+      })
+    }
+  }
+
+  // Add this new function to draw disintegration particles
+  const drawDisintegration = (ctx: CanvasRenderingContext2D) => {
+    ctx.save()
+    ctx.globalCompositeOperation = 'lighter'
+
+    disintegrationParticles.current.forEach((particle) => {
+      const age = Date.now() - particle.createdAt
+      const progress = age / 1000
+      const alpha = 1 - progress * 2 // Faster fade out
+
+      if (progress > 0.5) return
+
+      ctx.save()
+      ctx.translate(particle.x, particle.y)
+      ctx.rotate(particle.rotation)
+
+      // Gradient for energy effect
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size * 2)
+      gradient.addColorStop(0, `hsla(300, 100%, 70%, ${alpha})`)
+      gradient.addColorStop(1, `hsla(280, 100%, 50%, ${alpha * 0.5})`)
+
+      ctx.fillStyle = gradient
+      ctx.beginPath()
+      ctx.arc(0, 0, particle.size * (1 - progress), 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.restore()
+
+      // Update particle physics
+      particle.x += particle.dx
+      particle.y += particle.dy
+      particle.rotation += particle.rotationSpeed
+      particle.dx *= 0.95
+      particle.dy *= 0.95
+    })
+
+    // Remove old particles
+    disintegrationParticles.current = disintegrationParticles.current.filter(
+      (p) => Date.now() - p.createdAt < 500,
+    )
+
+    ctx.restore()
+  }
+
+  const createParticles = (
+    x: number,
+    y: number,
+    count: number,
+    color: string,
+    speedMultiplier: number,
+  ) => {
+    for (let i = 0; i < count; i++) {
+      explosions.current.push({
+        x,
+        y,
+        dx: (Math.random() - 0.5) * 4 * speedMultiplier,
+        dy: (Math.random() - 0.5) * 4 * speedMultiplier,
+        size: 2 + Math.random() * 3,
+        createdAt: Date.now(),
+        color,
+      })
+    }
+  }
+
+  // Add with other particle functions
+  const createShieldSparkEffect = (x: number, y: number) => {
+    for (let i = 0; i < 15; i++) {
+      disintegrationParticles.current.push({
+        x,
+        y,
+        dx: (Math.random() - 0.5) * 4,
+        dy: (Math.random() - 0.5) * 4,
+        size: Math.random() * 3 + 2,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.1,
+        createdAt: Date.now(),
+        color: `hsl(210, 100%, ${50 + Math.random() * 30}%)`,
+      })
+    }
+  }
+
+  const handleShieldCollision = (asteroid: Asteroid) => {
+    const baseDamage = asteroid.isBoss
+      ? GAME_CONSTANTS.SHIELD_DAMAGE_BOSS
+      : GAME_CONSTANTS.SHIELD_DAMAGE_NORMAL
+
+    // Calculate damage with smaller random variation
+    const damage = Math.floor(baseDamage * (0.8 + Math.random() * 0.4))
+
+    setCurrentShieldHealth((prev) => {
+      const newHealth = prev - damage
+
+      // Visual feedback for all hits
+      createShieldSparkEffect(shipX.current, shipY.current)
+      createShieldExplosion(asteroid.x, asteroid.y)
+
+      // Shield break effect
+      if (newHealth <= 0 && prev > 0) {
+        createShieldExplosion(shipX.current, shipY.current)
+        toast.warning('Shield destroyed!')
+      }
+
+      return Math.max(0, newHealth)
+    })
+
+    // Always apply damage to asteroid (shield reflects damage)
+    asteroid.health -= damage * 3 // 3x damage reflection
+    if (asteroid.health <= 0) {
+      const index = asteroids.current.indexOf(asteroid)
+      if (index !== -1) {
+        asteroids.current.splice(index, 1)
+        scoreRef.current += 200 // Bonus points for shield destruction
+      }
+    }
+  }
+
+  // Add these icon drawing functions
+  const drawKeyboardIcon = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+    if (!keyboardInputRef.current) return
+    ctx.drawImage(keyboardInputRef.current, x, y, 40, 25) // Use keyboardInputRef instead of keyboardImageRef
+  }
+
+  // Add this ref near other refs
+  const gamepadImageRef = useRef<HTMLImageElement | null>(null)
+  const keyboardInputRef = useRef<HTMLImageElement | null>(null)
+
+  // Add this useEffect to load the SVG
+  useEffect(() => {
+    const svgData = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ededed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="6" x2="10" y1="11" y2="11"/>
+      <line x1="8" x2="8" y1="9" y2="13"/>
+      <line x1="15" x2="15.01" y1="12" y2="12"/>
+      <line x1="18" x2="18.01" y1="10" y2="10"/>
+      <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>
+    </svg>
+    `
+
+    const img = new Image()
+    img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svgData)}`
+    img.onload = () => {
+      gamepadImageRef.current = img
+    }
+  }, [])
+
+  // Modify the drawGamepadIcon function
+  const drawGamepadIcon = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+    if (!gamepadImageRef.current) return
+    ctx.drawImage(gamepadImageRef.current, x, y, 30, 30) // Adjust size as needed
+  }
+
+  // Update shootHandler function
+  const shootHandler = () => {
+    const hasRapidFire = activePowerUps.current.some((p) => p.type === 'rapidFire')
+    const { cooldown } = getBulletProperties(hasRapidFire)
+
+    // Clear any existing interval first!
+    if (shootingInterval.current) {
+      clearInterval(shootingInterval.current)
+    }
+
+    shoot()
+    shootingInterval.current = setInterval(shoot, cooldown)
+  }
+
+  // Add this ref near other refs
+
+  // Add this useEffect to load the keyboard SVG
+  useEffect(() => {
+    const keyboardData = `
+    <svg fill="#ededed" height="200px" width="200px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 490 490" xml:space="preserve" stroke="#ededed"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <g> <path d="M251.2,193.5v-53.7c0-5.8,4.7-10.5,10.5-10.5h119.4c21,0,38.1-17.1,38.1-38.1s-17.1-38.1-38.1-38.1H129.5 c-5.4,0-10.1,4.3-10.1,10.1c0,5.8,4.3,10.1,10.1,10.1h251.6c10.1,0,17.9,8.2,17.9,17.9c0,10.1-8.2,17.9-17.9,17.9H261.7 c-16.7,0-30.3,13.6-30.3,30.3v53.3H0v244.2h490V193.5H251.2z M232.2,221.5h15.6c5.4,0,10.1,4.3,10.1,10.1s-4.3,10.1-10.1,10.1 h-15.6c-5.4,0-10.1-4.3-10.1-10.1C222.1,225.8,226.7,221.5,232.2,221.5z M203.4,325.7h-15.6c-5.4,0-10.1-4.3-10.1-10.1 c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C213.5,321,208.8,325.7,203.4,325.7z M213.5,352.9 c0,5.4-4.3,10.1-10.1,10.1h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6C208.8,342.8,213.5,347.5,213.5,352.9z M203.4,288h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.8,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1 C213.5,283.7,208.8,288,203.4,288z M186.3,221.5h15.6c5.4,0,10.1,4.3,10.1,10.1s-4.3,10.1-10.1,10.1h-15.6 c-5.4,0-10.1-4.3-10.1-10.1S180.8,221.5,186.3,221.5z M140.4,221.5H156c5.4,0,10.1,4.3,10.1,10.1s-4.3,10.1-10.1,10.1h-15.6 c-5.4,0-10.1-4.3-10.1-10.1C130.3,225.8,134.9,221.5,140.4,221.5z M138.8,268.1h15.6c5.4,0,10.1,4.3,10.1,10.1 c0,5.8-4.3,10.1-10.1,10.1h-15.6c-5.4,0-10.1-4.3-10.1-10.1C128.7,272.4,133.4,268.1,138.8,268.1z M138.8,305.5h15.6 c5.4,0,10.1,4.3,10.1,10.1c0,5.4-4.3,10.1-10.1,10.1h-15.6c-5.4,0-10.1-4.3-10.1-10.1C128.7,310.1,133.4,305.5,138.8,305.5z M138.8,342.8h15.6c5.4,0,10.1,4.3,10.1,10.1c0,5.4-4.3,10.1-10.1,10.1h-15.6c-5.4,0-10.1-4.3-10.1-10.1 C128.7,347.5,133.4,342.8,138.8,342.8z M94.5,221.5h15.6c5.4,0,10.1,4.3,10.1,10.1s-4.3,10.1-10.1,10.1H94.5 c-5.4,0-10.1-4.3-10.1-10.1S89.1,221.5,94.5,221.5z M89.4,268.1H105c5.4,0,10.1,4.3,10.1,10.1c0,5.8-4.3,10.1-10.1,10.1H89.4 c-5.4,0-10.1-4.3-10.1-10.1C79.3,272.4,84,268.1,89.4,268.1z M89.4,305.5H105c5.4,0,10.1,4.3,10.1,10.1c0,5.4-4.3,10.1-10.1,10.1 H89.4c-5.4,0-10.1-4.3-10.1-10.1C79.7,310.1,84,305.5,89.4,305.5z M89.4,342.8H105c5.4,0,10.1,4.3,10.1,10.1 c0,5.4-4.3,10.1-10.1,10.1H89.4c-5.4,0-10.1-4.3-10.1-10.1C79.7,347.5,84,342.8,89.4,342.8z M56,400.4H40.4 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1H56c5.4,0,10.1,4.3,10.1,10.1C65.7,395.7,61.4,400.4,56,400.4z M56,363H40.4 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1H56c5.4,0,10.1,4.3,10.1,10.1C65.7,358.4,61.4,363,56,363z M56,325.7H40.4 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1H56c5.4,0,10.1,4.3,10.1,10.1C65.7,321,61.4,325.7,56,325.7z M56,288H40.4 c-5.4,0-10.1-4.3-10.1-10.1c0-5.8,4.3-10.1,10.1-10.1H56c5.4,0,10.1,4.3,10.1,10.1C66.1,283.7,61.4,288,56,288z M56,241.3H40.4 c-5.4,0-10.1-4.3-10.1-10.1s4.3-10.1,10.1-10.1H56c5.4,0,10.1,4.3,10.1,10.1S61.4,241.3,56,241.3z M252.8,400.4H89.4 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h163.3c5.4,0,10.1,4.3,10.1,10.1C262.9,395.7,258.2,400.4,252.8,400.4z M252.8,363h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1 C262.9,358.4,258.2,363,252.8,363z M252.8,325.7h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6 c5.4,0,10.1,4.3,10.1,10.1C262.9,321,258.2,325.7,252.8,325.7z M252.8,288h-15.6c-5.4,0-10.1-4.3-10.1-10.1 c0-5.8,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C262.9,283.7,258.2,288,252.8,288z M302.2,400.4h-15.6 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C311.9,395.7,307.6,400.4,302.2,400.4z M302.2,363h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1 C311.9,358.4,307.6,363,302.2,363z M302.2,325.7h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6 c5.4,0,10.1,4.3,10.1,10.1C311.9,321,307.6,325.7,302.2,325.7z M302.2,288h-15.6c-5.4,0-10.1-4.3-10.1-10.1 c0-5.8,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C312.3,283.7,307.6,288,302.2,288z M312.3,241.3h-15.6 c-5.4,0-10.1-4.3-10.1-10.1s4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1S317.7,241.3,312.3,241.3z M351.2,400.4h-15.6 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C361.3,395.7,356.6,400.4,351.2,400.4z M351.2,363h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1 C361.3,358.4,356.6,363,351.2,363z M351.2,325.7h-15.6c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6 c5.4,0,10.1,4.3,10.1,10.1C361.3,321,356.6,325.7,351.2,325.7z M351.2,288h-15.6c-5.4,0-10.1-4.3-10.1-10.1 c0-5.8,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C361.3,283.7,356.6,288,351.2,288z M357.8,241.3h-15.6 c-5.4,0-10.1-4.3-10.1-10.1s4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1S363.6,241.3,357.8,241.3z M400.6,400.4H385 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C410.3,395.7,406,400.4,400.6,400.4z M400.6,363H385c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1 C410.3,358.4,406,363,400.6,363z M400.6,325.7H385c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6 c5.4,0,10.1,4.3,10.1,10.1C410.3,321,406,325.7,400.6,325.7z M400.6,288H385c-5.4,0-10.1-4.3-10.1-10.1c0-5.8,4.3-10.1,10.1-10.1 h15.6c5.4,0,10.1,4.3,10.1,10.1C410.7,283.7,406,288,400.6,288z M403.7,241.3h-15.6c-5.4,0-10.1-4.3-10.1-10.1s4.3-10.1,10.1-10.1 h15.6c5.4,0,10.1,4.3,10.1,10.1C413.8,237,409.5,241.3,403.7,241.3z M449.6,400.4H434c-5.4,0-10.1-4.3-10.1-10.1 c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C459.7,395.7,455,400.4,449.6,400.4z M449.6,363H434 c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C459.7,358.4,455,363,449.6,363z M449.6,325.7 H434c-5.4,0-10.1-4.3-10.1-10.1c0-5.4,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1C459.7,321,455,325.7,449.6,325.7z M449.6,288H434c-5.4,0-10.1-4.3-10.1-10.1c0-5.8,4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1 C459.7,283.7,455,288,449.6,288z M449.6,241.3H434c-5.4,0-10.1-4.3-10.1-10.1s4.3-10.1,10.1-10.1h15.6c5.4,0,10.1,4.3,10.1,10.1 S455,241.3,449.6,241.3z"></path> </g> </g> </g></svg>
+    `
+
+    const img = new Image()
+    img.src = `data:image/svg+xml;utf8,${encodeURIComponent(keyboardData)}`
+    img.onload = () => {
+      keyboardInputRef.current = img
+    }
+  }, [])
+
+  // Add this ref near other refs
+  const isPlayingRef = useRef(isPlaying)
+
+  // Update ref when isPlaying changes
+  useEffect(() => {
+    isPlayingRef.current = isPlaying
+  }, [isPlaying])
+
+  // Add this useEffect for right-click prevention
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      if (isPlayingRef.current) {
+        e.preventDefault()
+      }
+    }
+
+    window.addEventListener('contextmenu', handleContextMenu)
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu)
+    }
+  }, [])
+
+  // Add this at the top of the component with other refs
+  const lastFrameTime = useRef(Date.now())
+
   return (
-    <div
-      ref={containerRef}
-      className="flex flex-col items-center gap-4"
-      style={{
-        position: isPlaying ? 'fixed' : 'relative',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: isPlaying ? 'black' : 'transparent',
-        cursor: isPlaying && !isPaused ? 'none' : 'auto',
-      }}
-    >
-      <div className="flex gap-2">
-        {!isPlaying && !gameOver ? (
-          <div className="flex flex-col items-center gap-4">
-            {/* if mainnet and wallet connected show button */}
-            {(walletState?.adaHandle?.handle || walletState?.walletAddress) && network === 1 ? (
-              <Button3D variant={'outline'} onClick={startGame}>
-                Start Game
-              </Button3D>
+    <div className="flex flex-col items-center gap-4">
+      <MobileView>
+        <h1>Please play on desktop, mobile is not supported yet</h1>
+      </MobileView>
+      <BrowserView>
+        <div
+          ref={containerRef}
+          className="flex flex-col items-center gap-4"
+          style={{
+            position: isPlaying ? 'fixed' : 'relative',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: isPlaying ? 'black' : 'transparent',
+            cursor: isPlaying && !isPaused ? 'none' : 'auto',
+          }}
+        >
+          <div className="flex gap-2">
+            {!isPlaying && !gameOver ? (
+              <div className="flex flex-col items-center gap-4">
+                {/* if mainnet and wallet connected show button */}
+                {(walletState?.adaHandle?.handle || walletState?.walletAddress) && network === 1 ? (
+                  <Button3D variant={'outline'} onClick={startGame}>
+                    Start Game
+                  </Button3D>
+                ) : (
+                  <div className="text-lg font-bold">please connect to mainnet to play</div>
+                )}
+              </div>
             ) : (
-              <div className="text-lg font-bold">please connect to mainnet to play</div>
+              <canvas
+                ref={canvasRef}
+                className="absolute left-0 top-0 h-full w-full"
+                style={{
+                  pointerEvents: isPlaying && !isPaused ? 'none' : 'auto',
+                  padding: '20px',
+                }}
+              />
             )}
           </div>
-        ) : (
-          <canvas ref={canvasRef} className="h-full w-full" />
-        )}
-      </div>
 
-      {isPaused && isPlaying && !gameOver && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 text-center">
-          <h2 className="mb-4 text-2xl font-bold text-white">Game Paused</h2>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setIsPaused(false)}
-              className="w-full rounded border border-border/50 bg-blue/30 px-4 py-2 hover:bg-blue/25"
-            >
-              Resume
-            </button>
-            <button
-              onClick={() => {
-                setIsPaused(false)
-                setIsPlaying(false)
-                setGameOver(false)
-              }}
-              className="w-full rounded bg-red-600/30 px-4 py-2 hover:bg-red-700/30"
-            >
-              Quit Game
-            </button>
-          </div>
-          <p className="mt-4 text-sm text-gray-400">Press ESC to resume</p>
+          {isPaused && isPlaying && !gameOver && (
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 text-center">
+              <h2 className="mb-4 text-2xl font-bold text-white">Game Paused</h2>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => setIsPaused(false)}
+                  className="w-full rounded border border-border/50 bg-blue/30 px-4 py-2 hover:bg-blue/25"
+                >
+                  Resume
+                </button>
+
+                <button
+                  onClick={quitGame}
+                  className="w-full rounded bg-red-600/30 px-4 py-2 hover:bg-red-700/30"
+                >
+                  Quit Game
+                </button>
+              </div>
+              <p className="mt-4 text-sm text-gray-400">Press ESC to resume</p>
+            </div>
+          )}
+
+          {gameOver && (
+            <div className="absolute left-1/2 top-1/2 flex w-[500px] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 break-all rounded-2xl border border-border bg-background/60 p-8 text-center backdrop-blur-sm">
+              <h2 className="text-2xl font-bold">
+                {username && username.length < 22 ? 'Game Over ' + username + '!' : 'Game Over!'}
+              </h2>
+              {username && username.length > 32 && (
+                <p className="text-xl">
+                  {username.slice(0, 10) + '...' + username.slice(username.length - 10)}
+                </p>
+              )}
+              <p className="text-xl">Score: {scoreRef.current}</p>
+              <Button variant={'outline'} onClick={startGame}>
+                Play Again
+              </Button>
+              <Button variant={'outline'} onClick={quitGame}>
+                Quit Game
+              </Button>
+            </div>
+          )}
+
+          {/* Improved quit indicator - centered with better styling */}
+          {quitProgress > 0 && isPlaying && (
+            <div className="absolute left-1/2 top-8 flex min-w-[200px] -translate-x-1/2 flex-col items-center gap-2 rounded-lg bg-background/20 p-4 backdrop-blur-sm">
+              <span className="text-sm font-medium text-white">Hold Start to Quit</span>
+              <Progress value={quitProgress * 100} className="h-3 w-44" />
+            </div>
+          )}
         </div>
-      )}
-
-      {gameOver && (
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-background/80 p-8 text-center backdrop-blur-sm">
-          <h2 className="text-2xl font-bold">Game Over!</h2>
-
-          <p className="mb-2 text-sm">{username ?? ''}</p>
-          <p className="mb-4 text-xl">Final Score: {scoreRef.current}</p>
-          <Button variant={'outline'} onClick={startGame}>
-            Play Again
-          </Button>
-        </div>
-      )}
-
-      {/* Improved quit indicator - centered with better styling */}
-      {quitProgress > 0 && isPlaying && (
-        <div className="absolute left-1/2 top-8 flex min-w-[200px] -translate-x-1/2 flex-col items-center gap-2 rounded-lg bg-background/20 p-4 backdrop-blur-sm">
-          <span className="text-sm font-medium text-white">Hold Start to Quit</span>
-          <Progress value={quitProgress * 100} className="h-3 w-44" />
-        </div>
-      )}
+      </BrowserView>
     </div>
   )
 }
