@@ -14,8 +14,8 @@ import { BrowserView, MobileView } from 'react-device-detect'
 const GAME_CONSTANTS = {
   SHOT_COOLDOWN: 120,
   RAPID_FIRE_MULTIPLIER: 3, // 3x faster when active
-  DIFFICULTY_SCORE_INTERVAL: 100,
-  MAX_ROTATION_SPEED: 0.05,
+  DIFFICULTY_SCORE_INTERVAL: 1000,
+  MAX_ROTATION_SPEED: 0.06,
   ROTATION_ACCELERATION: 0.003,
   ROTATION_FRICTION: 0.93,
   POWER_UP_DURATION: 20000,
@@ -34,25 +34,29 @@ const GAME_CONSTANTS = {
   BOSS_SPAWN_INTERVAL: 1, // Every level
   MAX_BOSSES: 1,
   MAX_ASTEROIDS: 10,
-  MAX_BULLETS: 50,
   BOSS_BULLET_DAMAGE: 1,
-  BOSS_BULLET_SPEED: 1.69, // Slightly slower bullets
-  BOSS_ATTACK_COOLDOWN: 10000,
+  BOSS_BULLET_SPEED: 1.9, // Slightly slower bullets
+  BOSS_ATTACK_COOLDOWN: 8000,
   BOSS_HEALTH_MULTIPLIER: 1.1,
   SHIELD_BASE_HEALTH: 120, // Increased from 200
   SHIELD_DAMAGE_NORMAL: 100, // Fixed value per asteroid hit
   SHIELD_DAMAGE_BOSS: 250, // Fixed value per boss hit
-  BOSS_ATTACK_WARNING_DURATION: 5000, // 2 second warning
-  BOSS_CHARGE_UP_DURATION: 3000, // 1 second charge-up
+  BOSS_ATTACK_WARNING_DURATION: 5000, // 5 second warning
+  BOSS_CHARGE_UP_DURATION: 500, // 1 second charge-up
   SHIP_COLLISION_RADIUS: 6, // Added this constant
   LASER_RANGE_SQ: 300 * 300, // Pre-square the constant
-  MAX_BULLETS_PER_BOSS: 20, // Add at top with constants
   MAX_PARTICLES: 300,
   ASTEROID_BASE_SPEED: 0.8, // Was likely 1.2
   ASTEROID_SPEED_INCREMENT: 0.05, // Was likely 0.1
+  MAX_ASTEROID_SPEED: 0.25, // Add this line
 } as const
 
-const particlePool: DisintegrationParticle[] = []
+// Add right after GAME_CONSTANTS
+const OPTIMIZATION = {
+  MAX_ASTEROID_VERTS: 8,
+  ASTEROID_DETAIL: 0.3,
+  PARTICLE_LIFETIME: 1000,
+}
 
 // Add this helper function in the Constants section
 const getBulletProperties = (hasRapidFire: boolean) => ({
@@ -153,8 +157,8 @@ const closestPointOnSegment = (
 // Helper Functions
 const generateAsteroidPoints = (size: number) => {
   const points: Array<{ x: number; y: number }> = []
-  const vertices = Math.floor(Math.random() * 4) + 7
-  const variance = 0.4
+  const vertices = Math.floor(OPTIMIZATION.MAX_ASTEROID_VERTS)
+  const variance = OPTIMIZATION.ASTEROID_DETAIL
 
   for (let i = 0; i < vertices; i++) {
     const angle = (i / vertices) * Math.PI * 2
@@ -173,10 +177,10 @@ const getDifficultyValues = (level: number) => {
 
   return {
     asteroidSpeed: {
-      min: 0.1, // Reduced from 0.2
-      max: 0.12 + level * 0.025, // Reduced from 0.15 + level * 0.03
+      min: 0.1,
+      max: 0.1 + level / 10,
     },
-    asteroidSizeRange: { min: 30, max: 60 + level * 2 },
+    asteroidSizeRange: { min: 40, max: 30 + level },
     asteroidSpawnRate: baseSpawnRate,
   }
 }
@@ -498,7 +502,12 @@ const rotatePoint = (point: { x: number; y: number }, angle: number) => {
   }
 }
 
-const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
+const drawAsteroid = (
+  ctx: CanvasRenderingContext2D,
+  asteroid: Asteroid,
+  shipX: number,
+  shipY: number,
+) => {
   // Collision debug outline
   ctx.save()
   ctx.strokeStyle = '#00ff0080' // Green with 50% opacity
@@ -570,6 +579,29 @@ const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
       1,
       (Date.now() - asteroid.lastAttackTime) / GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION,
     )
+
+    // Draw targeting laser when charging
+    if (asteroid.isCharging) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.moveTo(asteroid.x, asteroid.y)
+      ctx.lineTo(shipX, shipY)
+
+      // Animated laser effect
+      const pulse = Math.sin(Date.now() / 50) * 0.5 + 0.5
+      ctx.strokeStyle = `rgba(255, 0, 0, ${0.3 + pulse * 0.2})`
+      ctx.lineWidth = 2 + pulse * 2
+      ctx.setLineDash([10, 5])
+      ctx.stroke()
+
+      // Warning text
+      ctx.fillStyle = 'red'
+      ctx.font = 'bold 50px Arial'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('🎯', asteroid.x, asteroid.y)
+      ctx.restore()
+    }
 
     // Pulsing core glow
     const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5
@@ -749,10 +781,6 @@ const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
         ctx.arc(i, 0, 1, 0, Math.PI * 2)
       }
       break
-    // case 'shield':
-    //   // Circle
-    //   ctx.arc(0, 0, 5, 0, Math.PI * 2)
-    //   break
     case 'speedBoost':
       // Lightning bolt
       ctx.moveTo(-3, -5)
@@ -773,50 +801,6 @@ const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
 }
 
 // Add these helper functions
-const preciseCollisionCheck = (
-  asteroid: Asteroid,
-  shipX: number,
-  shipY: number,
-  shipAngle: number,
-): boolean => {
-  // Get ship points in world space
-  const shipPoints = [
-    { x: 0, y: -18 }, // Nose
-    { x: -7.2, y: -2.4 }, // Left shoulder
-    { x: -14.4, y: 2.4 }, // Left wing tip (UPDATED from 9.6 to 2.4)
-    { x: -4.8, y: 7.2 }, // Left inner wing
-    { x: 0, y: 4.8 }, // Rear center
-    { x: 4.8, y: 7.2 }, // Right inner wing
-    { x: 14.4, y: 2.4 }, // Right wing tip (UPDATED from 9.6 to 2.4)
-    { x: 7.2, y: -2.4 }, // Right shoulder
-  ].map((p) => {
-    // Rotate and translate ship points
-    const rotated = rotatePoint(p, shipAngle)
-    return {
-      x: shipX + rotated.x,
-      y: shipY + rotated.y,
-    }
-  })
-
-  // Check each ship point against asteroid polygon
-  const worldPoints = asteroid.points.map((p) => {
-    const rotated = rotatePoint(p, asteroid.rotation)
-    return { x: asteroid.x + rotated.x, y: asteroid.y + rotated.y }
-  })
-
-  return shipPoints.some(
-    (shipPoint) =>
-      isPointInPolygon(shipPoint, worldPoints) ||
-      worldPoints.some((a, i) => {
-        const b = worldPoints[(i + 1) % worldPoints.length]
-        const closest = closestPointOnSegment(shipPoint, a, b)
-        const dx = closest.x - shipPoint.x
-        const dy = closest.y - shipPoint.y
-        return dx * dx + dy * dy < 25 // 5px threshold
-      }),
-  )
-}
-
 const isPointInPolygon = (
   point: { x: number; y: number },
   polygon: Array<{ x: number; y: number }>,
@@ -856,6 +840,8 @@ const AsteroidsGame = () => {
   const asteroids = useRef<Asteroid[]>([])
   const bullets = useRef<Bullet[]>([])
   const keys = useRef<{ [key: string]: boolean }>({})
+
+  const particlePool = useRef<DisintegrationParticle[]>([])
 
   // Add a shooting cooldown ref
   const lastShotTime = useRef(0)
@@ -1230,6 +1216,9 @@ const AsteroidsGame = () => {
   }
 
   const createAsteroid = (isBoss = false) => {
+    if (!canvasRef.current) return // Add null check
+    const canvas = canvasRef.current // Get canvas from ref
+
     const { asteroidSizeRange } = getDifficultyValues(difficultyLevel.current)
     // Fixed base size for bosses
     const baseSize = isBoss
@@ -1243,74 +1232,69 @@ const AsteroidsGame = () => {
     let x: number = 0
     let y: number = 0
 
-    // Then assign in switch statement
-    const side = Math.floor(Math.random() * 4) // 0-3 for each screen edge
-    const buffer = size * 3 // Spawn outside visible area
-    if (!canvasRef.current) return
-    const canvas = canvasRef.current
-    switch (side) {
-      case 0: // Top
-        x = Math.random() * canvas.width
-        y = -buffer
-        break
-      case 1: // Right
-        x = canvas.width + buffer
-        y = Math.random() * canvas.height
-        break
-      case 2: // Bottom
-        x = Math.random() * canvas.width
-        y = canvas.height + buffer
-        break
-      case 3: // Left
-        x = -buffer
-        y = Math.random() * canvas.height
-        break
-      default: // Fallback
-        x = canvas.width + buffer
-        y = canvas.height + buffer
-    }
-
-    // Modify safe distance calculation to be more strict
-    const safeDistance = isBoss
-      ? Math.min(window.innerWidth, window.innerHeight) * 0.5 // Increased from 0.4 to 0.5
-      : Math.max(
-          size * 6, // Increased minimum safe distance from 4x to 6x size
-          Math.min(window.innerWidth, window.innerHeight) * 0.4, // 40% of screen size
-        )
-
+    // Add these parameters at the top of createAsteroid
+    const minDistanceFromShip = 300
+    const edgeBuffer = 100
+    let safeSpawn = false
     let attempts = 0
-    let validPosition = false
 
-    while (!validPosition && attempts < 1000) {
-      // Increased max attempts from 500 to 1000
+    let speedDx = 0
+    let speedDy = 0
+
+    while (!safeSpawn && attempts < 20) {
       attempts++
 
-      // Calculate actual distance using squared values for performance
-      const dx = x - shipX.current
-      const dy = y - shipY.current
-      const distanceSq = dx * dx + dy * dy
-      const minDistance = safeDistance + size + GAME_CONSTANTS.SHIP_COLLISION_RADIUS
-      const minDistanceSq = minDistance * minDistance
+      // New position calculation
+      const side = Math.floor(Math.random() * 4)
+      switch (side) {
+        case 0: // Top
+          x = Math.random() * (canvas.width - edgeBuffer * 2) + edgeBuffer
+          y = -size
+          break
+        case 1: // Right
+          x = canvas.width + size
+          y = Math.random() * (canvas.height - edgeBuffer * 2) + edgeBuffer
+          break
+        case 2: // Bottom
+          x = Math.random() * (canvas.width - edgeBuffer * 2) + edgeBuffer
+          y = canvas.height + size
+          break
+        case 3: // Left
+          x = -size
+          y = Math.random() * (canvas.height - edgeBuffer * 2) + edgeBuffer
+          break
+      }
 
-      validPosition = distanceSq > minDistanceSq
+      // Check distance from ship
+      const dx = shipX.current - x
+      const dy = shipY.current - y
+      const distanceToShip = Math.sqrt(dx * dx + dy * dy)
 
-      // Stricter offscreen check with larger buffer
-      const buffer = size * 5 // Increased from 3x to 5x
-      const isOffscreen =
-        x < -buffer || x > canvas.width + buffer || y < -buffer || y > canvas.height + buffer
+      // Calculate safe direction (away from ship)
+      const angleToShip = Math.atan2(dy, dx)
+      const avoidanceAngle = angleToShip + Math.PI + ((Math.random() - 0.5) * Math.PI) / 2
 
-      validPosition = validPosition && isOffscreen
+      // Ensure initial movement is away from player
+      const angle =
+        distanceToShip < minDistanceFromShip * 2 ? avoidanceAngle : Math.random() * Math.PI * 2
+
+      // Velocity calculation
+      const { asteroidSpeed } = getDifficultyValues(difficultyLevel.current)
+      const baseSpeed = Math.min(
+        asteroidSpeed.min + Math.random() * (asteroidSpeed.max - asteroidSpeed.min),
+        GAME_CONSTANTS.MAX_ASTEROID_SPEED,
+      )
+      speedDx = Math.cos(angle) * baseSpeed
+      speedDy = Math.sin(angle) * baseSpeed
+
+      // Final safety check
+      safeSpawn =
+        distanceToShip > minDistanceFromShip &&
+        x > -size &&
+        x < canvas.width + size &&
+        y > -size &&
+        y < canvas.height + size
     }
-
-    // Ensure boss movement
-    const { asteroidSpeed } = getDifficultyValues(difficultyLevel.current)
-    const speedMultiplier = isBoss ? 0.8 : 1.0 // Reduced from 1.2
-
-    // Calculate direction to player without random variation for bosses
-    const angle: number = Math.atan2(shipY.current - y, shipX.current - x)
-    const baseSpeed: number = asteroidSpeed.max * speedMultiplier * 0.6 // Reduced from 0.7
-    const dx: number = Math.cos(angle) * baseSpeed + (Math.random() - 0.5) * 0.3 // Reduced variation
-    const dy: number = Math.sin(angle) * baseSpeed + (Math.random() - 0.5) * 0.3 // Reduced variation
 
     const points = generateAsteroidPoints(size)
     const xValues = points.map((p) => p.x)
@@ -1320,8 +1304,8 @@ const AsteroidsGame = () => {
       x,
       y,
       size,
-      dx: isBoss ? dx : dx + (Math.random() - 0.5), // Bosses move directly at player
-      dy: isBoss ? dy : dy + (Math.random() - 0.5), // Regular asteroids get random variation
+      dx: speedDx,
+      dy: speedDx,
       points,
       rotation: Math.random() * Math.PI * 2,
       rotationSpeed: (Math.random() - 0.5) * 0.02, // Random rotation speed
@@ -1342,14 +1326,16 @@ const AsteroidsGame = () => {
     }
 
     if (isBoss) {
-      // Remove size scaling
-      // Add health bonus based on number of boss spawns
-      const bossLevel = Math.floor(difficultyLevel.current / GAME_CONSTANTS.BOSS_SPAWN_INTERVAL)
-      asteroid.health = initialHealth + 5 * bossLevel
+      asteroid.health = initialHealth + 3
       asteroid.initialHealth = asteroid.health
       asteroid.rotationSpeed *= 2
-      asteroid.dx *= 0.8
-      asteroid.dy *= 0.8
+      asteroid.dx *= 0.25
+      asteroid.dy *= 0.25
+      asteroid.lastAttackTime = Date.now()
+
+      // Keep boundary checks
+      asteroid.x = Math.max(50, Math.min(canvas.width - 50, asteroid.x))
+      asteroid.y = Math.max(50, Math.min(canvas.height - 50, asteroid.y))
     }
 
     // Add velocity direction check for regular asteroids
@@ -1368,35 +1354,56 @@ const AsteroidsGame = () => {
   const updateBossBehavior = (asteroid: Asteroid) => {
     if (!asteroid.isBoss) return
 
+    // Add this cleanup at the start of the function
     const now = Date.now()
-    const timeSinceLastAttack = now - asteroid.lastAttackTime
+    const maxLifetime = 5000 // 5 seconds
+    const bufferZone = 100 // pixels outside view
+    const canvas = canvasRef.current!
 
-    if (
-      timeSinceLastAttack >
-      GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION
-    ) {
-      asteroid.isCharging =
-        timeSinceLastAttack >
-        GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION
+    // Efficient bullet cleanup
+    let validCount = 0
+    for (let i = 0; i < asteroid.bullets.length; i++) {
+      const b = asteroid.bullets[i]
+      const isInBounds =
+        b.x > -bufferZone &&
+        b.x < canvas.width + bufferZone &&
+        b.y > -bufferZone &&
+        b.y < canvas.height + bufferZone &&
+        now - b.createdAt < maxLifetime
+
+      if (isInBounds) {
+        asteroid.bullets[validCount] = b // Keep in array
+        validCount++
+      }
+    }
+    asteroid.bullets.length = validCount // Truncate array
+
+    const timeSinceLastAttack = now - asteroid.lastAttackTime
+    const chargeUpTime = GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION
+
+    if (timeSinceLastAttack > GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - chargeUpTime) {
+      asteroid.isCharging = timeSinceLastAttack > GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - chargeUpTime
 
       if (timeSinceLastAttack >= GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN) {
-        const bulletCount = 8 // Match target line count
-        const bulletSpread = Math.PI * 2
-        const startRadius = asteroid.size + 10
+        // Fire 3 volleys with slight delay between them
+        for (let volley = 0; volley < 3; volley++) {
+          setTimeout(() => {
+            const angleToPlayer = Math.atan2(shipY.current - asteroid.y, shipX.current - asteroid.x)
+            const spreadAngle = 0.25
+            const angles = [angleToPlayer - spreadAngle, angleToPlayer, angleToPlayer + spreadAngle]
 
-        for (let i = 0; i < bulletCount; i++) {
-          const angle = (i * bulletSpread) / bulletCount
-          const startX = asteroid.x + Math.cos(angle) * startRadius
-          const startY = asteroid.y + Math.sin(angle) * startRadius
-
-          asteroid.bullets.push({
-            x: startX,
-            y: startY,
-            dx: Math.cos(angle) * GAME_CONSTANTS.BOSS_BULLET_SPEED,
-            dy: Math.sin(angle) * GAME_CONSTANTS.BOSS_BULLET_SPEED,
-            createdAt: Date.now(),
-          })
+            angles.forEach((angle) => {
+              asteroid.bullets.push({
+                x: asteroid.x + Math.cos(angle) * (asteroid.size + 10),
+                y: asteroid.y + Math.sin(angle) * (asteroid.size + 10),
+                dx: Math.cos(angle) * GAME_CONSTANTS.BOSS_BULLET_SPEED * 0.6,
+                dy: Math.sin(angle) * GAME_CONSTANTS.BOSS_BULLET_SPEED * 0.6,
+                createdAt: Date.now(),
+              })
+            })
+          }, volley * 500) // 500ms between volleys
         }
+
         asteroid.lastAttackTime = now
         asteroid.isCharging = false
       }
@@ -1406,16 +1413,22 @@ const AsteroidsGame = () => {
   const updateGame = () => {
     if (!canvasRef.current) return
 
-    // Add this bullet cleanup code in the bullet update section
-    bullets.current = bullets.current.filter((bullet) => {
-      // Keep bullets that are within screen bounds + 100px buffer
-      return (
-        bullet.x > -100 &&
-        bullet.x < canvasRef.current!.width + 100 &&
-        bullet.y > -100 &&
-        bullet.y < canvasRef.current!.height + 100
-      )
-    })
+    // Optimized bullet cleanup
+    const canvas = canvasRef.current
+    const maxX = canvas.width + 100
+    const minX = -100
+    const maxY = canvas.height + 100
+    const minY = -100
+
+    // Replace existing bullet cleanup with this optimized version
+    const validBullets: Bullet[] = []
+    for (let i = 0; i < bullets.current.length; i++) {
+      const bullet = bullets.current[i]
+      if (bullet.x > minX && bullet.x < maxX && bullet.y > minY && bullet.y < maxY) {
+        validBullets.push(bullet)
+      }
+    }
+    bullets.current = validBullets
 
     const now = Date.now()
     const deltaTime = now - lastFrameTime.current
@@ -1436,7 +1449,6 @@ const AsteroidsGame = () => {
     })
 
     lastUpdateTime.current = now
-    const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
@@ -1499,8 +1511,15 @@ const AsteroidsGame = () => {
         // Remove the else clause to update boss positions too
         asteroid.x += asteroid.dx
         asteroid.y += asteroid.dy
-        asteroid.x = (asteroid.x + canvas.width) % canvas.width
-        asteroid.y = (asteroid.y + canvas.height) % canvas.height
+
+        // Keep boss asteroids within screen bounds
+        if (asteroid.isBoss) {
+          asteroid.x = Math.max(50, Math.min(canvas.width - 50, asteroid.x))
+          asteroid.y = Math.max(50, Math.min(canvas.height - 50, asteroid.y))
+        } else {
+          asteroid.x = (asteroid.x + canvas.width) % canvas.width
+          asteroid.y = (asteroid.y + canvas.height) % canvas.height
+        }
 
         if (asteroid.isBoss) {
           updateBossBehavior(asteroid)
@@ -1595,7 +1614,7 @@ const AsteroidsGame = () => {
 
     // Draw asteroids
     asteroids.current.forEach((asteroid) => {
-      drawAsteroid(ctx, asteroid)
+      drawAsteroid(ctx, asteroid, shipX.current, shipY.current)
       // Only update rotation if game is not paused and not game over
       if (!isPaused && !gameOver) {
         asteroid.rotation += asteroid.rotationSpeed
@@ -1701,8 +1720,8 @@ const AsteroidsGame = () => {
                     x: asteroid.x,
                     y: asteroid.y,
                     size: asteroid.size / 2,
-                    dx: (Math.random() - 0.5) * 2 * parentSpeedMultiplier, // Reduced from 4 to 2
-                    dy: (Math.random() - 0.5) * 2 * parentSpeedMultiplier, // Reduced from 4 to 2
+                    dx: (Math.random() - 0.5) * 0.7 * parentSpeedMultiplier, // Reduced from 1 to 0.7
+                    dy: (Math.random() - 0.5) * 0.7 * parentSpeedMultiplier, // Reduced from 1 to 0.7
                     points: generateAsteroidPoints(asteroid.size / 2),
                     rotation: Math.random() * Math.PI * 2,
                     rotationSpeed: (Math.random() - 0.5) * 0.02, // Random rotation speed
@@ -1931,49 +1950,6 @@ const AsteroidsGame = () => {
         shootHandler()
       }
     }
-
-    // Add to top of file
-    const GRID_SIZE = 300
-    const spatialGrid = new Map<string, Set<Asteroid | Bullet>>()
-
-    // In updateGame(), before collision checks:
-    spatialGrid.clear()
-
-    // Add asteroids to grid
-    asteroids.current.forEach((obj) => {
-      const gridX = Math.floor(obj.x / GRID_SIZE)
-      const gridY = Math.floor(obj.y / GRID_SIZE)
-      const key = `${gridX},${gridY}`
-      if (!spatialGrid.has(key)) spatialGrid.set(key, new Set())
-      spatialGrid.get(key)!.add(obj)
-    })
-
-    // Only check collisions within same grid cell
-    asteroids.current.forEach((asteroid) => {
-      const gridX = Math.floor(asteroid.x / GRID_SIZE)
-      const gridY = Math.floor(asteroid.y / GRID_SIZE)
-
-      // Check current cell and adjacent cells
-      for (let x = -1; x <= 1; x++) {
-        for (let y = -1; y <= 1; y++) {
-          const key = `${gridX + x},${gridY + y}`
-          const cellObjects = spatialGrid.get(key) || []
-          cellObjects.forEach((obj) => {
-            if (obj !== asteroid) {
-              // Your existing collision check here
-            }
-          })
-        }
-      }
-    })
-
-    // In updateGame():
-    asteroids.current = asteroids.current.slice(0, GAME_CONSTANTS.MAX_ASTEROIDS)
-    bullets.current = bullets.current.slice(0, GAME_CONSTANTS.MAX_BULLETS)
-    disintegrationParticles.current = disintegrationParticles.current.slice(
-      0,
-      GAME_CONSTANTS.MAX_PARTICLES,
-    )
   }
 
   const handleGameOver = async () => {
@@ -2393,25 +2369,29 @@ const AsteroidsGame = () => {
   // Add with other particle functions
   const createShieldSparkEffect = (x: number, y: number) => {
     for (let i = 0; i < 15; i++) {
-      const particle = particlePool.pop() || {
-        x: 0,
-        y: 0,
-        dx: 0,
-        dy: 0,
-        size: 0,
+      const particle = particlePool.current.pop() || {
+        x,
+        y,
+        dx: (Math.random() - 0.5) * 3,
+        dy: (Math.random() - 0.5) * 3,
+        size: Math.random() * 2,
         rotation: 0,
-        rotationSpeed: 0,
-        createdAt: 0,
-        color: '',
-        startX: 0,
-        control1X: 0,
-        control2X: 0,
-        endX: 0,
-      } // Reuse particles
-      // Reset particle properties
-      disintegrationParticles.current.push(particle)
+        createdAt: Date.now(),
+      }
+
+      // Reset position
+      particle.x = x
+      particle.y = y
+      particle.dx = (Math.random() - 0.5) * 3
+      particle.dy = (Math.random() - 0.5) * 3
+      particle.createdAt = Date.now()
+
+      disintegrationParticles.current.push(particle as DisintegrationParticle)
+
+      // Maintain pool size
       if (disintegrationParticles.current.length > GAME_CONSTANTS.MAX_PARTICLES) {
-        disintegrationParticles.current.shift()
+        const old = disintegrationParticles.current.shift()
+        particlePool.current.push(old as DisintegrationParticle)
       }
     }
   }
@@ -2539,19 +2519,6 @@ const AsteroidsGame = () => {
 
   // Add this at the top of the component with other refs
   const lastFrameTime = useRef(Date.now())
-
-  // Instead of checking every asteroid against every bullet/ship:
-  const GRID_SIZE = 300 // Match typical asteroid size
-  const grid = new Map<string, Asteroid[]>()
-
-  asteroids.current.forEach((asteroid) => {
-    const gridX = Math.floor(asteroid.x / GRID_SIZE)
-    const gridY = Math.floor(asteroid.y / GRID_SIZE)
-    const key = `${gridX},${gridY}`
-    grid.set(key, [...(grid.get(key) || []), asteroid])
-  })
-
-  // Then only check collisions within same grid cell
 
   return (
     <div className="flex flex-col items-center gap-4">
