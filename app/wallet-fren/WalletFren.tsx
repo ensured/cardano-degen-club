@@ -58,7 +58,6 @@ const WebhookRegistrationForm = (props: WebhookRegistrationFormProps) => {
     }
 
     try {
-      console.log('Removing email for webhook ID:', props.webhookId)
       const result = await removeWebhookEmail(props.webhookId)
       if (result.success) {
         toast.success('Email removed successfully. You will no longer receive notifications.', {
@@ -405,7 +404,6 @@ const WalletFren = () => {
   const copyToClipboard = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log('Copy button clicked') // Debug log
 
     try {
       // Check if we're in a secure context
@@ -419,11 +417,9 @@ const WalletFren = () => {
 
       // Modern clipboard API
       if (navigator.clipboard) {
-        console.log('Using modern clipboard API')
         await navigator.clipboard.writeText(webhookUrl)
       } else {
         // Fallback for older browsers
-        console.log('Using legacy execCommand')
         const textarea = document.createElement('textarea')
         textarea.value = webhookUrl
         textarea.style.position = 'fixed'
@@ -440,7 +436,6 @@ const WalletFren = () => {
         if (!success) throw new Error('execCommand failed')
       }
 
-      console.log('Copy successful')
       setCopied(true)
 
       setTimeout(() => setCopied(false), 2000)

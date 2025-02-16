@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://www.cardanodegen.shop' // Replace with your actual domain
+  const baseUrl = 'https://www.cardanotools.xyz' // Replace with your actual domain
 
   // Add all your public routes here
   const routes = [

@@ -146,7 +146,7 @@ export function useWalletConnect() {
   }
 
   // const signMessage = async (api: any, address: string) => {
-  // 	const message = `Login to cardanodegen.shop`
+  // 	const message = `Login to cardanotools.xyz`
   // 	const messageHex = Buffer.from(message).toString('hex')
 
   // 	try {

@@ -85,7 +85,7 @@ const Airdrop = () => {
   const [showBlockfrostKey, setShowBlockfrostKey] = useState(false)
   const [isLoadingAssets, setIsLoadingAssets] = useState(true)
   const [policyAddresses, setPolicyAddresses] = useState<PolicyAddresses[]>([])
-  const itemsPerPage = 20
+  const itemsPerPage = 48
   const [blacklistedAddresses, setBlacklistedAddresses] = useState<Set<string>>(new Set())
   const [isProcessingAllPages, setIsProcessingAllPages] = useState(false)
   const [duplicates, setDuplicates] = useState<Set<string>>(new Set())
@@ -760,25 +760,29 @@ const Airdrop = () => {
 
                 <div className="mt-4 select-none">
                   <Pagination>
-                    <PaginationContent>
+                    <PaginationContent className="flex-wrap gap-2">
                       <PaginationItem>
                         <PaginationPrevious
-                          className="cursor-pointer"
+                          className="h-8 cursor-pointer px-2 sm:px-4"
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                           isActive={currentPage === 1}
                         />
                       </PaginationItem>
 
+                      {/* Show fewer page numbers on mobile */}
                       {Array.from(
                         {
-                          length: Math.min(5, Math.ceil(Object.keys(assets).length / itemsPerPage)),
+                          length: Math.min(
+                            window.innerWidth < 640 ? 3 : 5,
+                            Math.ceil(Object.keys(assets).length / itemsPerPage),
+                          ),
                         },
                         (_, i) => {
                           const pageNumber = i + 1
                           return (
-                            <PaginationItem key={pageNumber}>
+                            <PaginationItem key={pageNumber} className="hidden sm:block">
                               <PaginationLink
-                                className="cursor-pointer"
+                                className="h-8 cursor-pointer px-3"
                                 onClick={() => setCurrentPage(pageNumber)}
                                 isActive={currentPage === pageNumber}
                               >
@@ -789,14 +793,22 @@ const Airdrop = () => {
                         },
                       )}
 
-                      {Math.ceil(Object.keys(assets).length / itemsPerPage) > 5 && (
+                      {/* Show current page on mobile */}
+                      <PaginationItem className="block sm:hidden">
+                        <PaginationLink className="h-8 cursor-pointer px-3" isActive>
+                          {currentPage}
+                        </PaginationLink>
+                      </PaginationItem>
+
+                      {Math.ceil(Object.keys(assets).length / itemsPerPage) >
+                        (window.innerWidth < 640 ? 3 : 5) && (
                         <>
                           <PaginationItem>
-                            <PaginationEllipsis />
+                            <PaginationEllipsis className="h-8 px-2" />
                           </PaginationItem>
                           <PaginationItem>
                             <PaginationLink
-                              className="cursor-pointer"
+                              className="h-8 cursor-pointer px-3"
                               onClick={() =>
                                 setCurrentPage(Math.ceil(Object.keys(assets).length / itemsPerPage))
                               }
@@ -809,7 +821,7 @@ const Airdrop = () => {
 
                       <PaginationItem>
                         <PaginationNext
-                          className="cursor-pointer"
+                          className="h-8 cursor-pointer px-2 sm:px-4"
                           onClick={() =>
                             setCurrentPage((p) =>
                               Math.min(Math.ceil(Object.keys(assets).length / itemsPerPage), p + 1),
@@ -828,7 +840,11 @@ const Airdrop = () => {
           </div>
         ) : blockfrostKey && blockfrostKey.length === 39 ? (
           <div className="flex min-h-[100px] w-full items-center justify-center rounded-lg border border-border bg-card/50 p-6">
-            <span className="text-sm text-muted-foreground">No assets found in wallet</span>
+            <span className="text-sm text-muted-foreground">
+              {walletState.walletAddress
+                ? `No assets found in ${walletState.walletAddress}`
+                : 'No wallet connected'}
+            </span>
           </div>
         ) : (
           <div className="flex min-h-[100px] w-full items-center justify-center rounded-lg border border-border bg-card/50 p-6">
