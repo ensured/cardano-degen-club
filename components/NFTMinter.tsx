@@ -42,7 +42,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/t
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
 import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
-import { LucidEvolution } from '@lucid-evolution/lucid'
+import { Data, LucidEvolution, UTxO } from '@lucid-evolution/lucid'
 import { useWindowSize } from '@uidotdev/usehooks'
 import {
   Pagination,
@@ -504,6 +504,8 @@ export default function NFTMinter() {
   const [traitEdits, setTraitEdits] = useState<
     Record<string, Record<number, { key: string; value: string }>>
   >({})
+  // Add to state
+  const [updatingMetadata, setUpdatingMetadata] = useState(false)
 
   const formatExpiryTime = (slot?: number) => {
     if (!slot) return null
@@ -773,16 +775,12 @@ export default function NFTMinter() {
           [selectedPolicy.policyId + fromText(nftName)]: BigInt(mintQuantity),
         })
         .attachMetadata(721, metadata)
-        .validTo(Date.now() + 1200000)
+        .validTo(Date.now() + 1200000) //give plenty of time for the user to sign the tx
         .pay.ToAddress(address, {
           [selectedPolicy.policyId + fromText(nftName)]: BigInt(mintQuantity),
         })
         .attach.MintingPolicy(
-          await createMintingPolicy(
-            lucid,
-            selectedPolicy,
-            selectedPolicy.slot ?? lucid.currentSlot() + 36000,
-          ),
+          await createMintingPolicy(lucid, selectedPolicy, selectedPolicy.slot!),
         )
         .complete()
 
@@ -995,18 +993,7 @@ export default function NFTMinter() {
     try {
       setLoadingPolicies(true)
       setScanning(true)
-      const { Lucid, Blockfrost } = await getLucid()
       const { paymentCredentialOf } = await getScriptUtils()
-
-      const lucid = await Lucid(
-        new Blockfrost(
-          `https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0`,
-          blockfrostKey,
-        ),
-        CARDANO_NETWORK,
-      )
-
-      lucid.selectWallet.fromAPI(walletState.api)
       const address = await lucid.wallet().address()
       const keyHash = paymentCredentialOf(address).hash
 
@@ -1069,7 +1056,7 @@ export default function NFTMinter() {
 
         // Add delay between batches if not the last batch
         if (i + batchSize < policyIds.length) {
-          await delay(50) // 50ms delay between batches
+          await delay(300) // 50ms delay between batches
         }
       }
 
@@ -1445,6 +1432,98 @@ export default function NFTMinter() {
     }
 
     return true
+  }
+
+  // Add this new function near mintNFT function
+  const updateMetadata = async (
+    lucid: LucidEvolution,
+    selectedPolicy: PolicyInfo,
+    nftName: string,
+    nftDescription: string,
+    selectedFiles: FileInfo[],
+  ) => {
+    setUpdatingMetadata(true)
+    try {
+      const { fromText } = await getScriptUtils()
+
+      if (!thumbnailImage) {
+        toast.error('Please select a thumbnail image', { position: 'bottom-center' })
+        return
+      }
+
+      // Same metadata construction as minting
+      const thumbnailFileInfo = selectedFiles.find((file) => file.url === thumbnailImage)
+      if (!thumbnailFileInfo) {
+        toast.error('Thumbnail file info not found', { position: 'bottom-center' })
+        return
+      }
+
+      const thumbnailExt = '.' + thumbnailFileInfo.name.split('.').pop()!.toLowerCase()
+      const thumbnailMimeType = VALID_IMAGE_MIMES[thumbnailExt] || 'image/png'
+
+      const formattedFiles = selectedFiles.map((file) => {
+        const extension = '.' + file.name.split('.').pop()!.toLowerCase()
+        return {
+          name: file.customName || file.name,
+          mediaType: VALID_IMAGE_MIMES[extension] || 'image/png',
+          src: `ipfs://${file.url}`,
+          ...(file.properties && Object.keys(file.properties).length > 0 ? file.properties : {}),
+        }
+      })
+
+      const metadata = {
+        [selectedPolicy.policyId]: {
+          [nftName]: {
+            name: nftName,
+            image: `ipfs://${thumbnailImage}`,
+            mediaType: thumbnailMimeType,
+            description: nftDescription,
+            files: formattedFiles,
+          },
+        },
+      }
+
+      // Create transaction that updates metadata without minting
+      const tx = await lucid
+        .newTx()
+        .mintAssets(
+          { [selectedPolicy.policyId + fromText(nftName)]: BigInt(0) }, // Mint 0 tokens
+          Data.void(), // Empty redeemer
+        )
+        .attachMetadata(721, metadata)
+        .attach.MintingPolicy(
+          await createMintingPolicy(lucid, selectedPolicy, selectedPolicy.slot!),
+        )
+        .complete()
+
+      const signedTx = await tx.sign.withWallet().complete()
+      const txHash = await signedTx.submit()
+
+      const cscanLink =
+        CARDANO_NETWORK === 'Preview'
+          ? `https://preview.cardanoscan.io/transaction/${txHash}`
+          : `https://cardanoscan.io/transaction/${txHash}`
+
+      toast.success(
+        <div>
+          <p className="text-sm text-green-500">
+            Metadata updated!{' '}
+            <Link href={cscanLink} target="_blank" className="underline">
+              View transaction
+            </Link>
+          </p>
+        </div>,
+        { position: 'bottom-center' },
+      )
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message, { position: 'bottom-center' })
+      } else {
+        toast.error('Metadata update failed', { position: 'bottom-center' })
+      }
+    } finally {
+      setUpdatingMetadata(false)
+    }
   }
 
   if (initializing || loading) {
@@ -2546,6 +2625,22 @@ export default function NFTMinter() {
                 className="w-full"
               >
                 {minting ? 'Minting...' : 'Mint NFT'}
+              </Button3D>
+
+              {/* Add update button */}
+              <Button3D
+                variant="outline"
+                disabled={!isStepComplete(4) || updatingMetadata}
+                onClick={() =>
+                  updateMetadata(lucid, selectedPolicy, nftName, nftDescription, selectedFiles)
+                }
+                className="mt-2 w-full"
+              >
+                {updatingMetadata ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  'Update Metadata'
+                )}
               </Button3D>
             </div>
           </CollapsibleContent>

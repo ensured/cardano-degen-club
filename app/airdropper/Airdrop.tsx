@@ -343,7 +343,7 @@ const Airdrop = () => {
       // Calculate how many were excluded
       const excludedCount = totalAddressesBeforeFilter - allAddresses.length
       if (excludedCount > 0) {
-        toast.info(`Excluded ${excludedCount} blacklisted addresses`)
+        toast.info(`Excluded ${excludedCount} blacklisted contract addresses`)
       }
 
       if (allAddresses.length === 0) {
