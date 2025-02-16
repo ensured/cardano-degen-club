@@ -284,7 +284,7 @@ const InstructionsList = () => (
 const WalletFren = () => {
   const { user } = useUser()
   const userEmail = user?.externalAccounts[0].emailAddress
-  const webhookUrl = 'https://cardanodegen.shop/api/transactions-monitor'
+  const webhookUrl = 'https://cardanotools.xyz/api/transactions-monitor'
   const [webhookId, setWebhookId] = useState('')
   const [email, setEmail] = useState(userEmail || '')
   const [copied, setCopied] = useState(false)
