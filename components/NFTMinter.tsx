@@ -505,7 +505,6 @@ export default function NFTMinter() {
     Record<string, Record<number, { key: string; value: string }>>
   >({})
   // Add to state
-  const [updatingMetadata, setUpdatingMetadata] = useState(false)
 
   const formatExpiryTime = (slot?: number) => {
     if (!slot) return null
@@ -1163,7 +1162,9 @@ export default function NFTMinter() {
       }
     } catch (error: any) {
       console.warn('Error loading files: ' + error.message)
-      toast.error('Failed to load files', { position: 'bottom-center' })
+      toast.error('Failed to load files, double check your pinata JWT is correct', {
+        position: 'bottom-center',
+      })
     } finally {
       setLoadingFiles(false)
     }
@@ -1291,6 +1292,10 @@ export default function NFTMinter() {
       )
     }
 
+    // Update both selectedFiles and imageNames state
+    setSelectedFiles((prev) =>
+      prev.map((file) => (file.url === url ? { ...file, customName: truncated } : file)),
+    )
     setImageNames((prev) => ({ ...prev, [url]: truncated }))
   }
 
@@ -1442,7 +1447,6 @@ export default function NFTMinter() {
     nftDescription: string,
     selectedFiles: FileInfo[],
   ) => {
-    setUpdatingMetadata(true)
     try {
       const { fromText } = await getScriptUtils()
 
@@ -1521,8 +1525,6 @@ export default function NFTMinter() {
       } else {
         toast.error('Metadata update failed', { position: 'bottom-center' })
       }
-    } finally {
-      setUpdatingMetadata(false)
     }
   }
 
@@ -2244,7 +2246,7 @@ export default function NFTMinter() {
                   {scanning ? 'Scanning...' : 'Load Policies'}
                 </Button3D>
                 <Button3D
-                  disabled={!isStepComplete(2) || generatingPolicy}
+                  disabled={!isStepComplete(2) || generatingPolicy || scanning}
                   onClick={generatePolicyId}
                   className="flex-1 text-sm sm:text-base"
                 >
@@ -2628,20 +2630,6 @@ export default function NFTMinter() {
               </Button3D>
 
               {/* Add update button */}
-              <Button3D
-                variant="outline"
-                disabled={!isStepComplete(4) || updatingMetadata}
-                onClick={() =>
-                  updateMetadata(lucid, selectedPolicy, nftName, nftDescription, selectedFiles)
-                }
-                className="mt-2 w-full"
-              >
-                {updatingMetadata ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  'Update Metadata'
-                )}
-              </Button3D>
             </div>
           </CollapsibleContent>
         </Collapsible>

@@ -19,8 +19,6 @@ export default function CardanoDonationDialog() {
   const cardanoAddress =
     'addr1qxyj9sqrzpwq9v4ylzr3m59rzxcusdqytulpz8j8wpd7k75ya8f335kz79mf43nwquzgnylgzmt0wdyh2k2zzleh7c7qmkdw9a'
 
-  const { width } = useWindowSize()
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(cardanoAddress)
