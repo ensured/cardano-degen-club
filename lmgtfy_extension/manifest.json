@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "lmgtfy",
+  "version": "1.0",
+  "description": "Let Me Grok That For You",
+  "permissions": ["activeTab", "scripting", "tabs", "storage"],
+  "host_permissions": ["*://x.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icons8-grok-16.png",
+      "48": "icons/icons8-grok-48.png",
+      "128": "icons/icons8-grok-128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

@@ -23,6 +23,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from './ui/dialog'
 import {
   Check,
@@ -43,7 +44,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collap
 import { AlertCircle } from 'lucide-react'
 import { Label } from './ui/label'
 import { Data, LucidEvolution, UTxO } from '@lucid-evolution/lucid'
-import { useWindowSize } from '@uidotdev/usehooks'
+import { signData } from '../hooks/useWalletConnect'
 import {
   Pagination,
   PaginationContent,
@@ -63,7 +64,7 @@ import { cn } from '@/lib/utils'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
-export const CARDANO_NETWORK: CardanoNetwork = 'Mainnet'
+export const CARDANO_NETWORK: CardanoNetwork = 'Preview'
 
 export const getLucid = async () => {
   const { Lucid, Blockfrost } = await import('@lucid-evolution/lucid')
@@ -112,6 +113,7 @@ interface PolicyInfo {
   slot?: number
   script: any
   isGenerated?: boolean
+  isUsed?: boolean
 }
 
 // Add this interface near the top with other interfaces
@@ -493,8 +495,8 @@ export default function NFTMinter() {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null)
   const [imageNames, setImageNames] = useState<{ [key: string]: string }>({})
   const [expiryConfig, setExpiryConfig] = useState<ExpiryConfig>({
-    hasExpiry: false,
-    days: 1,
+    hasExpiry: true,
+    days: 7,
   })
   const [mintQuantity, setMintQuantity] = useState<number>(1)
   const [selectedForDeletion, setSelectedForDeletion] = useState<string[]>([])
@@ -505,6 +507,12 @@ export default function NFTMinter() {
     Record<string, Record<number, { key: string; value: string }>>
   >({})
   // Add to state
+
+  // Add at the top with other state declarations
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0)
+
+  // Add new state at top of component
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false)
 
   const formatExpiryTime = (slot?: number) => {
     if (!slot) return null
@@ -798,8 +806,16 @@ export default function NFTMinter() {
             </Link>
           </p>
         </div>,
-        { position: 'bottom-center' },
+        { position: 'bottom-center', duration: 6000 },
       )
+
+      if (txHash) {
+        // Mark policy as used
+        setPolicyIds((prev) =>
+          prev.map((p) => (p.policyId === selectedPolicy.policyId ? { ...p, isUsed: true } : p)),
+        )
+        setSelectedPolicy((prev) => (prev ? { ...prev, isUsed: true } : null))
+      }
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message, { position: 'bottom-center' })
@@ -982,6 +998,17 @@ export default function NFTMinter() {
 
   // Modify the loadPolicies function
   const loadPolicies = async () => {
+    const cooldownPeriod = 30000
+    const timeElapsed = Date.now() - lastFetchTime
+
+    if (timeElapsed < cooldownPeriod) {
+      const remainingTime = Math.ceil((cooldownPeriod - timeElapsed) / 1000)
+      toast.error(`Please wait ${remainingTime} seconds before refreshing`, {
+        position: 'bottom-center',
+      })
+      return
+    }
+
     if (!walletState.api || !blockfrostKey) {
       toast.error('Please connect wallet and enter Blockfrost key first', {
         position: 'bottom-center',
@@ -990,48 +1017,71 @@ export default function NFTMinter() {
     }
 
     try {
-      setLoadingPolicies(true)
       setScanning(true)
-      const { paymentCredentialOf } = await getScriptUtils()
-      const address = await lucid.wallet().address()
-      const keyHash = paymentCredentialOf(address).hash
+      setLoadingPolicies(true)
 
-      const allUTxOs = await lucid.utxosAt(address)
-      const policyIdsFromUtxos = new Map()
-      for (const utxo of allUTxOs) {
-        for (const assetId of Object.keys(utxo.assets)) {
-          if (assetId.length > 56) {
-            const policyId = assetId.slice(0, 56)
-            policyIdsFromUtxos.set(policyId, assetId)
-          }
-        }
+      // Get all required data in parallel
+      const [{ paymentCredentialOf }, address, balance] = await Promise.all([
+        getScriptUtils(),
+        lucid.wallet().address(),
+        walletState.api.getBalance(),
+      ])
+
+      if (Number(balance) < 1000000) {
+        toast.error('Insufficient balance, please add funds to your wallet', {
+          position: 'bottom-center',
+        })
+        return
       }
 
-      // Process policy IDs in batches with delays
-      const batchSize = 10 // Adjust this number based on your needs
-      const policyIds = Array.from(policyIdsFromUtxos.keys())
-      const results = []
+      const keyHash = paymentCredentialOf(address).hash
+      const allUTxOs = await lucid.utxosAt(address)
 
-      for (let i = 0; i < policyIds.length; i += batchSize) {
-        const batch = policyIds.slice(i, i + batchSize)
+      if (allUTxOs.length > 32) {
+        toast.error('This wallet has a lot of utxos, this may take a few minutes', {
+          position: 'bottom-center',
+        })
+      }
+
+      // Use Set for faster lookups and unique values
+      const uniquePolicyIds = new Set<string>()
+      for (const utxo of allUTxOs) {
+        Object.keys(utxo.assets).forEach((assetId) => {
+          if (assetId.length > 56) {
+            uniquePolicyIds.add(assetId.slice(0, 56))
+          }
+        })
+      }
+
+      // Batch API requests in groups of 10 (adjust based on rate limits)
+      const BATCH_SIZE = 10
+      const policyIds = Array.from(uniquePolicyIds)
+      const results: any[] = []
+
+      for (let i = 0; i < policyIds.length; i += BATCH_SIZE) {
+        const batch = policyIds.slice(i, i + BATCH_SIZE)
         const batchPromises = batch.map(async (policyId) => {
           try {
-            const scriptDetailsResponse = await fetch(
+            const response = await fetch(
               `https://cardano-${CARDANO_NETWORK.toLowerCase()}.blockfrost.io/api/v0/scripts/${policyId}/json`,
               {
-                headers: {
-                  project_id: blockfrostKey,
-                },
+                headers: { project_id: blockfrostKey },
               },
             )
 
-            if (!scriptDetailsResponse.ok) return null
+            if (response.status === 429) {
+              const retryAfter = parseInt(response.headers.get('retry-after') || '10') * 1000
+              await delay(retryAfter)
+              return null // Will be filtered out later
+            }
 
-            const scriptDetails = await scriptDetailsResponse.json()
+            if (!response.ok) return null
+
+            const scriptDetails = await response.json()
             const keyHashMatches = scriptDetails?.json
-              ? scriptDetails.json.keyHash === keyHash || // Check direct keyHash
-                scriptDetails.json.scripts?.[0]?.keyHash === keyHash || // Check first script
-                scriptDetails.json.scripts?.[1]?.keyHash === keyHash // Check second script
+              ? scriptDetails.json.keyHash === keyHash ||
+                scriptDetails.json.scripts?.[0]?.keyHash === keyHash ||
+                scriptDetails.json.scripts?.[1]?.keyHash === keyHash
               : false
 
             if (keyHashMatches) {
@@ -1049,60 +1099,31 @@ export default function NFTMinter() {
           }
         })
 
-        // Process batch
-        const batchResults = await Promise.all(batchPromises)
-        results.push(...batchResults.filter((result) => result !== null))
+        // Wait for batch to complete and filter out nulls
+        const batchResults = (await Promise.all(batchPromises)).filter(Boolean)
+        results.push(...batchResults)
 
-        // Add delay between batches if not the last batch
-        if (i + batchSize < policyIds.length) {
-          await delay(300) // 50ms delay between batches
+        // Add a small delay between batches to respect rate limits
+        if (i + BATCH_SIZE < policyIds.length) {
+          await delay(100)
         }
       }
 
-      // Rest of the function remains the same
-      const balance = await walletState.api.getBalance()
-      if (Number(balance) < 1000000) {
-        toast.error('Insufficient balance, please add funds to your wallet', {
-          position: 'bottom-center',
-        })
-        return
-      }
-
-      const validPolicies = results
-        .filter((p: any) => {
-          const policyId = typeof p === 'string' ? p : p.policyId
-          return policyId.length === 56
-        })
-        .map((p: any) => ({
-          policyId: p.policyId,
-          keyHash: keyHash,
-          slot: p.slot,
-          script: p.script,
-        }))
-
+      // Update state with unique policies
       setPolicyIds((prevPolicies) => {
-        const mergedPolicies = [...prevPolicies, ...validPolicies]
-        const uniquePolicies = mergedPolicies.reduce((acc, current) => {
-          const x = acc.find((item: PolicyInfo) => item.policyId === current.policyId)
-          if (!x) {
-            return acc.concat([
-              {
-                ...current,
-              },
-            ])
-          } else {
-            return acc
-          }
-        }, [] as PolicyInfo[])
-        return uniquePolicies
+        const policyMap = new Map(prevPolicies.map((p) => [p.policyId, p]))
+        results.forEach((result) => {
+          if (result) policyMap.set(result.policyId, result)
+        })
+        return Array.from(policyMap.values())
       })
 
-      if (validPolicies.length === 0) {
+      if (results.length === 0) {
         toast.info('No policies found, generate a new policy ID', { position: 'bottom-center' })
       } else {
         toast.success(
           <div className="flex flex-col gap-2">
-            Loaded {validPolicies.length} existing policy ID{validPolicies.length > 1 ? 's' : ''}
+            Loaded {results.length} existing policy ID{results.length > 1 ? 's' : ''}
           </div>,
           { position: 'bottom-center', duration: 6000 },
         )
@@ -1113,6 +1134,7 @@ export default function NFTMinter() {
     } finally {
       setLoadingPolicies(false)
       setScanning(false)
+      setLastFetchTime(Date.now())
     }
   }
 
@@ -1275,6 +1297,15 @@ export default function NFTMinter() {
       },
     }))
   }
+
+  // const signCardanoData = async () => {
+  //   const signedData = await signData(
+  //     walletState.api,
+  //     walletState.walletAddress!,
+  //     walletState.stakeAddress!,
+  //   )
+  //   return signedData
+  // }
 
   // Update the handleNameChange function
   const handleNameChange = (url: string, value: string) => {
@@ -1439,95 +1470,6 @@ export default function NFTMinter() {
     return true
   }
 
-  // Add this new function near mintNFT function
-  const updateMetadata = async (
-    lucid: LucidEvolution,
-    selectedPolicy: PolicyInfo,
-    nftName: string,
-    nftDescription: string,
-    selectedFiles: FileInfo[],
-  ) => {
-    try {
-      const { fromText } = await getScriptUtils()
-
-      if (!thumbnailImage) {
-        toast.error('Please select a thumbnail image', { position: 'bottom-center' })
-        return
-      }
-
-      // Same metadata construction as minting
-      const thumbnailFileInfo = selectedFiles.find((file) => file.url === thumbnailImage)
-      if (!thumbnailFileInfo) {
-        toast.error('Thumbnail file info not found', { position: 'bottom-center' })
-        return
-      }
-
-      const thumbnailExt = '.' + thumbnailFileInfo.name.split('.').pop()!.toLowerCase()
-      const thumbnailMimeType = VALID_IMAGE_MIMES[thumbnailExt] || 'image/png'
-
-      const formattedFiles = selectedFiles.map((file) => {
-        const extension = '.' + file.name.split('.').pop()!.toLowerCase()
-        return {
-          name: file.customName || file.name,
-          mediaType: VALID_IMAGE_MIMES[extension] || 'image/png',
-          src: `ipfs://${file.url}`,
-          ...(file.properties && Object.keys(file.properties).length > 0 ? file.properties : {}),
-        }
-      })
-
-      const metadata = {
-        [selectedPolicy.policyId]: {
-          [nftName]: {
-            name: nftName,
-            image: `ipfs://${thumbnailImage}`,
-            mediaType: thumbnailMimeType,
-            description: nftDescription,
-            files: formattedFiles,
-          },
-        },
-      }
-
-      // Create transaction that updates metadata without minting
-      const tx = await lucid
-        .newTx()
-        .mintAssets(
-          { [selectedPolicy.policyId + fromText(nftName)]: BigInt(0) }, // Mint 0 tokens
-          Data.void(), // Empty redeemer
-        )
-        .attachMetadata(721, metadata)
-        .attach.MintingPolicy(
-          await createMintingPolicy(lucid, selectedPolicy, selectedPolicy.slot!),
-        )
-        .complete()
-
-      const signedTx = await tx.sign.withWallet().complete()
-      const txHash = await signedTx.submit()
-
-      const cscanLink =
-        CARDANO_NETWORK === 'Preview'
-          ? `https://preview.cardanoscan.io/transaction/${txHash}`
-          : `https://cardanoscan.io/transaction/${txHash}`
-
-      toast.success(
-        <div>
-          <p className="text-sm text-green-500">
-            Metadata updated!{' '}
-            <Link href={cscanLink} target="_blank" className="underline">
-              View transaction
-            </Link>
-          </p>
-        </div>,
-        { position: 'bottom-center' },
-      )
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message, { position: 'bottom-center' })
-      } else {
-        toast.error('Metadata update failed', { position: 'bottom-center' })
-      }
-    }
-  }
-
   if (initializing || loading) {
     return (
       <div className="flex h-[69vh] items-center justify-center">
@@ -1565,11 +1507,6 @@ export default function NFTMinter() {
       <div className="grid max-w-[100vw] grid-cols-2 gap-2 p-2 lg:grid-cols-3">
         {pinataResponse.rows.map((file) => {
           const fileExtension = '.' + file.metadata?.name?.split('.').pop()?.toLowerCase()
-          const isHtml =
-            fileExtension === '.html' ||
-            fileExtension === '.htm' ||
-            file.mime_type === 'text/html' ||
-            (file.metadata as any)?.keyvalues?.fileType === 'html'
 
           return (
             <div
@@ -1896,6 +1833,7 @@ export default function NFTMinter() {
   return (
     <main className="m-auto flex w-full max-w-3xl flex-col items-center justify-center gap-4 p-4 md:max-w-4xl">
       {/* Progress indicator */}
+      {/* <Button onClick={() => signCardanoData()}>Sign Data</Button> */}
       <TooltipProvider delayDuration={50}>
         <div className="mb-4 flex w-full justify-between px-2">
           {steps.map(({ step, tooltip, title }) => (
@@ -2236,26 +2174,8 @@ export default function NFTMinter() {
           </CollapsibleTrigger>
           <CollapsibleContent className="p-6 pt-2">
             <div className="flex flex-col gap-4">
-              <div className="flex w-full flex-col gap-2">
-                <Button3D
-                  disabled={!isStepComplete(2) || scanning}
-                  onClick={loadPolicies}
-                  variant="outline"
-                  className="flex-1 text-sm sm:text-base"
-                >
-                  {scanning ? 'Scanning...' : 'Load Policies'}
-                </Button3D>
-                <Button3D
-                  disabled={!isStepComplete(2) || generatingPolicy || scanning}
-                  onClick={generatePolicyId}
-                  className="flex-1 text-sm sm:text-base"
-                >
-                  Generate Policy
-                </Button3D>
-              </div>
-
               <DropdownMenu>
-                <DropdownMenuTrigger asChild className="mb-2 w-full">
+                <DropdownMenuTrigger asChild className="w-full">
                   <Button
                     variant="outline"
                     className="w-full justify-center font-normal"
@@ -2369,8 +2289,8 @@ export default function NFTMinter() {
                   {/* Loaded Policies Section */}
                   {policyIds.some((p) => !p.isGenerated) && (
                     <>
-                      <DropdownMenuLabel className="text-blue-500 flex items-center gap-2 font-medium">
-                        <div className="bg-blue-500 h-2 w-2 rounded-full" />
+                      <DropdownMenuLabel className="flex items-center gap-2 font-medium text-blue">
+                        <div className="h-2 w-2 rounded-full bg-blue" />
                         Loaded Policies ({policyIds.filter((p) => !p.isGenerated).length})
                       </DropdownMenuLabel>
                       {policyIds
@@ -2451,75 +2371,87 @@ export default function NFTMinter() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+              <div className="flex w-full flex-col gap-2">
+                <Button3D
+                  disabled={!isStepComplete(2) || scanning}
+                  onClick={loadPolicies}
+                  variant="outline"
+                  className="flex-1 text-sm sm:text-base"
+                >
+                  {scanning ? 'Scanning...' : 'Load Policies'}
+                </Button3D>
+                <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button3D
+                      disabled={!isStepComplete(2) || generatingPolicy || scanning}
+                      onClick={() => setIsGenerateDialogOpen(true)}
+                      className="flex-1 text-sm sm:text-base"
+                    >
+                      Generate New Policy
+                    </Button3D>
+                  </DialogTrigger>
 
-            <div className="space-y-4 rounded-lg border border-border p-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm sm:text-base">
-                  {expiryConfig.hasExpiry ? 'Policy Expiry' : 'Policy never expires'}
-                  {!expiryConfig.hasExpiry && (
-                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Info className="h-4 w-4" />
-                      <span>
-                        Creating a policy with no expiry will just generate the same policy each
-                        time.
-                      </span>
-                    </p>
-                  )}
-                </Label>
-                <Switch
-                  checked={expiryConfig.hasExpiry}
-                  onCheckedChange={(checked) =>
-                    setExpiryConfig((prev) => ({ ...prev, hasExpiry: checked }))
-                  }
-                />
-              </div>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Policy Expiration Settings</DialogTitle>
+                      <DialogDescription>
+                        Configure when this policy should expire
+                      </DialogDescription>
+                    </DialogHeader>
 
-              {expiryConfig.hasExpiry && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <Slider
-                        value={[expiryConfig.days]}
-                        onValueChange={([days]) => setExpiryConfig((prev) => ({ ...prev, days }))}
-                        min={1}
-                        max={99999}
-                        step={1}
-                      />
-                    </div>
-                    <div className="flex w-32 items-center">
-                      <Input
-                        type="number"
-                        min={1}
-                        max={99999}
-                        value={expiryConfig.days}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value)
-                          if (!isNaN(value) && value >= 1 && value <= 99999) {
-                            setExpiryConfig((prev) => ({ ...prev, days: value }))
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label>
+                          {expiryConfig.hasExpiry
+                            ? `Policy Expires After ${expiryConfig.days} Days`
+                            : 'Policy Never Expires'}
+                        </Label>
+                        <Switch
+                          checked={expiryConfig.hasExpiry}
+                          onCheckedChange={(checked) =>
+                            setExpiryConfig((prev) => ({ ...prev, hasExpiry: checked }))
                           }
+                        />
+                      </div>
+
+                      {expiryConfig.hasExpiry && (
+                        <div className="space-y-2">
+                          <Slider
+                            value={[expiryConfig.days]}
+                            onValueChange={([days]) =>
+                              setExpiryConfig((prev) => ({ ...prev, days }))
+                            }
+                            min={1}
+                            max={365}
+                            step={1}
+                          />
+                          <Input
+                            type="number"
+                            min={1}
+                            max={365}
+                            value={expiryConfig.days}
+                            onChange={(e) => {
+                              const value = Math.min(365, Math.max(1, Number(e.target.value)))
+                              setExpiryConfig((prev) => ({ ...prev, days: value }))
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <Button3D
+                        onClick={async () => {
+                          await generatePolicyId()
+                          setIsGenerateDialogOpen(false)
                         }}
+                        disabled={generatingPolicy}
                         className="w-full"
-                      />
-                      <span className="ml-2 text-sm text-muted-foreground">days</span>
+                      >
+                        {generatingPolicy ? 'Generating...' : 'Confirm & Generate Policy'}
+                      </Button3D>
                     </div>
-                  </div>
-                  {expiryConfig.days >= 99992 ? (
-                    <p className="text-xs text-muted-foreground">
-                      Policy will expire in ~273 years
-                    </p>
-                  ) : expiryConfig.days >= 365 ? (
-                    <p className="text-xs text-muted-foreground">
-                      Policy will expire in {Math.floor(expiryConfig.days / 365)} years
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">
-                      Policy will expire in {expiryConfig.days} day
-                      {expiryConfig.days > 1 ? 's' : ''}
-                    </p>
-                  )}
-                </div>
-              )}
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -2542,7 +2474,7 @@ export default function NFTMinter() {
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent className="p-6 pt-2">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
               <div className="space-y-1">
                 <label htmlFor="nft-title" className="text-sm font-medium">
                   NFT Title
@@ -2556,78 +2488,81 @@ export default function NFTMinter() {
                   autoFocus
                   className="w-full"
                 />
-              </div>
 
-              <div className="space-y-1">
-                <label htmlFor="nft-description" className="text-sm font-medium">
-                  NFT Description
-                </label>
-                <Input
-                  id="nft-description"
-                  type="text"
-                  placeholder="Enter NFT description"
-                  value={nftDescription}
-                  onChange={(e) => setNftDescription(e.target.value)}
-                  className="w-full"
-                />
-              </div>
+                <div className="space-y-1">
+                  <label htmlFor="nft-description" className="text-sm font-medium">
+                    NFT Description
+                  </label>
+                  <Input
+                    id="nft-description"
+                    type="text"
+                    placeholder="Enter NFT description"
+                    value={nftDescription}
+                    onChange={(e) => setNftDescription(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label htmlFor="mint-quantity" className="text-sm font-medium">
-                  Quantity to Mint
-                </label>
-                <Input
-                  id="mint-quantity"
-                  type="number"
-                  min="1"
-                  max="42069"
-                  value={mintQuantity}
-                  onChange={(e) => {
-                    const value = e.target.value === '' ? '' : parseInt(e.target.value)
-                    if (value === '' || (!isNaN(value) && value >= 0 && value <= 42069)) {
-                      setMintQuantity(value as number)
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const value = parseInt(e.target.value)
-                    if (isNaN(value) || value < 1) {
-                      setMintQuantity(1)
-                    }
-                  }}
-                  className={`w-full ${mintQuantity > 1 ? 'border-yellow-500' : 'border-border'}`}
-                />
-                <p className="text-xs text-muted-foreground">Enter a number between 1 and 42069</p>
+                <div className="space-y-1">
+                  <label htmlFor="mint-quantity" className="text-sm font-medium">
+                    Quantity to Mint
+                  </label>
+                  <Input
+                    id="mint-quantity"
+                    type="number"
+                    min="1"
+                    max="42069"
+                    value={mintQuantity}
+                    onChange={(e) => {
+                      const value = e.target.value === '' ? '' : parseInt(e.target.value)
+                      if (value === '' || (!isNaN(value) && value >= 0 && value <= 42069)) {
+                        setMintQuantity(value as number)
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const value = parseInt(e.target.value)
+                      if (isNaN(value) || value < 1) {
+                        setMintQuantity(1)
+                      }
+                    }}
+                    className={`w-full ${mintQuantity > 1 ? 'border-yellow-500' : 'border-border'}`}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter a number between 1 and 42069
+                  </p>
 
-                {mintQuantity > 1 && (
-                  <div className="mt-2 flex items-center gap-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-500">
-                    <AlertCircle className="h-4 w-4" />
-                    <span>
-                      Warning: Minting multiple copies will create a Fungible Token (FT) instead of
-                      a Non-Fungible Token (NFT). Each copy will be identical and interchangeable.
-                    </span>
-                  </div>
-                )}
-              </div>
+                  {mintQuantity > 1 && (
+                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-500">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>
+                        Warning: Minting multiple copies will create a Fungible Token (FT) instead
+                        of a Non-Fungible Token (NFT). Each copy will be identical and
+                        interchangeable.
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-              <Button3D
-                disabled={!isStepComplete(4) || minting || !walletState.api}
-                onClick={() => {
-                  if (walletState.api && nftName && nftDescription && selectedFiles.length > 0) {
-                    mintNFT(lucid, selectedPolicy, nftName, nftDescription, selectedFiles)
-                  } else {
-                    if (!nftName || !nftDescription) {
-                      toast.error('NFT name and description must be provided', {
-                        position: 'bottom-center',
-                      })
+                <Button3D
+                  disabled={!isStepComplete(4) || minting || !walletState.api}
+                  onClick={() => {
+                    if (walletState.api && nftName && nftDescription && selectedFiles.length > 0) {
+                      mintNFT(lucid, selectedPolicy, nftName, nftDescription, selectedFiles)
                     } else {
-                      toast.error('Wallet not connected', { position: 'bottom-center' })
+                      if (!nftName || !nftDescription) {
+                        toast.error('NFT name and description must be provided', {
+                          position: 'bottom-center',
+                        })
+                      } else {
+                        toast.error('Wallet not connected', { position: 'bottom-center' })
+                      }
                     }
-                  }
-                }}
-                className="w-full"
-              >
-                {minting ? 'Minting...' : 'Mint NFT'}
-              </Button3D>
+                  }}
+                  className="w-full"
+                >
+                  {minting ? 'Minting...' : 'Mint NFT'}
+                </Button3D>
+              </div>
 
               {/* Add update button */}
             </div>

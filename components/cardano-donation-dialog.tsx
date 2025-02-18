@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/use-toast'
-import { useWindowSize } from '@uidotdev/usehooks'
+
 export default function CardanoDonationDialog() {
   const [isCopied, setIsCopied] = useState(false)
   const { toast } = useToast()

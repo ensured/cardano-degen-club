@@ -61,6 +61,26 @@ const handleWalletError = (error: unknown): WalletError => {
   return { message: 'Unknown wallet error occurred' }
 }
 
+export const signData = async (api: any, address: string, stakeAddress: string) => {
+  const message = `Login to cardanotools.xyz`
+  const messageHex = Buffer.from(message).toString('hex')
+
+  try {
+    const signedMessage = await api.signData(address, messageHex)
+    if (Object.keys(signedMessage).length === 0) return null
+
+    return {
+      body: message,
+      signature: signedMessage,
+      key: address,
+      stakeKey: stakeAddress,
+    }
+  } catch (error) {
+    console.error('Failed to sign message:', error)
+    return null
+  }
+}
+
 export function useWalletConnect() {
   const [walletState, setWalletState] = useState<WalletState>(initialWalletState)
   const [loading, setLoading] = useState(false)
@@ -145,25 +165,7 @@ export function useWalletConnect() {
     }
   }
 
-  // const signMessage = async (api: any, address: string) => {
-  // 	const message = `Login to cardanotools.xyz`
-  // 	const messageHex = Buffer.from(message).toString('hex')
-
-  // 	try {
-  // 		const signedMessage = await api.signData(address, messageHex)
-  // 		if (Object.keys(signedMessage).length === 0) return null
-
-  // 		return {
-  // 			body: message,
-  // 			signature: signedMessage,
-  // 			key: address,
-  // 			stakeKey: walletState.stakeAddress,
-  // 		}
-  // 	} catch (error) {
-  // 		console.error('Failed to sign message:', error)
-  // 		return null
-  // 	}
-  // }
+  
 
   const updateWalletState = (newState: Partial<WalletState>, dispatchEvent: boolean = true) => {
     const updatedState = { ...walletState, ...newState }
