@@ -2,7 +2,7 @@
 
 import { useWallet, WalletContextType } from '@/contexts/WalletContext'
 import Image from 'next/image'
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect, Fragment, useCallback } from 'react'
 import Button3D from './3dButton'
 import Link from 'next/link'
 import { Input } from './ui/input'
@@ -62,7 +62,6 @@ import { Slider } from './ui/slider'
 import { Switch } from './ui/switch'
 import { Skeleton } from '@/components/ui/skeleton'
 import { WalletState } from '@/hooks/useWalletConnect'
-import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { cn } from '@/lib/utils'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
@@ -579,17 +578,39 @@ export default function NFTMinter() {
     }
   }, [walletState.wallet])
 
-  const handleJWTChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Memoize callbacks that don't need to be recreated on every render
+  const handleJWTChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setPinataJWT(value)
     localStorage.setItem('pinataJWT', value)
-  }
+  }, [])
 
-  const handleBlockfrostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBlockfrostChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setBlockfrostKey(value)
     localStorage.setItem('blockfrostKey', value)
-  }
+  }, [])
+
+  const handleNameChange = useCallback((url: string, value: string) => {
+    const originalLength = value.length
+    const truncated = truncateFileName(value)
+
+    if (originalLength !== truncated.length) {
+      toast.info(
+        <div className="flex flex-col gap-1">
+          <p>Filename has been shortened to meet the 64-character limit.</p>
+          <p className="text-xs text-muted-foreground">Original: {value}</p>
+          <p className="text-xs text-muted-foreground">Shortened: {truncated}</p>
+        </div>,
+        { position: 'top-center', duration: 5000 },
+      )
+    }
+
+    setSelectedFiles((prev) =>
+      prev.map((file) => (file.url === url ? { ...file, customName: truncated } : file)),
+    )
+    setImageNames((prev) => ({ ...prev, [url]: truncated }))
+  }, [])
 
   useEffect(() => {
     const initializeWallet = async () => {
@@ -1315,29 +1336,6 @@ export default function NFTMinter() {
   //   )
   //   return signedData
   // }
-
-  // Update the handleNameChange function
-  const handleNameChange = (url: string, value: string) => {
-    const originalLength = value.length
-    const truncated = truncateFileName(value)
-
-    if (originalLength !== truncated.length) {
-      toast.info(
-        <div className="flex flex-col gap-1">
-          <p>Filename has been shortened to meet the 64-character limit.</p>
-          <p className="text-xs text-muted-foreground">Original: {value}</p>
-          <p className="text-xs text-muted-foreground">Shortened: {truncated}</p>
-        </div>,
-        { position: 'top-center', duration: 5000 },
-      )
-    }
-
-    // Update both selectedFiles and imageNames state
-    setSelectedFiles((prev) =>
-      prev.map((file) => (file.url === url ? { ...file, customName: truncated } : file)),
-    )
-    setImageNames((prev) => ({ ...prev, [url]: truncated }))
-  }
 
   // Function to check if all images have names
   const areAllNamesEntered = () => {
@@ -2614,22 +2612,24 @@ export default function NFTMinter() {
                                 }
                               } else {
                                 const metadata = {
-                                  [selectedPolicy.policyId]: {
-                                    [nftName || '[title]']: {
-                                      name: nftName || '[title]',
-                                      image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
-                                      mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                      description: nftDescription || '[description]',
-                                      files: selectedFiles.map((file) => ({
-                                        name: file.customName || file.name,
-                                        mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                        src: `ipfs://${file.url}`,
-                                        ...(file.properties && Object.keys(file.properties).length > 0
-                                          ? file.properties
-                                          : {}),
-                                      })),
+                                  "721": {
+                                    [selectedPolicy.policyId]: {
+                                      [nftName || '[title]']: {
+                                        name: nftName || '[title]',
+                                        image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                        mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                        description: nftDescription || '[description]',
+                                        files: selectedFiles.map((file) => ({
+                                          name: file.customName || file.name,
+                                          mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                          src: `ipfs://${file.url}`,
+                                          ...(file.properties && Object.keys(file.properties).length > 0
+                                            ? file.properties
+                                            : {}),
+                                        })),
+                                      },
                                     },
-                                  },
+                                  }
                                 }
                                 setEditableMetadata(JSON.stringify(metadata, null, 2))
                                 setIsEditingMetadata(true)
