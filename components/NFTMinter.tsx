@@ -2541,20 +2541,16 @@ export default function NFTMinter() {
                   <div className="space-y-2">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <label className="text-sm font-medium">Metadata {isEditingMetadata ? 'Editor' : 'Preview'}</label>
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 gap-1.5 px-3"
+                          className="h-7 gap-1.5 "
                           onClick={() => {
-                            if (isEditingMetadata) {
-                              if (!metadataError) {
-                                setIsEditingMetadata(false)
-                              } else {
-                                toast.error('Please fix JSON errors before saving', { position: 'bottom-center' })
-                              }
-                            } else {
-                              const metadata = {
+                            // Convert current metadata to pool.pm format
+                            const currentMetadata = isEditingMetadata
+                              ? JSON.parse(editableMetadata)
+                              : {
                                 [selectedPolicy.policyId]: {
                                   [nftName || '[title]']: {
                                     name: nftName || '[title]',
@@ -2572,28 +2568,92 @@ export default function NFTMinter() {
                                   },
                                 },
                               }
-                              setEditableMetadata(JSON.stringify(metadata, null, 2))
-                              setIsEditingMetadata(true)
+
+                            // Extract the NFT data
+                            const policyId = Object.keys(currentMetadata)[0]
+                            const nftKey = Object.keys(currentMetadata[policyId])[0]
+                            const nftData = currentMetadata[policyId][nftKey]
+
+                            // Create pool.pm format
+                            const poolMetadata = {
+                              "721": {
+                                [policyId]: {
+                                  [nftKey]: {
+                                    name: nftData.name,
+                                    image: nftData.image,
+                                    mediaType: nftData.mediaType,
+                                    ...(nftData.description && { description: nftData.description }),
+                                    ...(nftData.files && { files: nftData.files })
+                                  }
+                                }
+                              }
                             }
+
+                            // Encode the metadata for the URL
+                            const encodedMetadata = encodeURIComponent(JSON.stringify(poolMetadata))
+
+                            // Open pool.pm in a new tab
+                            window.open(`https://pool.pm/test/metadata?metadata=${encodedMetadata}`, '_blank')
                           }}
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
-                          <span className="text-xs">Preview on pool.pm</span>
+                          <span className="text-sm">Preview</span>
                           <Image src={poolPmIco} alt='pool.pm' width={16} height={16} />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 gap-1.5 px-3"
-                          onClick={() => {
-                            if (isEditingMetadata) {
-                              if (!metadataError) {
-                                setIsEditingMetadata(false)
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 gap-1.5"
+                            onClick={() => {
+                              if (isEditingMetadata) {
+                                if (!metadataError) {
+                                  setIsEditingMetadata(false)
+                                } else {
+                                  toast.error('Please fix JSON errors before saving', { position: 'bottom-center' })
+                                }
                               } else {
-                                toast.error('Please fix JSON errors before saving', { position: 'bottom-center' })
+                                const metadata = {
+                                  [selectedPolicy.policyId]: {
+                                    [nftName || '[title]']: {
+                                      name: nftName || '[title]',
+                                      image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                      mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                      description: nftDescription || '[description]',
+                                      files: selectedFiles.map((file) => ({
+                                        name: file.customName || file.name,
+                                        mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                        src: `ipfs://${file.url}`,
+                                        ...(file.properties && Object.keys(file.properties).length > 0
+                                          ? file.properties
+                                          : {}),
+                                      })),
+                                    },
+                                  },
+                                }
+                                setEditableMetadata(JSON.stringify(metadata, null, 2))
+                                setIsEditingMetadata(true)
                               }
-                            } else {
-                              const metadata = {
+                            }}
+                          >
+                            {isEditingMetadata ? (
+                              <>
+                                <Check className="h-3.5 w-3.5" />
+                                <span className="text-sm">Save</span>
+                              </>
+                            ) : (
+                              <>
+                                <Pencil className="h-3.5 w-3.5" />
+                                <span className="text-sm">Edit</span>
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 gap-1.5"
+                            onClick={() => {
+                              const metadata = isEditingMetadata ? editableMetadata : JSON.stringify({
                                 [selectedPolicy.policyId]: {
                                   [nftName || '[title]']: {
                                     name: nftName || '[title]',
@@ -2610,54 +2670,15 @@ export default function NFTMinter() {
                                     })),
                                   },
                                 },
-                              }
-                              setEditableMetadata(JSON.stringify(metadata, null, 2))
-                              setIsEditingMetadata(true)
-                            }
-                          }}
-                        >
-                          {isEditingMetadata ? (
-                            <>
-                              <Check className="h-3.5 w-3.5" />
-                              <span className="text-xs">Save</span>
-                            </>
-                          ) : (
-                            <>
-                              <Pencil className="h-3.5 w-3.5" />
-                              <span className="text-xs">Edit</span>
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 gap-1.5 px-3"
-                          onClick={() => {
-                            const metadata = isEditingMetadata ? editableMetadata : JSON.stringify({
-                              [selectedPolicy.policyId]: {
-                                [nftName || '[title]']: {
-                                  name: nftName || '[title]',
-                                  image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
-                                  mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                  description: nftDescription || '[description]',
-                                  files: selectedFiles.map((file) => ({
-                                    name: file.customName || file.name,
-                                    mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                    src: `ipfs://${file.url}`,
-                                    ...(file.properties && Object.keys(file.properties).length > 0
-                                      ? file.properties
-                                      : {}),
-                                  })),
-                                },
-                              },
-                            }, null, 2)
-                            navigator.clipboard.writeText(metadata)
-                            toast.success('Metadata copied to clipboard', { position: 'bottom-center' })
-                          }}
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                          <span className="text-xs">Copy</span>
-                        </Button>
+                              }, null, 2)
+                              navigator.clipboard.writeText(metadata)
+                              toast.success('Metadata copied to clipboard', { position: 'bottom-center' })
+                            }}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                            <span className="text-sm">Copy</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                     <div className={cn(
@@ -2675,25 +2696,27 @@ export default function NFTMinter() {
                             />
                           ) : (
                             <pre className="w-full text-xs">
-                              <code className="block text-muted-foreground whitespace-pre-wrap">
+                              <code className="block text-muted-foreground whitespace-pre-wrap break-all">
                                 {JSON.stringify(
                                   {
-                                    [selectedPolicy.policyId]: {
-                                      [nftName || '[title]']: {
-                                        name: nftName || '[title]',
-                                        image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
-                                        mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                        description: nftDescription || '[description]',
-                                        files: selectedFiles.map((file) => ({
-                                          name: file.customName || file.name,
-                                          mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                          src: `ipfs://${file.url}`,
-                                          ...(file.properties && Object.keys(file.properties).length > 0
-                                            ? file.properties
-                                            : {}),
-                                        })),
+                                    "721": {
+                                      [selectedPolicy.policyId]: {
+                                        [nftName || '[title]']: {
+                                          name: nftName || '[title]',
+                                          image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                          mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                          description: nftDescription || '[description]',
+                                          files: selectedFiles.map((file) => ({
+                                            name: file.customName || file.name,
+                                            mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                            src: `ipfs://${file.url}`,
+                                            ...(file.properties && Object.keys(file.properties).length > 0
+                                              ? file.properties
+                                              : {}),
+                                          })),
+                                        },
                                       },
-                                    },
+                                    }
                                   },
                                   null,
                                   2,
