@@ -507,92 +507,6 @@ const rotatePoint = (point: { x: number; y: number }, angle: number) => {
   }
 }
 
-const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
-  ctx.save()
-  ctx.translate(asteroid.x, asteroid.y) // <-- This is key for positioning
-  ctx.rotate(asteroid.rotation)
-
-  // Health-based color gradient
-  const healthPercentage = asteroid.health / asteroid.initialHealth
-  const hue = Math.floor(120 * healthPercentage) // 120=green, 0=red
-  const damageFlash = Date.now() - asteroid.lastHitTime < 100 ? 1 : 0.3
-
-  // Main asteroid shape
-  ctx.beginPath()
-  ctx.moveTo(asteroid.points[0].x, asteroid.points[0].y)
-  asteroid.points.forEach((point) => ctx.lineTo(point.x, point.y))
-  ctx.closePath()
-
-  // Gradient fill based on health
-  const fillGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, asteroid.size)
-  fillGradient.addColorStop(0, `hsla(${hue}, 100%, 50%, ${0.3 + damageFlash})`)
-  fillGradient.addColorStop(1, `hsla(${hue}, 100%, 25%, ${0.1 + damageFlash})`)
-  ctx.fillStyle = fillGradient
-  ctx.fill()
-
-  // Pulsing outline for bosses
-  if (asteroid.isBoss) {
-    const pulse = Math.sin(Date.now() / 200) * 2 + 3
-    ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${0.5 + damageFlash})`
-    ctx.lineWidth = pulse
-    ctx.shadowColor = `hsla(${hue}, 100%, 50%, 0.5)`
-    ctx.shadowBlur = 10
-    ctx.stroke()
-
-    // Remove the extra translate/rotate - we're already positioned correctly
-    const centerX = 0 // Now relative to translated position
-    const centerY = 0
-
-    // Eyes centered on asteroid
-    const eyeOffset = asteroid.size * 0.2
-    ctx.fillStyle = 'rgba(255,0,0,0.8)'
-    ctx.beginPath()
-    ctx.arc(-eyeOffset, -eyeOffset, 6, 0, Math.PI * 2) // Left eye
-    ctx.arc(eyeOffset, -eyeOffset, 6, 0, Math.PI * 2) // Right eye
-    ctx.fill()
-
-    // Mouth health bar centered
-    const mouthWidth = asteroid.size * 0.6
-    const mouthY = eyeOffset * 1.5
-    ctx.fillStyle = '#222'
-    ctx.fillRect(-mouthWidth / 2, mouthY, mouthWidth, 8)
-    ctx.fillStyle = '#ff0000'
-    ctx.fillRect(
-      -mouthWidth / 2,
-      mouthY,
-      mouthWidth * (asteroid.health / asteroid.initialHealth),
-      8,
-    )
-
-    // Draw attack charge indicator
-    if (asteroid.isChargingAttack && typeof asteroid.attackChargeProgress === 'number') {
-      // Remove ctx.translate(asteroid.x, asteroid.y) - already positioned by parent context
-      const intensity = asteroid.attackChargeProgress * 0.8 + 0.1
-      const radius = asteroid.size * (1 + asteroid.attackChargeProgress * 0.5)
-      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius) // Use 0,0 coordinates
-
-      // Keep existing gradient and drawing code
-      ctx.fillStyle = gradient
-      ctx.beginPath()
-      ctx.arc(0, 0, radius, 0, Math.PI * 2) // Draw at center (0,0)
-      ctx.fill()
-
-      // Warning text
-      ctx.fillStyle = `rgba(255,255,255,${intensity})`
-      ctx.font = `${20 + intensity * 10}px Arial`
-      ctx.textAlign = 'center'
-      ctx.fillText('!', 0, -asteroid.size / 2) // Position relative to center
-    }
-  }
-
-  // Regular asteroid outline
-  ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${0.8 + damageFlash})`
-  ctx.lineWidth = asteroid.isBoss ? 3 : 1
-  ctx.stroke()
-
-  ctx.restore()
-}
-
 const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
   const age = Date.now() - powerUp.createdAt
   const lifetimeProgress = age / GAME_CONSTANTS.POWER_UP_LIFETIME
@@ -759,6 +673,144 @@ const AsteroidsGame = () => {
       controlModeRef.current = mode
       _setControlMode(mode)
     }
+  }
+
+  const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
+    ctx.save()
+    ctx.translate(asteroid.x, asteroid.y) // <-- This is key for positioning
+    ctx.rotate(asteroid.rotation)
+
+    // Health-based color gradient
+    const healthPercentage = asteroid.health / asteroid.initialHealth
+    const hue = Math.floor(120 * healthPercentage) // 120=green, 0=red
+    const damageFlash = Date.now() - asteroid.lastHitTime < 100 ? 1 : 0.3
+
+    // Main asteroid shape
+    ctx.beginPath()
+    ctx.moveTo(asteroid.points[0].x, asteroid.points[0].y)
+    asteroid.points.forEach((point) => ctx.lineTo(point.x, point.y))
+    ctx.closePath()
+
+    // Gradient fill based on health
+    const fillGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, asteroid.size)
+    fillGradient.addColorStop(0, `hsla(${hue}, 100%, 50%, ${0.3 + damageFlash})`)
+    fillGradient.addColorStop(1, `hsla(${hue}, 100%, 25%, ${0.1 + damageFlash})`)
+    ctx.fillStyle = fillGradient
+    ctx.fill()
+
+    // Pulsing outline for bosses
+    if (asteroid.isBoss) {
+      const pulse = Math.sin(Date.now() / 200) * 2 + 3
+      ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${0.5 + damageFlash})`
+      ctx.lineWidth = pulse
+      ctx.shadowColor = `hsla(${hue}, 100%, 50%, 0.5)`
+      ctx.shadowBlur = 10
+      ctx.stroke()
+
+      // Enhanced eyes
+      const eyeSize = asteroid.size * 0.08
+      const eyeSpacing = asteroid.size * 0.3
+
+      // Glowing eye sockets
+      const socketGradient = ctx.createRadialGradient(
+        -eyeSpacing,
+        -eyeSpacing,
+        0,
+        -eyeSpacing,
+        -eyeSpacing,
+        eyeSize * 3,
+      )
+      socketGradient.addColorStop(0, 'rgba(255,0,0,0.8)')
+      socketGradient.addColorStop(1, 'rgba(255,0,0,0)')
+
+      // Left eye
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(-eyeSpacing, -eyeSpacing, eyeSize * 1.5, 0, Math.PI * 2)
+      ctx.fillStyle = socketGradient
+      ctx.fill()
+
+      // Animated pupil that follows player
+      const pupilOffset = Math.min(
+        eyeSize * 0.6,
+        Math.atan2(shipY.current - asteroid.y, shipX.current - asteroid.x) * eyeSize * 0.3,
+      )
+      ctx.beginPath()
+      ctx.arc(-eyeSpacing + pupilOffset, -eyeSpacing, eyeSize * 0.6, 0, Math.PI * 2)
+      ctx.fillStyle = '#000'
+      ctx.fill()
+      ctx.restore()
+
+      // Right eye (same as left but mirrored)
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(eyeSpacing, -eyeSpacing, eyeSize * 1.5, 0, Math.PI * 2)
+      ctx.fillStyle = socketGradient
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(eyeSpacing - pupilOffset, -eyeSpacing, eyeSize * 0.6, 0, Math.PI * 2)
+      ctx.fillStyle = '#000'
+      ctx.fill()
+      ctx.restore()
+
+      // Dynamic mouth with teeth
+      const mouthWidth = asteroid.size * 0.6
+      const mouthHeight = 10 + (asteroid.attackChargeProgress || 0) * 15
+      const mouthY = eyeSpacing * 1.2
+
+      // Animated jagged mouth
+      ctx.save()
+      ctx.translate(-mouthWidth / 2, mouthY)
+      ctx.strokeStyle = '#ff0000'
+      ctx.lineWidth = 3
+      ctx.beginPath()
+
+      const teethCount = 8 + Math.floor((asteroid.attackChargeProgress || 0) * 4)
+      for (let i = 0; i <= teethCount; i++) {
+        const x = (mouthWidth / teethCount) * i
+        const y = Math.sin(Date.now() / 200 + i * 0.5) * 3
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y + (i % 2 === 0 ? -mouthHeight : mouthHeight))
+      }
+
+      ctx.stroke()
+      ctx.restore()
+
+      // Add glowing facial details when charging
+      if (asteroid.isChargingAttack) {
+        const chargeIntensity = asteroid.attackChargeProgress || 0
+
+        // Glowing face outline
+        ctx.strokeStyle = `hsla(0, 100%, 50%, ${0.3 + chargeIntensity * 0.7})`
+        ctx.lineWidth = 3 + chargeIntensity * 5
+        ctx.shadowColor = `hsla(0, 100%, 50%, ${0.5 + chargeIntensity * 0.5})`
+        ctx.shadowBlur = 20 + chargeIntensity * 30
+        ctx.stroke()
+
+        // Particle effect around face
+        for (let i = 0; i < 10 * chargeIntensity; i++) {
+          const angle = Math.random() * Math.PI * 2
+          const radius = asteroid.size * (0.8 + Math.random() * 0.2)
+          ctx.beginPath()
+          ctx.arc(
+            Math.cos(angle) * radius,
+            Math.sin(angle) * radius,
+            2 + Math.random() * 3,
+            0,
+            Math.PI * 2,
+          )
+          ctx.fillStyle = `hsla(${40 + Math.random() * 20}, 100%, 50%, ${0.7 - chargeIntensity * 0.3})`
+          ctx.fill()
+        }
+      }
+    }
+
+    // Regular asteroid outline
+    ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${0.8 + damageFlash})`
+    ctx.lineWidth = asteroid.isBoss ? 3 : 1
+    ctx.stroke()
+
+    ctx.restore()
   }
 
   // Update the shoot function
@@ -1271,6 +1323,24 @@ const AsteroidsGame = () => {
     } else {
       asteroid.isChargingAttack = false
     }
+
+    // Add this block for player-facing rotation during charge
+    if (asteroid.isChargingAttack) {
+      // Calculate angle to player with offset for proper facing
+      const angleToPlayer =
+        Math.atan2(shipY.current - asteroid.y, shipX.current - asteroid.x) - Math.PI / 2 // Add 90 degree offset for proper facing
+
+      // Smooth rotation towards player
+      const angleDiff = angleToPlayer - asteroid.rotation
+      const rotationStep = angleDiff * 0.15 // 15% towards target per frame
+
+      // Maintain rotation within -PI to PI range
+      asteroid.rotation = ((asteroid.rotation + rotationStep + Math.PI) % (Math.PI * 2)) - Math.PI
+
+      // Add intensity-based rotation shake effect
+      const shakeIntensity = (asteroid.attackChargeProgress || 0) * 0.15
+      asteroid.rotation += (Math.random() - 0.5) * shakeIntensity
+    }
   }
 
   const updateGame = () => {
@@ -1508,10 +1578,6 @@ const AsteroidsGame = () => {
             createAsteroid(true)
             toast.info(`BOSS INCOMING!`, { duration: 2000 })
           }
-        } else {
-          toast.info(`Difficulty increased to level ${difficultyLevel.current}!`, {
-            duration: 2000,
-          })
         }
       }
 
@@ -1697,10 +1763,6 @@ const AsteroidsGame = () => {
                 }
               }
             }
-
-            toast.success(`${powerUp.type} power-up collected!`, {
-              duration: 2000,
-            })
           }
           return false
         }
@@ -2292,7 +2354,6 @@ const AsteroidsGame = () => {
       // Shield break effect
       if (newHealth <= 0 && prev > 0) {
         createShieldExplosion(shipX.current, shipY.current)
-        toast.warning('Shield destroyed!')
       }
 
       return Math.max(0, newHealth)
