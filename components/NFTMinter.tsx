@@ -69,7 +69,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
-export const CARDANO_NETWORK: CardanoNetwork = 'Preview'
+export const CARDANO_NETWORK: CardanoNetwork = 'Mainnet'
 
 export const getLucid = async () => {
   const { Lucid, Blockfrost } = await import('@lucid-evolution/lucid')
