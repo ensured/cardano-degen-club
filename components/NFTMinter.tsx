@@ -6,6 +6,7 @@ import { useState, useEffect, Fragment } from 'react'
 import Button3D from './3dButton'
 import Link from 'next/link'
 import { Input } from './ui/input'
+import poolPmIco from '../public/poolpm.ico'
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -37,6 +38,9 @@ import {
   Upload,
   File,
   CheckSquare,
+  Copy,
+  Pencil,
+  ExternalLink,
 } from 'lucide-react'
 import { timeAgoCompact } from '@/lib/helper'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './ui/tooltip'
@@ -62,6 +66,7 @@ import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { cn } from '@/lib/utils'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork = 'Preview'
@@ -514,6 +519,11 @@ export default function NFTMinter() {
   // Add new state at top of component
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false)
 
+  // Add these state variables near your other state declarations
+  const [editableMetadata, setEditableMetadata] = useState<string>('')
+  const [metadataError, setMetadataError] = useState<string | null>(null)
+  const [isEditingMetadata, setIsEditingMetadata] = useState(false)
+
   const formatExpiryTime = (slot?: number) => {
     if (!slot) return null
 
@@ -710,9 +720,8 @@ export default function NFTMinter() {
         alt={alt}
         width={200}
         height={200}
-        className={`h-32 w-full cursor-pointer rounded-lg object-contain ${
-          fileUrl === thumbnailImage && 'outline-dashed outline-1 outline-primary'
-        }`}
+        className={`h-32 w-full cursor-pointer rounded-lg object-contain ${fileUrl === thumbnailImage && 'outline-dashed outline-1 outline-primary'
+          }`}
         onError={() => setError(true)}
         unoptimized={isGif} // Disable optimization for GIFs
         {...props}
@@ -937,16 +946,16 @@ export default function NFTMinter() {
       const mintingPolicy = scriptFromNative(
         expiryConfig.hasExpiry
           ? {
-              type: 'all',
-              scripts: [
-                { type: 'sig', keyHash },
-                { type: 'before', slot: expirySlot! },
-              ],
-            }
+            type: 'all',
+            scripts: [
+              { type: 'sig', keyHash },
+              { type: 'before', slot: expirySlot! },
+            ],
+          }
           : {
-              type: 'sig',
-              keyHash,
-            },
+            type: 'sig',
+            keyHash,
+          },
       )
 
       const policyId = mintingPolicyToId(mintingPolicy)
@@ -958,16 +967,16 @@ export default function NFTMinter() {
         slot: expirySlot,
         script: expiryConfig.hasExpiry
           ? {
-              type: 'all',
-              scripts: [
-                { type: 'sig', keyHash },
-                { type: 'before', slot: expirySlot! },
-              ],
-            }
+            type: 'all',
+            scripts: [
+              { type: 'sig', keyHash },
+              { type: 'before', slot: expirySlot! },
+            ],
+          }
           : {
-              type: 'sig',
-              keyHash,
-            },
+            type: 'sig',
+            keyHash,
+          },
         isGenerated: true,
       }
 
@@ -1080,8 +1089,8 @@ export default function NFTMinter() {
             const scriptDetails = await response.json()
             const keyHashMatches = scriptDetails?.json
               ? scriptDetails.json.keyHash === keyHash ||
-                scriptDetails.json.scripts?.[0]?.keyHash === keyHash ||
-                scriptDetails.json.scripts?.[1]?.keyHash === keyHash
+              scriptDetails.json.scripts?.[0]?.keyHash === keyHash ||
+              scriptDetails.json.scripts?.[1]?.keyHash === keyHash
               : false
 
             if (keyHashMatches) {
@@ -1285,11 +1294,11 @@ export default function NFTMinter() {
           ...(prev[fileUrl]?.[propertyIndex] || {
             key:
               Object.keys(selectedFiles.find((f) => f.url === fileUrl)?.properties || {})[
-                propertyIndex
+              propertyIndex
               ] || '',
             value:
               Object.values(selectedFiles.find((f) => f.url === fileUrl)?.properties || {})[
-                propertyIndex
+              propertyIndex
               ] || '',
           }),
           [field]: value,
@@ -1470,6 +1479,26 @@ export default function NFTMinter() {
     return true
   }
 
+  // Add this function to validate and update metadata
+  const handleMetadataChange = (newMetadata: string) => {
+    setEditableMetadata(newMetadata)
+    try {
+      const parsed = JSON.parse(newMetadata)
+      setMetadataError(null)
+      // Update the NFT fields based on the edited metadata
+      const policyData = parsed[selectedPolicy?.policyId || '']
+      if (policyData) {
+        const nftData = Object.values(policyData)[0] as any
+        if (nftData) {
+          setNftName(nftData.name || '')
+          setNftDescription(nftData.description || '')
+        }
+      }
+    } catch (error) {
+      setMetadataError((error as Error).message)
+    }
+  }
+
   if (initializing || loading) {
     return (
       <div className="flex h-[69vh] items-center justify-center">
@@ -1511,15 +1540,14 @@ export default function NFTMinter() {
           return (
             <div
               key={file.ipfs_pin_hash}
-              className={`group relative rounded-lg ${
-                isMultiDeleteMode && selectedForDeletion.includes(file.ipfs_pin_hash)
-                  ? '!border-2 !border-destructive'
-                  : selectedPinataFiles.some(
-                        (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
-                      )
-                    ? 'border-2 border-primary'
-                    : ''
-              }`}
+              className={`group relative rounded-lg ${isMultiDeleteMode && selectedForDeletion.includes(file.ipfs_pin_hash)
+                ? '!border-2 !border-destructive'
+                : selectedPinataFiles.some(
+                  (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                )
+                  ? 'border-2 border-primary'
+                  : ''
+                }`}
               onClick={() => {
                 if (isMultiDeleteMode) {
                   setSelectedForDeletion((prev) =>
@@ -1578,15 +1606,14 @@ export default function NFTMinter() {
               }}
             >
               <div
-                className={`flex cursor-pointer flex-col rounded-lg border border-border p-1 ${
-                  isMultiDeleteMode && selectedForDeletion.includes(file.ipfs_pin_hash)
-                    ? '!ring-2 !ring-destructive'
-                    : selectedPinataFiles.some(
-                          (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
-                        )
-                      ? 'ring-2 ring-primary'
-                      : ''
-                }`}
+                className={`flex cursor-pointer flex-col rounded-lg border border-border p-1 ${isMultiDeleteMode && selectedForDeletion.includes(file.ipfs_pin_hash)
+                  ? '!ring-2 !ring-destructive'
+                  : selectedPinataFiles.some(
+                    (selected) => selected.ipfs_pin_hash === file.ipfs_pin_hash,
+                  )
+                    ? 'ring-2 ring-primary'
+                    : ''
+                  }`}
               >
                 <div className="relative">
                   <ImageWithFallback
@@ -1656,9 +1683,8 @@ export default function NFTMinter() {
               if (totalFileCount >= 1000) {
                 return `${(totalFileCount / 1000).toFixed(1)}k files`
               }
-              return `${selectedFiles.length}/${totalFileCount} ${
-                totalFileCount === 1 || selectedFiles.length === 1 ? 'file' : 'files'
-              } selected`
+              return `${selectedFiles.length}/${totalFileCount} ${totalFileCount === 1 || selectedFiles.length === 1 ? 'file' : 'files'
+                } selected`
             })()}
           </DialogTitle>
           <DialogClose className="flex h-9 w-9 items-center justify-center rounded-lg border border-border transition-colors hover:bg-secondary/80 sm:h-10 sm:w-10 md:h-12 md:w-12">
@@ -1786,9 +1812,8 @@ export default function NFTMinter() {
               setIsMultiDeleteMode(!isMultiDeleteMode)
               setSelectedForDeletion([])
             }}
-            className={`flex h-9 items-center justify-center gap-1.5 text-base font-medium sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl ${
-              isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''
-            }`}
+            className={`flex h-9 items-center justify-center gap-1.5 text-base font-medium sm:h-9 sm:text-lg md:h-10 md:text-xl lg:h-11 lg:text-2xl ${isMultiDeleteMode ? 'bg-destructive text-destructive-foreground' : ''
+              }`}
           >
             {isMultiDeleteMode ? (
               <>
@@ -1842,13 +1867,12 @@ export default function NFTMinter() {
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex items-center">
                     <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${
-                        isStepComplete(step)
-                          ? 'border-success bg-success text-success-foreground shadow-lg shadow-success/30 ring-2 ring-success/10 ring-offset-2'
-                          : step === currentStep
-                            ? 'animate-pulse-slow border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-2 ring-primary/10 ring-offset-2'
-                            : 'border-muted bg-background text-muted-foreground hover:scale-110 hover:border-muted-foreground/50 hover:shadow-sm'
-                      }`}
+                      className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all ${isStepComplete(step)
+                        ? 'border-success bg-success text-success-foreground shadow-lg shadow-success/30 ring-2 ring-success/10 ring-offset-2'
+                        : step === currentStep
+                          ? 'animate-pulse-slow border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30 ring-2 ring-primary/10 ring-offset-2'
+                          : 'border-muted bg-background text-muted-foreground hover:scale-110 hover:border-muted-foreground/50 hover:shadow-sm'
+                        }`}
                     >
                       {step}
                     </div>
@@ -1970,15 +1994,14 @@ export default function NFTMinter() {
                     {selectedFiles.map((fileInfo) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
-                          className={`flex h-full flex-col rounded-lg border border-border bg-background/50 p-1 ${
-                            isMultiDeleteMode && selectedForDeletion.includes(fileInfo.url)
-                              ? '!outline !outline-2 !outline-destructive'
-                              : selectedPinataFiles.some(
-                                    (selected) => selected.ipfs_pin_hash === fileInfo.url,
-                                  )
-                                ? 'outline outline-2 outline-primary'
-                                : ''
-                          }`}
+                          className={`flex h-full flex-col rounded-lg border border-border bg-background/50 p-1 ${isMultiDeleteMode && selectedForDeletion.includes(fileInfo.url)
+                            ? '!outline !outline-2 !outline-destructive'
+                            : selectedPinataFiles.some(
+                              (selected) => selected.ipfs_pin_hash === fileInfo.url,
+                            )
+                              ? 'outline outline-2 outline-primary'
+                              : ''
+                            }`}
                         >
                           <div className="flex flex-1 flex-col space-y-2">
                             {/* Image preview */}
@@ -1986,9 +2009,8 @@ export default function NFTMinter() {
                               <ImageWithFallback
                                 src={`https://gateway.pinata.cloud/ipfs/${fileInfo.url}`}
                                 alt={fileInfo.name}
-                                className={`h-24 w-full cursor-pointer rounded-lg object-contain sm:h-32 ${
-                                  thumbnailImage === fileInfo.url ? 'ring-2 ring-emerald-500' : ''
-                                }`}
+                                className={`h-24 w-full cursor-pointer rounded-lg object-contain sm:h-32 ${thumbnailImage === fileInfo.url ? 'ring-2 ring-emerald-500' : ''
+                                  }`}
                                 onClick={() => setThumbnailImage(fileInfo.url)}
                               />
                               {thumbnailImage === fileInfo.url && (
@@ -2066,14 +2088,13 @@ export default function NFTMinter() {
                                     <Input
                                       placeholder="Key"
                                       value={traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key}
-                                      className={`h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0 ${
-                                        !isTraitPairValid(
-                                          traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key,
-                                          traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value,
-                                        )
-                                          ? 'border-red-500/50'
-                                          : ''
-                                      }`}
+                                      className={`h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0 ${!isTraitPairValid(
+                                        traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key,
+                                        traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value,
+                                      )
+                                        ? 'border-red-500/50'
+                                        : ''
+                                        }`}
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) =>
                                         handleTraitChange(
@@ -2089,14 +2110,13 @@ export default function NFTMinter() {
                                       value={
                                         traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value
                                       }
-                                      className={`h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0 ${
-                                        !isTraitPairValid(
-                                          traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key,
-                                          traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value,
-                                        )
-                                          ? 'border-red-500/50'
-                                          : ''
-                                      }`}
+                                      className={`h-8 flex-1 border border-border bg-background/50 text-xs shadow-none focus-visible:ring-0 ${!isTraitPairValid(
+                                        traitEdits[fileInfo.url]?.[propertyIndex]?.key ?? key,
+                                        traitEdits[fileInfo.url]?.[propertyIndex]?.value ?? value,
+                                      )
+                                        ? 'border-red-500/50'
+                                        : ''
+                                        }`}
                                       onClick={(e) => e.stopPropagation()}
                                       onChange={(e) =>
                                         handleTraitChange(
@@ -2268,11 +2288,10 @@ export default function NFTMinter() {
                             </div>
                             {policy.slot && (
                               <span
-                                className={`text-xs ${
-                                  formatExpiryTime(policy.slot) === 'Expired'
-                                    ? 'text-destructive'
-                                    : 'text-muted-foreground'
-                                }`}
+                                className={`text-xs ${formatExpiryTime(policy.slot) === 'Expired'
+                                  ? 'text-destructive'
+                                  : 'text-muted-foreground'
+                                  }`}
                               >
                                 expires in {formatExpiryTime(policy.slot)}
                               </span>
@@ -2350,11 +2369,10 @@ export default function NFTMinter() {
                             </div>
                             {policy.slot && (
                               <span
-                                className={`text-xs ${
-                                  formatExpiryTime(policy.slot) === 'Expired'
-                                    ? 'text-destructive'
-                                    : 'text-muted-foreground'
-                                }`}
+                                className={`text-xs ${formatExpiryTime(policy.slot) === 'Expired'
+                                  ? 'text-destructive'
+                                  : 'text-muted-foreground'
+                                  }`}
                               >
                                 {formatExpiryTime(policy.slot)}
                               </span>
@@ -2422,19 +2440,31 @@ export default function NFTMinter() {
                               setExpiryConfig((prev) => ({ ...prev, days }))
                             }
                             min={1}
-                            max={365}
+                            max={73000} // 200 years
                             step={1}
                           />
                           <Input
                             type="number"
                             min={1}
-                            max={365}
+                            max={73000}
                             value={expiryConfig.days}
                             onChange={(e) => {
-                              const value = Math.min(365, Math.max(1, Number(e.target.value)))
+                              const value = Math.min(73000, Math.max(1, Number(e.target.value)))
                               setExpiryConfig((prev) => ({ ...prev, days: value }))
                             }}
                           />
+                          <p className="text-xs text-muted-foreground">
+                            {(() => {
+                              const days = expiryConfig.days
+                              if (days >= 365) {
+                                const years = Math.floor(days / 365)
+                                const remainingDays = days % 365
+                                return `Approximately ${years} year${years !== 1 ? 's' : ''}${remainingDays > 0 ? ` and ${remainingDays} day${remainingDays !== 1 ? 's' : ''}` : ''
+                                  }`
+                              }
+                              return `${days} day${days !== 1 ? 's' : ''}`
+                            })()}
+                          </p>
                         </div>
                       )}
 
@@ -2474,20 +2504,23 @@ export default function NFTMinter() {
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent className="p-6 pt-2">
-            <div className="flex flex-col gap-2">
-              <div className="space-y-1">
-                <label htmlFor="nft-title" className="text-sm font-medium">
-                  NFT Title
-                </label>
-                <Input
-                  id="nft-title"
-                  type="text"
-                  placeholder="Enter NFT title"
-                  value={nftName}
-                  onChange={(e) => setNftName(e.target.value)}
-                  autoFocus
-                  className="w-full"
-                />
+            <div className="flex flex-col gap-4">
+              {/* Existing input fields */}
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label htmlFor="nft-title" className="text-sm font-medium">
+                    NFT Title
+                  </label>
+                  <Input
+                    id="nft-title"
+                    type="text"
+                    placeholder="Enter NFT title"
+                    value={nftName}
+                    onChange={(e) => setNftName(e.target.value)}
+                    autoFocus
+                    className="w-full"
+                  />
+                </div>
 
                 <div className="space-y-1">
                   <label htmlFor="nft-description" className="text-sm font-medium">
@@ -2503,68 +2536,244 @@ export default function NFTMinter() {
                   />
                 </div>
 
-                <div className="space-y-1">
-                  <label htmlFor="mint-quantity" className="text-sm font-medium">
-                    Quantity to Mint
-                  </label>
-                  <Input
-                    id="mint-quantity"
-                    type="number"
-                    min="1"
-                    max="42069"
-                    value={mintQuantity}
-                    onChange={(e) => {
-                      const value = e.target.value === '' ? '' : parseInt(e.target.value)
-                      if (value === '' || (!isNaN(value) && value >= 0 && value <= 42069)) {
-                        setMintQuantity(value as number)
-                      }
-                    }}
-                    onBlur={(e) => {
-                      const value = parseInt(e.target.value)
-                      if (isNaN(value) || value < 1) {
-                        setMintQuantity(1)
-                      }
-                    }}
-                    className={`w-full ${mintQuantity > 1 ? 'border-yellow-500' : 'border-border'}`}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter a number between 1 and 42069
-                  </p>
-
-                  {mintQuantity > 1 && (
-                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-500">
-                      <AlertCircle className="h-4 w-4" />
-                      <span>
-                        Warning: Minting multiple copies will create a Fungible Token (FT) instead
-                        of a Non-Fungible Token (NFT). Each copy will be identical and
-                        interchangeable.
-                      </span>
+                {/* Metadata Editor Section */}
+                <div className="space-y-2">
+                  <div className="space-y-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <label className="text-sm font-medium">Metadata {isEditingMetadata ? 'Editor' : 'Preview'}</label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1.5 px-3"
+                          onClick={() => {
+                            if (isEditingMetadata) {
+                              if (!metadataError) {
+                                setIsEditingMetadata(false)
+                              } else {
+                                toast.error('Please fix JSON errors before saving', { position: 'bottom-center' })
+                              }
+                            } else {
+                              const metadata = {
+                                [selectedPolicy.policyId]: {
+                                  [nftName || '[title]']: {
+                                    name: nftName || '[title]',
+                                    image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                    mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                    description: nftDescription || '[description]',
+                                    files: selectedFiles.map((file) => ({
+                                      name: file.customName || file.name,
+                                      mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                      src: `ipfs://${file.url}`,
+                                      ...(file.properties && Object.keys(file.properties).length > 0
+                                        ? file.properties
+                                        : {}),
+                                    })),
+                                  },
+                                },
+                              }
+                              setEditableMetadata(JSON.stringify(metadata, null, 2))
+                              setIsEditingMetadata(true)
+                            }
+                          }}
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span className="text-xs">Preview on pool.pm</span>
+                          <Image src={poolPmIco} alt='pool.pm' width={16} height={16} />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1.5 px-3"
+                          onClick={() => {
+                            if (isEditingMetadata) {
+                              if (!metadataError) {
+                                setIsEditingMetadata(false)
+                              } else {
+                                toast.error('Please fix JSON errors before saving', { position: 'bottom-center' })
+                              }
+                            } else {
+                              const metadata = {
+                                [selectedPolicy.policyId]: {
+                                  [nftName || '[title]']: {
+                                    name: nftName || '[title]',
+                                    image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                    mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                    description: nftDescription || '[description]',
+                                    files: selectedFiles.map((file) => ({
+                                      name: file.customName || file.name,
+                                      mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                      src: `ipfs://${file.url}`,
+                                      ...(file.properties && Object.keys(file.properties).length > 0
+                                        ? file.properties
+                                        : {}),
+                                    })),
+                                  },
+                                },
+                              }
+                              setEditableMetadata(JSON.stringify(metadata, null, 2))
+                              setIsEditingMetadata(true)
+                            }
+                          }}
+                        >
+                          {isEditingMetadata ? (
+                            <>
+                              <Check className="h-3.5 w-3.5" />
+                              <span className="text-xs">Save</span>
+                            </>
+                          ) : (
+                            <>
+                              <Pencil className="h-3.5 w-3.5" />
+                              <span className="text-xs">Edit</span>
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1.5 px-3"
+                          onClick={() => {
+                            const metadata = isEditingMetadata ? editableMetadata : JSON.stringify({
+                              [selectedPolicy.policyId]: {
+                                [nftName || '[title]']: {
+                                  name: nftName || '[title]',
+                                  image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                  mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                  description: nftDescription || '[description]',
+                                  files: selectedFiles.map((file) => ({
+                                    name: file.customName || file.name,
+                                    mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                    src: `ipfs://${file.url}`,
+                                    ...(file.properties && Object.keys(file.properties).length > 0
+                                      ? file.properties
+                                      : {}),
+                                  })),
+                                },
+                              },
+                            }, null, 2)
+                            navigator.clipboard.writeText(metadata)
+                            toast.success('Metadata copied to clipboard', { position: 'bottom-center' })
+                          }}
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                          <span className="text-xs">Copy</span>
+                        </Button>
+                      </div>
                     </div>
-                  )}
-                </div>
+                    <div className={cn(
+                      "relative rounded-lg border bg-muted/50 p-4",
+                      metadataError ? "border-destructive" : "border-border"
+                    )}>
+                      <ScrollArea className="h-[500px] w-full">
+                        <div className="pr-4">
+                          {isEditingMetadata ? (
+                            <textarea
+                              value={editableMetadata}
+                              onChange={(e) => handleMetadataChange(e.target.value)}
+                              className="h-[500px] w-full resize-none bg-transparent font-mono text-xs text-muted-foreground focus:outline-none"
+                              spellCheck={false}
+                            />
+                          ) : (
+                            <pre className="w-full text-xs">
+                              <code className="block text-muted-foreground whitespace-pre-wrap">
+                                {JSON.stringify(
+                                  {
+                                    [selectedPolicy.policyId]: {
+                                      [nftName || '[title]']: {
+                                        name: nftName || '[title]',
+                                        image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                        mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                        description: nftDescription || '[description]',
+                                        files: selectedFiles.map((file) => ({
+                                          name: file.customName || file.name,
+                                          mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                          src: `ipfs://${file.url}`,
+                                          ...(file.properties && Object.keys(file.properties).length > 0
+                                            ? file.properties
+                                            : {}),
+                                        })),
+                                      },
+                                    },
+                                  },
+                                  null,
+                                  2,
+                                )}
+                              </code>
+                            </pre>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                    {metadataError && (
+                      <p className="text-xs text-destructive">
+                        Invalid JSON: {metadataError}
+                      </p>
+                    )}
+                  </div>
 
-                <Button3D
-                  disabled={!isStepComplete(4) || minting || !walletState.api}
-                  onClick={() => {
-                    if (walletState.api && nftName && nftDescription && selectedFiles.length > 0) {
-                      mintNFT(lucid, selectedPolicy, nftName, nftDescription, selectedFiles)
-                    } else {
-                      if (!nftName || !nftDescription) {
-                        toast.error('NFT name and description must be provided', {
-                          position: 'bottom-center',
-                        })
+                  {/* Quantity input and warning */}
+                  <div className="space-y-1">
+                    <label htmlFor="mint-quantity" className="text-sm font-medium">
+                      Quantity to Mint
+                    </label>
+                    <Input
+                      id="mint-quantity"
+                      type="number"
+                      min="1"
+                      max="42069"
+                      value={mintQuantity}
+                      onChange={(e) => {
+                        const value = e.target.value === '' ? '' : parseInt(e.target.value)
+                        if (value === '' || (!isNaN(value) && value >= 0 && value <= 42069)) {
+                          setMintQuantity(value as number)
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = parseInt(e.target.value)
+                        if (isNaN(value) || value < 1) {
+                          setMintQuantity(1)
+                        }
+                      }}
+                      className={`w-full ${mintQuantity > 1 ? 'border-yellow-500' : 'border-border'}`}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter a number between 1 and 42069
+                    </p>
+
+                    {mintQuantity > 1 && (
+                      <div className="mt-2 flex items-center gap-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-500">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>
+                          Warning: Minting multiple copies will create a Fungible Token (FT) instead
+                          of a Non-Fungible Token (NFT). Each copy will be identical and
+                          interchangeable.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mint button */}
+                  <Button3D
+                    disabled={!isStepComplete(4) || minting || !walletState.api}
+                    onClick={() => {
+                      if (walletState.api && nftName && nftDescription && selectedFiles.length > 0) {
+                        mintNFT(lucid, selectedPolicy, nftName, nftDescription, selectedFiles)
                       } else {
-                        toast.error('Wallet not connected', { position: 'bottom-center' })
+                        if (!nftName || !nftDescription) {
+                          toast.error('NFT name and description must be provided', {
+                            position: 'bottom-center',
+                          })
+                        } else {
+                          toast.error('Wallet not connected', { position: 'bottom-center' })
+                        }
                       }
-                    }
-                  }}
-                  className="w-full"
-                >
-                  {minting ? 'Minting...' : 'Mint NFT'}
-                </Button3D>
+                    }}
+                    className="w-full"
+                  >
+                    {minting ? 'Minting...' : 'Mint NFT'}
+                  </Button3D>
+                </div>
               </div>
-
-              {/* Add update button */}
             </div>
           </CollapsibleContent>
         </Collapsible>
