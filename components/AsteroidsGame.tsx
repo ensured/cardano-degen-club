@@ -36,7 +36,7 @@ const GAME_CONSTANTS = {
   MAX_ASTEROIDS: 10,
   BOSS_BULLET_DAMAGE: 1,
   BOSS_BULLET_SPEED: 1.9, // Slightly slower bullets
-  BOSS_ATTACK_COOLDOWN: 8000,
+  BOSS_ATTACK_COOLDOWN: 5000, // 5 seconds between attacks
   BOSS_HEALTH_MULTIPLIER: 1.1,
   SHIELD_BASE_HEALTH: 120, // Increased from 200
   SHIELD_DAMAGE_NORMAL: 100, // Fixed value per asteroid hit
@@ -99,6 +99,9 @@ interface Asteroid {
   }
   isCharging: boolean
   lastAttackTime: number
+  lastHitTime: number // Add this
+  isChargingAttack?: boolean
+  attackChargeProgress?: number
 }
 
 interface Bullet {
@@ -134,6 +137,8 @@ interface DisintegrationParticle {
   control1X: number
   control2X: number
   endX: number
+  trail: { x: number; y: number }[]
+  spark: boolean
 }
 
 type BossBullet = {
@@ -502,300 +507,138 @@ const rotatePoint = (point: { x: number; y: number }, angle: number) => {
   }
 }
 
-const drawAsteroid = (
-  ctx: CanvasRenderingContext2D,
-  asteroid: Asteroid,
-  shipX: number,
-  shipY: number,
-) => {
-  // Collision debug outline
+const drawAsteroid = (ctx: CanvasRenderingContext2D, asteroid: Asteroid) => {
   ctx.save()
-  ctx.strokeStyle = '#00ff0080' // Green with 50% opacity
-  ctx.lineWidth = 1
+  ctx.translate(asteroid.x, asteroid.y) // <-- This is key for positioning
+  ctx.rotate(asteroid.rotation)
+
+  // Health-based color gradient
+  const healthPercentage = asteroid.health / asteroid.initialHealth
+  const hue = Math.floor(120 * healthPercentage) // 120=green, 0=red
+  const damageFlash = Date.now() - asteroid.lastHitTime < 100 ? 1 : 0.3
+
+  // Main asteroid shape
   ctx.beginPath()
-  let startPoint = rotatePoint(asteroid.points[0], asteroid.rotation) // Use let instead of const
-  ctx.moveTo(asteroid.x + startPoint.x, asteroid.y + startPoint.y)
-  asteroid.points.forEach((point, i) => {
-    const rotated = rotatePoint(point, asteroid.rotation)
-    ctx.lineTo(asteroid.x + rotated.x, asteroid.y + rotated.y)
-  })
+  ctx.moveTo(asteroid.points[0].x, asteroid.points[0].y)
+  asteroid.points.forEach((point) => ctx.lineTo(point.x, point.y))
   ctx.closePath()
-  ctx.stroke()
-  ctx.restore()
 
-  // In original drawing code, change from:
-  // const startPoint = rotatePoint(...)
-  // to:
-  startPoint = rotatePoint(asteroid.points[0], asteroid.rotation) // <-- Remove 'const' here
-  ctx.moveTo(asteroid.x + startPoint.x, asteroid.y + startPoint.y)
+  // Gradient fill based on health
+  const fillGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, asteroid.size)
+  fillGradient.addColorStop(0, `hsla(${hue}, 100%, 50%, ${0.3 + damageFlash})`)
+  fillGradient.addColorStop(1, `hsla(${hue}, 100%, 25%, ${0.1 + damageFlash})`)
+  ctx.fillStyle = fillGradient
+  ctx.fill()
 
-  // Health-based color
-  const healthColor = `hsl(${30 * (asteroid.health / asteroid.initialHealth)}, 100%, 70%)`
-  ctx.strokeStyle = healthColor
-
-  // Draw asteroid shape
-  ctx.beginPath()
-  asteroid.points.forEach((point, i) => {
-    const rotated = rotatePoint(point, asteroid.rotation)
-    ctx.lineTo(asteroid.x + rotated.x, asteroid.y + rotated.y)
-  })
-  ctx.closePath()
-  ctx.stroke()
-
-  // Draw health bar when damaged
-  if (asteroid.health < asteroid.initialHealth) {
-    const healthPercentage = asteroid.health / asteroid.initialHealth
-    const barWidth = 40
-    const barHeight = 4
-    const yOffset = asteroid.size + 12
-
-    // Health bar background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
-    ctx.fillRect(asteroid.x - barWidth / 2, asteroid.y + yOffset, barWidth, barHeight)
-
-    // Health bar fill
-    ctx.fillStyle = `hsl(${120 * healthPercentage}, 100%, 50%)`
-    ctx.fillRect(
-      asteroid.x - barWidth / 2,
-      asteroid.y + yOffset,
-      barWidth * healthPercentage,
-      barHeight,
-    )
-
-    // Health text
-    ctx.fillStyle = 'white'
-    ctx.font = '12px Arial'
-    ctx.textAlign = 'center'
-    ctx.fillText(
-      `${Math.ceil(asteroid.health)}/${asteroid.initialHealth}`,
-      asteroid.x,
-      asteroid.y + yOffset + barHeight + 14,
-    )
-  }
-
+  // Pulsing outline for bosses
   if (asteroid.isBoss) {
-    // Add charge progress calculation
-    const chargeProgress = Math.min(
-      1,
-      (Date.now() - asteroid.lastAttackTime) / GAME_CONSTANTS.BOSS_CHARGE_UP_DURATION,
+    const pulse = Math.sin(Date.now() / 200) * 2 + 3
+    ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${0.5 + damageFlash})`
+    ctx.lineWidth = pulse
+    ctx.shadowColor = `hsla(${hue}, 100%, 50%, 0.5)`
+    ctx.shadowBlur = 10
+    ctx.stroke()
+
+    // Remove the extra translate/rotate - we're already positioned correctly
+    const centerX = 0 // Now relative to translated position
+    const centerY = 0
+
+    // Eyes centered on asteroid
+    const eyeOffset = asteroid.size * 0.2
+    ctx.fillStyle = 'rgba(255,0,0,0.8)'
+    ctx.beginPath()
+    ctx.arc(-eyeOffset, -eyeOffset, 6, 0, Math.PI * 2) // Left eye
+    ctx.arc(eyeOffset, -eyeOffset, 6, 0, Math.PI * 2) // Right eye
+    ctx.fill()
+
+    // Mouth health bar centered
+    const mouthWidth = asteroid.size * 0.6
+    const mouthY = eyeOffset * 1.5
+    ctx.fillStyle = '#222'
+    ctx.fillRect(-mouthWidth / 2, mouthY, mouthWidth, 8)
+    ctx.fillStyle = '#ff0000'
+    ctx.fillRect(
+      -mouthWidth / 2,
+      mouthY,
+      mouthWidth * (asteroid.health / asteroid.initialHealth),
+      8,
     )
 
-    // Draw targeting laser when charging
-    if (asteroid.isCharging) {
-      ctx.save()
-      ctx.beginPath()
-      ctx.moveTo(asteroid.x, asteroid.y)
-      ctx.lineTo(shipX, shipY)
+    // Draw attack charge indicator
+    if (asteroid.isChargingAttack && typeof asteroid.attackChargeProgress === 'number') {
+      // Remove ctx.translate(asteroid.x, asteroid.y) - already positioned by parent context
+      const intensity = asteroid.attackChargeProgress * 0.8 + 0.1
+      const radius = asteroid.size * (1 + asteroid.attackChargeProgress * 0.5)
+      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius) // Use 0,0 coordinates
 
-      // Animated laser effect
-      const pulse = Math.sin(Date.now() / 50) * 0.5 + 0.5
-      ctx.strokeStyle = `rgba(255, 0, 0, ${0.3 + pulse * 0.2})`
-      ctx.lineWidth = 2 + pulse * 2
-      ctx.setLineDash([10, 5])
-      ctx.stroke()
+      // Keep existing gradient and drawing code
+      ctx.fillStyle = gradient
+      ctx.beginPath()
+      ctx.arc(0, 0, radius, 0, Math.PI * 2) // Draw at center (0,0)
+      ctx.fill()
 
       // Warning text
-      ctx.fillStyle = 'red'
-      ctx.font = 'bold 50px Arial'
+      ctx.fillStyle = `rgba(255,255,255,${intensity})`
+      ctx.font = `${20 + intensity * 10}px Arial`
       ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText('🎯', asteroid.x, asteroid.y)
-      ctx.restore()
+      ctx.fillText('!', 0, -asteroid.size / 2) // Position relative to center
     }
-
-    // Pulsing core glow
-    const pulse = Math.sin(Date.now() / 200) * 0.5 + 0.5
-    const coreGradientBoss = ctx.createRadialGradient(
-      asteroid.x,
-      asteroid.y,
-      0,
-      asteroid.x,
-      asteroid.y,
-      asteroid.size,
-    )
-    coreGradientBoss.addColorStop(0, `rgba(255, 0, 0, ${0.4 + pulse * 0.3})`)
-    coreGradientBoss.addColorStop(1, 'rgba(255, 0, 0, 0)')
-
-    ctx.fillStyle = coreGradientBoss
-    ctx.beginPath()
-    ctx.arc(asteroid.x, asteroid.y, asteroid.size, 0, Math.PI * 2)
-    ctx.fill()
-
-    // Energy particles
-    ctx.save()
-    for (let i = 0; i < 20; i++) {
-      // Increased particle count
-      const lifeProgress = (Date.now() % 2000) / 2000 // 2 second cycle
-      const angle = Math.random() * Math.PI * 2
-      const radius = asteroid.size * (0.7 + Math.sin(Date.now() / 100 + i * 0.3) * 0.3)
-      const particleSize = 3 + Math.sin(Date.now() / 50 + i) * 2
-      const hue = 30 + Math.sin(Date.now() / 200 + i) * 20
-
-      // Create gradient for particle
-      const gradient = ctx.createRadialGradient(
-        asteroid.x + Math.cos(angle) * radius,
-        asteroid.y + Math.sin(angle) * radius,
-        0,
-        asteroid.x + Math.cos(angle) * radius,
-        asteroid.y + Math.sin(angle) * radius,
-        particleSize * 2,
-      )
-      gradient.addColorStop(0, `hsla(${hue}, 100%, 50%, ${0.8 - lifeProgress * 0.5})`)
-      gradient.addColorStop(1, `hsla(${hue}, 100%, 30%, 0)`)
-
-      ctx.fillStyle = gradient
-
-      // Add rotation and different shapes
-      ctx.save()
-      ctx.translate(asteroid.x + Math.cos(angle) * radius, asteroid.y + Math.sin(angle) * radius)
-      ctx.rotate(Date.now() / 500 + i)
-
-      // Random shape (circle or triangle)
-      if (Math.random() > 0.5) {
-        ctx.beginPath()
-        ctx.arc(0, 0, particleSize, 0, Math.PI * 2)
-        ctx.fill()
-      } else {
-        ctx.beginPath()
-        ctx.moveTo(0, -particleSize)
-        ctx.lineTo(particleSize, particleSize)
-        ctx.lineTo(-particleSize, particleSize)
-        ctx.closePath()
-        ctx.fill()
-      }
-
-      // Add trailing particles
-      if (Math.random() > 0.7) {
-        ctx.beginPath()
-        ctx.arc(
-          (Math.random() - 0.5) * particleSize * 2,
-          (Math.random() - 0.5) * particleSize * 2,
-          particleSize * 0.5,
-          0,
-          Math.PI * 2,
-        )
-        ctx.fill()
-      }
-
-      ctx.restore()
-    }
-    ctx.restore()
-
-    // Add core pulse effect
-    const corePulse = Math.sin(Date.now() / 150) * 0.5 + 0.5
-    const coreGradient = ctx.createRadialGradient(
-      asteroid.x,
-      asteroid.y,
-      0,
-      asteroid.x,
-      asteroid.y,
-      asteroid.size * 1.5,
-    )
-    coreGradient.addColorStop(0, `hsla(30, 100%, 70%, ${0.3 + corePulse * 0.2})`)
-    coreGradient.addColorStop(1, 'hsla(30, 100%, 50%, 0)')
-
-    ctx.fillStyle = coreGradient
-    ctx.beginPath()
-    ctx.arc(asteroid.x, asteroid.y, asteroid.size * 1.2, 0, Math.PI * 2)
-    ctx.fill()
-
-    // Accurate target lines matching bullet spread
-    if (asteroid.isCharging) {
-      ctx.save()
-      // Add conditional check
-      const bulletCount = 8
-      const bulletSpread = Math.PI * 2
-      const startRadius = asteroid.size + 10
-
-      ctx.strokeStyle = `hsla(${30 * (1 - chargeProgress)}, 100%, 50%, ${0.5 + chargeProgress * 0.3})`
-      ctx.lineWidth = 1 + chargeProgress * 2
-
-      for (let i = 0; i < bulletCount; i++) {
-        const angle = (i * bulletSpread) / bulletCount
-        const startX = asteroid.x + Math.cos(angle) * startRadius
-        const startY = asteroid.y + Math.sin(angle) * startRadius
-        const endX = startX + Math.cos(angle) * 150 * pulse
-        const endY = startY + Math.sin(angle) * 150 * pulse
-
-        // Draw tapered line
-        ctx.beginPath()
-        ctx.moveTo(startX, startY)
-        ctx.lineTo(endX, endY)
-
-        // Create gradient for line
-        const lineGradient = ctx.createLinearGradient(startX, startY, endX, endY)
-        lineGradient.addColorStop(0, `hsla(30, 100%, 70%, ${0.8 + chargeProgress * 0.2})`)
-        lineGradient.addColorStop(1, `hsla(30, 100%, 50%, 0)`)
-        ctx.strokeStyle = lineGradient
-
-        ctx.stroke()
-      }
-    }
-    ctx.restore() // End isolation
   }
+
+  // Regular asteroid outline
+  ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${0.8 + damageFlash})`
+  ctx.lineWidth = asteroid.isBoss ? 3 : 1
+  ctx.stroke()
+
+  ctx.restore()
 }
 
 const drawPowerUp = (ctx: CanvasRenderingContext2D, powerUp: PowerUp) => {
-  const timeLeft = GAME_CONSTANTS.POWER_UP_LIFETIME - (Date.now() - powerUp.createdAt)
-  const isBlinking = timeLeft < GAME_CONSTANTS.POWER_UP_BLINK_START
-
-  // Calculate blink rate - gets faster as time runs out
-  const shouldShow =
-    !isBlinking ||
-    Math.floor(Date.now() / (100 + (timeLeft / GAME_CONSTANTS.POWER_UP_BLINK_START) * 400)) % 2 ===
-      0
-
-  if (!shouldShow) return
+  const age = Date.now() - powerUp.createdAt
+  const lifetimeProgress = age / GAME_CONSTANTS.POWER_UP_LIFETIME
+  const alpha = Math.min(1, 1.5 - lifetimeProgress * 1.5)
+  const pulse = Math.sin(Date.now() / 200) * 0.3 + 0.7
 
   ctx.save()
-  ctx.translate(powerUp.x, powerUp.y)
+  ctx.globalAlpha = alpha
 
-  // Different colors for different power-up types
+  // New power-up styling
   const colors = {
-    spreadShot: '#00ff00',
-    rapidFire: '#ff0000',
-    shield: '#0000ff',
-    speedBoost: '#ffff00',
-    laser: '#ff00ff',
-  }
+    spreadShot: { main: '#00ff00', edge: '#00cc00' },
+    rapidFire: { main: '#ff4444', edge: '#cc0000' },
+    speedBoost: { main: '#ffff00', edge: '#ffaa00' }, // Changed to yellow
+    laser: { main: '#ff00ff', edge: '#cc00cc' },
+  }[powerUp.type]
 
-  ctx.strokeStyle = colors[powerUp.type]
+  // Glowing core
+  const gradient = ctx.createRadialGradient(powerUp.x, powerUp.y, 2, powerUp.x, powerUp.y, 10)
+  gradient.addColorStop(0, colors.main + 'ff')
+  gradient.addColorStop(1, colors.main + '00')
+
+  // Main orb
   ctx.beginPath()
-  ctx.arc(0, 0, 10, 0, Math.PI * 2)
+  ctx.arc(powerUp.x, powerUp.y, 10 * pulse, 0, Math.PI * 2)
+  ctx.fillStyle = gradient
+  ctx.fill()
+
+  // Outer ring
+  ctx.strokeStyle = colors.edge
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.arc(powerUp.x, powerUp.y, 12 * pulse, 0, Math.PI * 2)
   ctx.stroke()
 
-  // Different symbols for different power-ups
-  ctx.strokeStyle = '#ffffff'
-  ctx.beginPath()
-  switch (powerUp.type) {
-    case 'spreadShot':
-      // Three lines spreading out
-      ctx.moveTo(-5, 5)
-      ctx.lineTo(0, -5)
-      ctx.lineTo(5, 5)
-      break
-    case 'rapidFire':
-      // Multiple dots
-      for (let i = -4; i <= 4; i += 4) {
-        ctx.moveTo(i, 0)
-        ctx.arc(i, 0, 1, 0, Math.PI * 2)
-      }
-      break
-    case 'speedBoost':
-      // Lightning bolt
-      ctx.moveTo(-3, -5)
-      ctx.lineTo(3, 0)
-      ctx.lineTo(-3, 5)
-      break
-    case 'laser':
-      // Lightning-like zigzag
-      ctx.moveTo(-5, -5)
-      ctx.lineTo(0, 0)
-      ctx.lineTo(5, -5)
-      ctx.lineTo(0, 5)
-      break
+  // Rotating particles
+  const rotation = Date.now() / 500
+  for (let i = 0; i < 4; i++) {
+    const angle = rotation + (i * Math.PI) / 2
+    ctx.beginPath()
+    ctx.moveTo(powerUp.x + Math.cos(angle) * 15 * pulse, powerUp.y + Math.sin(angle) * 15 * pulse)
+    ctx.lineTo(powerUp.x + Math.cos(angle) * 20 * pulse, powerUp.y + Math.sin(angle) * 20 * pulse)
+    ctx.strokeStyle = colors.main
+    ctx.lineWidth = 3 * pulse
+    ctx.stroke()
   }
-  ctx.stroke()
 
   ctx.restore()
 }
@@ -985,11 +828,13 @@ const AsteroidsGame = () => {
             rotation: Math.random() * Math.PI * 2,
             rotationSpeed: (Math.random() - 0.5) * 0.15,
             createdAt: now,
-            color: `hsl(210, 100%, ${50 + Math.random() * 30}%)`, // Blueish particles
+            color: `hsl(0, 0%, ${70 + Math.random() * 30}%)`, // Grayscale
             startX: asteroid.x + (Math.random() - 0.5) * asteroid.size,
             control1X: asteroid.x + (Math.random() - 0.5) * asteroid.size,
             control2X: asteroid.x + (Math.random() - 0.5) * asteroid.size,
             endX: asteroid.x + (Math.random() - 0.5) * asteroid.size,
+            trail: [],
+            spark: Math.random() < 0.3, // 30% chance to be a bright spark
           })
         }
 
@@ -1051,6 +896,7 @@ const AsteroidsGame = () => {
                 },
                 isCharging: false,
                 lastAttackTime: 0,
+                lastHitTime: Date.now(), // Add this line
               })
             }
           }
@@ -1114,6 +960,8 @@ const AsteroidsGame = () => {
             control1X: asteroid.x + (Math.random() - 0.5) * 10,
             control2X: asteroid.x + (Math.random() - 0.5) * 10,
             endX: asteroid.x + (Math.random() - 0.5) * 10,
+            trail: [],
+            spark: Math.random() < 0.3, // 30% chance to be a bright spark
           })
         }
       })
@@ -1226,7 +1074,10 @@ const AsteroidsGame = () => {
       : Math.random() * (asteroidSizeRange.max - asteroidSizeRange.min) + asteroidSizeRange.min
 
     const size = baseSize // Remove previous 1.2 multiplier for bosses
-    const initialHealth = isBoss ? Math.ceil(size * 0.25) : Math.ceil(size * 0.1)
+    const initialHealth = isBoss
+      ? Math.ceil(size * 0.25) *
+        Math.max(1, Math.floor(difficultyLevel.current / GAME_CONSTANTS.BOSS_SPAWN_INTERVAL))
+      : Math.ceil(size * 0.1)
 
     // Initialize with safe defaults
     let x: number = 0
@@ -1323,19 +1174,20 @@ const AsteroidsGame = () => {
       },
       isCharging: false,
       lastAttackTime: 0,
+      lastHitTime: Date.now(), // Add this line
     }
 
     if (isBoss) {
-      asteroid.health = initialHealth + 3
+      const bossLevel = Math.floor(difficultyLevel.current / GAME_CONSTANTS.BOSS_SPAWN_INTERVAL)
+      asteroid.health = initialHealth + bossLevel * 2 // Scale health with boss level
       asteroid.initialHealth = asteroid.health
-      asteroid.rotationSpeed *= 2
+      asteroid.rotationSpeed *= 1.5 // Make bosses rotate faster at higher levels
       asteroid.dx *= 0.25
       asteroid.dy *= 0.25
       asteroid.lastAttackTime = Date.now()
 
-      // Keep boundary checks
-      asteroid.x = Math.max(50, Math.min(canvas.width - 50, asteroid.x))
-      asteroid.y = Math.max(50, Math.min(canvas.height - 50, asteroid.y))
+      // Add scaling attack speed
+      asteroid.attackCooldown = Math.max(2000, 4000 - bossLevel * 200)
     }
 
     // Add velocity direction check for regular asteroids
@@ -1408,10 +1260,32 @@ const AsteroidsGame = () => {
         asteroid.isCharging = false
       }
     }
+
+    // Add attack warning system
+    if (timeSinceLastAttack > GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - 2000) {
+      asteroid.isChargingAttack = true
+      asteroid.attackChargeProgress = Math.min(
+        1,
+        (timeSinceLastAttack - (GAME_CONSTANTS.BOSS_ATTACK_COOLDOWN - 2000)) / 2000,
+      )
+    } else {
+      asteroid.isChargingAttack = false
+    }
   }
 
   const updateGame = () => {
     if (!canvasRef.current) return
+
+    // Add these time tracking variables at the top of your component
+    const now = Date.now()
+    const deltaTime = now - lastUpdateTime.current
+    lastUpdateTime.current = now
+
+    // Modify your movement calculations to use deltaTime
+    // Replace existing movement code with:
+    const movementMultiplier = deltaTime / 16.67 // Normalize to 60fps baseline
+    shipX.current += velocity.current.x * movementMultiplier
+    shipY.current += velocity.current.y * movementMultiplier
 
     // Optimized bullet cleanup
     const canvas = canvasRef.current
@@ -1429,10 +1303,6 @@ const AsteroidsGame = () => {
       }
     }
     bullets.current = validBullets
-
-    const now = Date.now()
-    const deltaTime = now - lastFrameTime.current
-    lastFrameTime.current = now
 
     // Add this cleanup at the start of updateGame
     asteroids.current.forEach((asteroid) => {
@@ -1614,7 +1484,7 @@ const AsteroidsGame = () => {
 
     // Draw asteroids
     asteroids.current.forEach((asteroid) => {
-      drawAsteroid(ctx, asteroid, shipX.current, shipY.current)
+      drawAsteroid(ctx, asteroid)
       // Only update rotation if game is not paused and not game over
       if (!isPaused && !gameOver) {
         asteroid.rotation += asteroid.rotationSpeed
@@ -1681,23 +1551,29 @@ const AsteroidsGame = () => {
           if (isInside || edgeCollision) {
             hitAsteroid = true
             asteroid.health -= bullet.damage
+            asteroid.lastHitTime = Date.now() // <-- Add this here
 
             // Create impact particles
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 8; i++) {
+              const angleToCenter = Math.atan2(bullet.y - asteroid.y, bullet.x - asteroid.x)
+              const spread = ((Math.random() - 0.5) * Math.PI) / 4 // 45 degree spread
+
               disintegrationParticles.current.push({
-                x: bullet.x + (Math.random() - 0.5) * 10,
-                y: bullet.y + (Math.random() - 0.5) * 10,
-                dx: (Math.random() - 0.5) * 3,
-                dy: (Math.random() - 0.5) * 3,
-                size: Math.random() * 3 + 2,
+                x: bullet.x,
+                y: bullet.y,
+                dx: Math.cos(angleToCenter + spread) * (Math.random() * 3 + 2),
+                dy: Math.sin(angleToCenter + spread) * (Math.random() * 3 + 2),
+                size: Math.random() * 0.3 + 0.2, // Reduced from 0.5-1.5 to 0.2-0.5
                 rotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.1,
+                rotationSpeed: (Math.random() - 0.5) * 0.2,
                 createdAt: Date.now(),
-                color: '#ffffff',
-                startX: bullet.x + (Math.random() - 0.5) * 10,
-                control1X: bullet.x + (Math.random() - 0.5) * 10,
-                control2X: bullet.x + (Math.random() - 0.5) * 10,
-                endX: bullet.x + (Math.random() - 0.5) * 10,
+                color: `hsl(${40 + Math.random() * 20}, ${30 + Math.random() * 20}%, ${70 + Math.random() * 20}%)`,
+                trail: [],
+                spark: Math.random() < 0.3,
+                startX: bullet.x,
+                control1X: bullet.x,
+                control2X: bullet.x,
+                endX: bullet.x,
               })
             }
 
@@ -1748,6 +1624,7 @@ const AsteroidsGame = () => {
                     },
                     isCharging: false,
                     lastAttackTime: 0,
+                    lastHitTime: Date.now(), // Add this line
                   })
                 }
               }
@@ -1914,7 +1791,7 @@ const AsteroidsGame = () => {
     ctx.restore()
 
     // Add this new function to draw disintegration particles
-    drawDisintegration(ctx)
+    drawDisintegration(ctx, deltaTime) // Pass the calculated deltaTime
 
     // Add this right after the existing asteroid collision checks
     // But before the boss behavior updates
@@ -2303,67 +2180,68 @@ const AsteroidsGame = () => {
   }
 
   // Add this new function to draw disintegration particles
-  const drawDisintegration = (ctx: CanvasRenderingContext2D) => {
-    ctx.save()
-    ctx.globalCompositeOperation = 'lighter'
+  const drawDisintegration = (ctx: CanvasRenderingContext2D, deltaTime: number) => {
+    const now = Date.now()
 
-    disintegrationParticles.current.forEach((particle) => {
-      const age = Date.now() - particle.createdAt
-      const progress = age / 1000
-      const alpha = 1 - progress * 2 // Faster fade out
+    disintegrationParticles.current.forEach((p) => {
+      const age = now - p.createdAt
+      if (age > 500) return // Reduced from 1000 to 500ms
 
-      if (progress > 0.5) return
+      // Add trail effect
+      p.trail.push({ x: p.x, y: p.y })
+      if (p.trail.length > 3) p.trail.shift() // Changed from 5 to 3
 
-      ctx.save()
-      ctx.translate(particle.x, particle.y)
-      ctx.rotate(particle.rotation)
+      // Update position based on initial velocity only
+      p.x += p.dx * (deltaTime / 16.67)
+      p.y += p.dy * (deltaTime / 16.67)
 
-      // Gradient for energy effect
-      const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, particle.size * 2)
-      gradient.addColorStop(0, `hsla(300, 100%, 70%, ${alpha})`)
-      gradient.addColorStop(1, `hsla(280, 100%, 50%, ${alpha * 0.5})`)
-
-      ctx.fillStyle = gradient
+      // Draw trail
       ctx.beginPath()
-      ctx.arc(0, 0, particle.size * (1 - progress), 0, Math.PI * 2)
-      ctx.fill()
+      ctx.strokeStyle = p.spark
+        ? `rgba(200,200,200,${0.5 - age / 2000})` // Changed to gray
+        : `hsla(0, 0%, ${70 + Math.random() * 30}%, ${Math.max(0, 0.5 - age / 2000)})`
+      ctx.lineWidth = p.size / 2
+      p.trail.forEach((pos, i) => {
+        const alpha = 0.5 - (i / p.trail.length) * 0.5
+        if (i === 0) ctx.moveTo(pos.x, pos.y)
+        else ctx.lineTo(pos.x, pos.y)
+      })
+      ctx.stroke()
 
+      // Draw main particle
+      ctx.save()
+      ctx.translate(p.x, p.y)
+      ctx.rotate(p.rotation)
+      ctx.fillStyle = p.spark
+        ? `rgba(240,240,240,${1 - age / 1000})` // Brighter sparks
+        : `hsla(0, 0%, ${50 + Math.random() * 50}%, ${1 - age / 1000})` // Grayscale
+
+      // Draw different shapes
+      if (p.spark) {
+        // Spark shape (small cross)
+        ctx.fillRect(-p.size / 4, -p.size / 2, p.size / 2, p.size)
+        ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2)
+      } else {
+        // Debris shape (irregular polygon)
+        ctx.beginPath()
+        ctx.moveTo(0, -p.size)
+        ctx.lineTo(p.size / 2, -p.size / 2)
+        ctx.lineTo(p.size, 0)
+        ctx.lineTo(p.size / 2, p.size / 2)
+        ctx.lineTo(0, p.size)
+        ctx.lineTo(-p.size / 2, p.size / 2)
+        ctx.lineTo(-p.size, 0)
+        ctx.lineTo(-p.size / 2, -p.size / 2)
+        ctx.closePath()
+        ctx.fill()
+      }
       ctx.restore()
-
-      // Update particle physics
-      particle.x += particle.dx
-      particle.y += particle.dy
-      particle.rotation += particle.rotationSpeed
-      particle.dx *= 0.95
-      particle.dy *= 0.95
     })
 
     // Remove old particles
     disintegrationParticles.current = disintegrationParticles.current.filter(
-      (p) => Date.now() - p.createdAt < 500,
+      (p) => now - p.createdAt < 500, // Reduced from 1000 to 500ms
     )
-
-    ctx.restore()
-  }
-
-  const createParticles = (
-    x: number,
-    y: number,
-    count: number,
-    color: string,
-    speedMultiplier: number,
-  ) => {
-    for (let i = 0; i < count; i++) {
-      explosions.current.push({
-        x,
-        y,
-        dx: (Math.random() - 0.5) * 4 * speedMultiplier,
-        dy: (Math.random() - 0.5) * 4 * speedMultiplier,
-        size: 2 + Math.random() * 3,
-        createdAt: Date.now(),
-        color,
-      })
-    }
   }
 
   // Add with other particle functions
@@ -2372,9 +2250,9 @@ const AsteroidsGame = () => {
       const particle = particlePool.current.pop() || {
         x,
         y,
-        dx: (Math.random() - 0.5) * 3,
-        dy: (Math.random() - 0.5) * 3,
-        size: Math.random() * 2,
+        dx: (Math.random() - 0.5) * 1.1,
+        dy: (Math.random() - 0.5) * 1.1,
+        size: Math.random() * 1, // Changed from 2 to 1
         rotation: 0,
         createdAt: Date.now(),
       }
@@ -2543,7 +2421,7 @@ const AsteroidsGame = () => {
             {!isPlaying && !gameOver ? (
               <div className="flex flex-col items-center gap-4">
                 {/* if mainnet and wallet connected show button */}
-                {(walletState?.adaHandle?.handle || walletState?.walletAddress) && network === 1 ? (
+                {walletState?.adaHandle?.handle || walletState?.walletAddress ? (
                   <Button3D variant={'outline'} onClick={startGame}>
                     Start Game
                   </Button3D>
