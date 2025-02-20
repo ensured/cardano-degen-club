@@ -456,31 +456,10 @@ const truncateFileName = (fileName: string, maxLength: number = 64) => {
   // Truncate the name and add the extension back
   const truncated = `${nameWithoutExt.slice(0, maxNameLength)}.${extension}`
   return truncated
-  return truncated
 }
 
 // Add this helper function for delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-// Add this interface
-interface Metadata721 {
-  "721": {
-    [policyId: string]: {
-      [nftName: string]: {
-        name: string;
-        image: string;
-        mediaType: string;
-        description: string;
-        files: {
-          name: string;
-          mediaType: string;
-          src: string;
-          [key: string]: any;
-        }[];
-      };
-    };
-  };
-}
 
 export default function NFTMinter() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
@@ -541,9 +520,6 @@ export default function NFTMinter() {
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false)
 
   // Add these state variables near your other state declarations
-  const [editableMetadata, setEditableMetadata] = useState<string>('')
-  const [metadataError, setMetadataError] = useState<string | null>(null)
-  const [isEditingMetadata, setIsEditingMetadata] = useState(false)
 
   const formatExpiryTime = (slot?: number) => {
     if (!slot) return null
@@ -772,16 +748,6 @@ export default function NFTMinter() {
       />
     )
   }
-
-  const getFileMetadataPreview = (file: FileInfo) => {
-    const metadata = {
-      name: file.customName || file.name,
-      mediaType: VALID_IMAGE_MIMES[`.${file.name.split('.').pop()!.toLowerCase()}`],
-      src: `ipfs://${file.url}`,
-      ...(file.properties || {})
-    };
-    return JSON.stringify(metadata, null, 2);
-  };
 
   const mintNFT = async (
     lucid: LucidEvolution,
@@ -1496,25 +1462,7 @@ export default function NFTMinter() {
     return true
   }
 
-  // Add this function to validate and update metadata
-  const handleMetadataChange = (newMetadata: string) => {
-    setEditableMetadata(newMetadata)
-    try {
-      const parsed = JSON.parse(newMetadata)
-      setMetadataError(null)
-      // Update the NFT fields based on the edited metadata
-      const policyData = parsed[selectedPolicy?.policyId || '']
-      if (policyData) {
-        const nftData = Object.values(policyData)[0] as any
-        if (nftData) {
-          setNftName(nftData.name || '')
-          setNftDescription(nftData.description || '')
-        }
-      }
-    } catch (error) {
-      setMetadataError((error as Error).message)
-    }
-  }
+
 
   if (initializing || loading) {
     return (
@@ -2663,8 +2611,8 @@ export default function NFTMinter() {
                           style={oneDark}
                           customStyle={{
                             margin: 0,
-                            borderRadius: '0.5rem',
-                            fontSize: '0.875rem'
+                            fontSize: '0.85rem',
+                            padding: '1rem',
                           }}
                         >
                           {JSON.stringify(
@@ -2692,11 +2640,6 @@ export default function NFTMinter() {
                         </SyntaxHighlighter>
                       </div>
                     </div>
-                    {metadataError && (
-                      <p className="text-xs text-destructive">
-                        Invalid JSON: {metadataError}
-                      </p>
-                    )}
                   </div>
 
                   {/* Quantity input and warning */}
