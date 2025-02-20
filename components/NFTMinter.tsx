@@ -66,6 +66,8 @@ import { useDropzone } from 'react-dropzone'
 import { cn } from '@/lib/utils'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 type CardanoNetwork = 'Mainnet' | 'Preview' | 'Preprod'
 export const CARDANO_NETWORK: CardanoNetwork = 'Mainnet'
@@ -460,6 +462,26 @@ const truncateFileName = (fileName: string, maxLength: number = 64) => {
 // Add this helper function for delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+// Add this interface
+interface Metadata721 {
+  "721": {
+    [policyId: string]: {
+      [nftName: string]: {
+        name: string;
+        image: string;
+        mediaType: string;
+        description: string;
+        files: {
+          name: string;
+          mediaType: string;
+          src: string;
+          [key: string]: any;
+        }[];
+      };
+    };
+  };
+}
+
 export default function NFTMinter() {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([])
   const [uploading, setUploading] = useState(false)
@@ -610,6 +632,7 @@ export default function NFTMinter() {
       prev.map((file) => (file.url === url ? { ...file, customName: truncated } : file)),
     )
     setImageNames((prev) => ({ ...prev, [url]: truncated }))
+    setNftName(truncated)
   }, [])
 
   useEffect(() => {
@@ -750,6 +773,16 @@ export default function NFTMinter() {
     )
   }
 
+  const getFileMetadataPreview = (file: FileInfo) => {
+    const metadata = {
+      name: file.customName || file.name,
+      mediaType: VALID_IMAGE_MIMES[`.${file.name.split('.').pop()!.toLowerCase()}`],
+      src: `ipfs://${file.url}`,
+      ...(file.properties || {})
+    };
+    return JSON.stringify(metadata, null, 2);
+  };
+
   const mintNFT = async (
     lucid: LucidEvolution,
     selectedPolicy: PolicyInfo,
@@ -779,20 +812,15 @@ export default function NFTMinter() {
       const thumbnailExt = '.' + thumbnailFileInfo.name.split('.').pop()!.toLowerCase()
       const thumbnailMimeType = VALID_IMAGE_MIMES[thumbnailExt] || 'image/png'
 
-      // Format the files array according to CIP-25
-      const formattedFiles = selectedFiles.map((file) => {
-        const extension = '.' + file.name.split('.').pop()!.toLowerCase()
-        return {
-          name: file.customName || file.name,
-          mediaType: VALID_IMAGE_MIMES[extension] || 'image/png',
-          src: `ipfs://${file.url}`,
-          ...(file.properties && Object.keys(file.properties).length > 0
-            ? file.properties // Directly spread the properties instead of nesting under 'properties'
-            : {}),
-        }
-      })
+      // Format the files array with all metadata
+      const formattedFiles = selectedFiles.map((file) => ({
+        name: file.customName || file.name,
+        mediaType: VALID_IMAGE_MIMES[`.${file.name.split('.').pop()!.toLowerCase()}`],
+        src: `ipfs://${file.url}`,
+        ...(file.properties && Object.keys(file.properties).length > 0 ? file.properties : {})
+      }));
 
-      // Construct the metadata according to CIP-25 (version 1.0)
+      // Construct the metadata
       const metadata = {
         [selectedPolicy.policyId]: {
           [nftName]: {
@@ -1327,15 +1355,6 @@ export default function NFTMinter() {
       },
     }))
   }
-
-  // const signCardanoData = async () => {
-  //   const signedData = await signData(
-  //     walletState.api,
-  //     walletState.walletAddress!,
-  //     walletState.stakeAddress!,
-  //   )
-  //   return signedData
-  // }
 
   // Function to check if all images have names
   const areAllNamesEntered = () => {
@@ -1989,7 +2008,7 @@ export default function NFTMinter() {
                   )}
 
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    {selectedFiles.map((fileInfo) => (
+                    {selectedFiles.map((fileInfo, index) => (
                       <div key={fileInfo.url} className="group relative h-full">
                         <div
                           className={`flex h-full flex-col rounded-lg border border-border bg-background/50 p-1 ${isMultiDeleteMode && selectedForDeletion.includes(fileInfo.url)
@@ -2164,6 +2183,8 @@ export default function NFTMinter() {
                             </div>
                           </div>
                         </div>
+
+
                       </div>
                     ))}
                   </div>
@@ -2538,17 +2559,15 @@ export default function NFTMinter() {
                 <div className="space-y-2">
                   <div className="space-y-2">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <label className="text-sm font-medium">Metadata {isEditingMetadata ? 'Editor' : 'Preview'}</label>
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <div className="flex gap-2 flex-row items-center">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-7 gap-1.5 "
+                          className="h-7 gap-1.5"
                           onClick={() => {
                             // Convert current metadata to pool.pm format
-                            const currentMetadata = isEditingMetadata
-                              ? JSON.parse(editableMetadata)
-                              : {
+                            const currentMetadata = {
+                              "721": {
                                 [selectedPolicy.policyId]: {
                                   [nftName || '[title]']: {
                                     name: nftName || '[title]',
@@ -2566,11 +2585,13 @@ export default function NFTMinter() {
                                   },
                                 },
                               }
+                            }
 
                             // Extract the NFT data
-                            const policyId = Object.keys(currentMetadata)[0]
-                            const nftKey = Object.keys(currentMetadata[policyId])[0]
-                            const nftData = currentMetadata[policyId][nftKey]
+                            const metadata = currentMetadata as { "721": Record<string, Record<string, any>> };
+                            const policyId = Object.keys(metadata["721"])[0];
+                            const nftKey = Object.keys(metadata["721"][policyId])[0];
+                            const nftData = metadata["721"][policyId][nftKey];
 
                             // Create pool.pm format
                             const poolMetadata = {
@@ -2604,72 +2625,25 @@ export default function NFTMinter() {
                             size="sm"
                             className="h-7 gap-1.5"
                             onClick={() => {
-                              if (isEditingMetadata) {
-                                if (!metadataError) {
-                                  setIsEditingMetadata(false)
-                                } else {
-                                  toast.error('Please fix JSON errors before saving', { position: 'bottom-center' })
-                                }
-                              } else {
-                                const metadata = {
-                                  "721": {
-                                    [selectedPolicy.policyId]: {
-                                      [nftName || '[title]']: {
-                                        name: nftName || '[title]',
-                                        image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
-                                        mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                        description: nftDescription || '[description]',
-                                        files: selectedFiles.map((file) => ({
-                                          name: file.customName || file.name,
-                                          mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                          src: `ipfs://${file.url}`,
-                                          ...(file.properties && Object.keys(file.properties).length > 0
-                                            ? file.properties
-                                            : {}),
-                                        })),
-                                      },
+                              const metadata = JSON.stringify({
+                                "721": {
+                                  [selectedPolicy.policyId]: {
+                                    [nftName || '[title]']: {
+                                      name: nftName || '[title]',
+                                      image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
+                                      mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                      description: nftDescription || '[description]',
+                                      files: selectedFiles.map((file) => ({
+                                        name: file.customName || file.name,
+                                        mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
+                                        src: `ipfs://${file.url}`,
+                                        ...(file.properties && Object.keys(file.properties).length > 0
+                                          ? file.properties
+                                          : {}),
+                                      })),
                                     },
-                                  }
-                                }
-                                setEditableMetadata(JSON.stringify(metadata, null, 2))
-                                setIsEditingMetadata(true)
-                              }
-                            }}
-                          >
-                            {isEditingMetadata ? (
-                              <>
-                                <Check className="h-3.5 w-3.5" />
-                                <span className="text-sm">Save</span>
-                              </>
-                            ) : (
-                              <>
-                                <Pencil className="h-3.5 w-3.5" />
-                                <span className="text-sm">Edit</span>
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 gap-1.5"
-                            onClick={() => {
-                              const metadata = isEditingMetadata ? editableMetadata : JSON.stringify({
-                                [selectedPolicy.policyId]: {
-                                  [nftName || '[title]']: {
-                                    name: nftName || '[title]',
-                                    image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
-                                    mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                    description: nftDescription || '[description]',
-                                    files: selectedFiles.map((file) => ({
-                                      name: file.customName || file.name,
-                                      mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                      src: `ipfs://${file.url}`,
-                                      ...(file.properties && Object.keys(file.properties).length > 0
-                                        ? file.properties
-                                        : {}),
-                                    })),
                                   },
-                                },
+                                }
                               }, null, 2)
                               navigator.clipboard.writeText(metadata)
                               toast.success('Metadata copied to clipboard', { position: 'bottom-center' })
@@ -2681,51 +2655,42 @@ export default function NFTMinter() {
                         </div>
                       </div>
                     </div>
-                    <div className={cn(
-                      "relative rounded-lg border bg-muted/50 p-4",
-                      metadataError ? "border-destructive" : "border-border"
-                    )}>
-                      <ScrollArea className="h-[500px] w-full">
-                        <div className="pr-4">
-                          {isEditingMetadata ? (
-                            <textarea
-                              value={editableMetadata}
-                              onChange={(e) => handleMetadataChange(e.target.value)}
-                              className="h-[500px] w-full resize-none bg-transparent font-mono text-xs text-muted-foreground focus:outline-none"
-                              spellCheck={false}
-                            />
-                          ) : (
-                            <pre className="w-full text-xs">
-                              <code className="block text-muted-foreground whitespace-pre-wrap break-all">
-                                {JSON.stringify(
-                                  {
-                                    "721": {
-                                      [selectedPolicy.policyId]: {
-                                        [nftName || '[title]']: {
-                                          name: nftName || '[title]',
-                                          image: thumbnailImage ? `ipfs://${thumbnailImage}` : '[preview image]',
-                                          mediaType: thumbnailImage?.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                          description: nftDescription || '[description]',
-                                          files: selectedFiles.map((file) => ({
-                                            name: file.customName || file.name,
-                                            mediaType: file.name.toLowerCase().endsWith('.gif') ? 'image/gif' : 'image/png',
-                                            src: `ipfs://${file.url}`,
-                                            ...(file.properties && Object.keys(file.properties).length > 0
-                                              ? file.properties
-                                              : {}),
-                                          })),
-                                        },
-                                      },
-                                    }
-                                  },
-                                  null,
-                                  2,
-                                )}
-                              </code>
-                            </pre>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Metadata Preview</label>
+                      <div className="rounded-lg border border-border">
+                        <SyntaxHighlighter
+                          language="json"
+                          style={oneDark}
+                          customStyle={{
+                            margin: 0,
+                            borderRadius: '0.5rem',
+                            fontSize: '0.875rem'
+                          }}
+                        >
+                          {JSON.stringify(
+                            {
+                              "721": {
+                                [selectedPolicy?.policyId || '']: {
+                                  [nftName]: {
+                                    name: nftName,
+                                    image: `ipfs://${thumbnailImage}`,
+                                    mediaType: thumbnailImage ? VALID_IMAGE_MIMES[`.${selectedFiles.find(f => f.url === thumbnailImage)?.name.split('.').pop()!.toLowerCase()}`] : '',
+                                    description: nftDescription,
+                                    files: selectedFiles.map(file => ({
+                                      name: file.customName || file.name,
+                                      mediaType: VALID_IMAGE_MIMES[`.${file.name.split('.').pop()!.toLowerCase()}`],
+                                      src: `ipfs://${file.url}`,
+                                      ...(file.properties || {})
+                                    }))
+                                  }
+                                }
+                              }
+                            },
+                            null,
+                            2
                           )}
-                        </div>
-                      </ScrollArea>
+                        </SyntaxHighlighter>
+                      </div>
                     </div>
                     {metadataError && (
                       <p className="text-xs text-destructive">
