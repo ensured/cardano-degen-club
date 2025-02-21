@@ -92,7 +92,7 @@ function SortableItem({ item, isMultiSelectMode, selectedItems, toggleItemSelect
       <div
         {...attributes}
         {...listeners}
-        className="absolute left-0 top-0 h-full w-8 cursor-move flex items-center justify-center rounded-l-md 
+        className="absolute left-0 top-0 h-full w-8 cursor-move hidden sm:flex items-center justify-center rounded-l-md 
           bg-muted/30 text-muted-foreground/50 
           group-hover:bg-muted/50 group-hover:text-muted-foreground 
           active:bg-muted/70 transition-all
@@ -108,7 +108,7 @@ function SortableItem({ item, isMultiSelectMode, selectedItems, toggleItemSelect
           <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM14 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM14 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
         </svg>
       </div>
-      <div className="flex flex-1 items-center justify-between gap-x-1 py-1.5 pl-10 pr-2 sm:py-2 sm:pl-12 sm:pr-2">
+      <div className="flex flex-1 items-center justify-between gap-x-1 py-1.5 pl-2 pr-2 sm:py-2 sm:pl-12 sm:pr-2">
         <div className="flex flex-1 items-center gap-1.5 sm:gap-2">
           <Checkbox
             checked={isMultiSelectMode ? selectedItems.has(item.id) : item.completed}
