@@ -130,36 +130,23 @@ console.log(
                 body: JSON.stringify({ html }),
             });
 
-            const contentType = response.headers.get('content-type') || '';
-
-            if (contentType.includes('application/json')) {
+            // Handle all error cases first
+            if (!response.ok) {
                 const data = await response.json();
                 if (data.rateLimitInfo) {
                     setRateLimitInfo(data.rateLimitInfo);
                 }
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to download images');
-                }
+                throw new Error(data.error || 'Failed to download images');
             }
 
-            // Stream the response directly
-            const reader = response.body?.getReader();
-            if (!reader) throw new Error('Failed to read response stream');
+            // Handle successful ZIP response
+            const blob = await response.blob();
 
-            const stream = new ReadableStream({
-                async start(controller) {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        controller.enqueue(value);
-                    }
-                    controller.close();
-                    reader.releaseLock();
-                }
-            });
-
-            const newStream = new Response(stream);
-            const blob = await newStream.blob();
+            // Get rate limit info from headers before creating blob
+            const rateLimitInfoHeader = response.headers.get('X-RateLimit-Info');
+            if (rateLimitInfoHeader) {
+                setRateLimitInfo(JSON.parse(rateLimitInfoHeader));
+            }
 
             // Create temporary URL with proper cleanup
             const url = URL.createObjectURL(blob);
@@ -173,14 +160,6 @@ console.log(
             // Cleanup
             URL.revokeObjectURL(url);
             document.body.removeChild(a);
-
-            // Get rate limit info from headers for successful downloads
-            const rateLimitInfoHeader = response.headers.get('X-RateLimit-Info');
-            if (rateLimitInfoHeader) {
-                setRateLimitInfo(JSON.parse(rateLimitInfoHeader));
-            }
-
-            // After successful download
             lastDownloaded.current = detectedImages;
 
         } catch (error) {
