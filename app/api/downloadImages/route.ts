@@ -11,6 +11,10 @@ interface RateLimitInfo {
   total: number
 }
 
+const MAX_CHARACTERS = 1500000
+const MAX_IMAGES = 1000
+const RATE_LIMIT_DURATION = 3600000 // 1 hour in milliseconds
+
 export const GET = async (req: NextRequest) => {
   try {
     const ipAddress = req.headers.get('x-forwarded-for')
@@ -24,16 +28,16 @@ export const GET = async (req: NextRequest) => {
 
     if (!userInfo || now >= userInfo.reset) {
       return NextResponse.json({
-        remaining: 500,
-        reset: now + 3600000,
-        total: 500,
+        remaining: MAX_IMAGES,
+        reset: now + RATE_LIMIT_DURATION,
+        total: MAX_IMAGES,
       })
     }
 
     const rateLimitInfo: RateLimitInfo = {
-      remaining: Math.max(0, 500 - userInfo.count),
+      remaining: Math.max(0, MAX_IMAGES - userInfo.count),
       reset: userInfo.reset,
-      total: 500,
+      total: MAX_IMAGES,
     }
 
     return NextResponse.json(rateLimitInfo)
@@ -50,6 +54,14 @@ export const POST = async (req: NextRequest) => {
     // Add validation
     if (!html || typeof html !== 'string') {
       return NextResponse.json({ error: 'Invalid HTML content provided' }, { status: 400 })
+    }
+
+    // Add length validation to match client-side limit
+    if (html.length > MAX_CHARACTERS) {
+      return NextResponse.json(
+        { error: `Input too large (max ${MAX_CHARACTERS.toLocaleString()} characters)` },
+        { status: 400 },
+      )
     }
 
     const $ = cheerio.load(html)
@@ -78,20 +90,20 @@ export const POST = async (req: NextRequest) => {
     if (!userInfo || now >= userInfo.reset) {
       await kv.set(userKey, {
         count: 0,
-        reset: now + 3600000, // 1 hour from now
+        reset: now + RATE_LIMIT_DURATION,
       })
-      userInfo = { count: 0, reset: now + 3600000 }
+      userInfo = { count: 0, reset: now + RATE_LIMIT_DURATION }
     }
 
-    if (userInfo.count + requestedImages > 500) {
+    if (userInfo.count + requestedImages > MAX_IMAGES) {
       const rateLimitInfo: RateLimitInfo = {
-        remaining: Math.max(0, 500 - userInfo.count),
+        remaining: Math.max(0, MAX_IMAGES - userInfo.count),
         reset: userInfo.reset,
-        total: 500,
+        total: MAX_IMAGES,
       }
       return NextResponse.json(
         {
-          error: 'Rate limit exceeded (500 images/hour)',
+          error: `Rate limit exceeded (${MAX_IMAGES} images/hour)`,
           rateLimitInfo,
         },
         { status: 429 },
@@ -145,9 +157,9 @@ export const POST = async (req: NextRequest) => {
 
     // Update rate limit info for response headers
     const rateLimitInfo: RateLimitInfo = {
-      remaining: 500 - (userInfo.count + requestedImages),
+      remaining: MAX_IMAGES - (userInfo.count + requestedImages),
       reset: userInfo.reset,
-      total: 500,
+      total: MAX_IMAGES,
     }
 
     return new Response(zipBlob, {

@@ -6,12 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Copy, Loader2, Check } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { toast } from "sonner";
 interface RateLimitInfo {
     remaining: number;
     reset: number;
@@ -19,7 +18,6 @@ interface RateLimitInfo {
 }
 
 const DownloadImages = () => {
-    const { toast } = useToast();
     const [html, setHtml] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -29,6 +27,7 @@ const DownloadImages = () => {
     const [animateRemaining, setAnimateRemaining] = useState(false);
     const [tick, setTick] = useState(false);
     const prevRemaining = useRef<number>();
+    const lastDownloaded = useRef<number | null>(null);
 
     const codeExample = `const imageLinks = document.querySelectorAll("a.originalLink_af017a");
 console.log("Loading image elements...");
@@ -114,6 +113,14 @@ console.log(
 
     const handleDownload = async () => {
         try {
+            // Add confirmation for same number of images
+            if (detectedImages === lastDownloaded.current) {
+                const isConfirmed = confirm(
+                    `Are you sure you want to download the same ${detectedImages} images again?`
+                );
+                if (!isConfirmed) return;
+            }
+
             setLoading(true);
             setError('');
 
@@ -173,6 +180,9 @@ console.log(
                 setRateLimitInfo(JSON.parse(rateLimitInfoHeader));
             }
 
+            // After successful download
+            lastDownloaded.current = detectedImages;
+
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Failed to download images');
         } finally {
@@ -184,8 +194,7 @@ console.log(
         try {
             await navigator.clipboard.writeText(codeExample);
             setHasCopied(true);
-            toast({
-                title: "Copied!",
+            toast.success("Copied!", {
                 description: "Code copied to clipboard",
                 duration: 4444,
             });
@@ -195,12 +204,10 @@ console.log(
                 setHasCopied(false);
             }, 4444);
         } catch (err) {
-            toast({
-                title: "Error",
-                description: "Failed to copy code",
-                variant: "destructive",
+            toast.error("Failed to copy code", {
+                description: "Please try again",
                 duration: 4444,
-            });
+            })
         }
     };
 
@@ -240,7 +247,7 @@ console.log(
 
     return (
         <div className="sm:container px-1.5 mx-auto py-8 max-w-6xl space-y-8">
-            <Card>
+            <Card className="bg-secondary/20 group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg pt-2">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold">Download Images/Gifs from Discord</CardTitle>
                     <VisuallyHidden>
@@ -258,26 +265,28 @@ console.log(
                             </div>
                             <h3 className="text-lg font-semibold">Copy the Code</h3>
                             <Button
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className={`border border-primary h-8 w-10 p-0 transition-all duration-300 
-                                        ${hasCopied ? 'text-green-500 scale-105' : 'hover:scale-110 hover:text-primary'}`}
+                                className={`ml-auto !dark:text-green-400/60 !text-green-600 h-auto p-2 gap-2 transition-colors border-green-600/50 dark:border-green-400/50 
+                                            hover:bg-secondary hover:text-green-600
+                                            ${hasCopied ? 'text-green-600' : 'text-muted-foreground'}`}
                                 onClick={handleCopy}
                             >
                                 {hasCopied ? (
-                                    <Check className="h-5 w-5 animate-in zoom-in duration-300" />
+                                    <Check className="h-4 w-4 flex-shrink-0 animate-in zoom-in duration-300 scale-110" />
                                 ) : (
-                                    <Copy className="h-5 w-5" />
+                                    <Copy className="h-4 w-4 flex-shrink-0 transition-transform hover:scale-110" />
                                 )}
                                 <span className="sr-only">Copy code</span>
                             </Button>
                         </div>
-                        <Card className="bg-muted group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg !py-2">
+                        <Card className="bg-muted group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg pt-2">
                             <VisuallyHidden> <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="text-sm font-medium">Browser Console Code</CardTitle>
                             </CardHeader>
                             </VisuallyHidden>
-                            <CardContent className="  bg-background/10 transition-all duration-300 w-full">
+                            <CardContent className=" w-full">
+
                                 <pre className="overflow-x-auto w-full ">
                                     <code className="hljs text-xs sm:text-sm w-full  " data-language="javascript">
                                         {codeExample}
@@ -325,8 +334,16 @@ console.log(
                             </Label>
                             <Textarea
                                 id="html-input"
+
                                 value={html}
                                 onChange={(e) => {
+                                    if (e.target.value.length > 1500000) {
+                                        toast.error("Input too large", {
+                                            description: "Maximum 1,500,000 characters",
+                                            duration: 4444,
+                                        })
+                                        return;
+                                    }
                                     setHtml(e.target.value);
                                     setDetectedImages(countImagesInHtml(e.target.value));
                                 }}
@@ -337,6 +354,15 @@ console.log(
                             {html.trim() && (
                                 <p className="text-sm text-muted-foreground">
                                     {detectedImages} image{detectedImages !== 1 ? 's' : ''} detected
+                                </p>
+                            )}
+                            {html.length > 1500000 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    Maximum 1,500,000 characters
+                                </p>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    {html.length}/1,500,000 characters
                                 </p>
                             )}
                         </div>
