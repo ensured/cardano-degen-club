@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server'
 
-const GITHUB_API_URL = "https://api.github.com/repos"
+const GITHUB_API_URL = 'https://api.github.com/repos'
 const GITHUB_HEADERS = {
   Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-  Accept: "application/vnd.github.v3+json",
+  Accept: 'application/vnd.github.v3+json',
 }
 
 const fetchJson = async (url: string) => {
@@ -19,13 +19,7 @@ const fetchJson = async (url: string) => {
   return response.json()
 }
 
-const fetchLatestRepoCommit = async ({
-  owner,
-  repo,
-}: {
-  owner: string
-  repo: string
-}) => {
+const fetchLatestRepoCommit = async ({ owner, repo }: { owner: string; repo: string }) => {
   const url = `${GITHUB_API_URL}/${owner}/${repo}/commits`
   const commits = await fetchJson(url)
   return {
@@ -36,13 +30,7 @@ const fetchLatestRepoCommit = async ({
   }
 }
 
-const fetchFolderCommits = async ({
-  owner,
-  repo,
-}: {
-  owner: string
-  repo: string
-}) => {
+const fetchFolderCommits = async ({ owner, repo }: { owner: string; repo: string }) => {
   const url = `${GITHUB_API_URL}/${owner}/${repo}/contents/app`
   const folders = await fetchJson(url)
 
@@ -54,14 +42,14 @@ const fetchFolderCommits = async ({
         folder: folder.name,
         lastCommitDate: commits[0]?.commit?.committer?.date,
       }
-    })
+    }),
   )
 }
 
 export async function GET() {
   const repos = [
-    { owner: "ensured", repo: "cardano-degen-club" },
-    { owner: "ensured", repo: "phone-backup-app-android" },
+    { owner: 'ensured', repo: 'cardanotools.xyz' },
+    { owner: 'ensured', repo: 'phone-backup-app-android' },
   ]
 
   try {
@@ -70,10 +58,7 @@ export async function GET() {
 
     return NextResponse.json({ folderCommits, latestRepoCommit })
   } catch (error: any) {
-    console.error("Error fetching commits:", error.message)
-    return NextResponse.json(
-      { error: "Failed to fetch commit messages." },
-      { status: 500 }
-    )
+    console.error('Error fetching commits:', error.message)
+    return NextResponse.json({ error: 'Failed to fetch commit messages.' }, { status: 500 })
   }
 }

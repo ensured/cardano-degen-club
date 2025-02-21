@@ -64,7 +64,7 @@ const Page = () => {
           <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
           You can verify this page&apos;s source code on{' '}
           <a
-            href="https://github.com/ensured/cardano-degen-club/blob/main/app/generateSeed/page.tsx"
+            href="https://github.com/ensured/cardanotools.xyz/blob/main/app/generateSeed/page.tsx"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:underline"
