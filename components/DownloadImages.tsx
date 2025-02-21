@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Copy, Loader2, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 const DownloadImages = () => {
     const { toast } = useToast();
@@ -107,10 +108,12 @@ console.log(
         <div className="container mx-auto py-8 max-w-6xl space-y-8">
             <Card>
                 <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold">Download Images from HTML</CardTitle>
-                    <CardDescription className="text-base">
-                        Follow these steps to download images from your webpage
-                    </CardDescription>
+                    <CardTitle className="text-2xl font-bold">Download Images/Gifs from Discord</CardTitle>
+                    <VisuallyHidden>
+                        <CardDescription className="text-base">
+                            Follow these steps to download images/gifs from a discord channel
+                        </CardDescription>
+                    </VisuallyHidden>
                 </CardHeader>
                 <CardContent className="space-y-8">
                     {/* Step 1: Copy Code */}
