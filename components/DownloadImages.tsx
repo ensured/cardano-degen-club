@@ -95,17 +95,31 @@ console.log(
     };
 
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(codeExample);
-        toast({
-            title: "Copied!",
-            description: "Code copied to clipboard",
-            duration: 2000,
-        });
-        setHasCopied(true);
+        try {
+            await navigator.clipboard.writeText(codeExample);
+            setHasCopied(true);
+            toast({
+                title: "Copied!",
+                description: "Code copied to clipboard",
+                duration: 4444,
+            });
+
+            // Use setTimeout to reset the state
+            setTimeout(() => {
+                setHasCopied(false);
+            }, 4444);
+        } catch (err) {
+            toast({
+                title: "Error",
+                description: "Failed to copy code",
+                variant: "destructive",
+                duration: 4444,
+            });
+        }
     };
 
     return (
-        <div className="container mx-auto py-8 max-w-6xl space-y-8">
+        <div className="sm:container px-1.5 mx-auto py-8 max-w-6xl space-y-8">
             <Card>
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl font-bold">Download Images/Gifs from Discord</CardTitle>
@@ -117,33 +131,33 @@ console.log(
                 </CardHeader>
                 <CardContent className="space-y-8">
                     {/* Step 1: Copy Code */}
-                    <div className="space-y-4 transition-all duration-300 hover:translate-x-1">
+                    <div className="space-y-4 transition-all duration-300 hover:translate-x-0.5">
                         <div className="flex items-center space-x-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
                                 1
                             </div>
                             <h3 className="text-lg font-semibold">Copy the Code</h3>
                         </div>
-                        <Card className="bg-muted group transition-all duration-300 hover:shadow-md">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <Card className="bg-muted group transition-all duration-300 hover:shadow-md ">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 !py-1 !px-2">
                                 <CardTitle className="text-sm font-medium">Browser Console Code</CardTitle>
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className={`h-8 w-8 p-0 transition-all duration-300 
+                                    className={`border border-primary h-8 w-10 p-0 transition-all duration-300 
                                         ${hasCopied ? 'text-green-500 scale-105' : 'hover:scale-110 hover:text-primary'}`}
                                     onClick={handleCopy}
                                 >
                                     {hasCopied ? (
-                                        <Check className="h-4 w-4 animate-in zoom-in duration-300" />
+                                        <Check className="h-5 w-5 animate-in zoom-in duration-300" />
                                     ) : (
-                                        <Copy className="h-4 w-4" />
+                                        <Copy className="h-5 w-5" />
                                     )}
                                     <span className="sr-only">Copy code</span>
                                 </Button>
                             </CardHeader>
-                            <CardContent>
-                                <pre className="overflow-x-auto p-6 rounded-lg bg-[#282c34] transition-all duration-300 group-hover:bg-[#2d323b]">
+                            <CardContent className="!p-1.5">
+                                <pre className="overflow-x-auto p-2 rounded-lg bg-[#282c34] transition-all duration-300 group-hover:bg-[#2d323b]">
                                     <code className="hljs text-sm" data-language="javascript">
                                         {codeExample}
                                     </code>
@@ -153,7 +167,7 @@ console.log(
                     </div>
 
                     {/* Step 2: Open Discord Console */}
-                    <div className="space-y-4 transition-all duration-300 hover:translate-x-1">
+                    <div className="space-y-4 transition-all duration-300 hover:translate-x-0.5">
                         <div className="flex items-center space-x-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
                                 2
@@ -177,7 +191,7 @@ console.log(
                     </div>
 
                     {/* Step 3: Paste HTML */}
-                    <div className="space-y-4 transition-all duration-300 hover:translate-x-1">
+                    <div className="space-y-4 transition-all duration-300 hover:translate-x-0.5">
                         <div className="flex items-center space-x-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
                                 3
@@ -200,7 +214,7 @@ console.log(
                     </div>
 
                     {/* Step 4: Download */}
-                    <div className="space-y-4 transition-all duration-300 hover:translate-x-1">
+                    <div className="space-y-4 transition-all duration-300 hover:translate-x-0.5">
                         <div className="flex items-center space-x-2">
                             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
                                 4
