@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon, PlusIcon, XIcon } from 'lucide-react'
+import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon, XIcon } from 'lucide-react'
 import {
   Pagination,
   PaginationContent,
@@ -16,6 +16,34 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+
+// Constants
+const MAX_ITEMS = 9999
+const ITEMS_PER_PAGE = 50
 
 interface ShoppingItem {
   id: number
@@ -23,60 +51,199 @@ interface ShoppingItem {
   completed: boolean
 }
 
+// Add SortableItem component
+function SortableItem({ item, isMultiSelectMode, selectedItems, toggleItemSelection, toggleItemCompletion, editingItemId, inputRef, newItemInputRef, saveButtonRef, editedItemText, updateItem, editItemValid, handleEditItemChange, startEditingItem, deleteItem }: { item: ShoppingItem, isMultiSelectMode: boolean, selectedItems: Set<number>, toggleItemSelection: (id: number) => void, toggleItemCompletion: (id: number) => void, editingItemId: number | null, inputRef: React.RefObject<HTMLInputElement>, newItemInputRef: React.RefObject<HTMLInputElement>, saveButtonRef: React.RefObject<HTMLButtonElement>, editedItemText: string, updateItem: () => void, editItemValid: boolean, handleEditItemChange: (e: ChangeEvent<HTMLInputElement>) => void, startEditingItem: (id: number, text: string) => void, deleteItem: (id: number) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group relative rounded-md border ${isDragging
+        ? 'border-primary/50 bg-muted/50 shadow-md ring-1 ring-primary/20'
+        : 'border-border/40 hover:border-border hover:bg-muted/20'
+        } transition-all duration-200`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute left-0 top-0 h-full w-8 cursor-move flex items-center justify-center rounded-l-md 
+          bg-muted/30 text-muted-foreground/50 
+          group-hover:bg-muted/50 group-hover:text-muted-foreground 
+          active:bg-muted/70 transition-all
+          sm:w-10"
+        title="Drag to reorder"
+      >
+        <svg
+          className="size-3.5 transition-transform duration-200 group-hover:scale-110 sm:size-4"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM14 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM14 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+        </svg>
+      </div>
+      <div className="flex flex-1 items-center justify-between gap-x-1 py-1.5 pl-10 pr-2 sm:py-2 sm:pl-12 sm:pr-2">
+        <div className="flex flex-1 items-center gap-1.5 sm:gap-2">
+          <Checkbox
+            checked={isMultiSelectMode ? selectedItems.has(item.id) : item.completed}
+            onCheckedChange={() => {
+              if (isMultiSelectMode) {
+                toggleItemSelection(item.id);
+              } else {
+                toggleItemCompletion(item.id);
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="size-4 transition-transform duration-200 group-hover:scale-105 sm:size-5"
+          />
+          {editingItemId === item.id ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateItem();
+              }}
+              className="flex-1"
+            >
+              <Input
+                ref={inputRef}
+                type="text"
+                value={editedItemText}
+                className={`rounded-md border p-1 text-sm sm:text-base focus:ring-0 focus-visible:ring-0 ${!editItemValid ? 'border-red-500 ring-red-500' : ''}`}
+                onChange={handleEditItemChange}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </form>
+          ) : (
+            <span
+              className={`ml-0.5 flex-1 cursor-pointer text-sm sm:text-base text-gray-800 dark:text-gray-200 ${item.completed ? 'text-gray-500 line-through dark:text-gray-400' : ''
+                }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                startEditingItem(item.id, item.text);
+              }}
+            >
+              {item.text}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-x-1">
+          {editingItemId === item.id && (
+            <Button
+              ref={saveButtonRef}
+              onClick={(e) => {
+                e.stopPropagation();
+                updateItem();
+              }}
+              className="h-7 w-7 rounded-md bg-green-500/80 p-0 font-medium text-white hover:bg-green-500 sm:h-8 sm:w-8"
+              size={'icon'}
+              variant={'outline'}
+            >
+              <CheckIcon className="size-4 sm:size-4" />
+            </Button>
+          )}
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              deleteItem(item.id);
+            }}
+            className="h-7 w-7 rounded-md bg-destructive/80 p-0 font-medium hover:bg-destructive sm:h-8 sm:w-8"
+            size={'icon'}
+            variant={'ghost'}
+          >
+            <Trash2Icon className="size-4 sm:size-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ToDoList() {
-  // State hooks for managing items, new item input, editing item, and component mount status
+  // State for items and pagination
   const [items, setItems] = useState<ShoppingItem[]>([])
+  const [currentPage, setCurrentPage] = useState<number>(1)
+
+  // State for new item input
   const [newItem, setNewItem] = useState<string>('')
+  const [newItemValid, setNewItemValid] = useState<boolean>(true)
+  const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
+
+  // State for editing
   const [editingItemId, setEditingItemId] = useState<number | null>(null)
   const [editedItemText, setEditedItemText] = useState<string>('')
-  const [isMounted, setIsMounted] = useState<boolean>(false)
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const [newItemValid, setNewItemValid] = useState<boolean>(true)
   const [editItemValid, setEditItemValid] = useState<boolean>(true)
-  const [currentPage, setCurrentPage] = useState<number>(1)
-  const itemsPerPage = 25
 
-  // Add constant for max items
-  const MAX_ITEMS = 9999
+  // State for dialogs
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null)
+  const [pendingItemId, setPendingItemId] = useState<number | null>(null)
+  const [pendingText, setPendingText] = useState('')
 
-  // Add new state for input focus
-  const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
+  // Component mount state
+  const [isMounted, setIsMounted] = useState<boolean>(false)
+
+  // Refs
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const newItemInputRef = useRef<HTMLInputElement | null>(null)
+  const saveButtonRef = useRef<HTMLButtonElement>(null)
 
-  // Effect hook to run on component mount
+  // Add new state for selected items
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set())
+
+  // Add state for multi-select mode
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
+
+  // Calculate pagination
+  const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE)
+  const paginatedItems = items.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  // Add sensors for drag handling
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  // Load items on mount
   useEffect(() => {
-    setIsMounted(true) // Set mounted status to true
-    // Load items from local storage
+    setIsMounted(true)
     const savedItems = localStorage.getItem('shoppingItems')
     if (savedItems) {
-      setItems(JSON.parse(savedItems) as ShoppingItem[]) // Parse and set items from local storage
+      setItems(JSON.parse(savedItems))
     }
   }, [])
 
-  // Effect hook to save items to local storage whenever they change
+  // Save items to localStorage
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem('shoppingItems', JSON.stringify(items)) // Save items to local storage
+      localStorage.setItem('shoppingItems', JSON.stringify(items))
     }
   }, [items, isMounted])
 
-  // Add useEffect for click outside handling
+  // Reset to first page when items length changes
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (editingItemId !== null && inputRef.current && !inputRef.current.contains(target)) {
-        setEditingItemId(null)
-        setEditedItemText('')
-      }
-    }
+    setCurrentPage(1)
+  }, [items.length])
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [editingItemId])
-
-  // Add new useEffect for handling clicks outside the main input
+  // Handle clicks outside input
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node
@@ -86,12 +253,34 @@ export default function ToDoList() {
     }
 
     document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Function to add a new item
+  // Handle clicks outside edit input
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+
+      if (saveButtonRef.current?.contains(target)) {
+        return
+      }
+
+      if (editingItemId !== null && inputRef.current && !inputRef.current.contains(target)) {
+        const currentItem = items.find(item => item.id === editingItemId)
+        if (currentItem && editedItemText !== currentItem.text) {
+          setShowSaveDialog(true)
+          return
+        }
+        setEditingItemId(null)
+        setEditedItemText('')
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [editingItemId, editedItemText, items])
+
+  // Item management functions
   const addItem = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault()
     if (newItem.trim().length < 1) {
@@ -109,41 +298,91 @@ export default function ToDoList() {
     inputRef.current?.focus()
   }
 
-  // Function to toggle the completion status of a item
-  const toggleItemCompletion = (id: number): void => {
-    setItems(items.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item)))
-    setEditingItemId(null)
-    setEditedItemText('')
-  }
-
-  // Function to start editing a item
-  const startEditingItem = (id: number, text: string): void => {
-    setEditingItemId(id) // Set the item ID being edited
-    setEditedItemText(text) // Set the text of the item being edited
-    setTimeout(() => {
-      inputRef.current?.focus()
-    }, 0)
-  }
-
-  // Function to update an edited item
   const updateItem = (): void => {
+    if (editingItemId === null) return
+
     if (editedItemText.trim().length < 1) {
       setEditItemValid(false)
       toast.error('Item name must be at least 1 character')
       return
     }
+
     setEditItemValid(true)
-    setItems(items.map((item) => (item.id === editingItemId ? { ...item, text: editedItemText } : item)))
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.id === editingItemId
+          ? { ...item, text: editedItemText.trim() }
+          : item
+      )
+    )
     setEditingItemId(null)
     setEditedItemText('')
   }
 
-  // Function to delete a item
-  const deleteItem = (id: number): void => {
-    setItems(items.filter((item) => item.id !== id)) // Filter out the item to be deleted
+  const toggleItemCompletion = (id: number): void => {
+    setItems(items.map((item) =>
+      item.id === id ? { ...item, completed: !item.completed } : item
+    ))
+    setEditingItemId(null)
+    setEditedItemText('')
   }
 
-  // Add validation handlers for input changes
+  const startEditingItem = (id: number, text: string): void => {
+    if (editingItemId === id) return
+
+    if (editingItemId !== null) {
+      updateItem()
+    }
+
+    setEditingItemId(id)
+    setEditedItemText(text)
+    setEditItemValid(true)
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+    })
+  }
+
+  const clearAllItems = (): void => {
+    setItems([])
+    toast.success('Cleared all items')
+  }
+
+  const deleteItem = (id: number): void => {
+    setItemToDelete(id)
+    setShowDeleteDialog(true)
+  }
+
+  // Add selection handlers
+  const toggleItemSelection = (id: number) => {
+    setSelectedItems(prev => {
+      const newSelection = new Set(prev)
+      if (newSelection.has(id)) {
+        newSelection.delete(id)
+      } else {
+        newSelection.add(id)
+      }
+      return newSelection
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (!isMultiSelectMode) {
+      setIsMultiSelectMode(true)
+    }
+    if (selectedItems.size === paginatedItems.length) {
+      setSelectedItems(new Set())
+    } else {
+      setSelectedItems(new Set(paginatedItems.map(item => item.id)))
+    }
+  }
+
+  const deleteSelectedItems = () => {
+    setItems(items.filter(item => !selectedItems.has(item.id)))
+    setSelectedItems(new Set())
+    toast.success(`Deleted ${selectedItems.size} items`)
+  }
+
+  // Input handlers
   const handleNewItemChange = (e: ChangeEvent<HTMLInputElement>) => {
     setNewItem(e.target.value)
     setNewItemValid(e.target.value.trim().length >= 1)
@@ -154,54 +393,129 @@ export default function ToDoList() {
     setEditItemValid(e.target.value.trim().length >= 1)
   }
 
-  // Clear all items
-  const clearAllItems = (): void => {
-    setItems([])
-    toast.success('Cleared all items')
+  // Dialog handlers
+  const handleDialogClose = (shouldSave: boolean) => {
+    if (shouldSave) {
+      updateItem()
+    } else {
+      setEditingItemId(null)
+      setEditedItemText('')
+    }
+
+    if (pendingItemId !== null) {
+      setEditingItemId(pendingItemId)
+      setEditedItemText(pendingText)
+      setEditItemValid(true)
+      requestAnimationFrame(() => {
+        inputRef.current?.focus()
+      })
+    }
+
+    setShowSaveDialog(false)
+    setPendingItemId(null)
+    setPendingText('')
   }
 
-  // Pagination calculation
-  const totalPages = Math.ceil(items.length / itemsPerPage)
-  const paginatedItems = items.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  // Effect to reset to first page when items length changes
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [items.length])
-
-  // Avoid rendering on the server to prevent hydration errors
-  if (!isMounted) {
-    return null
+  const handleDeleteConfirmation = (confirmed: boolean) => {
+    if (confirmed && itemToDelete !== null) {
+      setItems(items.filter((item) => item.id !== itemToDelete))
+      toast.success('Item deleted')
+    }
+    setShowDeleteDialog(false)
+    setItemToDelete(null)
   }
+
+  // Add handler for drag end
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event
+
+    if (active.id !== over.id) {
+      setItems((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
+
+  // Avoid SSR issues
+  if (!isMounted) return null
 
   // JSX return statement rendering the todo list UI
   return (
-    <div className="w-full max-w-md rounded-lg border border-border p-6 shadow-lg">
+    <div className="w-full max-w-2xl rounded-lg border border-border p-3 shadow-lg sm:p-4">
       {/* Header with title */}
-      <h1 className="mb-4 flex items-center justify-between gap-x-2 text-2xl font-bold text-gray-800 dark:text-gray-200">
+      <h1 className="mb-3 sm:mb-4 flex items-center justify-between gap-x-2 text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200">
         Shopping List
-        <div className="flex items-center gap-x-2">
-          <Button onClick={clearAllItems} className="flex items-center gap-x-2" variant="outline" size="sm">
-            <XIcon className="size-4" />
-            Clear All
-          </Button>
-          <div className="relative rounded-full border border-border p-2">
-            <ShoppingCart className="size-6" />
-            {items.length > 0 && (
-              <span
-                className={`absolute -right-2 -top-2 inline-flex min-w-[20px] items-center justify-center rounded-full bg-orange px-1.5 py-0.5 text-xs font-medium text-white ${
-                  items.length > 99 ? 'min-w-[28px]' : ''
+        <div className="relative rounded-full border border-border p-1.5 sm:p-2">
+          <ShoppingCart className="size-5 sm:size-6" />
+          {items.length > 0 && (
+            <span
+              className={`absolute -right-1.5 -top-1.5 sm:-right-2 sm:-top-2 inline-flex min-w-[18px] sm:min-w-[20px] items-center justify-center rounded-full bg-orange px-1 sm:px-1.5 py-0.5 text-xs font-medium text-white ${items.length > 99 ? 'min-w-[24px] sm:min-w-[28px]' : ''
                 }`}
-              >
-                {items.length > 99 ? items.length : items.length}
-              </span>
-            )}
-          </div>
+            >
+              {items.length > 99 ? '99+' : items.length}
+            </span>
+          )}
         </div>
       </h1>
 
-      {/* Input for adding new items */}
-      <form className="mb-4 flex items-center" onSubmit={addItem}>
+      {/* Multi-select controls */}
+      {paginatedItems.length > 0 && (
+        <div className="mb-3 sm:mb-4 flex items-center gap-2">
+          {isMultiSelectMode ? (
+            <>
+              <Checkbox
+                checked={selectedItems.size === paginatedItems.length && paginatedItems.length > 0}
+                onCheckedChange={toggleSelectAll}
+                aria-label="Select all items"
+                className="size-4 sm:size-5"
+              />
+              <span className="text-xs sm:text-sm text-muted-foreground">
+                {selectedItems.size} selected
+              </span>
+              <div className="ml-auto flex gap-1 sm:gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsMultiSelectMode(false)
+                    setSelectedItems(new Set())
+                  }}
+                  className="h-7 sm:h-8 text-xs sm:text-sm"
+                >
+                  Cancel
+                </Button>
+                {selectedItems.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      setItemToDelete(null)
+                      setShowDeleteDialog(true)
+                    }}
+                    className="h-7 sm:h-8 text-xs sm:text-sm"
+                  >
+                    Delete Selected ({selectedItems.size})
+                  </Button>
+                )}
+              </div>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsMultiSelectMode(true)}
+              className="h-7 sm:h-8 text-xs sm:text-sm"
+            >
+              Delete Multiple
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Input form */}
+      <form className="mb-3 sm:mb-4 flex items-center gap-x-2" onSubmit={addItem}>
         <Input
           ref={newItemInputRef}
           type="text"
@@ -209,89 +523,55 @@ export default function ToDoList() {
           value={newItem}
           onChange={handleNewItemChange}
           onFocus={() => setIsInputFocused(true)}
-          className={`mr-2 flex-1 rounded-md border px-3 py-2 outline-none focus:ring-0 focus-visible:ring-0 ${
-            isInputFocused
-              ? !newItemValid
-                ? 'border-red-500/60 ring-red-500/60'
-                : 'border-green/60 ring-green/60'
-              : 'border-border'
-          }`}
+          className={`text-sm sm:text-base h-8 sm:h-9 ${isInputFocused
+            ? !newItemValid
+              ? 'border-red-500/60 ring-red-500/60'
+              : 'border-green/60 ring-green/60'
+            : 'border-border'
+            }`}
         />
-        <Button type="submit" className="rounded-md px-4 py-2 font-medium" variant={'outline'}>
+        <Button
+          type="submit"
+          className="h-8 sm:h-9 text-sm sm:text-base"
+          variant={'outline'}
+        >
           Add
         </Button>
       </form>
-      {/* List of items */}
-      <div className="space-y-2">
-        {paginatedItems.map((item) => (
-          <div key={item.id} className="flex flex-1 items-center justify-between gap-x-1 rounded-md">
-            <div className="flex flex-1 items-center">
-              {/* Checkbox to toggle item completion */}
-              <Checkbox
-                checked={item.completed}
-                className="mr-2"
-                onCheckedChange={() => toggleItemCompletion(item.id)}
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={paginatedItems}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-1">
+            {paginatedItems.map((item) => (
+              <SortableItem
+                key={item.id}
+                item={item}
+                isMultiSelectMode={isMultiSelectMode}
+                selectedItems={selectedItems}
+                toggleItemSelection={toggleItemSelection}
+                toggleItemCompletion={toggleItemCompletion}
+                editingItemId={editingItemId}
+                inputRef={inputRef}
+                newItemInputRef={newItemInputRef}
+                saveButtonRef={saveButtonRef}
+                deleteItem={deleteItem}
+                editedItemText={editedItemText}
+                updateItem={updateItem}
+                editItemValid={editItemValid}
+                handleEditItemChange={handleEditItemChange}
+                startEditingItem={startEditingItem}
               />
-              {editingItemId === item.id ? (
-                // Input for editing item text
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    updateItem()
-                  }}
-                  className="flex-1"
-                >
-                  <Input
-                    ref={inputRef}
-                    type="text"
-                    value={editedItemText}
-                    className={`rounded-md border p-1 text-base focus:ring-0 focus-visible:ring-0 ${
-                      !editItemValid ? 'border-red-500 ring-red-500' : ''
-                    }`}
-                    onChange={handleEditItemChange}
-                  />
-                </form>
-              ) : (
-                // Display item text with click to edit functionality
-                <span
-                  className={`ml-1 flex-1 text-gray-800 dark:text-gray-200 ${
-                    item.completed ? 'text-gray-500 line-through dark:text-gray-400' : ''
-                  }`}
-                  onClick={() => startEditingItem(item.id, item.text)} // Trigger editing on click
-                >
-                  {item.text}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-x-1">
-              {editingItemId === item.id ? (
-                <Button
-                  onClick={updateItem}
-                  className="rounded-md bg-green/80 px-2 py-1 font-medium text-white hover:bg-green hover:text-white"
-                  variant="outline"
-                >
-                  <CheckIcon className="size-5" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => startEditingItem(item.id, item.text)}
-                  className="rounded-md px-2 py-1 font-medium"
-                  variant="outline"
-                >
-                  <PencilIcon className="size-5" />
-                </Button>
-              )}
-              <Button
-                onClick={() => deleteItem(item.id)}
-                className="rounded-md bg-destructive/80 px-2 py-1 font-medium hover:bg-destructive"
-                size={'icon'}
-              >
-                <Trash2Icon className="size-5" />
-              </Button>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </SortableContext>
+      </DndContext>
 
       {/* Add pagination component at the bottom */}
       {totalPages > 1 && (
@@ -350,6 +630,70 @@ export default function ToDoList() {
           </Pagination>
         </div>
       )}
+
+      <Dialog open={showSaveDialog} onOpenChange={(open) => {
+        if (!open) handleDialogClose(false)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes. Would you like to save them?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleDialogClose(false)}
+            >
+              Discard
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => handleDialogClose(true)}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+        if (!open) handleDeleteConfirmation(false)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              {itemToDelete !== null
+                ? "Are you sure you want to delete this item?"
+                : `Are you sure you want to delete ${selectedItems.size} selected items?`}
+              {" "}This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleDeleteConfirmation(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (itemToDelete !== null) {
+                  handleDeleteConfirmation(true)
+                } else {
+                  deleteSelectedItems()
+                  setShowDeleteDialog(false)
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
