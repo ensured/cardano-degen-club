@@ -11,6 +11,18 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 interface RateLimitInfo {
     remaining: number;
     reset: number;
@@ -28,6 +40,9 @@ const DownloadImages = () => {
     const [tick, setTick] = useState(false);
     const prevRemaining = useRef<number>();
     const lastDownloaded = useRef<number | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [userConfirmed, setUserConfirmed] = useState(false);
+    const deferredPromise = useRef<((value: boolean) => void) | null>(null);
 
     const codeExample = `const imageLinks = document.querySelectorAll("a.originalLink_af017a");
 console.log("Loading image elements...");
@@ -111,14 +126,22 @@ console.log(
         return () => clearInterval(interval);
     }, [rateLimitInfo, tick]);
 
+    const confirmWithUser = async () => {
+        setIsDialogOpen(true);
+        return new Promise<boolean>((resolve) => {
+            deferredPromise.current = resolve;
+        });
+    };
+
     const handleDownload = async () => {
         try {
-            // Add confirmation for same number of images
+            // Modified confirmation check
             if (detectedImages === lastDownloaded.current) {
-                const isConfirmed = confirm(
-                    `Are you sure you want to download the same ${detectedImages} images again?`
-                );
-                if (!isConfirmed) return;
+                const isConfirmed = await confirmWithUser();
+                if (!isConfirmed) {
+                    setLoading(false);
+                    return;
+                }
             }
 
             setLoading(true);
@@ -159,13 +182,14 @@ console.log(
 
             // Cleanup
             URL.revokeObjectURL(url);
-            document.body.removeChild(a);
             lastDownloaded.current = detectedImages;
 
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Failed to download images');
         } finally {
             setLoading(false);
+            setIsDialogOpen(false);
+            setUserConfirmed(false);
         }
     };
 
@@ -225,229 +249,257 @@ console.log(
     };
 
     return (
-        <div className="sm:container px-1.5 mx-auto py-8 max-w-6xl space-y-8">
-            <Card className="bg-secondary/20 group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg pt-2">
-                <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl font-bold">Download Images/Gifs from Discord</CardTitle>
-                    <VisuallyHidden>
-                        <CardDescription className="text-base">
-                            Follow these steps to download images/gifs from a discord channel
-                        </CardDescription>
-                    </VisuallyHidden>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                    {/* Step 1: Copy Code */}
-                    <div className="space-y-4 transition-all duration-300">
-                        <div className="flex items-center space-x-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
-                                1
+        <>
+            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Download</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to download the same {detectedImages} images again?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => {
+                            deferredPromise.current?.(false);
+                            setIsDialogOpen(false);
+                        }}>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={() => {
+                            deferredPromise.current?.(true);
+                            setIsDialogOpen(false);
+                            setUserConfirmed(true);
+                        }}>
+                            Continue
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <div className="sm:container px-1.5 mx-auto py-8 max-w-6xl space-y-8">
+                <Card className="bg-secondary/20 group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg pt-2">
+                    <CardHeader className="space-y-1">
+                        <CardTitle className="text-2xl font-bold">Download Images/Gifs from Discord</CardTitle>
+                        <VisuallyHidden>
+                            <CardDescription className="text-base">
+                                Follow these steps to download images/gifs from a discord channel
+                            </CardDescription>
+                        </VisuallyHidden>
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                        {/* Step 1: Copy Code */}
+                        <div className="space-y-4 transition-all duration-300">
+                            <div className="flex items-center space-x-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
+                                    1
+                                </div>
+                                <h3 className="text-lg font-semibold">Copy the Code</h3>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`ml-auto !dark:text-green-400/60 !text-green-600 h-auto p-2 gap-2 transition-colors border-green-600/50 dark:border-green-400/50 
+                                                hover:bg-secondary hover:text-green-600
+                                                ${hasCopied ? 'text-green-600' : 'text-muted-foreground'}`}
+                                    onClick={handleCopy}
+                                >
+                                    {hasCopied ? (
+                                        <Check className="h-4 w-4 flex-shrink-0 animate-in zoom-in duration-300 scale-110" />
+                                    ) : (
+                                        <Copy className="h-4 w-4 flex-shrink-0 transition-transform hover:scale-110" />
+                                    )}
+                                    <span className="sr-only">Copy code</span>
+                                </Button>
                             </div>
-                            <h3 className="text-lg font-semibold">Copy the Code</h3>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className={`ml-auto !dark:text-green-400/60 !text-green-600 h-auto p-2 gap-2 transition-colors border-green-600/50 dark:border-green-400/50 
-                                            hover:bg-secondary hover:text-green-600
-                                            ${hasCopied ? 'text-green-600' : 'text-muted-foreground'}`}
-                                onClick={handleCopy}
-                            >
-                                {hasCopied ? (
-                                    <Check className="h-4 w-4 flex-shrink-0 animate-in zoom-in duration-300 scale-110" />
-                                ) : (
-                                    <Copy className="h-4 w-4 flex-shrink-0 transition-transform hover:scale-110" />
+                            <Card className="bg-muted group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg pt-2">
+                                <VisuallyHidden> <CardHeader className="flex flex-row items-center justify-between">
+                                    <CardTitle className="text-sm font-medium">Browser Console Code</CardTitle>
+                                </CardHeader>
+                                </VisuallyHidden>
+                                <CardContent className=" w-full">
+
+                                    <pre className="overflow-x-auto w-full ">
+                                        <code className="hljs text-xs sm:text-sm w-full  " data-language="javascript">
+                                            {codeExample}
+                                        </code>
+                                    </pre>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Step 2: Open Discord Console */}
+                        <div className="space-y-4 transition-all duration-300">
+                            <div className="flex items-center space-x-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
+                                    2
+                                </div>
+                                <h3 className="text-lg font-semibold">Open Discord Console</h3>
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-sm text-muted-foreground">
+                                    1. Go to Discord in your web browser
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    2. Press F12 (or right-click and select &quot;Inspect&quot;)
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    3. Click on the &quot;Console&quot; tab
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    4. Paste the copied code and press Enter
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Step 3: Paste HTML */}
+                        <div className="space-y-4 transition-all duration-300">
+                            <div className="flex items-center space-x-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
+                                    3
+                                </div>
+                                <h3 className="text-lg font-semibold">Paste the HTML</h3>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="html-input" className="text-sm text-muted-foreground">
+                                    After running the code, paste the copied HTML here
+                                </Label>
+                                <Textarea
+                                    id="html-input"
+
+                                    value={html}
+                                    onChange={(e) => {
+                                        if (e.target.value.length > 1500000) {
+                                            toast.error("Input too large", {
+                                                description: "Maximum 1,500,000 characters",
+                                                duration: 4444,
+                                            })
+                                            return;
+                                        }
+                                        setHtml(e.target.value);
+                                        setDetectedImages(countImagesInHtml(e.target.value));
+                                    }}
+                                    placeholder="Paste your HTML here..."
+                                    className="min-h-[200px] font-mono text-sm transition-all duration-300 
+                                        hover:shadow-md focus:shadow-md "
+                                />
+                                {html.trim() && (
+                                    <p className="text-sm text-muted-foreground">
+                                        {detectedImages} image{detectedImages !== 1 ? 's' : ''} detected
+                                    </p>
                                 )}
-                                <span className="sr-only">Copy code</span>
+                                {html.length > 1500000 ? (
+                                    <p className="text-sm text-muted-foreground">
+                                        Maximum 1,500,000 characters
+                                    </p>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                        {html.length}/1,500,000 characters
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Step 4: Download */}
+                        <div className="space-y-4 transition-all duration-300">
+                            <div className="flex items-center space-x-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
+                                    4
+                                </div>
+                                <h3 className="text-lg font-semibold">Download Images</h3>
+                            </div>
+                            <Button
+                                onClick={handleDownload}
+                                disabled={loading || !html.trim()}
+                                className="w-full transition-all duration-300 hover:shadow-md 
+                                   "
+                                size="lg"
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Downloading...
+                                    </>
+                                ) : (
+                                    'Download Images as ZIP'
+                                )}
                             </Button>
-                        </div>
-                        <Card className="bg-muted group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg pt-2">
-                            <VisuallyHidden> <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle className="text-sm font-medium">Browser Console Code</CardTitle>
-                            </CardHeader>
-                            </VisuallyHidden>
-                            <CardContent className=" w-full">
 
-                                <pre className="overflow-x-auto w-full ">
-                                    <code className="hljs text-xs sm:text-sm w-full  " data-language="javascript">
-                                        {codeExample}
-                                    </code>
-                                </pre>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Step 2: Open Discord Console */}
-                    <div className="space-y-4 transition-all duration-300">
-                        <div className="flex items-center space-x-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
-                                2
-                            </div>
-                            <h3 className="text-lg font-semibold">Open Discord Console</h3>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground">
-                                1. Go to Discord in your web browser
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                2. Press F12 (or right-click and select &quot;Inspect&quot;)
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                3. Click on the &quot;Console&quot; tab
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                                4. Paste the copied code and press Enter
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Step 3: Paste HTML */}
-                    <div className="space-y-4 transition-all duration-300">
-                        <div className="flex items-center space-x-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
-                                3
-                            </div>
-                            <h3 className="text-lg font-semibold">Paste the HTML</h3>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="html-input" className="text-sm text-muted-foreground">
-                                After running the code, paste the copied HTML here
-                            </Label>
-                            <Textarea
-                                id="html-input"
-
-                                value={html}
-                                onChange={(e) => {
-                                    if (e.target.value.length > 1500000) {
-                                        toast.error("Input too large", {
-                                            description: "Maximum 1,500,000 characters",
-                                            duration: 4444,
-                                        })
-                                        return;
-                                    }
-                                    setHtml(e.target.value);
-                                    setDetectedImages(countImagesInHtml(e.target.value));
-                                }}
-                                placeholder="Paste your HTML here..."
-                                className="min-h-[200px] font-mono text-sm transition-all duration-300 
-                                    hover:shadow-md focus:shadow-md "
-                            />
-                            {html.trim() && (
-                                <p className="text-sm text-muted-foreground">
-                                    {detectedImages} image{detectedImages !== 1 ? 's' : ''} detected
-                                </p>
-                            )}
-                            {html.length > 1500000 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    Maximum 1,500,000 characters
-                                </p>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    {html.length}/1,500,000 characters
-                                </p>
+                            {error && (
+                                <Alert variant="destructive" className="animate-in slide-in-from-top duration-300">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>{error}</AlertDescription>
+                                </Alert>
                             )}
                         </div>
-                    </div>
 
-                    {/* Step 4: Download */}
-                    <div className="space-y-4 transition-all duration-300">
-                        <div className="flex items-center space-x-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-medium transition-colors duration-300 hover:bg-primary hover:text-primary-foreground">
-                                4
-                            </div>
-                            <h3 className="text-lg font-semibold">Download Images</h3>
-                        </div>
-                        <Button
-                            onClick={handleDownload}
-                            disabled={loading || !html.trim()}
-                            className="w-full transition-all duration-300 hover:shadow-md 
-                               "
-                            size="lg"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Downloading...
-                                </>
-                            ) : (
-                                'Download Images as ZIP'
-                            )}
-                        </Button>
-
-                        {error && (
-                            <Alert variant="destructive" className="animate-in slide-in-from-top duration-300">
-                                <AlertCircle className="h-4 w-4" />
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
+                        {rateLimitInfo ? (
+                            <Card className="mt-4">
+                                <CardHeader className="pb-2 pt-3 px-4">
+                                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                                        Rate Limit Status
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="px-4 pb-3 space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-muted-foreground">Remaining:</span>
+                                                <span
+                                                    className={`font-mono ${animateRemaining ? 'text-primary' : 'text-foreground'} transition-opacity duration-300`}
+                                                    key={rateLimitInfo.remaining}
+                                                >
+                                                    {rateLimitInfo.remaining}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-muted-foreground">Total:</span>
+                                                <span className="font-mono text-foreground">
+                                                    {rateLimitInfo.total}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <Progress
+                                            value={(rateLimitInfo.remaining / rateLimitInfo.total) * 100}
+                                            className="h-2 mt-4"
+                                        />
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Reset in:</span>
+                                        <span className="font-mono text-foreground">
+                                            {formatTimeRemaining(rateLimitInfo.reset)}
+                                        </span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <Card className="mt-4 animate-pulse">
+                                <CardHeader className="pb-2 pt-3 px-4">
+                                    <Skeleton className="h-5 w-[120px]" />
+                                </CardHeader>
+                                <CardContent className="px-4 pb-3 space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div className="flex items-center space-x-2">
+                                                <Skeleton className="h-5 w-16" />
+                                                <Skeleton className="h-5 w-8" />
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <Skeleton className="h-5 w-16" />
+                                                <Skeleton className="h-5 w-8" />
+                                            </div>
+                                        </div>
+                                        <Skeleton className="h-2 w-full mt-4" />
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <Skeleton className="h-5 w-16" />
+                                        <Skeleton className="h-5 w-20" />
+                                    </div>
+                                </CardContent>
+                            </Card>
                         )}
-                    </div>
-
-                    {rateLimitInfo ? (
-                        <Card className="mt-4">
-                            <CardHeader className="pb-2 pt-3 px-4">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Rate Limit Status
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="px-4 pb-3 space-y-4">
-                                <div className="space-y-2">
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-muted-foreground">Remaining:</span>
-                                            <span
-                                                className={`font-mono ${animateRemaining ? 'text-primary' : 'text-foreground'} transition-opacity duration-300`}
-                                                key={rateLimitInfo.remaining}
-                                            >
-                                                {rateLimitInfo.remaining}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-muted-foreground">Total:</span>
-                                            <span className="font-mono text-foreground">
-                                                {rateLimitInfo.total}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <Progress
-                                        value={(rateLimitInfo.remaining / rateLimitInfo.total) * 100}
-                                        className="h-2 mt-4"
-                                    />
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Reset in:</span>
-                                    <span className="font-mono text-foreground">
-                                        {formatTimeRemaining(rateLimitInfo.reset)}
-                                    </span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <Card className="mt-4 animate-pulse">
-                            <CardHeader className="pb-2 pt-3 px-4">
-                                <Skeleton className="h-5 w-[120px]" />
-                            </CardHeader>
-                            <CardContent className="px-4 pb-3 space-y-4">
-                                <div className="space-y-2">
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div className="flex items-center space-x-2">
-                                            <Skeleton className="h-5 w-16" />
-                                            <Skeleton className="h-5 w-8" />
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <Skeleton className="h-5 w-16" />
-                                            <Skeleton className="h-5 w-8" />
-                                        </div>
-                                    </div>
-                                    <Skeleton className="h-2 w-full mt-4" />
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <Skeleton className="h-5 w-16" />
-                                    <Skeleton className="h-5 w-20" />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </>
     );
 };
 
