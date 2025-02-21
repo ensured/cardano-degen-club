@@ -61,6 +61,7 @@
     "@vercel/postgres": "^0.10.0",
     "@vercel/speed-insights": "^1.1.0",
     "@wojtekmaj/react-hooks": "^1.19.0",
+    "archiver": "^7.0.1",
     "axios": "^1.6.8",
     "bech32": "^2.0.0",
     "bip39": "^3.1.0",
@@ -117,6 +118,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/archiver": "^6.0.3",
     "@types/cbor-js": "^0.1.1",
     "@types/memory-cache": "^0.2.5",
     "@types/prismjs": "^1.26.5",

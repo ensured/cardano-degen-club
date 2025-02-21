@@ -111,10 +111,10 @@ export const POST = async (req: NextRequest) => {
 
     // Create a transform stream that we can convert to a Response
     const chunks: Uint8Array[] = []
-    archive.on('data', (chunk) => chunks.push(chunk))
+    archive.on('data', (chunk: Uint8Array) => chunks.push(chunk))
 
     // Handle archiver warnings
-    archive.on('warning', (err) => {
+    archive.on('warning', (err: any) => {
       if (err.code === 'ENOENT') {
         console.warn('Archiver warning:', err)
       } else {
@@ -123,7 +123,7 @@ export const POST = async (req: NextRequest) => {
     })
 
     // Handle archiver errors
-    archive.on('error', (err) => {
+    archive.on('error', (err: any) => {
       throw err
     })
 
