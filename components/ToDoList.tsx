@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, ChangeEvent, useRef } from 'react'
+import { useState, useEffect, ChangeEvent, useRef, useMemo } from 'react'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon, XIcon } from 'lucide-react'
+import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon, XIcon, SearchIcon, ChevronDown } from 'lucide-react'
 import {
   Pagination,
   PaginationContent,
@@ -40,6 +40,11 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
 // Constants
 const MAX_ITEMS = 9999
@@ -49,6 +54,13 @@ interface ShoppingItem {
   id: number
   text: string
   completed: boolean
+}
+
+interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+  // Add any other fields your todos might have
 }
 
 // Add SortableItem component
@@ -207,6 +219,13 @@ export default function ToDoList() {
   // Add state for multi-select mode
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
 
+  // Add state for search and filter
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
+
+  // Add state for collapsible
+  const [isOpen, setIsOpen] = useState(false)
+
   // Calculate pagination
   const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE)
   const paginatedItems = items.slice(
@@ -342,11 +361,6 @@ export default function ToDoList() {
     })
   }
 
-  const clearAllItems = (): void => {
-    setItems([])
-    toast.success('Cleared all items')
-  }
-
   const deleteItem = (id: number): void => {
     setItemToDelete(id)
     setShowDeleteDialog(true)
@@ -438,6 +452,21 @@ export default function ToDoList() {
     }
   }
 
+  // Filter and search todos
+  const filteredTodos = useMemo(() => {
+    return items
+      .filter(item => {
+        // Apply status filter
+        if (filter === 'active') return !item.completed;
+        if (filter === 'completed') return item.completed;
+        return true;
+      })
+      .filter(item => {
+        // Apply search filter
+        return item.text.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+  }, [items, searchTerm, filter]);
+
   // Avoid SSR issues
   if (!isMounted) return null
 
@@ -445,7 +474,7 @@ export default function ToDoList() {
   return (
     <div className="w-full max-w-2xl rounded-lg border border-border p-3 shadow-lg sm:p-4">
       {/* Header with title */}
-      <h1 className="mb-3 sm:mb-4 flex items-center justify-between gap-x-2 text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200">
+      <h1 className="mb-2 flex items-center justify-between gap-x-2 text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200">
         Shopping List
         <div className="relative rounded-full border border-border p-1.5 sm:p-2">
           <ShoppingCart className="size-5 sm:size-6" />
@@ -460,62 +489,8 @@ export default function ToDoList() {
         </div>
       </h1>
 
-      {/* Multi-select controls */}
-      {paginatedItems.length > 0 && (
-        <div className="mb-3 sm:mb-4 flex items-center gap-2">
-          {isMultiSelectMode ? (
-            <>
-              <Checkbox
-                checked={selectedItems.size === paginatedItems.length && paginatedItems.length > 0}
-                onCheckedChange={toggleSelectAll}
-                aria-label="Select all items"
-                className="size-4 sm:size-5"
-              />
-              <span className="text-xs sm:text-sm text-muted-foreground">
-                {selectedItems.size} selected
-              </span>
-              <div className="ml-auto flex gap-1 sm:gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setIsMultiSelectMode(false)
-                    setSelectedItems(new Set())
-                  }}
-                  className="h-7 sm:h-8 text-xs sm:text-sm"
-                >
-                  Cancel
-                </Button>
-                {selectedItems.size > 0 && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      setItemToDelete(null)
-                      setShowDeleteDialog(true)
-                    }}
-                    className="h-7 sm:h-8 text-xs sm:text-sm"
-                  >
-                    Delete Selected ({selectedItems.size})
-                  </Button>
-                )}
-              </div>
-            </>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsMultiSelectMode(true)}
-              className="h-7 sm:h-8 text-xs sm:text-sm"
-            >
-              Delete Multiple
-            </Button>
-          )}
-        </div>
-      )}
-
       {/* Input form */}
-      <form className="mb-3 sm:mb-4 flex items-center gap-x-2" onSubmit={addItem}>
+      <form className="mb-1 flex items-center gap-x-1" onSubmit={addItem}>
         <Input
           ref={newItemInputRef}
           type="text"
@@ -523,7 +498,7 @@ export default function ToDoList() {
           value={newItem}
           onChange={handleNewItemChange}
           onFocus={() => setIsInputFocused(true)}
-          className={`text-sm sm:text-base h-8 sm:h-9 ${isInputFocused
+          className={`text-sm h-8 ${isInputFocused
             ? !newItemValid
               ? 'border-red-500/60 ring-red-500/60'
               : 'border-green/60 ring-green/60'
@@ -532,12 +507,146 @@ export default function ToDoList() {
         />
         <Button
           type="submit"
-          className="h-8 sm:h-9 text-sm sm:text-base"
+          className="h-8"
           variant={'outline'}
         >
           Add
         </Button>
       </form>
+
+      {/* Search and Delete Multiple buttons */}
+      <div className="mb-1 flex items-center gap-1">
+        <div
+          role="button"
+          className="flex-1 flex items-center justify-between h-8 px-4 border rounded-md border-input bg-background hover:bg-accent hover:text-accent-foreground cursor-pointer"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="flex items-center gap-2">
+            <SearchIcon className="h-4 w-4" />
+            <span>Search and Filter</span>
+          </div>
+          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
+        </div>
+
+        {paginatedItems.length > 0 && !isMultiSelectMode && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsMultiSelectMode(true)}
+            className="h-8 whitespace-nowrap"
+          >
+            Delete Multiple
+          </Button>
+        )}
+      </div>
+
+      {/* Collapsible content */}
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleContent className="space-y-1 pt-1">
+          {/* Search input */}
+          <div className="space-y-1">
+            <label htmlFor="search" className="text-xs font-medium">
+              Search Items
+            </label>
+            <Input
+              id="search"
+              type="text"
+              placeholder="Search items..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="text-sm h-8"
+            />
+          </div>
+
+          {/* Filter buttons */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium">
+                Filter by Status
+              </label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('')
+                  setFilter('all')
+                  setIsOpen(false)
+                }}
+                className="h-7 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Reset filters
+              </Button>
+            </div>
+            <div className="flex gap-1">
+              <Button
+                onClick={() => setFilter('all')}
+                variant={filter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 flex-1"
+              >
+                All
+              </Button>
+              <Button
+                onClick={() => setFilter('active')}
+                variant={filter === 'active' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 flex-1"
+              >
+                Active
+              </Button>
+              <Button
+                onClick={() => setFilter('completed')}
+                variant={filter === 'completed' ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 flex-1"
+              >
+                Completed
+              </Button>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Move multi-select mode controls here if active */}
+      {isMultiSelectMode && (
+        <div className="mb-1 flex items-center gap-2">
+          <Checkbox
+            checked={selectedItems.size === paginatedItems.length && paginatedItems.length > 0}
+            onCheckedChange={toggleSelectAll}
+            aria-label="Select all items"
+            className="size-4 sm:size-5"
+          />
+          <span className="text-xs sm:text-sm text-muted-foreground">
+            {selectedItems.size} selected
+          </span>
+          <div className="ml-auto flex gap-1 sm:gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsMultiSelectMode(false)
+                setSelectedItems(new Set())
+              }}
+              className="h-7 sm:h-8 text-xs sm:text-sm"
+            >
+              Cancel
+            </Button>
+            {selectedItems.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  setItemToDelete(null)
+                  setShowDeleteDialog(true)
+                }}
+                className="h-7 sm:h-8 text-xs sm:text-sm"
+              >
+                Delete Selected ({selectedItems.size})
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       <DndContext
         sensors={sensors}
@@ -545,11 +654,11 @@ export default function ToDoList() {
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={paginatedItems}
+          items={filteredTodos}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-1">
-            {paginatedItems.map((item) => (
+            {filteredTodos.map((item) => (
               <SortableItem
                 key={item.id}
                 item={item}
@@ -572,6 +681,15 @@ export default function ToDoList() {
           </div>
         </SortableContext>
       </DndContext>
+
+      {/* Add a "no results" message */}
+      {filteredTodos.length === 0 && (
+        <p className="text-center text-muted-foreground py-8">
+          {items.length === 0
+            ? "No items in the list"
+            : "No items match your search"}
+        </p>
+      )}
 
       {/* Add pagination component at the bottom */}
       {totalPages > 1 && (
