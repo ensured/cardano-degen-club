@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon, XIcon, SearchIcon, ChevronDown } from 'lucide-react'
+import { CheckIcon, PencilIcon, ShoppingCart, Trash2Icon, XIcon, SearchIcon, ChevronDown, Settings2 } from 'lucide-react'
 import {
   Pagination,
   PaginationContent,
@@ -29,6 +29,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -235,7 +236,17 @@ export default function ToDoList() {
 
   // Add sensors for drag handling
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -523,7 +534,9 @@ export default function ToDoList() {
         >
           <div className="flex items-center gap-2">
             <SearchIcon className="h-4 w-4" />
-            <span>Search and Filter</span>
+            <span className="hidden sm:inline">Search and Filter</span>
+            <span className="sm:hidden">Search</span>
+            <Settings2 className="h-4 w-4 sm:hidden" />
           </div>
           <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
         </div>
