@@ -43,6 +43,7 @@ const DownloadImages = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [userConfirmed, setUserConfirmed] = useState(false);
     const deferredPromise = useRef<((value: boolean) => void) | null>(null);
+    const [hasStartedDownloading, setHasStartedDownloading] = useState(false);
 
     const codeExample = `const imageLinks = document.querySelectorAll("a.originalLink_af017a");
 console.log("Loading image elements...");
@@ -114,7 +115,7 @@ console.log(
     }, [rateLimitInfo]);
 
     useEffect(() => {
-        if (!rateLimitInfo) return;
+        if (!rateLimitInfo || !hasStartedDownloading) return;
 
         const now = Date.now();
         if (now >= rateLimitInfo.reset) return;
@@ -124,7 +125,7 @@ console.log(
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [rateLimitInfo, tick]);
+    }, [rateLimitInfo, tick, hasStartedDownloading]);
 
     const confirmWithUser = async () => {
         setIsDialogOpen(true);
@@ -152,6 +153,9 @@ console.log(
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ html }),
             });
+
+            // Set hasStartedDownloading to true after first successful download
+            setHasStartedDownloading(true);
 
             // Handle all error cases first
             if (!response.ok) {
@@ -215,6 +219,9 @@ console.log(
     };
 
     const formatTimeRemaining = (resetTime: number) => {
+        if (!hasStartedDownloading) {
+            return "60:00"; // Show initial time until downloading starts
+        }
         const now = Date.now();
         const diff = Math.max(0, resetTime - now);
         const minutes = Math.floor(diff / 60000);
