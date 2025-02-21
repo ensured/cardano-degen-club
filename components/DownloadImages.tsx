@@ -257,28 +257,29 @@ console.log(
                                 1
                             </div>
                             <h3 className="text-lg font-semibold">Copy the Code</h3>
-                        </div>
-                        <Card className="bg-muted group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 !py-1 !px-2.5">
-                                <CardTitle className="text-sm font-medium">Browser Console Code</CardTitle>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className={`border border-primary h-8 w-10 p-0 transition-all duration-300 
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className={`border border-primary h-8 w-10 p-0 transition-all duration-300 
                                         ${hasCopied ? 'text-green-500 scale-105' : 'hover:scale-110 hover:text-primary'}`}
-                                    onClick={handleCopy}
-                                >
-                                    {hasCopied ? (
-                                        <Check className="h-5 w-5 animate-in zoom-in duration-300" />
-                                    ) : (
-                                        <Copy className="h-5 w-5" />
-                                    )}
-                                    <span className="sr-only">Copy code</span>
-                                </Button>
+                                onClick={handleCopy}
+                            >
+                                {hasCopied ? (
+                                    <Check className="h-5 w-5 animate-in zoom-in duration-300" />
+                                ) : (
+                                    <Copy className="h-5 w-5" />
+                                )}
+                                <span className="sr-only">Copy code</span>
+                            </Button>
+                        </div>
+                        <Card className="bg-muted group transition-all duration-300 hover:shadow-md border border-primary/20 rounded-lg !py-2">
+                            <VisuallyHidden> <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="text-sm font-medium">Browser Console Code</CardTitle>
                             </CardHeader>
-                            <CardContent className="!p-1.5 bg-transparent ">
-                                <pre className="overflow-x-auto p-2 rounded-lg bg-[#16191d] transition-all duration-300 ">
-                                    <code className="hljs text-xs sm:text-sm" data-language="javascript">
+                            </VisuallyHidden>
+                            <CardContent className="  bg-background/10 transition-all duration-300 w-full">
+                                <pre className="overflow-x-auto w-full ">
+                                    <code className="hljs text-xs sm:text-sm w-full  " data-language="javascript">
                                         {codeExample}
                                     </code>
                                 </pre>
