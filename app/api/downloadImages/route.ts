@@ -12,7 +12,7 @@ interface RateLimitInfo {
 }
 
 const MAX_CHARACTERS = 1500000
-const MAX_IMAGES = 1000
+const MAX_IMAGES = 750
 const RATE_LIMIT_DURATION = 3600000 // 1 hour in milliseconds
 
 export const GET = async (req: NextRequest) => {
@@ -66,8 +66,17 @@ export const POST = async (req: NextRequest) => {
 
     const $ = cheerio.load(html)
     const imageUrls = $('a.originalLink_af017a')
-      .map((i, link) => $(link).attr('href'))
+      .map((i, link) => {
+        const href = $(link).attr('href')
+        if (!href) return null
+        // Extract file extension from URL
+        const [urlPart] = href.split('?') // Remove query parameters
+        const extMatch = urlPart.split('.').pop()
+        const extension = extMatch
+        return { url: href, extension }
+      })
       .get()
+      .filter(Boolean) // Remove any null entries
 
     if (imageUrls.length === 0) {
       return NextResponse.json({ error: 'No images found' }, { status: 404 })
@@ -141,10 +150,10 @@ export const POST = async (req: NextRequest) => {
 
     // Download and add files to the archive
     await Promise.all(
-      imageUrls.map(async (url, index) => {
+      imageUrls.map(async ({ url, extension }, index) => {
         const response = await axios.get(url, { responseType: 'arraybuffer' })
         const stream = Readable.from(Buffer.from(response.data))
-        archive.append(stream, { name: `image_${index}.gif` })
+        archive.append(stream, { name: `image_${index}.${extension}` })
       }),
     )
 
