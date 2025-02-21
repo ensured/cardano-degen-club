@@ -32,7 +32,7 @@ textarea.select();
 document.execCommand("copy");
 document.body.removeChild(textarea);
 console.log(
-  \`✅ Success: \${imageLinks.length} image elements copied to clipboard!\`
+  \`✅ Success: \${imageLinks.length} image elements copied to clipboard! Now Paste the HTML into the text area on the website\`
 );`;
 
     // Use a single useEffect for highlighting
@@ -165,10 +165,10 @@ console.log(
                                 1. Go to Discord in your web browser
                             </p>
                             <p className="text-sm text-muted-foreground">
-                                2. Press F12 (or right-click and select "Inspect")
+                                2. Press F12 (or right-click and select &quot;Inspect&quot;)
                             </p>
                             <p className="text-sm text-muted-foreground">
-                                3. Click on the "Console" tab
+                                3. Click on the &quot;Console&quot; tab
                             </p>
                             <p className="text-sm text-muted-foreground">
                                 4. Paste the copied code and press Enter
