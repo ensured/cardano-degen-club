@@ -12,8 +12,8 @@ interface RateLimitInfo {
 }
 
 const MAX_CHARACTERS = 1500000
-const MAX_IMAGES = 750
-const RATE_LIMIT_DURATION = 3600000 // 1 hour in milliseconds
+const MAX_IMAGES = 669
+const RATE_LIMIT_DURATION = 7200000 // 2 hour in milliseconds
 
 export const GET = async (req: NextRequest) => {
   try {
