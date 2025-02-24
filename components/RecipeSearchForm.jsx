@@ -12,12 +12,14 @@ import {
   Dice4Icon,
   Dice5Icon,
   Dice6Icon,
+  Loader2,
   Search,
   Settings,
   X,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { debounce } from 'lodash'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import RecipesMenu from './RecipesMenu'
 import { Button } from './ui/button'
@@ -90,6 +92,29 @@ const healthOptions = [
 
 const mealTypes = ['Breakfast', 'Dinner', 'Lunch', 'Snack', 'Teatime']
 
+const RANDOM_FOODS = [
+  'chicken',
+  'pasta',
+  'curry',
+  'salad',
+  'soup',
+  'rice',
+  'fish',
+  'tacos',
+  'pizza',
+  'stir fry',
+  'burger',
+  'sandwich',
+  'noodles',
+  'steak',
+  'vegetable',
+  'casserole',
+  'breakfast',
+  'dessert',
+  'smoothie',
+  'bread',
+]
+
 const RecipeSearchForm = ({
   searchRecipes,
   input,
@@ -149,25 +174,38 @@ const RecipeSearchForm = ({
     setIsHoveredRandomButton(isHovered)
   }
 
-  const handleGetRandomFood = async (e) => {
+  const [isRandomLoading, setIsRandomLoading] = useState(false)
+
+  const getRandomRecipe = async () => {
     try {
-      e.preventDefault()
-      handleHideKeyboard()
-      const randomIndex = Math.floor(Math.random() * foodItems.length)
-      const randomFoodItem = foodItems[randomIndex]
-      setInput(randomFoodItem)
-      searchRecipes(
-        e,
-        randomFoodItem,
-        selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
-        excludedIngredients.length > 0 ? excludedIngredients : undefined,
-        selectedMealType ? selectedMealType : undefined,
-      )
-      router.push(`?q=${randomFoodItem}`)
+      const response = await fetch('/api/random-recipe')
+      const data = await response.json()
+      if (data.title) {
+        return data.title
+      }
+      throw new Error('Failed to get random recipe')
     } catch (error) {
-      toast(error.message, {
-        type: 'error',
-      })
+      console.error('Error fetching random recipe:', error)
+      return null
+    }
+  }
+
+  const handleRandomRecipe = async () => {
+    setIsRandomLoading(true)
+    try {
+      const randomTitle = await getRandomRecipe()
+      if (randomTitle) {
+        setInput(randomTitle)
+        searchRecipes(
+          null,
+          randomTitle,
+          selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
+          excludedIngredients.length > 0 ? excludedIngredients : undefined,
+          selectedMealType ? selectedMealType : undefined,
+        )
+      }
+    } finally {
+      setIsRandomLoading(false)
     }
   }
 
@@ -647,19 +685,26 @@ const RecipeSearchForm = ({
           </Dialog>
         </form>
         <div className="flex flex-wrap items-center justify-between gap-1">
-          <Button
-            onMouseOver={() => handleRandomButtonHover(true)}
-            onMouseOut={() => handleRandomButtonHover(false)}
-            onClick={handleGetRandomFood}
-            variant="outline"
-            size={'sm'}
-            className="flex-1 gap-1 text-xs md:text-base lg:text-lg"
-          >
-            <CurrentDiceIcon
-              className={`size-4 transition-transform duration-300 ease-in-out md:size-5 ${isHoveredRandomButton ? 'text-blue-500 rotate-180 scale-125' : ''}`}
-            />
-            {width < 440 ? 'Random' : 'Random Recipe'}
-          </Button>
+          {isRandomLoading ? (
+            <Skeleton className="flex h-9 w-[120px] flex-1 items-center justify-center gap-1 md:w-[140px] lg:w-[160px]">
+              <Loader2 className="size-4 animate-spin md:size-5" />
+              {width < 440 ? 'Random' : 'Random Recipe'}
+            </Skeleton>
+          ) : (
+            <Button
+              onMouseOver={() => handleRandomButtonHover(true)}
+              onMouseOut={() => handleRandomButtonHover(false)}
+              onClick={handleRandomRecipe}
+              variant="outline"
+              size={'sm'}
+              className="flex-1 gap-1 text-xs md:text-base lg:text-lg"
+            >
+              <CurrentDiceIcon
+                className={`size-4 transition-transform duration-300 ease-in-out md:size-5 ${isHoveredRandomButton ? 'text-blue-500 rotate-180 scale-125' : ''}`}
+              />
+              {width < 440 ? 'Random' : 'Random Recipe'}
+            </Button>
+          )}
           <RecipesMenu
             favorites={favorites}
             setFavorites={setFavorites}

@@ -1,77 +1,71 @@
-import { headers } from "next/headers";
-import MemoryCache from "memory-cache";
+import { kv } from '@vercel/kv'
+import { headers } from 'next/headers'
 
-export const runtime = "edge";
+export const runtime = 'edge'
 
-interface RateLimitResponse {
-  success: boolean;
-  message: string;
-  remainingAttempts?: number;
-  resetTime?: Date;
+interface RateLimitInfo {
+  count: number
+  timestamp: number
 }
 
-interface RateLimitConfig {
-  maxAttempts?: number; // Maximum attempts within the timeout period
-  limitTimeout: number; // Timeout in milliseconds
-  key: string; // Unique identifier for the rate limit
-  ip: string; // Client IP
-}
+export async function checkRateLimit(identifier: string) {
+  const now = Date.now()
+  const window = 15000 // 15 seconds in milliseconds
+  const maxRequests = 5
 
-export async function checkRateLimit({
-  maxAttempts = 2,
-  limitTimeout,
-  key,
-  ip,
-}: RateLimitConfig): Promise<RateLimitResponse> {
-  if (!ip) {
-    throw new Error("IP address is required for rate limiting");
+  const key = `ratelimit:${identifier}`
+  const rateLimitInfo = await kv.get<RateLimitInfo>(key)
+
+  if (!rateLimitInfo) {
+    // First request in the window
+    await kv.set(key, { count: 1, timestamp: now }, { ex: 10 }) // Expire in 10 seconds
+    return {
+      success: true,
+      remaining: maxRequests - 1,
+      reset: now + window,
+    }
   }
 
-  const now = Date.now();
-  const cacheKey = `${key}-${ip}`;
-  const attempts = MemoryCache.get(cacheKey) || { count: 0, firstAttempt: now };
-
-  // Reset attempts if the timeout has passed
-  if (now - attempts.firstAttempt >= limitTimeout) {
-    attempts.count = 0;
-    attempts.firstAttempt = now;
+  // Check if the window has expired
+  if (now - rateLimitInfo.timestamp >= window) {
+    // Start a new window
+    await kv.set(key, { count: 1, timestamp: now }, { ex: 10 })
+    return {
+      success: true,
+      remaining: maxRequests - 1,
+      reset: now + window,
+    }
   }
 
-  // Increment attempt counter
-  attempts.count++;
-
-  if (attempts.count > maxAttempts) {
-    const resetTime = new Date(attempts.firstAttempt + limitTimeout);
-    const retryAfter = Math.ceil(
-      (limitTimeout - (now - attempts.firstAttempt)) / 1000,
-    );
-
+  // Check if rate limit is exceeded
+  if (rateLimitInfo.count >= maxRequests) {
     return {
       success: false,
-      message: `Rate limit exceeded, please try again in ${retryAfter} seconds.`,
-      remainingAttempts: 0,
-      resetTime,
-    };
+      remaining: 0,
+      reset: rateLimitInfo.timestamp + window,
+      message: `Rate limit exceeded. Try again in ${Math.ceil((rateLimitInfo.timestamp + window - now) / 1000)} seconds`,
+    }
   }
 
-  // Update cache
-  MemoryCache.put(cacheKey, attempts, limitTimeout);
+  // Increment the counter
+  await kv.set(
+    key,
+    { count: rateLimitInfo.count + 1, timestamp: rateLimitInfo.timestamp },
+    { ex: Math.ceil((window - (now - rateLimitInfo.timestamp)) / 1000) },
+  )
 
   return {
     success: true,
-    message: "Request allowed.",
-    remainingAttempts: maxAttempts - attempts.count,
-    resetTime: new Date(attempts.firstAttempt + limitTimeout),
-  };
+    remaining: maxRequests - (rateLimitInfo.count + 1),
+    reset: rateLimitInfo.timestamp + window,
+  }
 }
 
-export async function getClientIp(): Promise<string> {
-  const headersList = await headers();
-  const forwardedFor = headersList.get("x-forwarded-for");
-  const cfConnectingIp = headersList.get("cf-connecting-ip");
-  const xRealIp = headersList.get("x-real-ip");
+export async function getClientIp() {
+  const headersList = await headers()
+  const forwardedFor = headersList.get('x-forwarded-for')
+  const cfConnectingIp = headersList.get('cf-connecting-ip')
+  const xRealIp = headersList.get('x-real-ip')
 
-  return (
-    forwardedFor?.split(",")[0] || cfConnectingIp || xRealIp || "0.0.0.0" // fallback IP
-  );
+  return forwardedFor?.split(',')[0] || cfConnectingIp || xRealIp || 'unknown'
 }

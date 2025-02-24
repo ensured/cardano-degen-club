@@ -20,7 +20,7 @@ const StarButton = ({ recipe, index, handleClick, handleHover, hoveredIndex, the
     }}
     onMouseEnter={() => handleHover(index)}
     onMouseLeave={() => handleHover(null)}
-    className="absolute bottom-[0.032rem] right-[0.032rem] z-10"
+    className="absolute bottom-[0.032rem] right-[0.032rem] z-20"
     aria-label={`Favorite ${recipe.recipe.label}`}
   >
     <StarIcon
@@ -93,6 +93,11 @@ export const RecipeCards = ({
     isFavorite: favorites[recipe.recipe.shareAs],
   }))
 
+  const handleCardClick = (recipe) => {
+    setSelectedRecipe(recipe.recipe)
+    setIsDetailsOpen(true)
+  }
+
   return (
     <>
       <div className="mt-2.5 grid w-full grid-cols-2 gap-1 rounded-md sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
@@ -100,10 +105,7 @@ export const RecipeCards = ({
           <div
             className="relative aspect-[4/3] w-full cursor-pointer sm:aspect-[4/3.5]"
             key={recipe.recipe.shareAs}
-            onClick={() => {
-              setSelectedRecipe(recipe.recipe)
-              setIsDetailsOpen(true)
-            }}
+            onClick={() => handleCardClick(recipe)}
           >
             <RecipeCard
               recipe={recipe}
@@ -115,10 +117,7 @@ export const RecipeCards = ({
             <StarButton
               recipe={recipe}
               index={index}
-              handleClick={(e) => {
-                e.stopPropagation() // Prevent dialog from opening when clicking star
-                handleStarIconClick(index)(e)
-              }}
+              handleClick={handleStarIconClick}
               handleHover={handleStarIconHover}
               hoveredIndex={hoveredRecipeIndex}
               theme={theme}
