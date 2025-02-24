@@ -61,7 +61,7 @@ const RecipeDetailsDialog = ({ isOpen, setIsOpen, recipe }: RecipeDetailsDialogP
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="max-h-[85vh] max-w-2xl">
+            <DialogContent className="max-h-[100vh] max-w-2xl">
                 <DialogHeader>
                     <VisuallyHidden>
                         <DialogDescription>gg</DialogDescription>
