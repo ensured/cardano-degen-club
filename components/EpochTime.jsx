@@ -67,7 +67,7 @@ export function EpochTime({ epochData }) {
           <Skeleton className="h-3 w-[200px]" />
         ) : (
           <span className="flex items-center justify-center text-xs">
-            Epoch: {currentEpochNum} ({percentageLeft.toFixed(2)}%
+            Epoch: {currentEpochNum} ({(100 - percentageLeft).toFixed(2)}%
             <span className="pl-1.5 tracking-tighter">{timeLeftDisplay})</span>
           </span>
         )}
