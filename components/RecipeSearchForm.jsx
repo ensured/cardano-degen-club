@@ -17,7 +17,6 @@ import {
   Settings,
   X,
 } from 'lucide-react'
-import toast from 'react-hot-toast'
 import { debounce } from 'lodash'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -46,6 +45,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { foodItems } from '@/lib/foods'
 
 const MAX_EXCLUDED_INGREDIENTS = 10
 
@@ -91,29 +91,6 @@ const healthOptions = [
 ]
 
 const mealTypes = ['Breakfast', 'Dinner', 'Lunch', 'Snack', 'Teatime']
-
-const RANDOM_FOODS = [
-  'chicken',
-  'pasta',
-  'curry',
-  'salad',
-  'soup',
-  'rice',
-  'fish',
-  'tacos',
-  'pizza',
-  'stir fry',
-  'burger',
-  'sandwich',
-  'noodles',
-  'steak',
-  'vegetable',
-  'casserole',
-  'breakfast',
-  'dessert',
-  'smoothie',
-  'bread',
-]
 
 const RecipeSearchForm = ({
   searchRecipes,
@@ -176,34 +153,19 @@ const RecipeSearchForm = ({
 
   const [isRandomLoading, setIsRandomLoading] = useState(false)
 
-  const getRandomRecipe = async () => {
-    try {
-      const response = await fetch('/api/random-recipe')
-      const data = await response.json()
-      if (data.title) {
-        return data.title
-      }
-      throw new Error('Failed to get random recipe')
-    } catch (error) {
-      console.error('Error fetching random recipe:', error)
-      return null
-    }
-  }
-
-  const handleRandomRecipe = async () => {
+  const handleRandomRecipe = () => {
     setIsRandomLoading(true)
     try {
-      const randomTitle = await getRandomRecipe()
-      if (randomTitle) {
-        setInput(randomTitle)
-        searchRecipes(
-          null,
-          randomTitle,
-          selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
-          excludedIngredients.length > 0 ? excludedIngredients : undefined,
-          selectedMealType ? selectedMealType : undefined,
-        )
-      }
+      const randomIndex = Math.floor(Math.random() * foodItems.length)
+      const randomTitle = foodItems[randomIndex]
+      setInput(randomTitle)
+      searchRecipes(
+        null,
+        randomTitle,
+        selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
+        excludedIngredients.length > 0 ? excludedIngredients : undefined,
+        selectedMealType ? selectedMealType : undefined,
+      )
     } finally {
       setIsRandomLoading(false)
     }
