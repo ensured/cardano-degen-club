@@ -421,11 +421,11 @@ const RecipeSearchForm = ({
                           </div>
                           {suggestion.toLowerCase().startsWith(input.toLowerCase()) ? (
                             <span className="text-xs text-muted-foreground">
-                              Starts with "{input}"
+                              Starts with &ldquo;{input}&rdquo;
                             </span>
                           ) : (
                             <span className="text-xs text-muted-foreground">
-                              Contains "{input}"
+                              Contains &ldquo;{input}&rdquo;
                             </span>
                           )}
                         </div>

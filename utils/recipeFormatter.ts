@@ -11,7 +11,7 @@ export const formatRecipeForDownload = (recipe: any, format: 'txt' | 'md' = 'txt
     recipe.mealType ? `- Meal Type: ${recipe.mealType}` : '',
 
     '## Ingredients',
-    ...recipe.ingredientLines.map((line) => `- ${line}`),
+    ...recipe.ingredientLines.map((line: string) => `- ${line}`),
 
     '## Nutritional Information',
     ...Object.entries(recipe.totalNutrients).map(
@@ -19,11 +19,11 @@ export const formatRecipeForDownload = (recipe: any, format: 'txt' | 'md' = 'txt
     ),
 
     recipe.healthLabels?.length
-      ? ['## Health Labels', ...recipe.healthLabels.map((label) => `- ${label}`)].join('\n')
+      ? ['## Health Labels', ...recipe.healthLabels.map((label: string) => `- ${label}`)].join('\n')
       : '',
 
     recipe.dietLabels?.length
-      ? ['## Diet Labels', ...recipe.dietLabels.map((label) => `- ${label}`)].join('\n')
+      ? ['## Diet Labels', ...recipe.dietLabels.map((label: string) => `- ${label}`)].join('\n')
       : '',
 
     `\nRecipe URL: ${recipe.shareAs}`,

@@ -20,6 +20,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 interface RecipeDetailsDialogProps {
     isOpen: boolean
@@ -62,6 +63,9 @@ const RecipeDetailsDialog = ({ isOpen, setIsOpen, recipe }: RecipeDetailsDialogP
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="max-h-[85vh] max-w-2xl">
                 <DialogHeader>
+                    <VisuallyHidden>
+                        <DialogDescription>gg</DialogDescription>
+                    </VisuallyHidden>
                     <div className="flex items-center gap-4">
                         {/* Small image thumbnail */}
                         <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md">
