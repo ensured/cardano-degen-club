@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, useCallback } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useWindowSize } from "@uidotdev/usehooks"
+import { useEffect, useRef, useState, useCallback } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useWindowSize } from '@uidotdev/usehooks'
 import {
   ArrowDown,
   BookOpen,
@@ -15,13 +15,13 @@ import {
   Search,
   Settings,
   X,
-} from "lucide-react"
-import toast from "react-hot-toast"
+} from 'lucide-react'
+import toast from 'react-hot-toast'
+import { debounce } from 'lodash'
 
-import { foodItems } from "../lib/foods"
-import RecipesMenu from "./RecipesMenu"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
+import RecipesMenu from './RecipesMenu'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
 import {
   Dialog,
   DialogContent,
@@ -29,13 +29,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog"
-import { Badge } from "./ui/badge"
-import { ScrollArea } from "./ui/scroll-area"
-import { Checkbox } from "./ui/checkbox"
-import useIsMobile from "../hooks/useIsMobile"
-import { Label } from "./ui/label"
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
+} from './ui/dialog'
+import { Badge } from './ui/badge'
+import { ScrollArea } from './ui/scroll-area'
+import { Checkbox } from './ui/checkbox'
+import useIsMobile from '../hooks/useIsMobile'
+import { Label } from './ui/label'
+import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import {
   Command,
   CommandEmpty,
@@ -43,59 +43,52 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from '@/components/ui/command'
 
 const MAX_EXCLUDED_INGREDIENTS = 10
 
-const diceIcons = [
-  Dice1Icon,
-  Dice2Icon,
-  Dice3Icon,
-  Dice4Icon,
-  Dice5Icon,
-  Dice6Icon,
-]
+const diceIcons = [Dice1Icon, Dice2Icon, Dice3Icon, Dice4Icon, Dice5Icon, Dice6Icon]
 
 const healthOptions = [
-  "alcohol-cocktail",
-  "alcohol-free",
-  "celery-free",
-  "crustacean-free",
-  "dairy-free",
-  "DASH",
-  "egg-free",
-  "fish-free",
-  "fodmap-free",
-  "gluten-free",
-  "immuno-supportive",
-  "keto-friendly",
-  "kidney-friendly",
-  "kosher",
-  "low-fat-abs",
-  "low-potassium",
-  "low-sugar",
-  "lupine-free",
-  "Mediterranean",
-  "mollusk-free",
-  "mustard-free",
-  "no-oil-added",
-  "paleo",
-  "peanut-free",
-  "pescatarian",
-  "pork-free",
-  "red-meat-free",
-  "sesame-free",
-  "shellfish-free",
-  "soy-free",
-  "sugar-conscious",
-  "sulfite-free",
-  "tree-nut-free",
-  "vegan",
-  "vegetarian",
-  "wheat-free",
+  'alcohol-cocktail',
+  'alcohol-free',
+  'celery-free',
+  'crustacean-free',
+  'dairy-free',
+  'DASH',
+  'egg-free',
+  'fish-free',
+  'fodmap-free',
+  'gluten-free',
+  'immuno-supportive',
+  'keto-friendly',
+  'kidney-friendly',
+  'kosher',
+  'low-fat-abs',
+  'low-potassium',
+  'low-sugar',
+  'lupine-free',
+  'Mediterranean',
+  'mollusk-free',
+  'mustard-free',
+  'no-oil-added',
+  'paleo',
+  'peanut-free',
+  'pescatarian',
+  'pork-free',
+  'red-meat-free',
+  'sesame-free',
+  'shellfish-free',
+  'soy-free',
+  'sugar-conscious',
+  'sulfite-free',
+  'tree-nut-free',
+  'vegan',
+  'vegetarian',
+  'wheat-free',
 ]
 
-const mealTypes = ["Breakfast", "Dinner", "Lunch", "Snack", "Teatime"]
+const mealTypes = ['Breakfast', 'Dinner', 'Lunch', 'Snack', 'Teatime']
 
 const RecipeSearchForm = ({
   searchRecipes,
@@ -110,10 +103,12 @@ const RecipeSearchForm = ({
   isFavoritesLoading,
   setIsFavoritesLoading,
   searchResults,
+  showSuggestions,
+  setShowSuggestions,
 }) => {
   const [selectedHealthOptions, setSelectedHealthOptions] = useState([])
   const [excludedIngredients, setExcludedIngredients] = useState([])
-  const [newExcludedItem, setNewExcludedItem] = useState("")
+  const [newExcludedItem, setNewExcludedItem] = useState('')
 
   const [isOpen, setIsOpen] = useState(false)
   const { width } = useWindowSize()
@@ -166,12 +161,12 @@ const RecipeSearchForm = ({
         randomFoodItem,
         selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
         excludedIngredients.length > 0 ? excludedIngredients : undefined,
-        selectedMealType ? selectedMealType : undefined
+        selectedMealType ? selectedMealType : undefined,
       )
       router.push(`?q=${randomFoodItem}`)
     } catch (error) {
       toast(error.message, {
-        type: "error",
+        type: 'error',
       })
     }
   }
@@ -185,7 +180,7 @@ const RecipeSearchForm = ({
       e.target[0].value,
       selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
       excludedIngredients.length > 0 ? excludedIngredients : undefined,
-      selectedMealType ? selectedMealType : undefined
+      selectedMealType ? selectedMealType : undefined,
     )
     router.push(`?q=${e.target[0].value}`)
     handleHideKeyboard()
@@ -197,24 +192,18 @@ const RecipeSearchForm = ({
 
   const handleAddExcludedItem = (e) => {
     e.preventDefault()
-    if (
-      newExcludedItem.trim() &&
-      !excludedIngredients.includes(newExcludedItem.trim())
-    ) {
-      const newExcludedIngredients = [
-        ...excludedIngredients,
-        newExcludedItem.trim(),
-      ]
+    if (newExcludedItem.trim() && !excludedIngredients.includes(newExcludedItem.trim())) {
+      const newExcludedIngredients = [...excludedIngredients, newExcludedItem.trim()]
       setExcludedIngredients(newExcludedIngredients)
-      setNewExcludedItem("")
+      setNewExcludedItem('')
 
       // Update URL params
       const params = new URLSearchParams(window.location.search)
       // Clear existing excluded params
-      params.delete("excluded")
+      params.delete('excluded')
       // Add each excluded ingredient as a separate parameter
       newExcludedIngredients.forEach((ingredient) => {
-        params.append("excluded", ingredient)
+        params.append('excluded', ingredient)
       })
       router.push(`?${params.toString()}`, { shallow: true })
     }
@@ -227,32 +216,65 @@ const RecipeSearchForm = ({
     // Update URL params
     const params = new URLSearchParams(window.location.search)
     // Clear existing excluded params
-    params.delete("excluded")
+    params.delete('excluded')
     // Add remaining ingredients as separate parameters
     if (newExcludedIngredients.length > 0) {
       newExcludedIngredients.forEach((ingredient) => {
-        params.append("excluded", ingredient)
+        params.append('excluded', ingredient)
       })
     }
     router.push(`?${params.toString()}`, { shallow: true })
   }
 
-  const [selectedMealType, setSelectedMealType] = useState("")
+  const [selectedMealType, setSelectedMealType] = useState('')
 
   const [suggestions, setSuggestions] = useState([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
 
-  // Move the async function inside useCallback
-  const debouncedFetchSuggestions = useCallback((value) => {
-    if (!value) {
-      setSuggestions([])
-      return
+  // Update the debounced fetch suggestions
+  const debouncedFetchSuggestions = useCallback(
+    debounce((value) => {
+      if (!value || value.length < 2) {
+        setSuggestions([])
+        setIsLoadingSuggestions(false)
+        return
+      }
+
+      setIsLoadingSuggestions(true)
+      fetch(`/api/search/autocomplete?q=${encodeURIComponent(value)}`)
+        .then((response) => response.json())
+        .then(({ data }) => {
+          // Sort suggestions to prioritize matches that start with the input
+          const sortedData = data.sort((a, b) => {
+            const aStartsWith = a.toLowerCase().startsWith(value.toLowerCase())
+            const bStartsWith = b.toLowerCase().startsWith(value.toLowerCase())
+            if (aStartsWith && !bStartsWith) return -1
+            if (!aStartsWith && bStartsWith) return 1
+            return 0
+          })
+          setSuggestions(sortedData)
+        })
+        .catch((error) => {
+          console.error('Failed to fetch suggestions:', error)
+          setSuggestions([])
+        })
+        .finally(() => {
+          setIsLoadingSuggestions(false)
+        })
+    }, 300),
+    [],
+  )
+
+  // Add a click outside handler to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.search-container')) {
+        setShowSuggestions(false)
+      }
     }
 
-    fetch(`/api/search/autocomplete?q=${encodeURIComponent(value)}`)
-      .then((response) => response.json())
-      .then(({ data }) => setSuggestions(data))
-      .catch((error) => console.error("Failed to fetch suggestions:", error))
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
   const handleLocalInputChange = (e) => {
@@ -272,24 +294,24 @@ const RecipeSearchForm = ({
 
     // Update URL params
     const params = new URLSearchParams(window.location.search)
-    const currentHealth = params.get("health")
+    const currentHealth = params.get('health')
 
     if (checked) {
       // Adding new option
       if (currentHealth) {
-        params.set("health", `${currentHealth},${option}`)
+        params.set('health', `${currentHealth},${option}`)
       } else {
-        params.set("health", option)
+        params.set('health', option)
       }
     } else {
       // Removing option
       if (currentHealth) {
-        const healthArray = currentHealth.split(",")
+        const healthArray = currentHealth.split(',')
         const filteredHealth = healthArray.filter((item) => item !== option)
         if (filteredHealth.length > 0) {
-          params.set("health", filteredHealth.join(","))
+          params.set('health', filteredHealth.join(','))
         } else {
-          params.delete("health")
+          params.delete('health')
         }
       }
     }
@@ -302,11 +324,11 @@ const RecipeSearchForm = ({
     setShowSuggestions(false)
     // Trigger search with the selected suggestion
     searchRecipes(
-      new Event("submit"),
+      new Event('submit'),
       suggestion,
       selectedHealthOptions.length > 0 ? selectedHealthOptions : undefined,
       excludedIngredients.length > 0 ? excludedIngredients : undefined,
-      selectedMealType ? selectedMealType : undefined
+      selectedMealType ? selectedMealType : undefined,
     )
     router.push(`?q=${suggestion}`)
   }
@@ -317,9 +339,9 @@ const RecipeSearchForm = ({
     const params = new URLSearchParams(window.location.search)
 
     if (value) {
-      params.set("mealType", value)
+      params.set('mealType', value)
     } else {
-      params.delete("mealType")
+      params.delete('mealType')
     }
     router.push(`?${params.toString()}`, { shallow: true })
   }
@@ -329,30 +351,45 @@ const RecipeSearchForm = ({
     const params = new URLSearchParams(window.location.search)
 
     // Load health options
-    const healthParam = params.get("health")
+    const healthParam = params.get('health')
     if (healthParam) {
-      const healthArray = healthParam.split(",")
+      const healthArray = healthParam.split(',')
       setSelectedHealthOptions(healthArray)
     }
 
     // Load meal type
-    const mealTypeParam = params.get("mealType")
+    const mealTypeParam = params.get('mealType')
     if (mealTypeParam) {
       setSelectedMealType(mealTypeParam)
     }
 
     // Load excluded ingredients
-    const excludedParams = params.getAll("excluded")
+    const excludedParams = params.getAll('excluded')
     if (excludedParams.length > 0) {
       setExcludedIngredients(excludedParams)
     }
   }, []) // Empty dependency array means this runs once on mount
 
+  const highlightMatch = (text, query) => {
+    if (!query) return text
+
+    const parts = text.split(new RegExp(`(${query})`, 'gi'))
+    return parts.map((part, index) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <span key={index} className="bg-yellow-200 dark:bg-yellow-800">
+          {part}
+        </span>
+      ) : (
+        part
+      ),
+    )
+  }
+
   return (
     <div className="mx-0 flex justify-center rounded-md">
       <div className="w-full max-w-3xl space-y-1">
         <form onSubmit={handleFormSubmit} className="flex gap-1">
-          <div className="relative flex w-full flex-col items-center justify-center">
+          <div className="search-container relative flex w-full flex-col items-center justify-center">
             <Input
               type="text"
               name="searchTerm"
@@ -361,22 +398,37 @@ const RecipeSearchForm = ({
               ref={inputRef}
               value={input}
               onChange={handleLocalInputChange}
+              onFocus={() => input && setShowSuggestions(true)} // Show suggestions on focus if there's input
               enterKeyHint="search"
               className="h-9 w-full"
             />
 
-            {/* Add autocomplete suggestions */}
+            {/* Update suggestions UI */}
             {showSuggestions && suggestions.length > 0 && (
-              <Command className="absolute top-full z-50 mt-1 h-44 w-full rounded-lg border border-border shadow-md">
+              <Command className="absolute top-[calc(100%-3px)] z-50 mt-1 h-auto max-h-80 w-full overflow-y-auto rounded-lg border border-border shadow-md">
                 <CommandList>
-                  <CommandGroup>
+                  <CommandGroup heading="Recipe Suggestions">
                     {suggestions.map((suggestion, index) => (
                       <CommandItem
                         key={index}
                         onSelect={() => handleSelectSuggestion(suggestion)}
-                        className="cursor-pointer"
+                        className="flex cursor-pointer items-center gap-2 py-2 hover:bg-accent"
                       >
-                        {suggestion}
+                        <Search className="size-4 text-muted-foreground" />
+                        <div className="flex flex-col">
+                          <div className="flex-1 font-medium">
+                            {highlightMatch(suggestion, input)}
+                          </div>
+                          {suggestion.toLowerCase().startsWith(input.toLowerCase()) ? (
+                            <span className="text-xs text-muted-foreground">
+                              Starts with "{input}"
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              Contains "{input}"
+                            </span>
+                          )}
+                        </div>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -388,11 +440,9 @@ const RecipeSearchForm = ({
           <Button
             type="submit"
             variant="outline"
-            disabled={
-              !input || input === "" || loading || lastInputSearched === input
-            }
+            disabled={!input || input === '' || loading || lastInputSearched === input}
             className="flex items-center justify-center gap-1 text-base md:text-lg"
-            size={"sm"}
+            size={'sm'}
           >
             <Search className="size-4 md:size-5" />
             Search
@@ -405,7 +455,7 @@ const RecipeSearchForm = ({
                 className="group relative flex items-center justify-center gap-1 text-sm md:text-base lg:text-lg"
               >
                 <Settings className="size-4 group-hover:animate-spin-3-times md:size-5" />
-                {isMobile ? "" : "Settings"}
+                {isMobile ? '' : 'Settings'}
                 {(selectedHealthOptions.length > 0 ||
                   excludedIngredients.length > 0 ||
                   selectedMealType) && (
@@ -422,9 +472,7 @@ const RecipeSearchForm = ({
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle className="text-lg text-muted-foreground">
-                  Settings
-                </DialogTitle>
+                <DialogTitle className="text-lg text-muted-foreground">Settings</DialogTitle>
               </DialogHeader>
 
               <div className="grid gap-3 py-2">
@@ -434,10 +482,8 @@ const RecipeSearchForm = ({
                     {selectedHealthOptions.length > 0 && (
                       <Button
                         onClick={() => {
-                          const params = new URLSearchParams(
-                            window.location.search
-                          )
-                          params.delete("health")
+                          const params = new URLSearchParams(window.location.search)
+                          params.delete('health')
                           router.push(`?${params.toString()}`, {
                             shallow: true,
                           })
@@ -456,10 +502,7 @@ const RecipeSearchForm = ({
                     <div className="px-4 py-3">
                       <div className="relative grid grid-cols-2 gap-2 pl-1">
                         {healthOptions.map((option) => (
-                          <div
-                            key={option}
-                            className="flex items-center space-x-2"
-                          >
+                          <div key={option} className="flex items-center space-x-2">
                             <Checkbox
                               id={option}
                               checked={selectedHealthOptions.includes(option)}
@@ -488,14 +531,12 @@ const RecipeSearchForm = ({
                     {selectedMealType && (
                       <Button
                         onClick={() => {
-                          const params = new URLSearchParams(
-                            window.location.search
-                          )
-                          params.delete("mealType")
+                          const params = new URLSearchParams(window.location.search)
+                          params.delete('mealType')
                           router.push(`?${params.toString()}`, {
                             shallow: true,
                           })
-                          setSelectedMealType("")
+                          setSelectedMealType('')
                         }}
                         variant="outline"
                         size="sm"
@@ -514,10 +555,7 @@ const RecipeSearchForm = ({
                     >
                       {mealTypes.map((type) => (
                         <div key={type} className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value={type.toLowerCase()}
-                            id={type}
-                          />
+                          <RadioGroupItem value={type.toLowerCase()} id={type} />
                           <Label
                             htmlFor={type}
                             className="text-base font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -552,10 +590,8 @@ const RecipeSearchForm = ({
                       onChange={(e) => setNewExcludedItem(e.target.value)}
                       placeholder="Add ingredient to exclude"
                       onKeyDown={(e) => {
-                        if (
-                          excludedIngredients.length < MAX_EXCLUDED_INGREDIENTS
-                        ) {
-                          if (e.key === "Enter") {
+                        if (excludedIngredients.length < MAX_EXCLUDED_INGREDIENTS) {
+                          if (e.key === 'Enter') {
                             e.preventDefault() // Prevent default form submission
                             if (newExcludedItem.trim()) {
                               handleAddExcludedItem(e)
@@ -616,13 +652,13 @@ const RecipeSearchForm = ({
             onMouseOut={() => handleRandomButtonHover(false)}
             onClick={handleGetRandomFood}
             variant="outline"
-            size={"sm"}
+            size={'sm'}
             className="flex-1 gap-1 text-xs md:text-base lg:text-lg"
           >
             <CurrentDiceIcon
-              className={`size-4 transition-transform duration-300 ease-in-out md:size-5 ${isHoveredRandomButton ? "text-blue-500 rotate-180 scale-125" : ""}`}
+              className={`size-4 transition-transform duration-300 ease-in-out md:size-5 ${isHoveredRandomButton ? 'text-blue-500 rotate-180 scale-125' : ''}`}
             />
-            {width < 440 ? "Random" : "Random Recipe"}
+            {width < 440 ? 'Random' : 'Random Recipe'}
           </Button>
           <RecipesMenu
             favorites={favorites}
@@ -641,7 +677,7 @@ const RecipeSearchForm = ({
               disabled={loading}
               className="flex gap-1 text-xs md:text-base lg:text-lg"
               variant="outline"
-              size={"sm"}
+              size={'sm'}
             >
               {isOpen ? (
                 <BookOpenCheck className="size-4 md:size-5" />
