@@ -1022,17 +1022,6 @@ export default function NFTMinter() {
 
   // Modify the loadPolicies function
   const loadPolicies = async () => {
-    const cooldownPeriod = 30000
-    const timeElapsed = Date.now() - lastFetchTime
-
-    if (timeElapsed < cooldownPeriod) {
-      const remainingTime = Math.ceil((cooldownPeriod - timeElapsed) / 1000)
-      toast.error(`Please wait ${remainingTime} seconds before refreshing`, {
-        position: 'bottom-center',
-      })
-      return
-    }
-
     if (!walletState.api || !blockfrostKey) {
       toast.error('Please connect wallet and enter Blockfrost key first', {
         position: 'bottom-center',
@@ -1041,14 +1030,34 @@ export default function NFTMinter() {
     }
 
     try {
+      // Check balance first, before applying rate limit
+      const balance = await walletState.api.getBalance()
+      if (Number(balance) < 1000000) {
+        toast.error('Insufficient balance, please add funds to your wallet', {
+          position: 'bottom-center',
+        })
+        return
+      }
+
+      // Only apply rate limit if balance check passes
+      const cooldownPeriod = 30000
+      const timeElapsed = Date.now() - lastFetchTime
+
+      if (timeElapsed < cooldownPeriod) {
+        const remainingTime = Math.ceil((cooldownPeriod - timeElapsed) / 1000)
+        toast.error(`Please wait ${remainingTime} seconds before refreshing`, {
+          position: 'bottom-center',
+        })
+        return
+      }
+
       setScanning(true)
       setLoadingPolicies(true)
 
       // Get all required data in parallel
-      const [{ paymentCredentialOf }, address, balance] = await Promise.all([
+      const [{ paymentCredentialOf }, address] = await Promise.all([
         getScriptUtils(),
         lucid.wallet().address(),
-        walletState.api.getBalance(),
       ])
 
       if (Number(balance) < 1000000) {
