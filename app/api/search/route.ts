@@ -35,12 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   // For regular fetching with rate-limiting
-  const rateLimitCheck = await checkRateLimit({
-    key: 'fetchRecipes',
-    ip,
-    limitTimeout: 10000,
-    maxAttempts: 3,
-  })
+  const rateLimitCheck = await checkRateLimit(`search:${ip}`)
   if (!rateLimitCheck.success) {
     return NextResponse.json({
       success: false,
