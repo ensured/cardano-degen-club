@@ -35,7 +35,8 @@ export async function GET(request: NextRequest) {
   }
 
   // For regular fetching with rate-limiting
-  const rateLimitCheck = await checkRateLimit(`search:${ip}`)
+  const identifier = await getClientIp()
+  const rateLimitCheck = await checkRateLimit(identifier)
   if (!rateLimitCheck.success) {
     return NextResponse.json({
       success: false,
