@@ -1,13 +1,31 @@
 import { Resend } from 'resend'
 import { kv } from '@vercel/kv'
+import { z } from 'zod'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Rate limit configuration
-const RATE_LIMIT = {
-  WINDOW: 3600, // 1 hour in seconds
-  MAX_REQUESTS: 5, // Max 5 requests per hour
-}
+// Update rate limit configuration
+const RATE_LIMITS = [
+  {
+    name: 'short',
+    window: 600,
+    maxRequests: 2,
+    errorMessage: (ttl) =>
+      `Please try again in ${Math.floor(ttl / 60)}m ${ttl % 60}s. Limit 2 requests per 10 minutes.`,
+  },
+  {
+    name: 'long',
+    window: 86400,
+    maxRequests: 10,
+    errorMessage: (ttl) =>
+      `Maximum 10 requests per 12 hours. Please try again in ${Math.floor(ttl / 3600)}h ${Math.floor((ttl % 3600) / 60)}m ${ttl % 60}s.`,
+  },
+]
+
+// Add validation schema matching client-side
+const feedbackSchema = z.object({
+  feedback: z.string().min(1).max(2000),
+})
 
 export async function POST(request) {
   try {
@@ -17,41 +35,57 @@ export async function POST(request) {
       request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
       'anonymous'
 
-    const key = `feedback:${identifier}`
+    // Check all rate limits
+    for (const limit of RATE_LIMITS) {
+      const tierKey = `feedback:${identifier}:${limit.name}`
+      const current = await kv.get(tierKey)
 
-    // Get current count
-    const current = await kv.get(key)
+      if (current && current.count >= limit.maxRequests) {
+        const ttl = await kv.ttl(tierKey)
+        return new Response(JSON.stringify({ error: limit.errorMessage(ttl) }), {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }
+    }
 
-    // Check rate limit
-    if (current && current.count >= RATE_LIMIT.MAX_REQUESTS) {
-      const ttl = await kv.ttl(key)
+    // Increment all rate limits
+    for (const limit of RATE_LIMITS) {
+      const tierKey = `feedback:${identifier}:${limit.name}`
+      const current = await kv.get(tierKey)
+
+      await kv.set(
+        tierKey,
+        {
+          count: current ? current.count + 1 : 1,
+          lastRequest: Date.now(),
+        },
+        { ex: limit.window, nx: !current },
+      )
+    }
+
+    // Validate request body
+    const body = await request.json()
+    const validation = feedbackSchema.safeParse(body)
+
+    if (!validation.success) {
       return new Response(
         JSON.stringify({
-          error: `Please try again in ${Math.ceil(ttl / 60)} minutes. Max 5 requests per hour.`,
+          error: 'Invalid feedback',
+          issues: validation.error.issues,
         }),
-
         {
-          status: 429,
+          status: 400,
           headers: { 'Content-Type': 'application/json' },
         },
       )
     }
 
-    // Increment count or create new entry
-    await kv.set(
-      key,
-      {
-        count: current ? current.count + 1 : 1,
-        lastRequest: Date.now(),
-      },
-      { ex: RATE_LIMIT.WINDOW, nx: !current },
-    )
-
-    // Process feedback
-    const { feedback } = await request.json()
+    // Use validated data
+    const { feedback } = validation.data
 
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_EMAIL_FROM_FEEDBACK,
+      from: process.env.RESEND_EMAIL_FROM,
       to: process.env.RESEND_EMAIL_TO,
       subject: 'New Feedback!',
       text: feedback,
@@ -70,6 +104,19 @@ export async function POST(request) {
       headers: { 'Content-Type': 'application/json' },
     })
   } catch (error) {
+    // Update error handling to include Zod errors
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({
+          error: 'Validation failed',
+          issues: error.issues,
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
+    }
     console.error('Server error:', error)
     return new Response(
       JSON.stringify({
