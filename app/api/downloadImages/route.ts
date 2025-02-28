@@ -29,7 +29,7 @@ interface UserDownloadInfo {
 }
 
 const MAX_CHARACTERS = 1000000
-const MAX_IMAGES = 1000
+const MAX_IMAGES = 750
 const RATE_LIMIT_DURATION = 3600000 // 1 hour
 
 // Helper function to get user key from IP
@@ -88,31 +88,62 @@ export const GET = async (req: NextRequest) => {
     const userInfo = (await kv.get(userKey)) as UserDownloadInfo | null
     const now = Date.now()
 
-    if (!userInfo || now >= userInfo.reset) {
+    // Check if the rate limit has reset
+    if (!userInfo) {
       return NextResponse.json({
         remaining: MAX_IMAGES,
         reset: now + RATE_LIMIT_DURATION,
         total: MAX_IMAGES,
-        downloadedCount: 0,
         awaitingDownload: 0,
+        hasAwaitingDownloads: false,
       })
     }
 
-    // Ensure awaitingDownload is always included in the response
+    // If the reset time has passed, reset the count but preserve awaiting downloads
+    if (now >= userInfo.reset) {
+      // Get the awaiting download count before resetting
+      const awaitingDownloadCount = userInfo.awaitingDownload?.length || 0
+      const hasAwaitingDownloads = awaitingDownloadCount > 0
+
+      // If there are no awaiting downloads, just reset everything
+      if (!hasAwaitingDownloads) {
+        return NextResponse.json({
+          remaining: MAX_IMAGES,
+          reset: now + RATE_LIMIT_DURATION,
+          total: MAX_IMAGES,
+          awaitingDownload: 0,
+          hasAwaitingDownloads: false,
+        })
+      }
+
+      // If there are awaiting downloads, preserve them but reset the count and timer
+      await kv.set(userKey, {
+        count: 0, // Reset the count
+        reset: now + RATE_LIMIT_DURATION, // Reset the timer
+        awaitingDownload: userInfo.awaitingDownload, // Preserve awaiting downloads
+      })
+
+      return NextResponse.json({
+        remaining: MAX_IMAGES, // Full quota available again
+        reset: now + RATE_LIMIT_DURATION,
+        total: MAX_IMAGES,
+        awaitingDownload: awaitingDownloadCount,
+        hasAwaitingDownloads: true,
+      })
+    }
+
+    // Normal case - rate limit still active
     const awaitingDownloadCount = userInfo.awaitingDownload?.length || 0
 
     const rateLimitInfo: RateLimitInfo = {
       remaining: Math.max(0, MAX_IMAGES - userInfo.count),
       reset: userInfo.reset,
       total: MAX_IMAGES,
+      awaitingDownload: awaitingDownloadCount,
+      hasAwaitingDownloads: awaitingDownloadCount > 0,
     }
 
-    return NextResponse.json({
-      ...rateLimitInfo,
-      awaitingDownload: awaitingDownloadCount,
-      // Include a flag to indicate if there are awaiting downloads
-      hasAwaitingDownloads: awaitingDownloadCount > 0,
-    })
+    return NextResponse.json(rateLimitInfo)
   } catch (error) {
     console.error('Error getting rate limit info:', error)
     return NextResponse.json({ error: 'Failed to get rate limit info' }, { status: 500 })
@@ -286,7 +317,7 @@ export const POST = async (req: NextRequest) => {
 
         return NextResponse.json(
           {
-            error: `Rate limit exceeded (${MAX_IMAGES} images/20 minutes)`,
+            error: `Rate limit exceeded (${MAX_IMAGES} images/hour)`,
             rateLimitInfo,
             awaitingDownload: awaitingDownloadCount,
             totalImages: imagesToDownload.length,

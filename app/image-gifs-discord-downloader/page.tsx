@@ -22,19 +22,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+
 
 // Define Zod schema for HTML validation
 const htmlSchema = z.object({
     html: z.string()
         .min(1, "HTML input is required")
-        .max(1500000, "HTML input is too large (max 1,500,000 characters)")
+        .max(1000000, "HTML input is too large (max 1,000,000 characters)")
         .refine(
             (val) => {
                 return val.includes("originalLink_af017a") ||
@@ -61,7 +55,7 @@ const MAX_IMAGES = 750; // Match the server-side constant
 
 const DownloadImages = () => {
     const [html, setHtml] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [validationError, setValidationError] = useState('');
     const [hasCopied, setHasCopied] = useState(false);
@@ -72,7 +66,7 @@ const DownloadImages = () => {
     const prevRemaining = useRef<number>();
     const lastDownloaded = useRef<number | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [userConfirmed, setUserConfirmed] = useState(false);
+
     const deferredPromise = useRef<((value: boolean) => void) | null>(null);
     const [hasStartedDownloading, setHasStartedDownloading] = useState(false);
     const [downloadMode, setDownloadMode] = useState<'all' | 'remaining'>('all');
@@ -85,38 +79,20 @@ const DownloadImages = () => {
     const [isClearing, setIsClearing] = useState(false);
     const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
 
-    const codeExample = `// Find all Discord image links
-const imageLinks = document.querySelectorAll("a.originalLink_af017a");
-
-// Create a Set to store unique image HTML elements
-const uniqueImageElements = new Set();
-
-// Add each image link to the set (only cdn.discordapp.com links)
+    const codeExample = `const imageLinks = document.querySelectorAll("a.originalLink_af017a");
+let imageElements = "";
 imageLinks.forEach((link) => {
-  // Only include cdn.discordapp.com links, exclude media.discordapp.net links
-  if (link.href && link.href.includes('cdn.discordapp.com/attachments')) {
-    uniqueImageElements.add(link.outerHTML);
-  }
+    imageElements += link.outerHTML + "\\n";
 });
 
-// Also find links by href attribute directly
-document.querySelectorAll('a[href*="cdn.discordapp.com/attachments"]').forEach((link) => {
-  uniqueImageElements.add(link.outerHTML);
-});
-
-// Convert set to array and join with newlines
-const imageElements = Array.from(uniqueImageElements).join("\\n");
-
-// Copy to clipboard
 const textarea = document.createElement("textarea");
 textarea.value = imageElements;
 document.body.appendChild(textarea);
 textarea.select();
 document.execCommand("copy");
 document.body.removeChild(textarea);
-
 console.log(
-  \`✅ Success: \${uniqueImageElements.size} unique cdn.discordapp.com image elements copied to clipboard! Now paste the HTML into the text area on the website\`
+    \`✅ Success: \${imageLinks.length} image elements copied to clipboard! Now Paste the HTML into the text area on the website\`
 );`;
 
     // Use a single useEffect for highlighting
@@ -176,20 +152,23 @@ console.log(
     // Function to fetch rate limit information
     const fetchRateLimit = async () => {
         try {
-            const response = await fetch('/api/downloadImages?action=check');
+            setIsLoading(true)
+            const response = await fetch('/api/downloadImages?action=check')
             if (response.ok) {
-                const data = await response.json();
-                setRateLimitInfo(data);
+                const data = await response.json()
+                setRateLimitInfo(data)
 
                 // Always show download options if there are awaiting images, regardless of rate limit
-                if ((data.awaitingDownload && data.awaitingDownload > 0) || data.hasAwaitingDownloads) {
-                    setShowDownloadOptions(true);
+                if (data.hasAwaitingDownloads || (data.awaitingDownload && data.awaitingDownload > 0)) {
+                    setShowDownloadOptions(true)
                 }
             }
         } catch (error) {
-            console.error('Error fetching rate limit:', error);
+            console.error('Error fetching rate limit:', error)
+        } finally {
+            setIsLoading(false)
         }
-    };
+    }
 
     useEffect(() => {
         if (rateLimitInfo && prevRemaining.current !== undefined) {
@@ -414,12 +393,12 @@ console.log(
             if (mode === 'all' && detectedImages === lastDownloaded.current) {
                 const isConfirmed = await confirmWithUser();
                 if (!isConfirmed) {
-                    setLoading(false);
+                    setIsLoading(false);
                     return;
                 }
             }
 
-            setLoading(true);
+            setIsLoading(true);
             setError('');
 
             const response = await fetch('/api/downloadImages', {
@@ -455,12 +434,12 @@ console.log(
 
                         if (userChoice === 'partial') {
                             // User wants to download what's available
-                            setLoading(false);
+                            setIsLoading(false);
                             handleDownload('remaining');
                             return;
                         } else {
                             // User canceled
-                            setLoading(false);
+                            setIsLoading(false);
                             return;
                         }
                     }
@@ -486,7 +465,7 @@ console.log(
                         } : null);
                     }
 
-                    setLoading(false);
+                    setIsLoading(false);
                     return;
                 }
             }
@@ -553,10 +532,9 @@ console.log(
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Failed to download images');
         } finally {
-            setLoading(false);
+            setIsLoading(false);
             setIsDialogOpen(false);
             setIsPartialDownloadDialogOpen(false);
-            setUserConfirmed(false);
         }
     };
 
@@ -584,11 +562,11 @@ console.log(
     const formatTimeRemaining = (resetTime: number) => {
         const now = Date.now();
 
-        // If we haven't started downloading or the reset time is 0, show the default "20:00"
+        // If we haven't started downloading or the reset time is 0, show the default time
         // But if there are awaiting images, we should still show the timer
         if ((!hasStartedDownloading && rateLimitInfo?.remaining === MAX_IMAGES &&
             !rateLimitInfo?.awaitingDownload && !rateLimitInfo?.hasAwaitingDownloads) || resetTime === 0) {
-            return "20:00";
+            return "60:00"; // Updated to match the 1 hour RATE_LIMIT_DURATION from backend
         }
 
         // If the reset time has passed, show "Ready" instead of "0:00"
@@ -763,7 +741,7 @@ console.log(
                         <AlertDialogAction onClick={() => {
                             deferredPromise.current?.(true);
                             setIsDialogOpen(false);
-                            setUserConfirmed(true);
+
                         }}>
                             Continue
                         </AlertDialogAction>
@@ -974,7 +952,7 @@ console.log(
                                         <AlertDescription>
                                             {rateLimitInfo.remaining === 0 ? (
                                                 <>
-                                                    You've reached your download limit. Please wait until {formatTimeRemaining(rateLimitInfo.reset)} before downloading more images.
+                                                    You&lsquo;ve reached your download limit. Please wait until {formatTimeRemaining(rateLimitInfo.reset)} before downloading more images.
                                                     {rateLimitInfo.awaitingDownload && rateLimitInfo.awaitingDownload > 0 && (
                                                         <> You have {rateLimitInfo.awaitingDownload} images awaiting download.</>
                                                     )}
@@ -983,32 +961,31 @@ console.log(
                                                 <>
                                                     You have {rateLimitInfo.awaitingDownload} images awaiting download from your previous session.
                                                 </>
-                                            ) : (
+                                            ) : rateLimitInfo.downloadedCount && rateLimitInfo.totalImages ? (
                                                 <>
                                                     You have downloaded {rateLimitInfo.downloadedCount} of {rateLimitInfo.totalImages} images.
                                                     <br />{rateLimitInfo.remainingImages} images remaining to download.
+                                                </>
+                                            ) : (
+                                                <>
+                                                    You can download up to {rateLimitInfo.remaining} images in this session.
                                                 </>
                                             )}
                                         </AlertDescription>
                                     </Alert>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {/* Download Remaining/Awaiting Button - Always show if there are awaiting downloads */}
                                         {((rateLimitInfo.awaitingDownload && rateLimitInfo.awaitingDownload > 0) || rateLimitInfo.hasAwaitingDownloads) && (
                                             <Button
                                                 onClick={() => handleDownload('remaining')}
-                                                disabled={loading}
-                                                className={`transition-all duration-300 hover:shadow-md ${rateLimitInfo.remaining === 0 ? 'opacity-70' : ''}`}
-                                                variant={rateLimitInfo.remaining === 0 ? "outline" : "default"}
+                                                disabled={isLoading}
+                                                className="transition-all duration-300 hover:shadow-md"
                                                 size="lg"
                                             >
-                                                {loading && downloadMode === 'remaining' ? (
+                                                {isLoading && downloadMode === 'remaining' ? (
                                                     <>
                                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                                         Downloading...
-                                                    </>
-                                                ) : rateLimitInfo.remaining === 0 ? (
-                                                    <>
-                                                        <Download className="mr-2 h-4 w-4" />
-                                                        Awaiting Images ({rateLimitInfo.awaitingDownload}) - Rate Limited
                                                     </>
                                                 ) : (
                                                     <>
@@ -1018,14 +995,15 @@ console.log(
                                                 )}
                                             </Button>
                                         )}
+                                        {/* Download All Button */}
                                         {html.trim() && (
                                             <Button
                                                 onClick={() => handleDownload('all')}
-                                                disabled={loading || !html.trim() || rateLimitInfo.remaining === 0}
+                                                disabled={isLoading || !html.trim() || rateLimitInfo.remaining === 0}
                                                 className="transition-all duration-300 hover:shadow-md"
                                                 size="lg"
                                             >
-                                                {loading && downloadMode === 'all' ? (
+                                                {isLoading && downloadMode === 'all' ? (
                                                     <>
                                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                                         Downloading...
@@ -1043,11 +1021,11 @@ console.log(
                             ) : (
                                 <Button
                                     onClick={() => handleDownload('all')}
-                                    disabled={loading || !html.trim() || Boolean(rateLimitInfo?.remaining === 0)}
+                                    disabled={isLoading || !html.trim() || Boolean(rateLimitInfo?.remaining === 0)}
                                     className="w-full transition-all duration-300 hover:shadow-md"
                                     size="lg"
                                 >
-                                    {loading ? (
+                                    {isLoading ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                             Downloading...
